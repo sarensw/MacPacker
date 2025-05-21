@@ -44,43 +44,34 @@ struct ContentView: View {
             ArchiveView()
         }
         .toolbar {
-//            ToolbarItemGroup {
-                ToolbarItem(
-                    id: "preview",
-                    placement: .primaryAction,
-                    showsByDefault: true
-                ) {
-                    Button {
-                        if let archive = archiveState.archive,
-                           let selectedItem = archiveState.selectedItem {
-                            let url = archive.extractFileToTemp(selectedItem)
-                            InternalEditorWindowController.shared.show(url)
-                        }
-                    } label: {
-                        Image(systemName: "text.page.badge.magnifyingglass")
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    if let archive = archiveState.archive,
+                       let selectedItem = archiveState.selectedItem {
+                        let url = archive.extractFileToTemp(selectedItem)
+                        InternalEditorWindowController.shared.show(url)
                     }
+                } label: {
+                    Image(systemName: "text.page.badge.magnifyingglass")
                 }
-            
-                ToolbarItem(
-                    id: "info",
-                    placement: .primaryAction,
-                    showsByDefault: true
-                ) {
-                    Button {
-                        if let url = archiveState.archive?.url {
-                            openGetInfoWnd(for: [url])
-                        }
-                    } label: {
-                        Image(systemName: "info.circle")
+                
+                Button {
+                    if let url = archiveState.archive?.url {
+                        openGetInfoWnd(for: [url])
                     }
+                } label: {
+                    Image(systemName: "info.circle")
                 }
-//            }
+                
+                SettingsLink(label: {
+                    Label("Settings", systemImage: "gear")
+                })
+            }
         }
         .onOpenURL { url in
             self.archiveState.loadUrl(url)
         }
         .environmentObject(archiveState)
-        
     }
     
     private var selection: Binding<Set<ArchiveItem.ID>> {

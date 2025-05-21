@@ -45,3 +45,7 @@ struct SettingsGeneralView: View {
         }
     }
 }
+
+#Preview {
+    SettingsGeneralView()
+}

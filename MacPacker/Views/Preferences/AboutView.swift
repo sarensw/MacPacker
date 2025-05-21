@@ -23,7 +23,7 @@ extension Bundle {
 
 struct AboutView: View {
     @Environment(\.openURL) private var openURL
-
+    
     var body: some View {
         VStack (alignment: .center, spacing: 8) {
             Image("Logo")
@@ -78,12 +78,12 @@ struct AboutView: View {
                 .fontWeight(.semibold)
                 .padding(.top, 14)
             HStack(spacing: 14) {
-                Link("hej@sarensx.com", destination: URL(string: "mailto:hej@sarensx.com")!)
+                Link("apps@sarensw.com", destination: URL(string: "mailto:apps@sarensw.com")!)
                 Link("@sarensw", destination: URL(string: "https://twitter.com/sarensw")!)
-                Link("sarensw.com", destination: URL(string: "https://sarensw.com/?ref=about")!)
+                Link("filefillet.com", destination: URL(string: "https://macpacker.app/?ref=about")!)
             }
             
-            Text("2023 SarensX OÜ, Stephan Arenswald. Published as Open Source under GPL.")
+            Text("2025 Stephan Arenswald. Published as Open Source under GPL.")
                 .font(.footnote)
                 .foregroundColor(.secondary)
                 .padding(.top, 14)
