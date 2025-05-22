@@ -35,13 +35,22 @@ struct MacPackerApp: App {
         }
         .restorationBehavior(.disabled)
         
+        Window("", id: "About") {
+            AboutView()
+                .frame(width: 460, height: 420)
+        }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
+        .commandsRemoved()
+        .defaultPosition(.center)
+        
         Settings {
             PreferencesView()
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("About MacPacker") {
-                    AboutWindowController.shared.show()
+                    openWindow(id: "About")
                 }
             }
             #if !STORE

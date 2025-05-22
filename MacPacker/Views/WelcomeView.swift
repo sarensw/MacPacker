@@ -12,7 +12,10 @@ struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("• feat: multiple windows support")
+            Text("• feat: open info for archive")
+            Text("• feat: new breadcrumb view for navigation")
             Text("• fix: open with in Finder not working")
+            Text("• chore: major code cleanup")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
@@ -23,17 +26,6 @@ struct WelcomeOtherProjects: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack(alignment: .center) {
-                Image("Braindump")
-                    .resizable()
-                    .frame(width: 26, height: 26)
-                    .cornerRadius(5)
-                    .padding(4)
-                Link(destination: URL(string: "https://getbraindump.app/?ref=mpwelcome")!) {
-                    Text("Braindump")
-                }
-                Text("When you need to write down thoughts. Fast.")
-            }
-            HStack(alignment: .center) {
                 Image("FileFillet")
                     .resizable()
                     .frame(width: 32, height: 32)
@@ -41,16 +33,6 @@ struct WelcomeOtherProjects: View {
                     Text("FileFillet")
                 }
                 Text("Organize files without tons of Finder windows.")
-            }
-            
-            HStack(alignment: .center) {
-                Image("")
-                    .resizable()
-                    .frame(width: 32, height: 32)
-                Link(destination: URL(string: "https://lemonbuilder.sarensx.com/?ref=mpwelcome")!) {
-                    Text("LemonBuilder")
-                }
-                Text("Because hosting simple websites should be free. (in development)")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -91,7 +73,7 @@ struct WelcomeFeedbackView: View {
             Spacer()
             HStack(spacing: 14) {
                 Text("Or reach out via...")
-                Link("hej@sarensx.com", destination: URL(string: "mailto:hej@sarensx.com")!)
+                Link("apps@sarensw.com", destination: URL(string: "mailto:apps@sarensw.com")!)
                 Link("@sarensw", destination: URL(string: "https://twitter.com/sarensw")!)
             }
         }
@@ -120,25 +102,47 @@ struct WelcomeView: View {
                     .foregroundColor(.secondary)
             }
             
-            TabView(selection: $defaultTab) {
-                WelcomeWhatsNewView()
-                    .tabItem {
-                        Text("What's new")
-                    }
-                    .tag(1)
-                WelcomeOtherProjects()
-                    .tabItem {
-                        Text("More projects")
-                    }
-                    .tag(2)
-                WelcomeFeedbackView()
-                    .tabItem {
-                        Text("Feedback")
-                    }
-                    .tag(3)
+            if #available(macOS 15.0, *) {
+                TabView(selection: $defaultTab) {
+                    WelcomeWhatsNewView()
+                        .tabItem {
+                            Text("What's new")
+                        }
+                        .tag(1)
+                    WelcomeOtherProjects()
+                        .tabItem {
+                            Text("More apps")
+                        }
+                        .tag(2)
+                    WelcomeFeedbackView()
+                        .tabItem {
+                            Text("Feedback")
+                        }
+                        .tag(3)
+                }
+                .tabViewStyle(.grouped)
+                .padding(.top, 16)
+            } else {
+                TabView(selection: $defaultTab) {
+                    WelcomeWhatsNewView()
+                        .tabItem {
+                            Text("What's new")
+                        }
+                        .tag(1)
+                    WelcomeOtherProjects()
+                        .tabItem {
+                            Text("More apps")
+                        }
+                        .tag(2)
+                    WelcomeFeedbackView()
+                        .tabItem {
+                            Text("Feedback")
+                        }
+                        .tag(3)
+                }
+                .tabViewStyle(.automatic)
+                .padding(.top, 16)
             }
-            .tabViewStyle(.automatic)
-            .padding(.top, 16)
             
             #if !STORE
             Text("Support this Open Source project...")
@@ -174,9 +178,7 @@ struct WelcomeView: View {
     }
 }
 
-struct WelcomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        WelcomeView()
-            .frame(width: 480, height: 480)
-    }
+#Preview {
+    WelcomeView()
+        .frame(width: 480, height: 480)
 }

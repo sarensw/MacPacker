@@ -36,7 +36,7 @@ class Archive2: ObservableObject {
     @Published var tempDirs: [URL] = []
     @Published var errorMessage: String?
     var currentStackEntry: ArchiveItemStackEntry? = nil
-    private var breadcrumbsUpdated: ([String]) -> Void
+    private var breadcrumbsUpdated: (([String]) -> Void)?
     
     //
     // Initializers
@@ -50,8 +50,22 @@ class Archive2: ObservableObject {
         breadcrumbsUpdated = { _ in }
     }
     
+    /// Constructor use if loading an archive. Used for testing only
+    /// - Parameter url: url to load
+    /// - Throws: Throws Archive2Error.unknownType in case the archive type is unknown
+    init(url: URL) throws {
+        self.url = url
+        self.type = .zip
+        type = try determineTypeFrom(url: url)
+        if type == .zip {
+            canEdit = true
+        }
+        try load(url)
+    }
+    
     /// Constructor use if loading an archive
     /// - Parameter url: url to load
+    /// - Parameter breadcrumbsUpdated: closure that is called whenever the archive path changes
     /// - Throws: Throws Archive2Error.unknownType in case the archive type is unknown
     init(url: URL, breadcrumbsUpdated: @escaping ([String]) -> Void) throws {
         self.breadcrumbsUpdated = breadcrumbsUpdated
@@ -194,7 +208,7 @@ class Archive2: ObservableObject {
                 names.insert(last.localPath.deletingLastPathComponent().path, at: 0)
             }
 //            names[0] = stack.last()!.localPath.path
-            breadcrumbsUpdated(names)
+            breadcrumbsUpdated?(names)
             
             self.currentStackEntry = entry
         } catch {
