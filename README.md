@@ -1,5 +1,5 @@
-<p align="center">
-  <img alt="MacPacker Logo" src="https://raw.githubusercontent.com/brainchest/MacPacker/main/MacPacker/Assets.xcassets/Logo.imageset/icon_256x256.png"  align="left">
+<p align="left">
+  <img alt="MacPacker Logo" src="https://raw.githubusercontent.com/brainchest/MacPacker/main/MacPacker/Assets.xcassets/Logo.imageset/icon_256x256.png" width="128" height="128">
 </p>
 
 # MacPacker
@@ -11,8 +11,6 @@ MacOS archive previewer and manager
   <a href="https://github.com/brainchest/MacPacker/releases/latest"><img src="https://img.shields.io/github/downloads/sarensx/macpacker/latest/total?color=%2300834a&label=latest" /></a>
   <a href="https://github.com/brainchest/MacPacker/releases/latest"><img src="https://img.shields.io/github/v/release/sarensx/macpacker?color=%2300834a" /></a>
 </div>
-
-<br /><br /><br /><br />
 
 ## Why?
 
