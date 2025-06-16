@@ -1,3 +1,7 @@
+v0.6
+- feat: hit space to open internal preview
+- chore: add support for macOS 13 and 14
+
 v0.5
 - feat: multiple windows support
 - feat: open info for archive

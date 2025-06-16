@@ -63,9 +63,17 @@ struct ContentView: View {
                     Image(systemName: "info.circle")
                 }
                 
-                SettingsLink(label: {
-                    Label("Settings", systemImage: "gear")
-                })
+                if #available(macOS 14, *) {
+                    SettingsLink() {
+                        Label("Settings", systemImage: "gear")
+                    }
+                } else {
+                    Button {
+                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                    } label: {
+                        Image(systemName: "gear")
+                    }
+                }
             }
         }
         .onOpenURL { url in

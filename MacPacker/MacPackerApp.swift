@@ -33,7 +33,7 @@ struct MacPackerApp: App {
             ContentView()
                 .environmentObject(appState)
         }
-        .restorationBehavior(.disabled)
+//        .restorationBehavior(.disabled) // only for macOS 15+
         
         Window("", id: "About") {
             AboutView()
@@ -62,7 +62,7 @@ struct MacPackerApp: App {
     }
 }
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     @AppStorage("welcomeScreenShownInVersion") private var welcomeScreenShownInVersion = "0.0"
     private var openWithUrls: [URL] = []
     
@@ -71,9 +71,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             WelcomeWindowController.shared.show()
             welcomeScreenShownInVersion = Bundle.main.appVersionLong
         }
+        
+        if let window = NSApp.windows.first {
+            window.delegate = self
+        }
     }
     
     func applicationWillTerminate(_ notification: Notification) {
         CacheCleaner.shared.clean()
+    }
+    
+    func windowShouldClose(_ window: NSWindow) -> Bool {
+        NSApp.hide(nil)
+        return false
+    }
+    
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if let window = NSApp.windows.first {
+            window.makeKeyAndOrderFront(nil)
+        }
+        return true
     }
 }
