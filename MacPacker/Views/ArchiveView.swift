@@ -18,7 +18,7 @@ struct ArchiveView: View {
     
     var body: some View {
         VStack {
-            ArchiveTableView(
+            ArchiveTableViewRepresentable(
                 isReloadNeeded: $state.archiveContainer.isReloadNeeded,
                 archive: $state.archive) {
                     if let archive = state.archive {

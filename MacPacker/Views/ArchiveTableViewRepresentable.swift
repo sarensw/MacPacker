@@ -90,10 +90,15 @@ extension Coordinator: NSFilePromiseProviderDelegate {
     
 }
 
+protocol TableViewEventDelegate: AnyObject {
+    func tableViewKeyDown(with event: NSEvent) -> Bool
+}
+
 /// Coordinator for the table
 /// NSPasteboardItemDataProvider
-final class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource {
-    var parent: ArchiveTableView
+final class Coordinator: NSObject, TableViewEventDelegate, NSTableViewDelegate, NSTableViewDataSource {
+    var archiveState: ArchiveState
+    var parent: ArchiveTableViewRepresentable
     var items: [ArchiveItem] = []
     var itemDragged: ArchiveItem?
     var getCurrentStackEntry: () -> ArchiveItemStackEntry?
@@ -103,7 +108,8 @@ final class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource {
         return queue
     }()
     
-    init(_ parent: ArchiveTableView, getCurrentStackEntry: @escaping () -> ArchiveItemStackEntry?) {
+    init(_ parent: ArchiveTableViewRepresentable, archiveState: ArchiveState, getCurrentStackEntry: @escaping () -> ArchiveItemStackEntry?) {
+        self.archiveState = archiveState
         self.getCurrentStackEntry = getCurrentStackEntry
         self.parent = parent
     }
@@ -195,7 +201,7 @@ final class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource {
 //                        try moveDirectoryUp(item)
 //                    }
                     parent.isReloadNeeded = true
-                    parent.state.selectedItem = nil
+                    archiveState.selectedItem = nil
                 }
             } catch {
                 print(error)
@@ -207,7 +213,7 @@ final class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource {
     /// that any other part of the code is able to understand that the selection has changed.
     /// - Parameter notification: notification
     func tableViewSelectionDidChange(_ notification: Notification) {
-        let store = parent.state
+        let store = archiveState
         if let tableView = notification.object as? NSTableView {
             let indexes = tableView.selectedRowIndexes
             if let selectedIndex = indexes.first {
@@ -218,11 +224,37 @@ final class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource {
             }
         }
     }
+    
+    //
+    // MARK: TableViewEventDelegate stubs
+    //
+    
+    func tableViewKeyDown(with event: NSEvent) -> Bool {
+        if event.keyCode == 49 { // SPACE
+            if let archive = archiveState.archive,
+               let selectedItem = archiveState.selectedItem {
+                let url = archive.extractFileToTemp(selectedItem)
+                InternalEditorWindowController.shared.show(url)
+            }
+            return true
+        }
+        return false
+    }
 }
 
-/// Table
-struct ArchiveTableView: NSViewRepresentable {
-    @EnvironmentObject var state: ArchiveState
+class ArchiveTableView: NSTableView {
+    weak var eventDelegate: TableViewEventDelegate?
+    
+    override func keyDown(with event: NSEvent) {
+        if let eventDelegate {
+            eventDelegate.tableViewKeyDown(with: event) ? () : super.keyDown(with: event)
+        }
+    }
+}
+
+/// Table representable
+struct ArchiveTableViewRepresentable: NSViewRepresentable {
+    @EnvironmentObject var archiveState: ArchiveState
     @Binding var isReloadNeeded: Bool
     @Binding var archive: Archive2?
     var getCurrentStackEntry: () -> ArchiveItemStackEntry?
@@ -240,7 +272,7 @@ struct ArchiveTableView: NSViewRepresentable {
     /// - Returns: desc
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
-        let tableView = NSTableView()
+        let tableView = ArchiveTableView()
         // make sure the table is scrollable
         scrollView.documentView = tableView
         
@@ -248,6 +280,7 @@ struct ArchiveTableView: NSViewRepresentable {
         createColumns(tableView)
         tableView.delegate = context.coordinator
         tableView.dataSource = context.coordinator
+        tableView.eventDelegate = context.coordinator
         tableView.target = context.coordinator
         tableView.style = .fullWidth
         tableView.allowsMultipleSelection = true
@@ -282,7 +315,7 @@ struct ArchiveTableView: NSViewRepresentable {
     /// create the coordinator
     /// - Returns: coordinator
     func makeCoordinator() -> Coordinator {
-        Coordinator(self, getCurrentStackEntry: getCurrentStackEntry)
+        Coordinator(self, archiveState: archiveState, getCurrentStackEntry: getCurrentStackEntry)
     }
     
     //
