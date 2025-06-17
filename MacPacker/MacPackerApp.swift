@@ -44,6 +44,14 @@ struct MacPackerApp: App {
         .commandsRemoved()
         .defaultPosition(.center)
         
+        WindowGroup(id: "Previewer", for: URL.self) { $url in
+            InternalEditorView(for: url)
+        }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
+        .commandsRemoved()
+        .defaultPosition(.center)
+        
         Settings {
             PreferencesView()
         }

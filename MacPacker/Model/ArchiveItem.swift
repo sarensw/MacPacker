@@ -15,9 +15,9 @@ enum ArchiveItemType: Comparable, Codable {
     case unknown
 }
 
-struct ArchiveItem: Identifiable, Hashable, Encodable {
+struct ArchiveItem: Identifiable, Hashable, Codable {
     public static let parent: ArchiveItem = ArchiveItem(name: "..", type: .parent)
-    let id = UUID()
+    var id = UUID()
     var path: URL? = nil
     var virtualPath: String? = nil
     let type: ArchiveItemType

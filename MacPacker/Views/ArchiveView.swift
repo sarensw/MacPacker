@@ -13,12 +13,20 @@ class ArchiveContainer: ObservableObject {
 }
 
 struct ArchiveView: View {
+    @Environment(\.openWindow) var openWindow
     @EnvironmentObject var state: ArchiveState
     @State private var isDraggingOver = false
+    @State private var selection: IndexSet?
+    
+    func openPreviewer(for url: URL) {
+        openWindow(id: "Previewer")
+    }
     
     var body: some View {
         VStack {
             ArchiveTableViewRepresentable(
+                selection: $selection,
+                openWindow: openPreviewer,
                 isReloadNeeded: $state.archiveContainer.isReloadNeeded,
                 archive: $state.archive) {
                     if let archive = state.archive {
@@ -46,6 +54,25 @@ struct ArchiveView: View {
             if state.openWithUrls.count > 0 {
                 self.drop(state.openWithUrls[0])
             }
+        }
+        .onChange(of: selection) {
+            if let indexes = selection,
+                let archive = state.archive {
+                if let selectedIndex = indexes.first {
+                    let archiveItem = archive.items[selectedIndex]
+                    state.selectedItem = archiveItem
+                } else if indexes.isEmpty {
+                    state.selectedItem = nil
+                }
+            }
+        }
+        .onKeyPress(.space) {
+            if let archive = state.archive,
+               let selectedItem = state.selectedItem,
+               let url = archive.extractFileToTemp(selectedItem) {
+                openWindow(id: "Previewer", value: url)
+            }
+            return .handled
         }
     }
     

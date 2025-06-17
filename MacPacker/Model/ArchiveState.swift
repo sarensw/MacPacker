@@ -26,6 +26,11 @@ class ArchiveState: ObservableObject {
 }
 
 extension ArchiveState {
+    
+    //
+    // MARK: General
+    //
+    
     func loadUrl(_ url: URL) {
         createArchive(url: url)
     }
@@ -46,6 +51,25 @@ extension ArchiveState {
         self.completePathArray = breadcrumbs
         self.completePath = breadcrumbs.joined(separator: "/")
     }
+    
+    /// Checks if the given archive extension is supported to be loaded in MacPacker
+    /// - Parameter ext: extension
+    /// - Returns: true in case supported, false otherwise
+    public func isSupportedArchive(ext: String) -> Bool {
+        if let _ = Archive2Type(rawValue: ext) {
+            return true
+        }
+        return false
+    }
+    
+    //
+    // MARK: Archive creation
+    //
+    
+    
+    //
+    // MARK: Archive internal navigation
+    //
     
     /// Loads the given stack entry. Whenever something happens in MacPacker,
     /// a stack entry is created which in turn is then loaded. A stack entry basically
@@ -108,16 +132,6 @@ extension ArchiveState {
         }
         
 //        print(stack.description)
-    }
-    
-    /// Checks if the given archive extension is supported to be loaded in MacPacker
-    /// - Parameter ext: extension
-    /// - Returns: true in case supported, false otherwise
-    public func isSupportedArchive(ext: String) -> Bool {
-        if let _ = Archive2Type(rawValue: ext) {
-            return true
-        }
-        return false
     }
     
     /// Loads the content of the given directory. This is especially used

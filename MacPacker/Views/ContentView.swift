@@ -26,6 +26,7 @@ struct PathControlView: NSViewRepresentable {
 
 
 struct ContentView: View {
+    @Environment(\.openWindow) var openWindow
     @StateObject var archiveState: ArchiveState = ArchiveState()
     @EnvironmentObject var state: AppState
     @State private var selectedFileItemID: Set<ArchiveItem.ID> = []
@@ -47,9 +48,9 @@ struct ContentView: View {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
                     if let archive = archiveState.archive,
-                       let selectedItem = archiveState.selectedItem {
-                        let url = archive.extractFileToTemp(selectedItem)
-                        InternalEditorWindowController.shared.show(url)
+                       let selectedItem = archiveState.selectedItem,
+                       let url = archive.extractFileToTemp(selectedItem) {
+                        openWindow(id: "Previewer", value: url)
                     }
                 } label: {
                     Image(systemName: "text.page.badge.magnifyingglass")
