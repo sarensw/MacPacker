@@ -26,11 +26,11 @@ struct BreadcrumbItemView: View {
                 Image(nsImage: icon)
                     .resizable(resizingMode: .stretch)
                     .frame(
-                        width: 16,
-                        height: 16)
+                        width: 14,
+                        height: 14)
             } else {
                 Image(systemName: breadcrumbItem.symbol)
-                    .frame(width: 16, height: 16)
+                    .frame(width: 14, height: 14)
             }
             if showName {
                 Text(breadcrumbItem.name)
@@ -38,7 +38,9 @@ struct BreadcrumbItemView: View {
                     .fixedSize()
             }
         }
-        .font(.caption2)
+        .font(.subheadline)
+        .fontWeight(.light)
+        .foregroundColor(.primary)
         .opacity(isPressed ? 0.6 : 1.0)
         .gesture(
             DragGesture(minimumDistance: 0)
@@ -54,7 +56,12 @@ struct BreadcrumbItemView: View {
 }
 
 struct BreadcrumbView: View {
+    // environment
     @EnvironmentObject var archiveState: ArchiveState
+    
+    // state
+    
+    // variables
     private var url: URL?
     private var items: [BreadcrumbItem] = []
     private var archive: Archive2?
@@ -91,31 +98,41 @@ struct BreadcrumbView: View {
     }
     
     var body: some View {
-        HStack(alignment: .firstTextBaseline,spacing: 4) {
-            ForEach(items.indices, id: \.self) { index in
-                BreadcrumbItemView(breadcrumbItem: items[index], onTap: {
-                    if items.count > 1 {
-                        do {
-                            for _ in 0..<self.items.count-index-1 {
-                                try _ = self.archive?.open(.parent)
+        HStack(alignment: .center) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .firstTextBaseline,spacing: 4) {
+                    ForEach(items.indices, id: \.self) { index in
+                        BreadcrumbItemView(breadcrumbItem: items[index], onTap: {
+                            if items.count > 1 {
+                                do {
+                                    for _ in 0..<self.items.count-index-1 {
+                                        try _ = self.archive?.open(.parent)
+                                    }
+                                    self.archiveState.archiveContainer.isReloadNeeded = true
+                                    self.archiveState.selectedItem = nil
+                                } catch {
+                                    print(error)
+                                }
                             }
-                            self.archiveState.archiveContainer.isReloadNeeded = true
-                            self.archiveState.selectedItem = nil
-                        } catch {
-                            print(error)
+                        })
+                        
+                        if index != items.indices.last {
+                            Image(systemName: "chevron.right")
+                                .resizable()
+                                .frame(width: 3, height: 6)
+                                .fontWeight(.black)
+                                .foregroundColor(.primary.opacity(0.6))
                         }
                     }
-                })
-                
-                if index != items.indices.last {
-                    Image(systemName: "chevron.compact.right")
-                        .font(.caption2)
+                    
+                    Spacer()
                 }
+                .padding(.horizontal, 4)
+                .frame(height: 24)
             }
-            
-            Spacer()
         }
-        .padding(.horizontal, 4)
-        .frame(height: 24)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 2)
+        .background(.white)
     }
 }

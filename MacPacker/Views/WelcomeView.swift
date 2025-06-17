@@ -11,11 +11,9 @@ import SwiftUI
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("• feat: multiple windows support")
-            Text("• feat: open info for archive")
-            Text("• feat: new breadcrumb view for navigation")
-            Text("• fix: open with in Finder not working")
-            Text("• chore: major code cleanup")
+            Text("• feat: hit space to open internal preview")
+            Text("• feat: setting to change the breadcrumb position")
+            Text("• chore: add support for macOS 14")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()

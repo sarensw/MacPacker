@@ -26,23 +26,36 @@ struct PathControlView: NSViewRepresentable {
 
 
 struct ContentView: View {
+    // settings
+    @AppStorage("setting.breadcrumbPosition") var breadcrumbPosition: BreadcrumbPosition = .bottom
+    
+    // environment
     @Environment(\.openWindow) var openWindow
     @StateObject var archiveState: ArchiveState = ArchiveState()
     @EnvironmentObject var state: AppState
+    
+    // state
     @State private var selectedFileItemID: Set<ArchiveItem.ID> = []
     
     var body: some View {
         VStack(spacing: 0) {
-            HStack(alignment: .center) {
-                ScrollView(.horizontal, showsIndicators: false) {
-//                    PathControlView(path: archiveState.completePath)
-//                    BreadcrumbView(url: URL(string: archiveState.archive?.internalPath ?? ""))
-                    BreadcrumbView(archive: archiveState.archive ?? nil)
-                }
-                Spacer()
+            if breadcrumbPosition == .top {
+                BreadcrumbView(archive: archiveState.archive ?? nil)
+                
+                Divider()
+                    .frame(height: 1)
+                    .background(.quinary)
             }
-            .padding(8)
+            
             ArchiveView()
+            
+            if breadcrumbPosition == .bottom {
+                Divider()
+                    .frame(height: 1)
+                    .background(.quinary)
+                
+                BreadcrumbView(archive: archiveState.archive ?? nil)
+            }
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {

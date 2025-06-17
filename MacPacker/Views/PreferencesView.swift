@@ -12,12 +12,19 @@ struct PreferencesView: View {
     var body: some View {
         VStack {
             TabView {
-                SettingsGeneralView()
+                GeneralSettingsView()
                     .tabItem {
                         Image(systemName: "gear")
                         Text("General")
                     }
                     .tag(0)
+                
+                AdvancedSettingsView()
+                    .tabItem {
+                        Image(systemName: "exclamationmark.octagon")
+                        Text("Advanced")
+                    }
+                    .tag(1)
             }
         }
         .frame(width: 640)
