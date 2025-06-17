@@ -26,14 +26,7 @@ struct ArchiveView: View {
         VStack {
             ArchiveTableViewRepresentable(
                 selection: $selection,
-                openWindow: openPreviewer,
-                isReloadNeeded: $state.archiveContainer.isReloadNeeded,
-                archive: $state.archive) {
-                    if let archive = state.archive {
-                        return archive.currentStackEntry
-                    }
-                    return nil
-                }
+                isReloadNeeded: $state.archiveContainer.isReloadNeeded)
         }
         .border(isDraggingOver ? Color.blue : Color.clear, width: 2)
         .onDrop(of: ["public.file-url"], isTargeted: $isDraggingOver) { providers -> Bool in
