@@ -13,6 +13,7 @@ struct ArchiveType {
         if type == "tar" { return ArchiveTypeTar() }
         if type == "zip" { return ArchiveTypeZip() }
         if type == "7z" { return ArchiveType7zip() }
+        if type == "rar" { return ArchiveTypeXad() }
         throw ArchiveError.invalidArchive("Unknown archive type \(type)")
     }
     

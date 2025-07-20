@@ -18,6 +18,7 @@ enum Archive2Type: String {
     case zip = "zip"
     case lz4 = "lz4"
     case sevenZip = "7z"
+    case rar = "rar"
 }
 
 enum Archive2OpenResult: String {
@@ -289,13 +290,13 @@ class Archive2: ObservableObject {
         } catch let error as CocoaError {
             switch error.code {
             case .fileReadNoPermission, .fileReadUnknown:
-                print("no access")
+                TailBeat.logger.log("no access")
                 errorMessage = "MacPacker does not have access to the parent directory."
             case .fileNoSuchFile:
-                print("file not found")
+                TailBeat.logger.log("file not found")
                 errorMessage = "The given file does not seem to exist"
             default:
-                print("unknown CocoaError")
+                TailBeat.logger.log("unknown CocoaError")
                 print(error)
             }
         } catch {

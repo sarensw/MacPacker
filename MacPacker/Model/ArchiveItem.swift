@@ -25,6 +25,7 @@ struct ArchiveItem: Identifiable, Hashable, Codable {
     var ext: String
     var size: Int = -1
     var data: Data? = nil
+    var index: Int? = nil
     
     //
     // Initializers
@@ -56,13 +57,15 @@ struct ArchiveItem: Identifiable, Hashable, Codable {
     ///   - virtualPath: The virtual path, for example in an archive
     ///   - size: Size of the item
     ///   - data: Data of the item if available
-    init(name: String, type: ArchiveItemType, virtualPath: String? = nil, size: Int? = nil, data: Data? = nil) {
+    ///   - index: Index of the item within the archive
+    init(name: String, type: ArchiveItemType, virtualPath: String? = nil, size: Int? = nil, data: Data? = nil, index: Int? = nil) {
         self.virtualPath = virtualPath
         self.name = name
         self.size = size ?? -1
         self.type = type
         self.ext = ""
         self.data = data
+        self.index = index
         
         if type != .directory {
             self.ext = getExtension(name: name)

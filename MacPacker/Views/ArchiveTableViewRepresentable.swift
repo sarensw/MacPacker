@@ -107,11 +107,12 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 guard let archive = parent.archiveState.archive else { return }
                 let item = archive.items[clickedRow]
                 // Handle double-click action here
-                print("Double-clicked row: \(clickedRow)")
+                TailBeat.logger.log("Double-clicked row: \(clickedRow)")
                 do {
                     _ = try archive.open(item)
                     parent.isReloadNeeded = true
                     parent.archiveState.selectedItem = nil
+                    tableView.deselectAll(nil)
                 } catch {
                     print(error)
                 }
@@ -123,6 +124,8 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         /// - Parameter notification: notification
         func tableViewSelectionDidChange(_ notification: Notification) {
             if let tableView = notification.object as? NSTableView {
+                TailBeat.logger.log(tableView.selectedRowIndexes.count.description)
+                tableView.selectedRowIndexes.forEach { print($0) }
                 parent.selection = tableView.selectedRowIndexes
             }
         }
@@ -205,7 +208,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     ///   - nsView: desc
     ///   - context: context
     func updateNSView(_ nsView: NSScrollView, context: Context) {
-        print("isReloadNeeded: \(isReloadNeeded) \(Date.now.description)")
+        TailBeat.logger.log("isReloadNeeded: \(isReloadNeeded) \(Date.now.description)")
         if isReloadNeeded {
             let tableView = (nsView.documentView as! NSTableView)
             DispatchQueue.main.async {

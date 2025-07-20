@@ -1,6 +1,7 @@
 v0.6
 - feat: hit space to open internal preview
 - feat: setting to change the breadcrumb position
+- feat: rar read support
 - chore: add support for macOS 14
 
 v0.5

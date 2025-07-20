@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 254BB55C2ABBE8F50059A1D5 /* Sparkle */; };
+		257277DB2E2BE359007350E8 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 257277DA2E2BE359007350E8 /* XADMasterSwift */; };
 		2592CED72AD4EAA2008DEFF8 /* ArchiveTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2592CED62AD4EAA2008DEFF8 /* ArchiveTest.swift */; };
 		2592CEDA2AD4EF6D008DEFF8 /* hello.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2592CED92AD4EF6D008DEFF8 /* hello.txt */; };
 		2592CEDD2AD4F765008DEFF8 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2592CEDC2AD4F765008DEFF8 /* ZIPFoundation */; };
@@ -107,6 +108,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				257277DB2E2BE359007350E8 /* XADMasterSwift in Frameworks */,
 				25CD1EBB2D829CBB007B53EE /* BitByteData in Frameworks */,
 				254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */,
 				2592CEDD2AD4F765008DEFF8 /* ZIPFoundation in Frameworks */,
@@ -264,6 +266,7 @@
 				2592CEDC2AD4F765008DEFF8 /* ZIPFoundation */,
 				25CD1EB72D829C14007B53EE /* SWCompression */,
 				25CD1EBA2D829CBB007B53EE /* BitByteData */,
+				257277DA2E2BE359007350E8 /* XADMasterSwift */,
 			);
 			productName = MacPacker;
 			productReference = 25C0A8A42A78DE5F002C1C2A /* MacPacker.app */;
@@ -342,6 +345,7 @@
 				2592CEDB2AD4F765008DEFF8 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				25CD1EB62D829C14007B53EE /* XCRemoteSwiftPackageReference "SWCompression" */,
 				25CD1EB92D829CBB007B53EE /* XCRemoteSwiftPackageReference "BitByteData" */,
+				257277D92E2BE359007350E8 /* XCRemoteSwiftPackageReference "XADMasterSwift" */,
 			);
 			productRefGroup = 25C0A8A52A78DE5F002C1C2A /* Products */;
 			projectDirPath = "";
@@ -842,6 +846,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		257277D92E2BE359007350E8 /* XCRemoteSwiftPackageReference "XADMasterSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kumamotone/XADMasterSwift.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		2592CEDB2AD4F765008DEFF8 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
@@ -873,6 +885,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 254BB55B2ABBE8F50059A1D5 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
+		};
+		257277DA2E2BE359007350E8 /* XADMasterSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 257277D92E2BE359007350E8 /* XCRemoteSwiftPackageReference "XADMasterSwift" */;
+			productName = XADMasterSwift;
 		};
 		2592CEDC2AD4F765008DEFF8 /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;
