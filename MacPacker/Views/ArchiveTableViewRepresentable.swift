@@ -66,10 +66,33 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let cellView = NSTableCellView()
             cellView.identifier = columnIdentifier
             cellView.backgroundStyle = .raised
+            
+            var imageView: NSImageView?
+            if item.type == .directory {
+                let folderIcon = SystemHelper.shared.getNSImageForFolder()
+                folderIcon.size = NSSize(width: 16, height: 16)
+                imageView = NSImageView(image: folderIcon)
+            } else if item.type == .file || item.type == .archive {
+                // get the icon for the file type
+                if let fileIcon = SystemHelper.shared.getNSImageByExtension(fileName: item.name) {
+                    fileIcon.size = NSSize(width: 16, height: 16)
+                    imageView = NSImageView(image: fileIcon)
+                }
+            }
+            
             let textField = NSTextField(labelWithString: item.name)
             cellView.addSubview(textField)
             textField.translatesAutoresizingMaskIntoConstraints = false
             textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor).isActive = true
+            
+            if let imageView {
+                cellView.addSubview(imageView)
+                imageView.translatesAutoresizingMaskIntoConstraints = false
+                imageView.centerYAnchor.constraint(equalTo: cellView.centerYAnchor).isActive = true
+                
+                textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 5).isActive = true
+                
+            }
             
             return cellView
         }
