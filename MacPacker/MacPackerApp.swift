@@ -83,8 +83,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if let window = NSApp.windows.first {
             window.delegate = self
         }
-        
-        TailBeat.logger.log(category: "App", "applicationDidFinishLaunching")
     }
     
     func applicationWillTerminate(_ notification: Notification) {

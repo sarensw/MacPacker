@@ -290,13 +290,13 @@ class Archive2: ObservableObject {
         } catch let error as CocoaError {
             switch error.code {
             case .fileReadNoPermission, .fileReadUnknown:
-                TailBeat.logger.log("no access")
+                print("no access")
                 errorMessage = "MacPacker does not have access to the parent directory."
             case .fileNoSuchFile:
-                TailBeat.logger.log("file not found")
+                print("file not found")
                 errorMessage = "The given file does not seem to exist"
             default:
-                TailBeat.logger.log("unknown CocoaError")
+                print("unknown CocoaError")
                 print(error)
             }
         } catch {
