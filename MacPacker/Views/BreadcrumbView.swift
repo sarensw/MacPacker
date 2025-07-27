@@ -133,6 +133,6 @@ struct BreadcrumbView: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 2)
-        .background(.white)
+        .background(Color(NSColor.controlBackgroundColor))
     }
 }
