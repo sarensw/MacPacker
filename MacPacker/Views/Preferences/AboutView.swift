@@ -2,7 +2,7 @@
 //  AboutView.swift
 //  FileFillet
 //
-//  Created by Arenswald, Stephan (059) on 03.11.22.
+//  Created by Stephan Arenswald on 03.11.22.
 //
 
 import SwiftUI
@@ -80,7 +80,7 @@ struct AboutView: View {
             HStack(spacing: 14) {
                 Link("apps@sarensw.com", destination: URL(string: "mailto:apps@sarensw.com")!)
                 Link("@sarensw", destination: URL(string: "https://twitter.com/sarensw")!)
-                Link("filefillet.com", destination: URL(string: "https://macpacker.app/?ref=about")!)
+                Link("macpacker.app", destination: URL(string: "https://macpacker.app/?ref=about")!)
             }
             
             Text("2025 Stephan Arenswald. Published as Open Source under GPL.")

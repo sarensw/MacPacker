@@ -2,7 +2,7 @@
 //  WelcomeView.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 22.09.23.
+//  Created by Stephan Arenswald on 22.09.23.
 //
 
 import Foundation

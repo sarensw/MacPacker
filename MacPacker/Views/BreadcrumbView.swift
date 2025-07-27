@@ -2,7 +2,7 @@
 //  BreadcrumbView.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 05.05.25.
+//  Created by Stephan Arenswald on 05.05.25.
 //
 
 import SwiftUI

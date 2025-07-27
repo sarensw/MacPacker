@@ -2,7 +2,7 @@
 //  ArchiveView.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 31.08.23.
+//  Created by Stephan Arenswald on 31.08.23.
 //
 
 import Foundation

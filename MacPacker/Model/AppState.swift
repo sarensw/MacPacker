@@ -2,7 +2,7 @@
 //  Store.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 23.11.23.
+//  Created by Stephan Arenswald on 23.11.23.
 //
 
 import Foundation

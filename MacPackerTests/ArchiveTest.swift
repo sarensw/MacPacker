@@ -2,7 +2,7 @@
 //  ArchiveTest.swift
 //  MacPackerTests
 //
-//  Created by Arenswald, Stephan (059) on 10.10.23.
+//  Created by Stephan Arenswald on 10.10.23.
 //
 
 import Foundation

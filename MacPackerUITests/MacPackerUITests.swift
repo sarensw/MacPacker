@@ -2,7 +2,7 @@
 //  MacPackerUITests.swift
 //  MacPackerUITests
 //
-//  Created by Arenswald, Stephan (059) on 01.08.23.
+//  Created by Stephan Arenswald on 01.08.23.
 //
 
 import XCTest

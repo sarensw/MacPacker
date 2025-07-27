@@ -2,7 +2,7 @@
 //  CheckForUpdatesView.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 21.09.23.
+//  Created by Stephan Arenswald on 21.09.23.
 //
 
 import Foundation

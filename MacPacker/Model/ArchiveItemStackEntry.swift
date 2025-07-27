@@ -2,7 +2,7 @@
 //  ArchiveItemStackEntry.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 09.10.23.
+//  Created by Stephan Arenswald on 09.10.23.
 //
 
 import Foundation

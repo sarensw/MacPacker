@@ -2,7 +2,7 @@
 //  Url+Extensions.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 11.10.23.
+//  Created by Stephan Arenswald on 11.10.23.
 //
 
 import Foundation

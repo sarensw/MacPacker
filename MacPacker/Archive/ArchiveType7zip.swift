@@ -2,7 +2,7 @@
 //  ArchiveType7zip.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 27.11.23.
+//  Created by Stephan Arenswald on 27.11.23.
 //
 
 import Foundation

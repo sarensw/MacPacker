@@ -2,7 +2,7 @@
 //  AdvancedSettingsView.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 17.06.25.
+//  Created by Stephan Arenswald on 17.06.25.
 //
 
 import Foundation

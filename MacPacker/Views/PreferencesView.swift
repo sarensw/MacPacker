@@ -2,7 +2,7 @@
 //  PreferencesView.swift
 //  MacPacker
 //
-//  Created by Arenswald, Stephan (059) on 02.12.23.
+//  Created by Stephan Arenswald on 02.12.23.
 //
 
 import Foundation
