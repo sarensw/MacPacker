@@ -28,10 +28,12 @@
 			<string></string>
 		</dict>
 	</array>
-	<key>SUFeedURL</key>
-	<string>https://macpacker-releases.s3.eu-central-1.amazonaws.com/appcast.xml</string>
 	<key>SUEnableInstallerLauncherService</key>
 	<true/>
+	<key>SUFeedURL</key>
+	<string>https://macpacker-releases.s3.eu-central-1.amazonaws.com/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>ow1WipJFlCIvVfMWz643G1nhDDzp1mamE2M2Z7KonU0=</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
