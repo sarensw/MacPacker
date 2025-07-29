@@ -30,6 +30,13 @@ A free, open-source, tool to work with archives. Currently, it supports navigati
 - Right click context menu in Finder to immediately extract the archive to a sub folder or without
 - Create/edit archive
 
+### v0.6
+- feat: hit space to open internal preview
+- feat: setting to change the breadcrumb position
+- feat: rar read support
+- feat: show folder / file icons in table
+- chore: add support for macOS 14
+
 ### v0.5
 - feat: multiple windows support
 - feat: open info for archive
