@@ -13,6 +13,7 @@ import Sparkle
 @main
 struct MacPackerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self)
+    
     private var appDelegate
     #if !STORE
     private let updaterController: SPUStandardUpdaterController
@@ -21,6 +22,8 @@ struct MacPackerApp: App {
     let appState: AppState = AppState.shared
     
     init() {
+        Logger.start()
+        
         #if !STORE
         // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
         // This is where you can also pass an updater delegate if you need one
