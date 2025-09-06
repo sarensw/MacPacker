@@ -7,7 +7,6 @@
 
 import Foundation
 import XADMaster
-import XADMasterSwift
 
 enum XADMasterEntryType {
     case directory
@@ -86,7 +85,7 @@ class ArchiveHandlerXad: ArchiveHandler {
         
         if let tempDirectory = createTempDirectory() {
             do {
-                try XADMasterSwift.extractFile(
+                try XADMasterSwiftInternal.extractFile(
                     at: path.path,
                     entryIndex: index,
                     to: tempDirectory.path.path
