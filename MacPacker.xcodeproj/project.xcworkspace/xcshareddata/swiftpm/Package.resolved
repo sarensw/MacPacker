@@ -1,5 +1,5 @@
 {
-  "originHash" : "eb5c3176216f98a292e493d198ca1baadad71d87e0fbeaa31c583f54e1eebbcd",
+  "originHash" : "c7b6472c6ff8f0a8060dd8e842c9d59e5f0de64371d0b50eb69e7ea91fc2eb46",
   "pins" : [
     {
       "identity" : "bitbytedata",
@@ -31,7 +31,7 @@
     {
       "identity" : "xadmasterswift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/kumamotone/XADMasterSwift.git",
+      "location" : "https://github.com/sarensw/XADMasterSwift",
       "state" : {
         "branch" : "main",
         "revision" : "5838ad256846dcd9f489108916424db697593f5a"

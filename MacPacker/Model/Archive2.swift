@@ -13,14 +13,6 @@ enum Archive2Error: Error {
     case nonEditable(String)
 }
 
-enum Archive2Type: String {
-    case tar = "tar"
-    case zip = "zip"
-    case lz4 = "lz4"
-    case sevenZip = "7z"
-    case rar = "rar"
-}
-
 enum Archive2OpenResult: String {
     case success = "success"
     case leaveDirectory = "leave"
@@ -30,10 +22,9 @@ enum Archive2OpenResult: String {
 class Archive2: ObservableObject {
     @Published var url: URL?
     @Published var internalPath: String = "/"
-    @Published var type: Archive2Type
+    @Published var ext: String?
     @Published var stack: ArchiveItemStack = ArchiveItemStack()
     @Published public var items: [ArchiveItem] = []
-    @Published var canEdit: Bool = false
     @Published var tempDirs: [URL] = []
     @Published var errorMessage: String?
     var currentStackEntry: ArchiveItemStackEntry? = nil
@@ -46,8 +37,6 @@ class Archive2: ObservableObject {
     /// Default constructor
     init() {
         url = nil
-        type = .zip
-        canEdit = true
         breadcrumbsUpdated = { _ in }
     }
     
@@ -56,10 +45,10 @@ class Archive2: ObservableObject {
     /// - Throws: Throws Archive2Error.unknownType in case the archive type is unknown
     init(url: URL) throws {
         self.url = url
-        self.type = .zip
-        type = try determineTypeFrom(url: url)
-        if type == .zip {
-            canEdit = true
+        determineFileExtension(from: url)
+        if let ext,
+           !ArchiveHandlerRegistry.shared.isSupported(ext: ext) {
+            throw Archive2Error.unknownType("Unknown archive type")
         }
         try load(url)
     }
@@ -71,10 +60,10 @@ class Archive2: ObservableObject {
     init(url: URL, breadcrumbsUpdated: @escaping ([String]) -> Void) throws {
         self.breadcrumbsUpdated = breadcrumbsUpdated
         self.url = url
-        self.type = .zip
-        type = try determineTypeFrom(url: url)
-        if type == .zip {
-            canEdit = true
+        determineFileExtension(from: url)
+        if let ext,
+           !ArchiveHandlerRegistry.shared.isSupported(ext: ext) {
+            throw Archive2Error.unknownType("Unknown archive type")
         }
         try load(url)
     }
@@ -85,7 +74,7 @@ class Archive2: ObservableObject {
     
     public var description: String {
         var result = "> \(String(describing: url))\n"
-        result = result + "  type: \(type)"
+        result = result + "  ext: \(String(describing: ext))"
         return result
     }
     
@@ -118,44 +107,44 @@ class Archive2: ObservableObject {
         return result
     }
     
-    /// Determines the archive type for the given file url
+    /// Determines the archive type based on the extension for the given file url
     /// - Parameter url: file url
     /// - Returns: archive type
-    private func determineTypeFrom(url: URL) throws -> Archive2Type {
-        let ext = url.pathExtension
-        
-        if let at = Archive2Type(rawValue: ext) {
-            return at
+    private func determineFileExtension(from url: URL) {
+        if let ext = url.path.split(separator: ".").last {
+            self.ext = String(ext)
         }
-        
-        if checkIfZipFile(url: url) {
-            return Archive2Type.zip
-        }
-        
-        throw Archive2Error.unknownType("Unknown type")
     }
     
     /// Adds the given files to the archive. Note that this only works for editable archives
     /// - Parameter urls: the urls of the files to add
     func add(urls: [URL]) throws {
-        if canEdit == false {
+        if let ext,
+           let handler = ArchiveHandler.for(ext: ext),
+           handler.isEditable {
+            for url in urls {
+                items.append(ArchiveItem(path: url, type: .file))
+            }
+        } else if ext == nil {
+            for url in urls {
+                items.append(ArchiveItem(path: url, type: .file))
+            }
+        } else {
             throw Archive2Error.nonEditable("Archive is not editable")
-        }
-        
-        for url in urls {
-            items.append(ArchiveItem(path: url, type: .file))
         }
     }
     
     /// Saves the current list of items to the given URL as an archvie
     /// - Parameter url: the url where to save the archive
-    func save(to url: URL) throws {
-        if canEdit == false {
+    /// - Parameter ext: the archive extension, hence type to save the archive in
+    func save(to url: URL, as ext: String) throws {
+        // save the archive
+        if let handler = ArchiveHandler.for(ext: ext),
+           handler.isEditable {
+            try handler.save(to: url, items: items)
+        } else {
             throw Archive2Error.nonEditable("Archive is not editable")
         }
-        
-        let at = try ArchiveType.with(type.rawValue)
-        try at.save(to: url, items: items)
     }
     
     
@@ -176,11 +165,12 @@ class Archive2: ObservableObject {
             
             // stack item is archive
             if let archivePath = entry.archivePath,
-               let archiveType = entry.archiveType {
-                let archive = try ArchiveType.with(archiveType)
+               let archiveType = entry.archiveType,
+               let handler = ArchiveHandler.for(ext: archiveType) {
+//                let archive = try ArchiveType.with(archiveType)
                 
-                if let content: [ArchiveItem] = try? archive.content(
-                    path: entry.localPath,
+                if let content: [ArchiveItem] = try? handler.content(
+                    archiveUrl: entry.localPath,
                     archivePath: archivePath) {
                     
                     // sort the result
@@ -216,17 +206,14 @@ class Archive2: ObservableObject {
             print(error)
         }
         
-        print(stack.description)
+        Logger.log(stack.description)
     }
     
     /// Checks if the given archive extension is supported to be loaded in MacPacker
     /// - Parameter ext: extension
     /// - Returns: true in case supported, false otherwise
     public func isSupportedArchive(ext: String) -> Bool {
-        if let _ = Archive2Type(rawValue: ext) {
-            return true
-        }
-        return false
+        return ArchiveHandlerRegistry.shared.isSupported(ext: ext)
     }
     
     /// Checks if the given path is a directory
@@ -284,7 +271,7 @@ class Archive2: ObservableObject {
                     localPath: url,
                     archivePath: "",
                     tempId: nil,
-                    archiveType: type.rawValue)
+                    archiveType: ext)
                 loadStackEntry(stackEntry, clear: true)
             }
         } catch let error as CocoaError {
@@ -367,11 +354,15 @@ class Archive2: ObservableObject {
                         // temp id, so it was not extracted yet
                         // > extract first
                         if let archiveType = currentStackEntry.archiveType,
-                           let tempDir = try? ArchiveType
-                            .with(archiveType)
-                            .extractFileToTemp(
+                           let handler = ArchiveHandler.for(ext: archiveType),
+                           let tempDir = handler.extractFileToTemp(
                                 path: currentStackEntry.localPath,
                                 item: item) {
+//                           let tempDir = try? ArchiveType
+//                            .with(archiveType)
+//                            .extractFileToTemp(
+//                                path: currentStackEntry.localPath,
+//                                item: item) {
                             
                             // now, create the new stack entry
                             let stackEntry = ArchiveItemStackEntry(
@@ -400,9 +391,11 @@ class Archive2: ObservableObject {
             } else {
                 if let currentStackEntry = stack.peek(),
                    let archiveType = currentStackEntry.archiveType,
-                   let tempUrl = try? ArchiveType
-                    .with(archiveType)
-                    .extractFileToTemp(
+                   let handler = ArchiveHandler.for(ext: archiveType),
+                   let tempUrl = handler.extractFileToTemp(
+//                   let tempUrl = try? ArchiveType
+//                    .with(archiveType)
+//                    .extractFileToTemp(
                         path: currentStackEntry.localPath,
                         item: item) {
                     
@@ -443,9 +436,11 @@ class Archive2: ObservableObject {
     public func extractFileToTemp(_ item: ArchiveItem) -> URL? {
         if let currentStackEntry = stack.peek(),
            let archiveType = currentStackEntry.archiveType,
-           let tempUrl = try? ArchiveType
-            .with(archiveType)
-            .extractFileToTemp(
+           let handler = ArchiveHandler.for(ext: archiveType),
+           let tempUrl = handler.extractFileToTemp(
+//           let tempUrl = try? ArchiveType
+//            .with(archiveType)
+//            .extractFileToTemp(
                 path: currentStackEntry.localPath,
                 item: item) {
             

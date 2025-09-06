@@ -1,16 +1,22 @@
 //
-//  ArchiveLz4.swift
+//  ArchiveHandlerLz4.swift
 //  MacPacker
 //
-//  Created by Stephan Arenswald on 08.08.23.
+//  Created by Stephan Arenswald on 05.09.25.
 //
 
 import Foundation
 import SWCompression
-import System
 
-class ArchiveTypeLz4: IArchiveType {
-    var ext: String = "lz4"
+class ArchiveHandlerLz4: ArchiveHandler {
+    private static let ext = "lz4"
+    
+    static func register() {
+        let registry = ArchiveHandlerRegistry.shared
+        let handler = ArchiveHandlerLz4()
+        
+        registry.register(ext: ext, handler: handler)
+    }
     
     /// Returns the content of the lz4 file. Note that an lz4 file is just a compression algorithm.
     /// It will not contain files or folders. Therefore, this method will just return the name without
@@ -19,9 +25,9 @@ class ArchiveTypeLz4: IArchiveType {
     ///   - path: Path to the lz4 file
     ///   - archivePath: Path within the archive. This is ignored for lz4 (is always "/")
     /// - Returns: The items to show in the UI
-    public func content(path: URL, archivePath: String) throws -> [ArchiveItem] {
-        if path.lastPathComponent.hasSuffix(ext) {
-            let name = stripFileExtension(path.lastPathComponent)
+    override public func content(archiveUrl: URL, archivePath: String) throws -> [ArchiveItem] {
+        if archiveUrl.lastPathComponent.hasSuffix(Self.ext) {
+            let name = stripFileExtension(archiveUrl.lastPathComponent)
             return [
                 ArchiveItem(name: String(name), type: .file)
             ]
@@ -29,13 +35,13 @@ class ArchiveTypeLz4: IArchiveType {
         throw ArchiveError.invalidArchive("The given archive does not seem to be an lz4 archive in contrast to what is expected")
     }
     
-    func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
+    override func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
         return extractToTemp(path: path)
     }
     
     /// Extracts this archive to a temporary location in the sandbox
     /// - Returns: the directory as a file item to further process this
-    func extractToTemp(path: URL) -> URL? {
+    override func extractToTemp(path: URL) -> URL? {
         if let tempUrl = createTempDirectory() {
             
             let sourceFileName = path.lastPathComponent
@@ -68,9 +74,5 @@ class ArchiveTypeLz4: IArchiveType {
         }
         
         return nil
-    }
-    
-    func save(to: URL, items: [ArchiveItem]) throws {
-        
     }
 }

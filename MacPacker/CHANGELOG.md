@@ -1,3 +1,7 @@
+v0.7
+- feat: lzh support
+- core: new architecture for archive handlers
+
 v0.6
 - feat: hit space to open internal preview
 - feat: setting to change the breadcrumb position

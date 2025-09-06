@@ -30,7 +30,9 @@ class Logger {
     static func initialize() {
         guard !Self.initialized else { return }
         
-        Self.tailBeat = TailBeat.logger.start()
+        Self.tailBeat = TailBeat.logger.start(
+            collectStdout: true
+        )
         Self.initialized = true
     }
     

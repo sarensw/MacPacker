@@ -56,10 +56,7 @@ extension ArchiveState {
     /// - Parameter ext: extension
     /// - Returns: true in case supported, false otherwise
     public func isSupportedArchive(ext: String) -> Bool {
-        if let _ = Archive2Type(rawValue: ext) {
-            return true
-        }
-        return false
+        return ArchiveHandlerRegistry.shared.isSupported(ext: ext)
     }
     
     //
@@ -89,11 +86,13 @@ extension ArchiveState {
             // stack item is archive
             if let archivePath = entry.archivePath,
                let archiveType = entry.archiveType,
-               let archive = self.archive {
-                let archiveType = try ArchiveType.with(archiveType)
+               let archive = self.archive,
+               let handler = ArchiveHandler.for(ext: archiveType)
+            {
+//                let archiveType = try ArchiveType.with(archiveType)
                 
-                if let content: [ArchiveItem] = try? archiveType.content(
-                    path: entry.localPath,
+                if let content: [ArchiveItem] = try? handler.content(
+                    archiveUrl: entry.localPath,
                     archivePath: archivePath) {
                     
                     // sort the result
