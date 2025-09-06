@@ -8,6 +8,9 @@
 import Foundation
 import SWCompression
 import XADMaster
+import ZIPFoundation
+
+typealias ZipArchive = ZIPFoundation.Archive
 
 class ArchiveHandlerZip: ArchiveHandlerXad {
     static func registerZip() {

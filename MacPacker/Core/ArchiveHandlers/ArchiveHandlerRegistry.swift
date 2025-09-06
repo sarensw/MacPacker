@@ -5,10 +5,6 @@
 //  Created by Stephan Arenswald on 04.09.25.
 //
 
-protocol ArchiveHandlerProtocol {
-    func register(handler: IArchiveType)
-}
-
 class ArchiveHandlerRegistry {
     static let shared: ArchiveHandlerRegistry = .init()
     var archiveHandlers: [String: ArchiveHandler] = [:]

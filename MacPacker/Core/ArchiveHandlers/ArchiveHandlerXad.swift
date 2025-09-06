@@ -9,6 +9,11 @@ import Foundation
 import XADMaster
 import XADMasterSwift
 
+enum XADMasterEntryType {
+    case directory
+    case file
+}
+
 class ArchiveHandlerXad: ArchiveHandler {
     
     static func register() {
