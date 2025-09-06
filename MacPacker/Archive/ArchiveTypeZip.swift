@@ -20,12 +20,12 @@ class ArchiveTypeZip: IArchiveType {
     ///   - path: Path to the zip file
     ///   - archivePath: Path within the zip archive to return
     /// - Returns: Items in the archive with the given path
-    public func content(path: URL, archivePath: String) throws -> [ArchiveItem] {
+    public func content(archiveUrl: URL, archivePath: String) throws -> [ArchiveItem] {
         var result: [ArchiveItem] = []
         var dirs: [String] = []
         
         do {
-            if let data = try? Data(contentsOf: path, options: .mappedIfSafe) {
+            if let data = try? Data(contentsOf: archiveUrl, options: .mappedIfSafe) {
                 print("data loaded")
                 
                 let entries = try ZipContainer.open(container: data)

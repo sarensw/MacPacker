@@ -24,6 +24,11 @@ struct MacPackerApp: App {
     init() {
         Logger.start()
         
+        // register all handlers
+        ArchiveHandlerXad.register()
+        ArchiveHandlerLz4.register()
+        ArchiveHandlerZip.registerZip()
+        
         #if !STORE
         // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
         // This is where you can also pass an updater delegate if you need one

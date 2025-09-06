@@ -1,23 +1,27 @@
 //
-//  ArchiveTypeXad.swift
+//  ArchiveHandlerXad.swift
 //  MacPacker
 //
-//  Created by Stephan Arenswald on 19.07.25.
+//  Created by Stephan Arenswald on 05.09.25.
 //
 
 import Foundation
 import XADMaster
 import XADMasterSwift
 
-enum XADMasterEntryType {
-    case directory
-    case file
-}
-
-class ArchiveTypeXad: IArchiveType {
-    var ext: String = "rar"
+class ArchiveHandlerXad: ArchiveHandler {
     
-    func content(
+    static func register() {
+        let registry = ArchiveHandlerRegistry.shared
+        let handler = ArchiveHandlerXad()
+        
+        registry.register(ext: "rar", handler: handler)
+        registry.register(ext: "lzh", handler: handler)
+        registry.register(ext: "7z", handler: handler)
+        registry.register(ext: "tar", handler: handler)
+    }
+    
+    override func content(
         archiveUrl: URL,
         archivePath: String
     ) throws -> [ArchiveItem] {
@@ -55,9 +59,9 @@ class ArchiveTypeXad: IArchiveType {
                             data: nil))
                     }
                 } else {
-                    if let name = npc.name.components(separatedBy: "/").last {
+                    if let fileName = npc.name.components(separatedBy: "/").last {
                         result.append(ArchiveItem(
-                            name: name,
+                            name: fileName,
                             type: .file,
                             virtualPath: name,
                             size: Int(size),
@@ -71,11 +75,7 @@ class ArchiveTypeXad: IArchiveType {
         return result
     }
     
-    func extractToTemp(path: URL) -> URL? {
-        return nil
-    }
-    
-    func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
+    override func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
         guard let index = item.index else { return nil }
         guard let virtualPath = item.virtualPath else { return nil }
         
@@ -84,7 +84,8 @@ class ArchiveTypeXad: IArchiveType {
                 try XADMasterSwift.extractFile(
                     at: path.path,
                     entryIndex: index,
-                    to: tempDirectory.path.path)
+                    to: tempDirectory.path.path
+                )
                 
                 let extractedFileUrl = tempDirectory.path.appendingPathComponent(virtualPath, isDirectory: false)
                 
@@ -95,9 +96,4 @@ class ArchiveTypeXad: IArchiveType {
         }
         return nil
     }
-    
-    func save(to: URL, items: [ArchiveItem]) throws {
-    }
-    
-    
 }
