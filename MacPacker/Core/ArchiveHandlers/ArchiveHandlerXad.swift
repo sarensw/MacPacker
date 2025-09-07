@@ -20,9 +20,13 @@ class ArchiveHandlerXad: ArchiveHandler {
         let handler = ArchiveHandlerXad()
         
         registry.register(ext: "rar", handler: handler)
-        registry.register(ext: "lzh", handler: handler)
         registry.register(ext: "7z", handler: handler)
         registry.register(ext: "tar", handler: handler)
+        
+        // Amiga formats
+        registry.register(ext: "lzh", handler: handler)
+        registry.register(ext: "lha", handler: handler)
+        registry.register(ext: "lzx", handler: handler)
     }
     
     override func content(

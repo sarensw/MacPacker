@@ -17,7 +17,7 @@ public class XADMasterSwiftInternal {
         guard let archive = XADArchive(file: path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
-        try archive.extract(to: destination)
+        archive.extract(to: destination)
     }
 
     public static func listContents(of path: String) throws -> [String] {
@@ -25,7 +25,7 @@ public class XADMasterSwiftInternal {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
 
-        if archive.isEncrypted() && (archive.password == nil || archive.password()!.isEmpty) {
+        if archive.isEncrypted() && archive.password()!.isEmpty {
             throw NSError(domain: "XADMasterSwift", code: 2, userInfo: [NSLocalizedDescriptionKey: "Password required"])
         }
 
@@ -43,7 +43,7 @@ public class XADMasterSwiftInternal {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
 
-        try archive.extractEntry(Int32(entryIndex), to: destination)
+        archive.extractEntry(Int32(entryIndex), to: destination)
     }
 
     public static func setPassword(for path: String, password: String) throws {

@@ -1,5 +1,5 @@
 v0.7
-- feat: lzh support
+- feat: lzh, lha, lzx support
 - core: new architecture for archive handlers
 
 v0.6

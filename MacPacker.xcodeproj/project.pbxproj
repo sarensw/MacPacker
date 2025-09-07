@@ -8,19 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 254BB55C2ABBE8F50059A1D5 /* Sparkle */; };
-		2592CED72AD4EAA2008DEFF8 /* ArchiveTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2592CED62AD4EAA2008DEFF8 /* ArchiveTest.swift */; };
-		2592CEDA2AD4EF6D008DEFF8 /* hello.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2592CED92AD4EF6D008DEFF8 /* hello.txt */; };
 		2592CEDD2AD4F765008DEFF8 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2592CEDC2AD4F765008DEFF8 /* ZIPFoundation */; };
 		2592CEDF2AD4F77E008DEFF8 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2592CEDE2AD4F77E008DEFF8 /* ZIPFoundation */; };
-		2592CEE32AD529E2008DEFF8 /* bond.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2592CEE22AD529E2008DEFF8 /* bond.txt */; };
-		25A0D2102AD6443E00B43C92 /* archiveNested1.zip in Resources */ = {isa = PBXBuildFile; fileRef = 25A0D20F2AD6443E00B43C92 /* archiveNested1.zip */; };
-		25A0D2152AD6504600B43C92 /* archiveNested2.zip in Resources */ = {isa = PBXBuildFile; fileRef = 25A0D2142AD6504600B43C92 /* archiveNested2.zip */; };
-		25A0D2172AD6F5D800B43C92 /* zipVariant.xlsx in Resources */ = {isa = PBXBuildFile; fileRef = 25A0D2162AD6F5D800B43C92 /* zipVariant.xlsx */; };
-		25A0D21B2AD7015F00B43C92 /* zipVariantInvalid.png in Resources */ = {isa = PBXBuildFile; fileRef = 25A0D21A2AD7015F00B43C92 /* zipVariantInvalid.png */; };
-		25BEBC1B2AD63EDE00C65E03 /* archive.tar.lz4 in Resources */ = {isa = PBXBuildFile; fileRef = 25BEBC182AD63EDD00C65E03 /* archive.tar.lz4 */; };
-		25BEBC1C2AD63EDE00C65E03 /* archive.zip in Resources */ = {isa = PBXBuildFile; fileRef = 25BEBC192AD63EDD00C65E03 /* archive.zip */; };
-		25BEBC1D2AD63EDE00C65E03 /* archive.tar in Resources */ = {isa = PBXBuildFile; fileRef = 25BEBC1A2AD63EDD00C65E03 /* archive.tar */; };
-		25C0A8BA2A78DE62002C1C2A /* MacPackerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8B92A78DE62002C1C2A /* MacPackerTests.swift */; };
 		25C0A8C42A78DE62002C1C2A /* MacPackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C32A78DE62002C1C2A /* MacPackerUITests.swift */; };
 		25C0A8C62A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C52A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift */; };
 		25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764242E6C6D5300464CF5 /* XADMasterSwift */; };
@@ -29,9 +18,6 @@
 		25CD1EBB2D829CBB007B53EE /* BitByteData in Frameworks */ = {isa = PBXBuildFile; productRef = 25CD1EBA2D829CBB007B53EE /* BitByteData */; };
 		25CD1EBD2D829DEA007B53EE /* SWCompression in Frameworks */ = {isa = PBXBuildFile; productRef = 25CD1EBC2D829DEA007B53EE /* SWCompression */; };
 		25CD1EBF2D829DEA007B53EE /* BitByteData in Frameworks */ = {isa = PBXBuildFile; productRef = 25CD1EBE2D829DEA007B53EE /* BitByteData */; };
-		25E426BD2E6B2C4100F10BE5 /* ArchiveHandlerTarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E426BC2E6B2C3500F10BE5 /* ArchiveHandlerTarTests.swift */; };
-		25E426BF2E6B2DAB00F10BE5 /* ArchiveTestBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E426BE2E6B2DAB00F10BE5 /* ArchiveTestBase.swift */; };
-		25E426C12E6B2F3700F10BE5 /* ArchiveHandlerZipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E426C02E6B2F3700F10BE5 /* ArchiveHandlerZipTests.swift */; };
 		25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25E426C92E6BEB3800F10BE5 /* XADMasterSwift */; };
 /* End PBXBuildFile section */
 
@@ -55,27 +41,13 @@
 /* Begin PBXFileReference section */
 		254BB5592ABBE8430059A1D5 /* MacPacker Store.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MacPacker Store.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		254BB55A2ABBE8430059A1D5 /* MacPacker copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MacPacker copy-Info.plist"; path = "/Users/sarensw/Documents/Private/Projects/MacPacker/MacPacker copy-Info.plist"; sourceTree = "<absolute>"; };
-		2592CED62AD4EAA2008DEFF8 /* ArchiveTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveTest.swift; sourceTree = "<group>"; };
-		2592CED92AD4EF6D008DEFF8 /* hello.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = hello.txt; sourceTree = "<group>"; };
-		2592CEE22AD529E2008DEFF8 /* bond.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bond.txt; sourceTree = "<group>"; };
-		25A0D20F2AD6443E00B43C92 /* archiveNested1.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = archiveNested1.zip; sourceTree = "<group>"; };
-		25A0D2142AD6504600B43C92 /* archiveNested2.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = archiveNested2.zip; sourceTree = "<group>"; };
-		25A0D2162AD6F5D800B43C92 /* zipVariant.xlsx */ = {isa = PBXFileReference; lastKnownFileType = file; path = zipVariant.xlsx; sourceTree = "<group>"; };
-		25A0D21A2AD7015F00B43C92 /* zipVariantInvalid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = zipVariantInvalid.png; sourceTree = "<group>"; };
-		25BEBC182AD63EDD00C65E03 /* archive.tar.lz4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = archive.tar.lz4; sourceTree = "<group>"; };
-		25BEBC192AD63EDD00C65E03 /* archive.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = archive.zip; sourceTree = "<group>"; };
-		25BEBC1A2AD63EDD00C65E03 /* archive.tar */ = {isa = PBXFileReference; lastKnownFileType = archive.tar; path = archive.tar; sourceTree = "<group>"; };
 		25C0A8A42A78DE5F002C1C2A /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8B52A78DE62002C1C2A /* MacPackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		25C0A8B92A78DE62002C1C2A /* MacPackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPackerTests.swift; sourceTree = "<group>"; };
 		25C0A8BF2A78DE62002C1C2A /* MacPackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8C32A78DE62002C1C2A /* MacPackerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPackerUITests.swift; sourceTree = "<group>"; };
 		25C0A8C52A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPackerUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		25C518862AEA115E0001697F /* BitByteData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BitByteData.framework; path = "Carthage/Build/BitByteData.xcframework/macos-arm64_x86_64/BitByteData.framework"; sourceTree = "<group>"; };
 		25C5188A2AEA11660001697F /* SWCompression.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SWCompression.framework; path = "Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64/SWCompression.framework"; sourceTree = "<group>"; };
-		25E426BC2E6B2C3500F10BE5 /* ArchiveHandlerTarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveHandlerTarTests.swift; sourceTree = "<group>"; };
-		25E426BE2E6B2DAB00F10BE5 /* ArchiveTestBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveTestBase.swift; sourceTree = "<group>"; };
-		25E426C02E6B2F3700F10BE5 /* ArchiveHandlerZipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveHandlerZipTests.swift; sourceTree = "<group>"; };
 		25EF27352AD7098300C8CC56 /* MacPacker.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MacPacker.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -95,10 +67,21 @@
 			);
 			target = 254BB53C2ABBE8430059A1D5 /* MacPacker Store */;
 		};
+		25161E2C2E6D64BE00CCFEF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				TestArchives/defaultContent/folder/bond.txt,
+				TestArchives/defaultContent/hello.txt,
+				TestArchives/lha_lzh/README.md,
+				TestArchives/lzx/README.md,
+			);
+			target = 25C0A8B42A78DE62002C1C2A /* MacPackerTests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		251114B22DC6D3AA0056D272 /* MacPacker */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (251114F72DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 251114F82DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MacPacker; sourceTree = "<group>"; };
+		25D62A342E6D61DE00E7FF69 /* MacPackerTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (25161E2C2E6D64BE00CCFEF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MacPackerTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,36 +126,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2592CED82AD4EDAB008DEFF8 /* TestResources */ = {
-			isa = PBXGroup;
-			children = (
-				2592CEE22AD529E2008DEFF8 /* bond.txt */,
-				2592CED92AD4EF6D008DEFF8 /* hello.txt */,
-			);
-			path = TestResources;
-			sourceTree = "<group>";
-		};
-		25BEBC172AD63CD300C65E03 /* TestArchives */ = {
-			isa = PBXGroup;
-			children = (
-				25A0D21A2AD7015F00B43C92 /* zipVariantInvalid.png */,
-				25A0D2162AD6F5D800B43C92 /* zipVariant.xlsx */,
-				25A0D2142AD6504600B43C92 /* archiveNested2.zip */,
-				25A0D20F2AD6443E00B43C92 /* archiveNested1.zip */,
-				25BEBC1A2AD63EDD00C65E03 /* archive.tar */,
-				25BEBC182AD63EDD00C65E03 /* archive.tar.lz4 */,
-				25BEBC192AD63EDD00C65E03 /* archive.zip */,
-			);
-			path = TestArchives;
-			sourceTree = "<group>";
-		};
 		25C0A89B2A78DE5F002C1C2A = {
 			isa = PBXGroup;
 			children = (
 				25EF27352AD7098300C8CC56 /* MacPacker.xctestplan */,
 				25C0A8DA2A7B5339002C1C2A /* Packages */,
 				251114B22DC6D3AA0056D272 /* MacPacker */,
-				25C0A8B82A78DE62002C1C2A /* MacPackerTests */,
+				25D62A342E6D61DE00E7FF69 /* MacPackerTests */,
 				25C0A8C22A78DE62002C1C2A /* MacPackerUITests */,
 				25C0A8A52A78DE5F002C1C2A /* Products */,
 				25C0A8DF2A7B5569002C1C2A /* Frameworks */,
@@ -189,20 +149,6 @@
 				254BB5592ABBE8430059A1D5 /* MacPacker Store.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		25C0A8B82A78DE62002C1C2A /* MacPackerTests */ = {
-			isa = PBXGroup;
-			children = (
-				25BEBC172AD63CD300C65E03 /* TestArchives */,
-				2592CED82AD4EDAB008DEFF8 /* TestResources */,
-				25C0A8B92A78DE62002C1C2A /* MacPackerTests.swift */,
-				2592CED62AD4EAA2008DEFF8 /* ArchiveTest.swift */,
-				25E426BE2E6B2DAB00F10BE5 /* ArchiveTestBase.swift */,
-				25E426BC2E6B2C3500F10BE5 /* ArchiveHandlerTarTests.swift */,
-				25E426C02E6B2F3700F10BE5 /* ArchiveHandlerZipTests.swift */,
-			);
-			path = MacPackerTests;
 			sourceTree = "<group>";
 		};
 		25C0A8C22A78DE62002C1C2A /* MacPackerUITests */ = {
@@ -300,6 +246,9 @@
 			dependencies = (
 				25C0A8B72A78DE62002C1C2A /* PBXTargetDependency */,
 			);
+			fileSystemSynchronizedGroups = (
+				25D62A342E6D61DE00E7FF69 /* MacPackerTests */,
+			);
 			name = MacPackerTests;
 			productName = MacPackerTests;
 			productReference = 25C0A8B52A78DE62002C1C2A /* MacPackerTests.xctest */;
@@ -393,15 +342,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				25A0D2152AD6504600B43C92 /* archiveNested2.zip in Resources */,
-				2592CEDA2AD4EF6D008DEFF8 /* hello.txt in Resources */,
-				25BEBC1B2AD63EDE00C65E03 /* archive.tar.lz4 in Resources */,
-				25BEBC1D2AD63EDE00C65E03 /* archive.tar in Resources */,
-				25A0D21B2AD7015F00B43C92 /* zipVariantInvalid.png in Resources */,
-				25A0D2172AD6F5D800B43C92 /* zipVariant.xlsx in Resources */,
-				25BEBC1C2AD63EDE00C65E03 /* archive.zip in Resources */,
-				2592CEE32AD529E2008DEFF8 /* bond.txt in Resources */,
-				25A0D2102AD6443E00B43C92 /* archiveNested1.zip in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,11 +373,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				25E426C12E6B2F3700F10BE5 /* ArchiveHandlerZipTests.swift in Sources */,
-				25E426BD2E6B2C4100F10BE5 /* ArchiveHandlerTarTests.swift in Sources */,
-				25E426BF2E6B2DAB00F10BE5 /* ArchiveTestBase.swift in Sources */,
-				2592CED72AD4EAA2008DEFF8 /* ArchiveTest.swift in Sources */,
-				25C0A8BA2A78DE62002C1C2A /* MacPackerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
