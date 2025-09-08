@@ -75,4 +75,33 @@ class ArchiveHandlerLz4: ArchiveHandler {
         
         return nil
     }
+    
+    override func extract(
+        archiveUrl: URL,
+        archiveItem: ArchiveItem,
+        to url: URL
+    ) {
+        extract(archiveUrl: archiveUrl, to: url)
+    }
+    
+    override func extract(
+        archiveUrl: URL,
+        to url: URL
+    ) {
+        let sourceFileName = archiveUrl.lastPathComponent
+        let extractedFileName = stripFileExtension(sourceFileName)
+        let extractedFilePathName = url.appendingPathComponent(extractedFileName, isDirectory: false)
+        
+        do {
+            if let data = try? Data(contentsOf: archiveUrl, options: .mappedIfSafe) {
+                let decompressedData = try LZ4.decompress(data: data)
+                
+                FileManager.default.createFile(atPath: extractedFilePathName.path, contents: decompressedData)
+            } else {
+                Logger.error("Could not decompress archive")
+            }
+        } catch {
+            Logger.error(error.localizedDescription)
+        }
+    }
 }
