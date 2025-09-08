@@ -12,9 +12,10 @@ import Sparkle
 
 @main
 struct MacPackerApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self)
+    @Environment(\.dismiss) private var dismiss
     
-    private var appDelegate
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    
     #if !STORE
     private let updaterController: SPUStandardUpdaterController
     #endif

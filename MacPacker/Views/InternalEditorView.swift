@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 struct InternalEditorView: View {
+    @State private var keyDownMonitor: Any?
     let url: URL?
     @State var fileContents: String = ""
     
@@ -27,6 +28,26 @@ struct InternalEditorView: View {
             if let url {
                 await loadTextAsync(from: url)
             }
+        }
+        .onAppear {
+            loadKeyObserver()
+        }
+        .onDisappear {
+            if let keyDownMonitor { NSEvent.removeMonitor(keyDownMonitor) }
+        }
+    }
+    
+    func loadKeyObserver() {
+        keyDownMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: .keyDown
+        ) { (event: NSEvent) -> NSEvent? in
+            if event.keyCode == 53 || event.keyCode == 49 { // esc
+                if let window = NSApp.keyWindow {
+                    window.performClose(nil)
+                    return nil // swallow the event
+                }
+            }
+            return event
         }
     }
     
