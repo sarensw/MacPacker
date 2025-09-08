@@ -48,5 +48,17 @@ final class ArchiveHandlerLzxTests: XCTestCase {
             XCTAssertTrue(startsWithEmpty)
         }
     }
+    
+    func testExtractFullArchive() throws {
+        let archive = try testBase.getArchiveFor(name: "lzx_test_unpatched.lzx")
+        let service = ArchiveService()
+        service.extract(
+            archive: archive,
+            to: ArchiveTestBase.tempDirectoryURL)
+        print("Extracted to \(ArchiveTestBase.tempDirectoryURL)")
+        
+        XCTAssertTrue(testBase.fileExistsInTemp("LZX_Test/1978/1978-01-31.txt"))
+        XCTAssertTrue(testBase.fileExistsInTemp("LZX_Test/1990/1990-08-31.txt"))
+    }
 }
 

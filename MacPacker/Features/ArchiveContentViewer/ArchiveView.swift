@@ -52,17 +52,17 @@ struct ArchiveView: View {
             print("selection changed: \(String(describing: selection))")
             if let indexes = selection,
                 let archive = state.archive {
-                if let selectedIndex = indexes.first {
-                    let archiveItem = archive.items[selectedIndex]
-                    state.selectedItem = archiveItem
-                } else if indexes.isEmpty {
-                    state.selectedItem = nil
+                
+                state.selectedItems.removeAll()
+                for index in indexes {
+                    let archiveItem = archive.items[index]
+                    state.selectedItems.append(archiveItem)
                 }
             }
         }
         .onKeyPress(.space) {
             if let archive = state.archive,
-               let selectedItem = state.selectedItem,
+               let selectedItem = state.selectedItems.first,
                let url = archive.extractFileToTemp(selectedItem) {
                 openWindow(id: "Previewer", value: url)
             }

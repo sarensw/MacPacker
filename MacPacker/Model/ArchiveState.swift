@@ -11,7 +11,7 @@ import SwiftUI
 class ArchiveState: ObservableObject {
     @Published var archive: Archive2?
     @Published var archiveContainer: ArchiveContainer = ArchiveContainer()
-    @Published var selectedItem: ArchiveItem? = nil
+    @Published var selectedItems: [ArchiveItem] = []
     @Published var openWithUrls: [URL] = []
     @Published var completePathArray: [String] = []
     @Published var completePath: String?

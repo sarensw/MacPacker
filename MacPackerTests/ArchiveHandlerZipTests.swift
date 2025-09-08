@@ -71,4 +71,16 @@ final class ArchiveHandlerZipTests: XCTestCase {
             XCTAssertEqual(content, "James Bond.\n")
         }
     }
+    
+    func testExtractFullArchive() throws {
+        let archive = try testBase.getArchiveFor(name: "archive.zip")
+        let service = ArchiveService()
+        service.extract(
+            archive: archive,
+            to: ArchiveTestBase.tempDirectoryURL)
+        print("Extracted to \(ArchiveTestBase.tempDirectoryURL)")
+        
+        XCTAssertTrue(testBase.fileExistsInTemp("bond.txt"))
+        XCTAssertTrue(testBase.fileExistsInTemp("hello.txt"))
+    }
 }

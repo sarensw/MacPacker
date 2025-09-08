@@ -58,41 +58,14 @@ struct ContentView: View {
             }
         }
         .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                Button {
-                    if let archive = archiveState.archive,
-                       let selectedItem = archiveState.selectedItem,
-                       let url = archive.extractFileToTemp(selectedItem) {
-                        openWindow(id: "Previewer", value: url)
-                    }
-                } label: {
-                    Image(systemName: "text.page.badge.magnifyingglass")
-                }
-                
-                Button {
-                    if let url = archiveState.archive?.url {
-                        openGetInfoWnd(for: [url])
-                    }
-                } label: {
-                    Image(systemName: "info.circle")
-                }
-                
-                if #available(macOS 14, *) {
-                    SettingsLink() {
-                        Label("Settings", systemImage: "gear")
-                    }
-                } else {
-                    Button {
-                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                    } label: {
-                        Image(systemName: "gear")
-                    }
-                }
-            }
+            ArchiveContentToolbarView(
+                archiveState: archiveState
+            )
         }
         .onOpenURL { url in
             self.archiveState.loadUrl(url)
         }
+        .navigationTitle(archiveState.archive == nil ? "MacPacker" : archiveState.archive!.name)
         .environmentObject(archiveState)
     }
     
@@ -104,14 +77,6 @@ struct ContentView: View {
                 print("selection changed to \(String(describing: selectedFileItemID))")
             }
         )
-    }
-    
-    func openGetInfoWnd(for urls: [URL]) {
-        let pBoard = NSPasteboard(name: NSPasteboard.Name(rawValue: "pasteBoard_\(UUID().uuidString )") )
-        
-        pBoard.writeObjects(urls as [NSPasteboardWriting])
-        
-        NSPerformService("Finder/Show Info", pBoard)
     }
 }
 
