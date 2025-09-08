@@ -29,7 +29,7 @@ struct WelcomeOtherProjects: View {
                 Image("FileFillet")
                     .resizable()
                     .frame(width: 32, height: 32)
-                Link(destination: URL(string: "https://filefillet.com/?ref=mpwelcome")!) {
+                Link(destination: URL(string: "https://filefillet.com/?utm_source=macpacker&utm_content=welcome&utm_medium=ui")!) {
                     Text("FileFillet")
                 }
                 Text("Organize files without tons of Finder windows.")
