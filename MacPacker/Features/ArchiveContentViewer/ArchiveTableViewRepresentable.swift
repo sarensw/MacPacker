@@ -11,26 +11,6 @@ import SwiftUI
 import UniformTypeIdentifiers
 import Cocoa
 
-class FilePromiseProvider: NSFilePromiseProvider {
-    
-    override func writableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
-        var types = super.writableTypes(for: pasteboard)
-        types.append(.fileURL)
-        return types
-    }
-    
-    public override func writingOptions(forType type: NSPasteboard.PasteboardType, pasteboard: NSPasteboard)
-        -> NSPasteboard.WritingOptions {
-            return super.writingOptions(forType: type, pasteboard: pasteboard)
-    }
-
-}
-
-/// Coordinator for the table
-/// NSPasteboardItemDataProvider
-
-
-/// Table representable
 struct ArchiveTableViewRepresentable: NSViewRepresentable {
     @Binding var selection: IndexSet?
     @Binding var isReloadNeeded: Bool
@@ -43,7 +23,6 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     /// Coordinator used to sync with the SwiftUI code portion
     final class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource, NSFilePromiseProviderDelegate {
         var parent: ArchiveTableViewRepresentable
-        var itemDragged: ArchiveItem?
         
         var filePromiseQueue: OperationQueue = {
             let queue = OperationQueue()
@@ -106,17 +85,31 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         // In this case, I would need a URL promise instead of a file promise
         // ---
         
-        func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
+        func tableView(
+            _ tableView: NSTableView,
+            pasteboardWriterForRow row: Int
+        ) -> NSPasteboardWriting? {
+            Logger.debug("Starting to drag item in row \(row)")
+            
             guard let item = parent.archiveState.archive?.items[row] else { return nil }
             
-            // get the item being dragged
-            itemDragged = item
-
-            // use that item to define the uttype and create the promise provider
-            let typeIdentifier = UTType(filenameExtension: item.ext)
-            let provider = FilePromiseProvider(fileType: typeIdentifier!.identifier, delegate: self)
+            // ignore the parent item
+            if item.type == .parent || item.type == .unknown { return nil }
             
+            // use that item to define the uttype and create the promise provider
+            let typeId = (item.ext.isEmpty
+                 ? UTType.data                  // or UTType.item
+                 : UTType(filenameExtension: item.ext))?.identifier
+                 ?? UTType.data.identifier
+                
+            let provider = NSFilePromiseProvider(
+                fileType: typeId,
+                delegate: self
+            )
+            provider.userInfo = item
+                
             return provider
+            
         }
         
         /// Handles the double-click functionality. The default use case is that the item is opened using the system editor.
@@ -134,7 +127,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 do {
                     _ = try archive.open(item)
                     parent.isReloadNeeded = true
-                    parent.archiveState.selectedItem = nil
+                    parent.archiveState.selectedItems = []
                     tableView.deselectAll(nil)
                 } catch {
                     print(error)
@@ -158,35 +151,34 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         // The following methods are used to drag a file out of the archive to another app
         //
         
-        func filePromiseProvider(_ filePromiseProvider: NSFilePromiseProvider, fileNameForType fileType: String) -> String {
-            if let name = itemDragged?.name {
-                return name
-            }
-            return "unknown"
+        func filePromiseProvider(
+            _ filePromiseProvider: NSFilePromiseProvider,
+            fileNameForType fileType: String
+        ) -> String {
+            (filePromiseProvider.userInfo as? ArchiveItem)?.name ?? "unknown"
         }
         
-        func filePromiseProvider(_ filePromiseProvider: NSFilePromiseProvider,
-                                 writePromiseTo url: URL,
-                                 completionHandler: @escaping (Error?) -> Void) {
-            
-            if let archive = parent.archiveState.archive,
-               let itemDragged {
-                do {
-                    guard let tempUrl = archive.extractFileToTemp(itemDragged) else { return }
-                    try FileManager.default.copyItem(at: tempUrl, to: url)
-                    completionHandler(nil)
-                    url.stopAccessingSecurityScopedResource()
-                } catch {
-                    print("ran into error")
-                    print(error)
-                    completionHandler(error)
-                    url.stopAccessingSecurityScopedResource()
-                }
-            } else {
-                print("file promise requirements are not met")
-                completionHandler(nil)
-                url.stopAccessingSecurityScopedResource()
+        func filePromiseProvider(
+            _ filePromiseProvider: NSFilePromiseProvider,
+            writePromiseTo url: URL,
+            completionHandler: @escaping (Error?) -> Void
+        ) {
+            guard
+                let archive = parent.archiveState.archive,
+                let item = filePromiseProvider.userInfo as? ArchiveItem
+            else {
+                Logger.error("Could not fulfill file promise")
+                return completionHandler(NSError(domain: "Drag", code: 1))
             }
+            
+            let service = ArchiveService()
+            service.extract(
+                archive: archive,
+                items: [item],
+                to: url.deletingLastPathComponent() // delete because writePromiseTo will give you all
+            )
+            
+            completionHandler(nil)
         }
         
         func operationQueue(for filePromiseProvider: NSFilePromiseProvider) -> OperationQueue {

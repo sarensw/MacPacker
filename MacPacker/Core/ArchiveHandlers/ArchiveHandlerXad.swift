@@ -64,7 +64,7 @@ class ArchiveHandlerXad: ArchiveHandler {
                             type: .directory,
                             virtualPath: archivePath + "/" + npc.name,
                             size: nil,
-                            data: nil))
+                            index: Int(index)))
                     }
                 } else {
                     if let fileName = npc.name.components(separatedBy: "/").last {
@@ -103,5 +103,40 @@ class ArchiveHandlerXad: ArchiveHandler {
             }
         }
         return nil
+    }
+    
+    override func extract(
+        archiveUrl: URL,
+        archiveItem: ArchiveItem,
+        to url: URL
+    ) {
+        guard let index = archiveItem.index else {
+            Logger.error("Could not extract file: missing index")
+            return
+        }
+        
+        do {
+            try XADMasterSwiftInternal.extractFile(
+                at: archiveUrl.path,
+                entryIndex: index,
+                to: url.path
+            )
+        } catch {
+            Logger.error(error.localizedDescription)
+        }
+    }
+    
+    override func extract(
+        archiveUrl: URL,
+        to url: URL
+    ) {
+        do {
+            try XADMasterSwiftInternal.extractArchive(
+                at: archiveUrl.path,
+                to: url.path
+            )
+        } catch {
+            Logger.error(error.localizedDescription)
+        }
     }
 }

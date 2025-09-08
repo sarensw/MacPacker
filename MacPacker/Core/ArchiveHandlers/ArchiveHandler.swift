@@ -84,6 +84,21 @@ class ArchiveHandler {
         return nil
     }
     
+    func extract(
+        archiveUrl: URL,
+        archiveItem: ArchiveItem,
+        to url: URL
+    ) {
+        Logger.debug("Calling extract(archiveUrl:archiveItem:to:) without implementation")
+    }
+    
+    func extract(
+        archiveUrl: URL,
+        to url: URL
+    ) {
+        Logger.debug("Calling extract(archiveURL:to:) without implementation")
+    }
+    
     var isEditable: Bool {
         get {
             return false

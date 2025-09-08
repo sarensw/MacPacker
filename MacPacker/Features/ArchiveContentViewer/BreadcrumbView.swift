@@ -109,7 +109,7 @@ struct BreadcrumbView: View {
                                         try _ = self.archive?.open(.parent)
                                     }
                                     self.archiveState.archiveContainer.isReloadNeeded = true
-                                    self.archiveState.selectedItem = nil
+                                    self.archiveState.selectedItems = []
                                 } catch {
                                     print(error)
                                 }

@@ -60,6 +60,21 @@ class Logger {
         #endif
     }
     
+    static func debug(
+        _ message: String,
+        file: String = #fileID,
+        function: String = #function,
+        line: Int = #line,
+    ) {
+        Logger.log(
+            level: .Debug,
+            message,
+            file: file,
+            function: function,
+            line: line
+        )
+    }
+    
     static func info(
         _ message: String,
         file: String = #fileID,
