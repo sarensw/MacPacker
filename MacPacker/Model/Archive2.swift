@@ -21,6 +21,7 @@ enum Archive2OpenResult: String {
 /// Unused yet, but will be used in future to replace FileContainer
 class Archive2: ObservableObject {
     @Published var url: URL?
+    @Published var name: String
     @Published var internalPath: String = "/"
     @Published var ext: String?
     @Published var stack: ArchiveItemStack = ArchiveItemStack()
@@ -37,6 +38,7 @@ class Archive2: ObservableObject {
     /// Default constructor
     init() {
         url = nil
+        name = ""
         breadcrumbsUpdated = { _ in }
     }
     
@@ -45,6 +47,7 @@ class Archive2: ObservableObject {
     /// - Throws: Throws Archive2Error.unknownType in case the archive type is unknown
     init(url: URL) throws {
         self.url = url
+        self.name = url.lastPathComponent
         determineFileExtension(from: url)
         if let ext,
            !ArchiveHandlerRegistry.shared.isSupported(ext: ext) {
@@ -60,6 +63,7 @@ class Archive2: ObservableObject {
     init(url: URL, breadcrumbsUpdated: @escaping ([String]) -> Void) throws {
         self.breadcrumbsUpdated = breadcrumbsUpdated
         self.url = url
+        self.name = url.lastPathComponent
         determineFileExtension(from: url)
         if let ext,
            !ArchiveHandlerRegistry.shared.isSupported(ext: ext) {

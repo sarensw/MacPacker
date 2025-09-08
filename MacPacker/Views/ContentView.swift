@@ -93,6 +93,7 @@ struct ContentView: View {
         .onOpenURL { url in
             self.archiveState.loadUrl(url)
         }
+        .navigationTitle(archiveState.archive == nil ? "MacPacker" : archiveState.archive!.name)
         .environmentObject(archiveState)
     }
     
