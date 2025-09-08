@@ -43,4 +43,19 @@ final class ArchiveHandlerLhaLzhTests: XCTestCase {
             XCTAssertTrue(startsWith)
         }
     }
+    
+    func testExtractFullArchive() throws {
+        let archive = try testBase.getArchiveFor(name: "multiple.lzh")
+        let service = ArchiveService()
+        service.extract(
+            archive: archive,
+            to: ArchiveTestBase.tempDirectoryURL)
+        print("Extracted to \(ArchiveTestBase.tempDirectoryURL)")
+        
+        XCTAssertTrue(testBase.fileExistsInTemp("file1.txt"))
+        XCTAssertTrue(testBase.fileExistsInTemp("file2-1.txt"))
+        XCTAssertTrue(testBase.fileExistsInTemp("file2-2.txt"))
+        XCTAssertTrue(testBase.fileExistsInTemp("file3.txt"))
+        XCTAssertTrue(testBase.fileExistsInTemp("file4.txt"))
+    }
 }

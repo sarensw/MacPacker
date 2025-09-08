@@ -57,4 +57,15 @@ final class ArchiveTestBase {
         }
         return file
     }
+    
+    func getArchiveFor(name: String) throws -> Archive2 {
+        let fileURL = try getTestFile(name: name)
+        return try Archive2(url: fileURL)
+    }
+    
+    func fileExistsInTemp(_ filename: String) -> Bool {
+        let temp = ArchiveTestBase.tempDirectoryURL.appendingPathComponent(filename)
+        let exists = FileManager.default.fileExists(atPath: temp.path)
+        return exists
+    }
 }
