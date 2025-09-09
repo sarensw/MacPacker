@@ -55,6 +55,34 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 
                 Divider()
                 
+                Menu {
+                    Button {
+                        openURL(URL(string: "https://github.com/sarensw/MacPacker/issues/new?assignees=&labels=enhancement&projects=&template=&title=")!)
+                    } label: {
+                        Label("... request a Feature", systemImage: "shippingbox")
+                            .labelStyle(.titleAndIcon)
+                    }
+                    
+                    Button {
+                        openURL(URL(string: "https://github.com/sarensw/MacPacker/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=")!)
+                    } label: {
+                        Label("... request a Bug", systemImage: "ladybug")
+                            .labelStyle(.titleAndIcon)
+                    }
+                    
+                    Button {
+                        openURL(URL(string: "mailto:apps@sarensw.com")!)
+                    } label: {
+                        Label("... send a mail to apps@sarensw.com", systemImage: "mail")
+                            .labelStyle(.titleAndIcon)
+                    }
+                } label: {
+                    Label("Go here to...", systemImage: "exclamationmark.bubble")
+                        .labelStyle(.titleAndIcon)
+                }
+                
+                Divider()
+                
                 Menu("More Apps", systemImage: "plus.square.dashed") {
                     Button {
                         openURL(URL(string: "https://filefillet.com/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui")!)

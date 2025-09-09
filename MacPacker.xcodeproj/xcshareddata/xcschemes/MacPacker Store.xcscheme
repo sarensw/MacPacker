@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "254BB53C2ABBE8430059A1D5"
-               BuildableName = "MacPacker Store.app"
+               BuildableName = "MacPacker.app"
                BlueprintName = "MacPacker Store"
                ReferencedContainer = "container:MacPacker.xcodeproj">
             </BuildableReference>
@@ -44,7 +44,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "254BB53C2ABBE8430059A1D5"
-            BuildableName = "MacPacker Store.app"
+            BuildableName = "MacPacker.app"
             BlueprintName = "MacPacker Store"
             ReferencedContainer = "container:MacPacker.xcodeproj">
          </BuildableReference>
@@ -61,7 +61,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "254BB53C2ABBE8430059A1D5"
-            BuildableName = "MacPacker Store.app"
+            BuildableName = "MacPacker.app"
             BlueprintName = "MacPacker Store"
             ReferencedContainer = "container:MacPacker.xcodeproj">
          </BuildableReference>
