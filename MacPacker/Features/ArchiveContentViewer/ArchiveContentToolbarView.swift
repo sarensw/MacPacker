@@ -27,6 +27,61 @@ struct ArchiveContentToolbarView: ToolbarContent {
     
     var body: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
+            Button {
+                if let archive = archiveState.archive,
+                   let selectedItem = archiveState.selectedItems.first,
+                   let url = archive.extractFileToTemp(selectedItem) {
+                    openWindow(id: "Previewer", value: url)
+                }
+            } label: {
+                Label("Preview", systemImage: "doc.text.magnifyingglass")
+            }
+            
+            Button {
+                if archiveState.archive != nil {
+                    isExportingItem.toggle()
+                }
+            } label: {
+                Label("Extract selected", image: "custom.document.badge.arrow.down")
+            }
+            .fileImporter(
+                isPresented: $isExportingItem,
+                allowedContentTypes: [.folder],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result,
+                   let folderURL = urls.first {
+                    if let archive = archiveState.archive {
+                        service.extract(
+                            archive: archive,
+                            items: archiveState.selectedItems,
+                            to: folderURL)
+                    }
+                }
+            }
+            
+            Button {
+                if archiveState.archive != nil {
+                    isExportingAll.toggle()
+                }
+            } label: {
+                Label("Extract archive", image: "custom.shippingbox.badge.arrow.down")
+            }
+            .fileImporter(
+                isPresented: $isExportingAll,
+                allowedContentTypes: [.folder],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result,
+                   let folderURL = urls.first {
+                    if let archive = archiveState.archive {
+                        service.extract(
+                            archive: archive,
+                            to: folderURL)
+                    }
+                }
+            }
+        
             Menu("More", systemImage: "ellipsis.circle") {
                 if #available(macOS 14, *) {
                     SettingsLink() {
@@ -120,62 +175,6 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
             
             
-        }
-        ToolbarItemGroup(placement: .secondaryAction) {
-            Button {
-                if let archive = archiveState.archive,
-                   let selectedItem = archiveState.selectedItems.first,
-                   let url = archive.extractFileToTemp(selectedItem) {
-                    openWindow(id: "Previewer", value: url)
-                }
-            } label: {
-                Label("Preview", systemImage: "text.page.badge.magnifyingglass")
-            }
-            
-            Button {
-                if archiveState.archive != nil {
-                    isExportingItem.toggle()
-                }
-            } label: {
-                Label("Extract selected", image: "custom.document.badge.arrow.down")
-            }
-            .fileImporter(
-                isPresented: $isExportingItem,
-                allowedContentTypes: [.folder],
-                allowsMultipleSelection: false
-            ) { result in
-                if case .success(let urls) = result,
-                   let folderURL = urls.first {
-                    if let archive = archiveState.archive {
-                        service.extract(
-                            archive: archive,
-                            items: archiveState.selectedItems,
-                            to: folderURL)
-                    }
-                }
-            }
-            
-            Button {
-                if archiveState.archive != nil {
-                    isExportingAll.toggle()
-                }
-            } label: {
-                Label("Extract archive", image: "custom.shippingbox.badge.arrow.down")
-            }
-            .fileImporter(
-                isPresented: $isExportingAll,
-                allowedContentTypes: [.folder],
-                allowsMultipleSelection: false
-            ) { result in
-                if case .success(let urls) = result,
-                   let folderURL = urls.first {
-                    if let archive = archiveState.archive {
-                        service.extract(
-                            archive: archive,
-                            to: folderURL)
-                    }
-                }
-            }
         }
     }
 }
