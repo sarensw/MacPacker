@@ -268,8 +268,6 @@ class TailBeat {
             data.append(0x0A)
             connection.send(content: data, completion: .contentProcessed { _ in })
         }
-#else
-        print("\(Date.now.formatted(.omitted)) - \(level): \(message)")
 #endif
     }
     
