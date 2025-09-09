@@ -11,11 +11,13 @@ import SwiftUI
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("• feat: hit space to open internal preview")
-            Text("• feat: setting to change the breadcrumb position")
-            Text("• feat: rar read support")
-            Text("• feat: show folder / file icons in table")
-            Text("• chore: add support for macOS 14")
+            Text("• feat: lzh, lha, lzx support")
+            Text("• feat: close internal previewer using Space, or Esc")
+            Text("• feat: show archive name in title")
+            Text("• feat: extract selected files via UI")
+            Text("• feat: extract full archive")
+            Text("• fix: app store version shows 'MacPacker store' as product name in launchpad")
+            Text("• core: new architecture for archive handlers")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
