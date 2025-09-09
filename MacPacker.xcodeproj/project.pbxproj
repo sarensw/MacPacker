@@ -39,7 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		254BB5592ABBE8430059A1D5 /* MacPacker Store.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MacPacker Store.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		254BB5592ABBE8430059A1D5 /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		254BB55A2ABBE8430059A1D5 /* MacPacker copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MacPacker copy-Info.plist"; path = "/Users/sarensw/Documents/Private/Projects/MacPacker/MacPacker copy-Info.plist"; sourceTree = "<absolute>"; };
 		25C0A8A42A78DE5F002C1C2A /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8B52A78DE62002C1C2A /* MacPackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -146,7 +146,7 @@
 				25C0A8A42A78DE5F002C1C2A /* MacPacker.app */,
 				25C0A8B52A78DE62002C1C2A /* MacPackerTests.xctest */,
 				25C0A8BF2A78DE62002C1C2A /* MacPackerUITests.xctest */,
-				254BB5592ABBE8430059A1D5 /* MacPacker Store.app */,
+				254BB5592ABBE8430059A1D5 /* MacPacker.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -202,7 +202,7 @@
 				25C764262E6C6D6200464CF5 /* XADMasterSwift */,
 			);
 			productName = MacPacker;
-			productReference = 254BB5592ABBE8430059A1D5 /* MacPacker Store.app */;
+			productReference = 254BB5592ABBE8430059A1D5 /* MacPacker.app */;
 			productType = "com.apple.product-type.application";
 		};
 		25C0A8A32A78DE5F002C1C2A /* MacPacker */ = {
@@ -433,7 +433,7 @@
 				MARKETING_VERSION = 0.6;
 				OTHER_SWIFT_FLAGS = "-DSTORE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = MacPacker;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -471,7 +471,7 @@
 				MARKETING_VERSION = 0.6;
 				OTHER_SWIFT_FLAGS = "-DSTORE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = MacPacker;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};

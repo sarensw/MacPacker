@@ -2,8 +2,9 @@ v0.7
 - feat: lzh, lha, lzx support
 - feat: close internal previewer using Space, or Esc
 - feat: show archive name in title
-- feat: extract selected files
+- feat: extract selected files via UI
 - feat: extract full archive
+- fix: app store version shows "MacPacker store" as product name in launchpad
 - core: new architecture for archive handlers
 
 v0.6
