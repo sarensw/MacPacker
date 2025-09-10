@@ -1,68 +1,71 @@
-<p align="left">
-  <img alt="MacPacker Logo" src="https://raw.githubusercontent.com/brainchest/MacPacker/main/MacPacker/Assets.xcassets/Logo.imageset/icon_256x256.png" width="128" height="128">
-</p>
+<h1 align="center">
+  <br>
+  <a href="http://macpacker.app"><img src="https://raw.githubusercontent.com/sarensw/MacPacker/main/MacPacker/Assets.xcassets/Logo.imageset/icon_256x256.png" alt="MacPacker" width="128"></a>
+  <br>
+  MacPacker
+  <br>
+</h1>
 
-# MacPacker
-
-MacOS archive previewer and manager
-
-<div>
-  <a href="https://github.com/brainchest/MacPacker/releases"><img src="https://img.shields.io/github/downloads/sarensx/macpacker/total?color=%2300834a" /></a>
-  <a href="https://github.com/brainchest/MacPacker/releases/latest"><img src="https://img.shields.io/github/downloads/sarensx/macpacker/latest/total?color=%2300834a&label=latest" /></a>
-  <a href="https://github.com/brainchest/MacPacker/releases/latest"><img src="https://img.shields.io/github/v/release/sarensx/macpacker?color=%2300834a" /></a>
+<div align="center">
+  <a href="https://github.com/sarensw/MacPacker/releases"><img src="https://img.shields.io/github/downloads/sarensw/macpacker/total?color=%2300834a" /></a>
+  <a href="https://github.com/sarensw/MacPacker/releases/latest"><img src="https://img.shields.io/github/downloads/sarensw/macpacker/latest/total?color=%2300834a&label=latest" /></a>
+  <a href="https://github.com/sarensw/MacPacker/releases/latest"><img src="https://img.shields.io/github/v/release/sarensw/macpacker?color=%2300834a" /></a>
 </div>
 
-## Why?
+Say hello to **MacPacker**, the archive manager for macOS. Open source, because essential tools should be free. Preview (nested) archives. Extract selected files. Creating or editing archives will follow. Inspired by 7-Zip, but without any claim to comparability. See the roadmap for more details.
 
-- Because essential tools should be free
-- Because open source creates a community for long-time maintenance
-- Because extracting the full archive to get just one file doesn't make sense
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sarensw/MacPacker/main/assets/v0.7_main.gif" alt="Demo GIF" />
+</p>
 
-## What is MacPacker?
+## Installation
 
-A free, open-source, tool to work with archives. Currently, it supports navigating and extracting files from an archive only. Creating or editing archives will follow. Inspired by 7-Zip, but without any claim to comparability. See the roadmap for more details.
+### System Requirements
+- macOS 14.6 or later
+
+### Option 1: Download from GitHub
+
+Download the .zip file from <a href="https://github.com/sarensw/MacPacker/releases">GitHub Releases</a>. Extract and move the app to the Applications folder. The app is sandboxed, signed, and notarized by Apple.
+
+### Option 2: App Store
+
+<a href="https://apps.apple.com/us/app/macpacker/id6473273874"><img src="https://raw.githubusercontent.com/sarensw/MacPacker/main/assets/mas.svg" alt="MacPacker" width="128"></a>
 
 ## Roadmap
 
-### Backlog
-- Support decompression of formats: Deflate, LZMA2, LZMA, BZip2
-- Support archives: ZLib, GZip, XZ, RAR
-- Right click context menu in Finder to immediately extract the archive to a sub folder or without
-- Create/edit archive
+- [x] Navigate through (nested) archives
+- [x] Extract selected files via drag & drop to any target
+- [x] Breadcrumb for quick navigation
+- [x] Support (my) most needed archives .zip, .tar, .lz4
+- [x] Extract the full archive at once
+- [x] Preview files without extraction
+- [ ] Support all formats that TheUnarchiver supports
+- [ ] Finder extensions for quick access to the most important functions
+- [ ] Create archives and edit archives (most common ones only)
+- [ ] Fully fledged internal previewer
 
-### v0.6
-- feat: hit space to open internal preview
-- feat: setting to change the breadcrumb position
-- feat: rar read support
-- feat: show folder / file icons in table
-- chore: add support for macOS 14
+## Building from Source
 
-### v0.5
-- feat: multiple windows support
-- feat: open info for archive
-- feat: breadcrumb view for navigation
-- fix: "Open With" in Finder not working
-- chore: major code cleanup
+### Prerequisites
+- macOS 14 or later
+- XCode 16 or later
 
-### v0.4
-- feat: viewer to show preview of files
-- feat: 7zip read support
-- chore: clean cache when MacPacker terminates
+### Process
 
-### v0.3
-- feat: highlight when dragging file to MacPacker window
-- feat: double click any file opens it using the default system app
-- feat: breadcrumb showing the current path in the archive
-- feat: support for any valid zip-based file
-- feat: automatic cache cleaning
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/sarensw/MacPacker.git
+   cd MacPacker
+   ```
 
-### v0.2
-- feat: welcome & about dialog
-- feat: auto update
-- feat: zip support
-- feat: "Open With..." context menu support
+2. **Open the Project in Xcode**:
+   ```bash
+   open MacPacker.xcodeproj
+   ```
 
-### v0.1
-- feat: Drag & drop an lz4 or tar file to MacPacker
-- feat: Manual option to clear the cache
-- feat: Traverse through nested archives
+3. **Build and Run**:
+    - Click the "Run" button or press `Cmd + R`. Watch the magic unfold!
+
+## Contributing
+
+Feel free to fork the repo and create a PR. I'm happy to review and merge it.
