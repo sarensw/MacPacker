@@ -121,7 +121,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     Button {
                         openURL(URL(string: "https://github.com/sarensw/MacPacker/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=")!)
                     } label: {
-                        Label("... request a Bug", systemImage: "ladybug")
+                        Label("... raise a Bug", systemImage: "ladybug")
                             .labelStyle(.titleAndIcon)
                     }
                     
