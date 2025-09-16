@@ -1,17 +1,17 @@
 //
-//  ArchiveHandlerZipTests.swift
+//  ArchiveHandlerIsoTests.swift
 //  MacPacker
 //
-//  Created by Stephan Arenswald on 05.09.25.
+//  Created by Stephan Arenswald on 16.09.25.
 //
-
 
 import Foundation
 import XCTest
 @testable import MacPacker
 
-final class ArchiveHandlerZipTests: XCTestCase {
+final class ArchiveHandlerIsoTests: XCTestCase {
     let testBase: ArchiveTestBase = ArchiveTestBase()
+    let defaultTestFile: String = "defaultArchive.iso"
     
     override class func setUp() {
         super.setUp()
@@ -23,7 +23,7 @@ final class ArchiveHandlerZipTests: XCTestCase {
     }
     
     func testLoadFile() throws {
-        let tf = try testBase.getTestFile(name: "archive.zip")
+        let tf = try testBase.getTestFile(name: defaultTestFile)
         
         let archive = try Archive2(url: tf)
         let count = archive.items.count
@@ -31,36 +31,28 @@ final class ArchiveHandlerZipTests: XCTestCase {
     }
     
     func testExtractFile() throws {
-        let tf = try testBase.getTestFile(name: "archive.zip")
+        let tf = try testBase.getTestFile(name: defaultTestFile)
         
         let archive = try Archive2(url: tf)
-        let url = archive.extractFileToTemp(archive.items[0])
+        let url = archive.extractFileToTemp(archive.items[1])
         XCTAssertNotNil(url)
         
         let content = try String(contentsOf: url!, encoding: .utf8)
-        XCTAssertEqual(content, "James Bond.\n")
+        XCTAssertEqual(content, "Hello World!\n")
     }
     
-    func testExtractNestedFile() throws {
-        let tf = try testBase.getTestFile(name: "archiveNested1.zip")
+    func testNested() throws {
+        let tf = try testBase.getTestFile(name: defaultTestFile)
         
         let archive = try Archive2(url: tf)
         XCTAssertEqual(try archive.open(archive.items[0]), .success)
         if let se = archive.currentStackEntry {
-            XCTAssertEqual(se.name, "Folder")
+            XCTAssertEqual(se.name, "folder")
         }
 
         XCTAssertEqual(try archive.open(archive.items[1]), .success)
         if let se = archive.currentStackEntry {
-            XCTAssertEqual(se.name, "archive.tar.lz4")
-        }
-        XCTAssertEqual(try archive.open(archive.items[1]), .success)
-        if let se = archive.currentStackEntry {
-            XCTAssertEqual(se.name, "archive.tar")
-        }
-        XCTAssertEqual(try archive.open(archive.items[1]), .success)
-        if let se = archive.currentStackEntry {
-            XCTAssertEqual(se.name, "archive.tar")
+            XCTAssertEqual(se.name, "archive.zip")
         }
         
         let url = archive.extractFileToTemp(archive.items[1])
@@ -73,14 +65,15 @@ final class ArchiveHandlerZipTests: XCTestCase {
     }
     
     func testExtractFullArchive() throws {
-        let archive = try testBase.getArchiveFor(name: "archive.zip")
+        let archive = try testBase.getArchiveFor(name: defaultTestFile)
         let service = ArchiveService()
         service.extract(
             archive: archive,
             to: ArchiveTestBase.tempDirectoryURL)
         print("Extracted to \(ArchiveTestBase.tempDirectoryURL)")
         
-        XCTAssertTrue(testBase.fileExistsInTemp("bond.txt"))
+        XCTAssertTrue(testBase.fileExistsInTemp("folder/bond.txt"))
+        XCTAssertTrue(testBase.fileExistsInTemp("folder/archive.zip"))
         XCTAssertTrue(testBase.fileExistsInTemp("hello.txt"))
     }
 }

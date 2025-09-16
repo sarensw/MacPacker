@@ -223,7 +223,11 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     ///   - nsView: desc
     ///   - context: context
     func updateNSView(_ nsView: NSScrollView, context: Context) {
-        print("isReloadNeeded: \(isReloadNeeded) \(Date.now.description)")
+//        print("isReloadNeeded: \(isReloadNeeded)")
+        Logger.log(
+            level: isReloadNeeded ? .Warning : .Debug,
+            "isReloadedNeeded: \(isReloadNeeded)"
+        )
         if isReloadNeeded {
             let tableView = (nsView.documentView as! NSTableView)
             DispatchQueue.main.async {

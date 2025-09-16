@@ -1,3 +1,6 @@
+v0.8
+- feat: gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support
+
 v0.7
 - feat: lzh, lha, lzx support
 - feat: close internal previewer using Space, or Esc

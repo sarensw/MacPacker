@@ -11,13 +11,7 @@ import SwiftUI
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("• feat: lzh, lha, lzx support")
-            Text("• feat: close internal previewer using Space, or Esc")
-            Text("• feat: show archive name in title")
-            Text("• feat: extract selected files via UI")
-            Text("• feat: extract full archive")
-            Text("• fix: app store version shows 'MacPacker store' as product name in launchpad")
-            Text("• core: new architecture for archive handlers")
+            Text("• feat: feat: gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()

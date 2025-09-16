@@ -21,6 +21,17 @@ enum LogLevel: Int {
     case Warning = 3
     case Error = 4
     case Fatal = 5
+    
+    var tailBeatLevel: TailBeatLevel {
+        switch self {
+        case .Trace: return .Trace
+        case .Debug: return .Debug
+        case .Info: return .Info
+        case .Warning: return .Warning
+        case .Error: return .Error
+        case .Fatal: return .Fatal
+        }
+    }
 }
 
 class Logger {
@@ -31,7 +42,9 @@ class Logger {
         guard !Self.initialized else { return }
         
         Self.tailBeat = TailBeat.logger.start(
-            collectStdout: true
+            collectOSLogs: false,
+            collectStdout: true,
+            collectStderr: true
         )
         Self.initialized = true
     }
@@ -43,7 +56,7 @@ class Logger {
     static func log(
         level: LogLevel = .Debug,
         _ message: String,
-        file: String = #fileID,
+        file: String = #file,
         function: String = #function,
         line: Int = #line,
     ) {
@@ -51,7 +64,7 @@ class Logger {
         
         #if DEBUG
         tailBeat?.log(
-            level: .Debug,
+            level: level.tailBeatLevel,
             "\(message)",
             file: file,
             function: function,
@@ -62,7 +75,7 @@ class Logger {
     
     static func debug(
         _ message: String,
-        file: String = #fileID,
+        file: String = #file,
         function: String = #function,
         line: Int = #line,
     ) {
@@ -77,7 +90,7 @@ class Logger {
     
     static func info(
         _ message: String,
-        file: String = #fileID,
+        file: String = #file,
         function: String = #function,
         line: Int = #line,
     ) {
@@ -92,7 +105,7 @@ class Logger {
     
     static func warning(
         _ message: String,
-        file: String = #fileID,
+        file: String = #file,
         function: String = #function,
         line: Int = #line,
     ) {
@@ -107,7 +120,7 @@ class Logger {
     
     static func error(
         _ message: String,
-        file: String = #fileID,
+        file: String = #file,
         function: String = #function,
         line: Int = #line,
     ) {

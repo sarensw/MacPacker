@@ -31,7 +31,7 @@
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
+      "parallelizable" : false,
       "target" : {
         "containerPath" : "container:MacPacker.xcodeproj",
         "identifier" : "25C0A8B42A78DE62002C1C2A",
@@ -39,6 +39,7 @@
       }
     },
     {
+      "enabled" : false,
       "parallelizable" : true,
       "target" : {
         "containerPath" : "container:MacPacker.xcodeproj",

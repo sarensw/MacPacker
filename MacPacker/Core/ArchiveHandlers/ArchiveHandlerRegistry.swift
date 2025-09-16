@@ -19,7 +19,12 @@ class ArchiveHandlerRegistry {
     }
     
     func handler(for ext: String) -> ArchiveHandler? {
-        return archiveHandlers[ext]
+        for key in archiveHandlers.keys {
+            if key.lowercased() == ext.lowercased() {
+                return archiveHandlers[key]
+            }
+        }
+        return nil
     }
     
     func isSupported(ext: String) -> Bool {

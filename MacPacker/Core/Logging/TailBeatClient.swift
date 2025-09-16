@@ -226,7 +226,7 @@ class TailBeat {
              category: String = "",
              _ message: String,
              context: [String: String]? = nil,
-             file: String = #fileID,
+             file: String = #file,
              function: String = #function,
              line: Int = #line,
              extras: [TailBeatExtras] = [],
@@ -241,7 +241,7 @@ class TailBeat {
          category: String = "",
          _ message: String,
          context: [String: String]? = nil,
-         file: String = #fileID,
+         file: String = #file,
          function: String = #function,
          line: Int = #line,
          extras: [TailBeatExtras] = [],
@@ -249,6 +249,16 @@ class TailBeat {
     ) {
 #if DEBUG
         guard let connection else { return }
+        
+        var file = file
+        var function = function
+        var line = line
+        
+        if source != .TailBeat {
+            file = ""
+            function = ""
+            line = 0
+        }
         
         let log = TailBeatEvent(
             timestamp: Date(),

@@ -19,9 +19,19 @@ class ArchiveHandlerXad: ArchiveHandler {
         let registry = ArchiveHandlerRegistry.shared
         let handler = ArchiveHandlerXad()
         
-        registry.register(ext: "rar", handler: handler)
         registry.register(ext: "7z", handler: handler)
+        registry.register(ext: "bz2", handler: handler)
+        registry.register(ext: "cab", handler: handler)
+        registry.register(ext: "cpio", handler: handler)
+        registry.register(ext: "gz", handler: handler)
+        registry.register(ext: "iso", handler: handler)
+        registry.register(ext: "lzma", handler: handler)
+        registry.register(ext: "rar", handler: handler)
+        registry.register(ext: "sea", handler: handler)
+        registry.register(ext: "sit", handler: handler)
         registry.register(ext: "tar", handler: handler)
+        registry.register(ext: "xz", handler: handler)
+        registry.register(ext: "z", handler: handler)
         
         // Amiga formats
         registry.register(ext: "lzh", handler: handler)
