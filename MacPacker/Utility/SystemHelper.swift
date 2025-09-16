@@ -87,7 +87,7 @@ final class SystemHelper {
         case S_IFBLK:  result.append("b")   // block device
         case S_IFIFO:  result.append("p")   // FIFO / pipe
         case S_IFSOCK: result.append("s")   // socket
-        default:       result.append("?")
+        default:       result.append("-")
         }
 
         // Permissions
