@@ -160,7 +160,12 @@ extension ArchiveState {
             if fileItemType == .file && isSupportedArchive(ext: url.pathExtension) {
                 fileItemType = .archive
             }
-            let fileItem = ArchiveItem(path: url, type: fileItemType, size: fileSize)
+            let fileItem = ArchiveItem(
+                path: url,
+                type: fileItemType,
+                compressedSize: fileSize,
+                uncompressedSize: fileSize
+            )
             
             if fileItemType == .directory {
                 resultDirectories.append(fileItem)

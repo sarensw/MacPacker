@@ -23,9 +23,12 @@ struct ArchiveItem: Identifiable, Hashable, Codable {
     let type: ArchiveItemType
     var name: String
     var ext: String
-    var size: Int = -1
+    var compressedSize: Int = -1
+    var uncompressedSize: Int = -1
     var data: Data? = nil
     var index: Int? = nil
+    var modificationDate: Date? = nil
+    var posixPermissions: Int? = nil
     
     //
     // Initializers
@@ -37,11 +40,18 @@ struct ArchiveItem: Identifiable, Hashable, Codable {
     ///   - type: Type of item
     ///   - size: Size of the item
     ///   - name: Name of the titem. If this is nil, then the last path component from path is used
-    init(path: URL, type: ArchiveItemType, size: Int? = nil, name: String? = nil) {
+    init(
+        path: URL,
+        type: ArchiveItemType,
+        compressedSize: Int? = nil,
+        uncompressedSize: Int? = nil,
+        name: String? = nil
+    ) {
         self.path = path
         self.type = type
         self.name = name ?? path.lastPathComponent
-        self.size = size ?? -1
+        self.compressedSize = compressedSize ?? -1
+        self.uncompressedSize = uncompressedSize ?? -1
         self.ext = ""
         
         if type != .directory {
@@ -58,14 +68,27 @@ struct ArchiveItem: Identifiable, Hashable, Codable {
     ///   - size: Size of the item
     ///   - data: Data of the item if available
     ///   - index: Index of the item within the archive
-    init(name: String, type: ArchiveItemType, virtualPath: String? = nil, size: Int? = nil, data: Data? = nil, index: Int? = nil) {
+    init(
+        name: String,
+        type: ArchiveItemType,
+        virtualPath: String? = nil,
+        compressedSize: Int? = nil,
+        uncompressedSize: Int? = nil,
+        data: Data? = nil,
+        index: Int? = nil,
+        modificationDate: Date? = nil,
+        posixPermissions: Int? = nil
+    ) {
         self.virtualPath = virtualPath
         self.name = name
-        self.size = size ?? -1
+        self.compressedSize = compressedSize ?? -1
+        self.uncompressedSize = uncompressedSize ?? -1
         self.type = type
         self.ext = ""
         self.data = data
         self.index = index
+        self.modificationDate = modificationDate
+        self.posixPermissions = posixPermissions
         
         if type != .directory {
             self.ext = getExtension(name: name)

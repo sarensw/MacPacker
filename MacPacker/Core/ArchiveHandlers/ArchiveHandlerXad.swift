@@ -55,7 +55,27 @@ class ArchiveHandlerXad: ArchiveHandler {
         
         for index in 0..<archive.numberOfEntries() {
             let name = archive.name(ofEntry: index) ?? "<unknown>"
-            let size = archive.size(ofEntry: index)
+            
+            // tar archives (and similar) don't have a compressed size as they
+            // just package up files.
+            var compressedSize: Int = -1
+            var uncompressedSize: Int = -1
+            compressedSize = Int(archive.compressedSize(ofEntry: index))
+            if archive.entryHasSize(index) {
+                uncompressedSize = Int(archive.uncompressedSize(ofEntry: index))
+            } else {
+                uncompressedSize = Int(archive.compressedSize(ofEntry: index))
+            }
+            
+            // get more attributes
+            var modificationDate: Date?
+            var posixPermissions: Int?
+            let attributes = archive.attributes(ofEntry: index)
+            if let dict = attributes as? [String: Any] {
+                modificationDate = dict["NSFileModificationDate"] as? Date
+                posixPermissions = dict["NSFilePosixPermissions"] as? Int
+            }
+
             let type: XADMasterEntryType = archive.entryIsDirectory(index) ? .directory : .file
             
             if let npc = nextPathComponent(
@@ -73,7 +93,6 @@ class ArchiveHandlerXad: ArchiveHandler {
                             name: npc.name,
                             type: .directory,
                             virtualPath: archivePath + "/" + npc.name,
-                            size: nil,
                             index: Int(index)))
                     }
                 } else {
@@ -82,8 +101,11 @@ class ArchiveHandlerXad: ArchiveHandler {
                             name: fileName,
                             type: .file,
                             virtualPath: name,
-                            size: Int(size),
-                            index: Int(index)
+                            compressedSize: Int(compressedSize),
+                            uncompressedSize: Int(uncompressedSize),
+                            index: Int(index),
+                            modificationDate: modificationDate,
+                            posixPermissions: posixPermissions
                         ))
                     }
                 }

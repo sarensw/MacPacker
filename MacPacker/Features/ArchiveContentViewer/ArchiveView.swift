@@ -15,6 +15,12 @@ class ArchiveContainer: ObservableObject {
 struct ArchiveView: View {
     @Environment(\.openWindow) var openWindow
     @EnvironmentObject var state: ArchiveState
+    
+    @AppStorage(Keys.showColumnCompressedSize) var showCompressedSize: Bool = true
+    @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
+    @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
+    @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
+    
     @State private var isDraggingOver = false
     @State private var selection: IndexSet?
     
@@ -26,7 +32,12 @@ struct ArchiveView: View {
         VStack {
             ArchiveTableViewRepresentable(
                 selection: $selection,
-                isReloadNeeded: $state.archiveContainer.isReloadNeeded)
+                isReloadNeeded: $state.archiveContainer.isReloadNeeded,
+                showCompressedSizeColumn: $showCompressedSize,
+                showUncompressedSizeColumn: $showUncompressedSize,
+                showModificationDateColumn: $showModificationDate,
+                showPosixPermissionsColumn: $showPermissions
+            )
         }
         .border(isDraggingOver ? Color.blue : Color.clear, width: 2)
         .onDrop(of: ["public.file-url"], isTargeted: $isDraggingOver) { providers -> Bool in

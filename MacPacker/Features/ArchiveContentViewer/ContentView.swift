@@ -27,7 +27,7 @@ struct PathControlView: NSViewRepresentable {
 
 struct ContentView: View {
     // settings
-    @AppStorage("setting.breadcrumbPosition") var breadcrumbPosition: BreadcrumbPosition = .bottom
+    @AppStorage(Keys.settingBreadcrumbPosition) var breadcrumbPosition: BreadcrumbPosition = .bottom
     
     // environment
     @Environment(\.openWindow) var openWindow

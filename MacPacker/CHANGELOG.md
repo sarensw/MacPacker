@@ -1,5 +1,6 @@
 v0.8
 - feat: gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support
+- feat: show packed size, size, modified date, permissions in columns
 
 v0.7
 - feat: lzh, lha, lzx support

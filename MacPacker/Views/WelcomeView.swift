@@ -12,6 +12,7 @@ struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("• feat: feat: gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support")
+            Text("• feat: show packed size, size, modified date, permissions in columns")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
