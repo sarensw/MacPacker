@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 01.08.23.
 //
 
+import FinderSync
 import SwiftUI
 #if !STORE
 import Sparkle
@@ -12,14 +13,12 @@ import Sparkle
 
 @main
 struct MacPackerApp: App {
-    @Environment(\.dismiss) private var dismiss
-    
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     
     #if !STORE
     private let updaterController: SPUStandardUpdaterController
     #endif
-    @Environment(\.openWindow) var openWindow
+    
     let appState: AppState = AppState.shared
     
     init() {
@@ -38,75 +37,138 @@ struct MacPackerApp: App {
     }
     
     var body: some Scene {
-        WindowGroup(id: "MainWindow") {
-            ContentView()
-                .environmentObject(appState)
-        }
-//        .restorationBehavior(.disabled) // only for macOS 15+
-        
-        Window("", id: "About") {
-            AboutView()
-                .frame(width: 460, height: 420)
-        }
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
-        .commandsRemoved()
-        .defaultPosition(.center)
-        
-        WindowGroup(id: "Previewer", for: URL.self) { $url in
-            InternalEditorView(for: url)
-        }
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
-        .commandsRemoved()
-        .defaultPosition(.center)
-        
         Settings {
             PreferencesView()
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("About MacPacker") {
-                    openWindow(id: "About")
+                    appDelegate.openAboutWindow()
                 }
             }
-            #if !STORE
+#if !STORE
             CommandGroup(after: .appInfo) {
                 CheckForUpdatesView(updater: updaterController.updater)
             }
-            #endif
+#endif
         }
     }
 }
 
-final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("welcomeScreenShownInVersion") private var welcomeScreenShownInVersion = "0.0"
     private var openWithUrls: [URL] = []
+    private var archiveWindowManager: ArchiveWindowManager? = nil
+    
+    override init() {
+        super.init()
+        
+        archiveWindowManager = ArchiveWindowManager(appDelegate: self)
+    }
+    
+    func application(_ application: NSApplication, open urls: [URL]) {
+        Logger.log("open \(urls)")
+        
+        // first check if this is an app url, and handle it accordingly
+        if let url = urls.first,
+           let appUrl: AppUrl = UrlParser().parse(appUrl: url) {
+            var handler: AppUrlHandler?
+
+            // we will be here if this is a valid app url
+            // (url starting with app.macpacker:// scheme)
+            switch appUrl.action {
+            case .open:
+                handler = AppUrlOpenHandler()
+            case .extractFiles:
+//                handler = AppUrlExtractFilesHandler()
+                break
+            case .extractHere:
+                handler = AppUrlExtractHereHandler()
+            case .extractToFolder:
+                handler = AppUrlExtractToFolderHandler()
+            }
+            
+            // we have all the url info, start the handlers now
+            handler!.handle(
+                appUrl: appUrl,
+                archiveWindowManager: archiveWindowManager!
+            )
+            
+            // no need to move further here as it was an app url
+            return
+        }
+        
+        // it is not an app url, therefore the assumption is that the app
+        // was opened via Finder > right click > Open with...
+        for url in urls {
+            Logger.log("want to open for \(url)")
+            archiveWindowManager?.openArchiveWindow(for: url)
+        }
+    }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Logger.log("finish launching")
+        
+        // make sure that at least one window will be shown
+        // even if it is empyt
+        archiveWindowManager?.openArchiveWindow()
+        
         if Bundle.main.appVersionLong > welcomeScreenShownInVersion {
             WelcomeWindowController.shared.show()
             welcomeScreenShownInVersion = Bundle.main.appVersionLong
         }
         
-        if let window = NSApp.windows.first {
-            window.delegate = self
+        if FIFinderSyncController.isExtensionEnabled == false {
+            FIFinderSyncController.showExtensionManagementInterface()
         }
     }
     
     func applicationWillTerminate(_ notification: Notification) {
+        archiveWindowManager?.closeAll()
+        
         CacheCleaner.shared.clean()
     }
     
-    func windowShouldClose(_ window: NSWindow) -> Bool {
-        NSApp.hide(nil)
-        return false
+    func openAboutWindow() {
+        
+        let window = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 460, height: 420),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered,
+            defer: true
+        )
+        window.titlebarAppearsTransparent = true
+        window.center()
+        window.isRestorable = false
+        
+        let contentView = AboutView()
+        
+        window.contentView = NSHostingView(rootView: contentView)
+        
+        // show the window
+        window.makeKeyAndOrderFront(nil)
     }
     
-    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
-        if let window = NSApp.windows.first {
-            window.makeKeyAndOrderFront(nil)
-        }
-        return true
+    func openPreviewerWindow(for url: URL) {
+        
+        let window = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 460, height: 420),
+            styleMask: [.titled, .closable, .fullSizeContentView],
+            backing: .buffered,
+            defer: true
+        )
+        window.titlebarAppearsTransparent = true
+        window.center()
+        window.isRestorable = false
+        
+        let contentView = InternalEditorView(for: url)
+        
+        window.contentView = NSHostingView(rootView: contentView)
+        
+        // show the window
+        window.makeKeyAndOrderFront(nil)
     }
+    
+    func applicationShouldSaveApplicationState(_ app: NSApplication) -> Bool { false }
+    func applicationShouldRestoreApplicationState(_ app: NSApplication) -> Bool { false }
 }

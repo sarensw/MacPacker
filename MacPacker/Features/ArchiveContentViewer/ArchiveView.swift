@@ -14,7 +14,8 @@ class ArchiveContainer: ObservableObject {
 
 struct ArchiveView: View {
     @Environment(\.openWindow) var openWindow
-    @EnvironmentObject var state: ArchiveState
+    @EnvironmentObject private var appDelegate: AppDelegate
+    @EnvironmentObject private var state: ArchiveState
     
     @AppStorage(Keys.showColumnCompressedSize) var showCompressedSize: Bool = true
     @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
@@ -23,10 +24,6 @@ struct ArchiveView: View {
     
     @State private var isDraggingOver = false
     @State private var selection: IndexSet?
-    
-    func openPreviewer(for url: URL) {
-        openWindow(id: "Previewer")
-    }
     
     var body: some View {
         VStack {
@@ -75,7 +72,7 @@ struct ArchiveView: View {
             if let archive = state.archive,
                let selectedItem = state.selectedItems.first,
                let url = archive.extractFileToTemp(selectedItem) {
-                openWindow(id: "Previewer", value: url)
+                appDelegate.openPreviewerWindow(for: url)
             }
             return .handled
         }

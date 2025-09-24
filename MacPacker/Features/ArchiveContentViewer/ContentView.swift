@@ -31,8 +31,8 @@ struct ContentView: View {
     
     // environment
     @Environment(\.openWindow) var openWindow
-    @StateObject var archiveState: ArchiveState = ArchiveState()
-    @EnvironmentObject var state: AppState
+    @Environment(AppState.self) var state: AppState
+    @EnvironmentObject var archiveState: ArchiveState
     
     // state
     @State private var selectedFileItemID: Set<ArchiveItem.ID> = []
@@ -62,9 +62,6 @@ struct ContentView: View {
                 archiveState: archiveState
             )
         }
-        .onOpenURL { url in
-            self.archiveState.loadUrl(url)
-        }
         .navigationTitle(archiveState.archive == nil ? "MacPacker" : archiveState.archive!.name)
         .environmentObject(archiveState)
     }
@@ -78,10 +75,4 @@ struct ContentView: View {
             }
         )
     }
-}
-
-#Preview {
-    ContentView(archiveState: ArchiveState(completePath: "/MacPackerTests/TestArchives/archiveNested1.zip"))
-        .environmentObject(AppState.shared)
-        .frame(width: 480, height: 352)
 }

@@ -359,10 +359,12 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     ///   - nsView: desc
     ///   - context: context
     func updateNSView(_ nsView: NSScrollView, context: Context) {
-        Logger.log(
-            level: isReloadNeeded ? .Warning : .Debug,
-            "isReloadedNeeded: \(isReloadNeeded)"
-        )
+        if isReloadNeeded {
+            Logger.log(
+                level: isReloadNeeded ? .Warning : .Debug,
+                "isReloadNeeded: \(isReloadNeeded)"
+            )
+        }
         
         if let tableView = nsView.documentView as? NSTableView {
             if let col = tableView.tableColumn(withIdentifier: ArchiveViewerColumn.compressedSize.identifier) {

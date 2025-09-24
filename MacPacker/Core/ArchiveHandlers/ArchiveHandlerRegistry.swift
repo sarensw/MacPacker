@@ -5,7 +5,9 @@
 //  Created by Stephan Arenswald on 04.09.25.
 //
 
-class ArchiveHandlerRegistry {
+import Foundation
+
+public class ArchiveHandlerRegistry {
     static let shared: ArchiveHandlerRegistry = .init()
     var archiveHandlers: [String: ArchiveHandler] = [:]
     
@@ -16,6 +18,10 @@ class ArchiveHandlerRegistry {
         handler: ArchiveHandler
     ) {
         archiveHandlers[ext] = handler
+    }
+    
+    func handler(for url: URL) -> ArchiveHandler? {
+        return handler(for: url.pathExtension)
     }
     
     func handler(for ext: String) -> ArchiveHandler? {

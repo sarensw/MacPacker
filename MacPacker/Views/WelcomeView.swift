@@ -11,8 +11,7 @@ import SwiftUI
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("• feat: feat: gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support")
-            Text("• feat: show packed size, size, modified date, permissions in columns")
+            Text("• feat: Finder integration via context menu")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
@@ -56,7 +55,7 @@ struct WelcomeFeedbackView: View {
                         .opacity(feedbackText.isEmpty ? 0.25 : 1)
                 }
                 Button("Send") {
-                    var urlc = URLComponents(string: "mailto:hej@sarensx.com")
+                    var urlc = URLComponents(string: "mailto:apps@sarensw.com")
                     urlc?.queryItems = [
                         URLQueryItem(name: "subject", value: "MacPacker Feedback \(UUID())"),
                         URLQueryItem(name: "body", value: feedbackText)

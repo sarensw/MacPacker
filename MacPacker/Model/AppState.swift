@@ -6,10 +6,19 @@
 //
 
 import Foundation
+import Observation
 import SwiftUI
 
-class AppState: ObservableObject {
+@Observable
+class AppState {
     static var shared: AppState = AppState()
     
     private init() { }
+    
+    //
+    // MARK: Observable properties
+    //
+    
+    /// Holds all archives that the app currently takes care of
+    var archives: [UUID: Archive2] = [:]
 }

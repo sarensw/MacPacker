@@ -5,6 +5,8 @@
 //  Created by Stephan Arenswald on 04.09.25.
 //
 
+import Cocoa
+
 class Dummy {
     func dummyFunc() {
         Logger.log("")
@@ -43,24 +45,14 @@ class Logger {
         
         Self.tailBeat = TailBeat.logger.start(
             collectOSLogs: false,
-            collectStdout: true,
-            collectStderr: true
+            collectStdout: false,
+            collectStderr: false
         )
         Self.initialized = true
     }
     
     static func start() {
         initialize()
-    }
-    
-    static func log(
-        level: LogLevel = .Debug,
-        _ message: Bool,
-        file: String = #file,
-        function: String = #function,
-        line: Int = #line,
-    ) {
-        log(level: level, String(describing: message), file: file, function: function, line: line)
     }
     
     static func log(
@@ -72,6 +64,8 @@ class Logger {
     ) {
         initialize()
         
+        NSLog(message)
+
         #if DEBUG
         tailBeat?.log(
             level: level.tailBeatLevel,

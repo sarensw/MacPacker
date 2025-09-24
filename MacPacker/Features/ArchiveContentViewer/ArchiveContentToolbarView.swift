@@ -16,7 +16,7 @@ extension NSImage {
 }
 
 struct ArchiveContentToolbarView: ToolbarContent {
-    @Environment(\.openWindow) var openWindow
+    @EnvironmentObject private var appDelegate: AppDelegate
     @Environment(\.openURL) var openURL
     @State private var isExportingItem: Bool = false
     @State private var isExportingAll: Bool = false
@@ -31,7 +31,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 if let archive = archiveState.archive,
                    let selectedItem = archiveState.selectedItems.first,
                    let url = archive.extractFileToTemp(selectedItem) {
-                    openWindow(id: "Previewer", value: url)
+                    appDelegate.openPreviewerWindow(for: url)
                 }
             } label: {
                 Label("Preview", systemImage: "doc.text.magnifyingglass")
@@ -167,7 +167,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
                 
                 Button {
-                    openWindow(id: "About")
+                    appDelegate.openAboutWindow()
                 } label: {
                     Label("About MacPacker", systemImage: "info.square")
                         .labelStyle(.titleAndIcon)
