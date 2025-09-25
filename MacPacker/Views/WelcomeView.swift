@@ -230,6 +230,11 @@ struct WelcomeView: View {
             Spacer()
             #endif
             
+            Text(verbatim: "AI-generated translations. Reach out for corrections or suggestions.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .padding(.top, 12)
+            
             
 //            Text("2023 SarensX OÜ, Stephan Arenswald. Published as Open Source under GPL.")
 //                .font(.footnote)
