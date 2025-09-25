@@ -14,7 +14,12 @@ class AppUrlOpenHandler: AppUrlHandler {
             Logger.log("Requesting access for \(fileUrl)")
             
             requestAccessToFile(for: fileUrl, completion: { response, url in
-                if response == .OK {
+                guard response == .OK, let url else {
+                    Logger.log("Access denied by user or no URL returned")
+                    return
+                }
+                
+                DispatchQueue.main.async {
                     Logger.log("want to open for \(String(describing: url))")
                     archiveWindowManager.openArchiveWindow(for: url)
                 }
