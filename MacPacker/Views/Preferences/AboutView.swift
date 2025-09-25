@@ -30,28 +30,26 @@ struct AboutView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 80, alignment: .center)
-            Text("MacPacker")
+            Text(Bundle.main.appName)
                 .font(.system(size: 42, weight: .medium, design: .default))
-            Text("Version v\(Bundle.main.appVersionLong)")
+            Text("Version v\(Bundle.main.appVersionLong)", comment: "This text shows the current version of the app in Welcome and About window")
                 .foregroundColor(.secondary)
             
-            Text("MacPacker has been brought to you by")
+            Text("\(Bundle.main.appName) has been brought to you by", comment: "Below of this text is a list of people who contributed to the development of this app")
                 .fontWeight(.semibold)
                 .padding(.top, 14)
             HStack(spacing: 14) {
                 VStack(alignment: .trailing, spacing: 0) {
-                    Text("Stephan Arenswald")
-//                    Text("Community")
+                    Text(verbatim: "Stephan Arenswald")
                 }
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("idea, code")
-//                    Text("coding")
+                    Text("idea, code", comment: "This text describes the role of one of the app's developers")
                 }
             }
             .font(.caption2)
             
             #if !STORE
-            Text("Support the development...")
+            Text("Support the development...", comment: "Hint to the user to support the app's development via some donation")
                 .fontWeight(.semibold)
                 .padding(.top, 14)
             HStack {
@@ -74,19 +72,28 @@ struct AboutView: View {
             Spacer()
             #endif
             
-            Text("Reach out...")
+            Text("Reach out...", comment: "Hint in the About view to let the user contact the developer. The various ways to contact the developer are listed below.")
                 .fontWeight(.semibold)
                 .padding(.top, 14)
             HStack(spacing: 14) {
-                Link("apps@sarensw.com", destination: URL(string: "mailto:apps@sarensw.com")!)
-                Link("@sarensw", destination: URL(string: "https://twitter.com/sarensw")!)
-                Link("macpacker.app", destination: URL(string: "https://macpacker.app/?ref=about")!)
+                Link(destination: URL(string: "mailto:\(Constants.supportMail)")!) {
+                    Text(verbatim: "\(Constants.supportMail)")
+                }
+                Link(destination: URL(string: "https://twitter.com/sarensw")!) {
+                    Text(verbatim: "@sarensw")
+                }
+                Link(destination: URL(string: "https://macpacker.app/?ref=about")!) {
+                    Text(verbatim: "macpacker.app")
+                }
             }
             
-            Text("2025 Stephan Arenswald. Published as Open Source under GPL.")
-                .font(.footnote)
-                .foregroundColor(.secondary)
-                .padding(.top, 14)
+            HStack(spacing: 0) {
+                Text(verbatim: "\(Calendar.current.component(.year, from: Date())) Stephan Arenswald. ")
+                Text("Published as Open Source under GPL.", comment: "Hint about how the app is published as Open Source using the GPL license")
+            }
+            .font(.footnote)
+            .foregroundColor(.secondary)
+            .padding(.top, 14)
         }
         .padding()
     }

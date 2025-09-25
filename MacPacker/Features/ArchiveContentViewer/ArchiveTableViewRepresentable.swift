@@ -402,28 +402,28 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     
     func createColumns(_ tableView: NSTableView) {
         let colName = NSTableColumn(identifier: ArchiveViewerColumn.name.identifier)
-        colName.title = "Name"
+        colName.title = NSLocalizedString("Name", comment: "Column that shows the name of the archive files")
         colName.width = 300
         colName.resizingMask = .userResizingMask
         tableView.addTableColumn(colName)
         
         let colSizeCompressed = NSTableColumn(identifier: ArchiveViewerColumn.compressedSize.identifier)
-        colSizeCompressed.title = "Packed Size"
+        colSizeCompressed.title = NSLocalizedString("Packed Size", comment: "Column that shows the packed size of the archive files")
         colSizeCompressed.width = 100
         tableView.addTableColumn(colSizeCompressed)
         
         let colSizeUncompressed = NSTableColumn(identifier: ArchiveViewerColumn.uncompressedSize.identifier)
-        colSizeUncompressed.title = "Size"
+        colSizeUncompressed.title = NSLocalizedString("Size", comment: "Column that shows the unpacked size of the archive files")
         colSizeUncompressed.width = 100
         tableView.addTableColumn(colSizeUncompressed)
         
         let colModDate = NSTableColumn(identifier: ArchiveViewerColumn.modificationDate.identifier)
-        colModDate.title = "Date Modified"
+        colModDate.title = NSLocalizedString("Date Modified", comment: "Column that shows the date the file was modified")
         colModDate.width = 150
         tableView.addTableColumn(colModDate)
         
         let colPosInArchive = NSTableColumn(identifier: ArchiveViewerColumn.posixPermissions.identifier)
-        colPosInArchive.title = "Permissions"
+        colPosInArchive.title = NSLocalizedString("Permissions", comment: "Column that shows the file permissions")
         colPosInArchive.width = 80
         tableView.addTableColumn(colPosInArchive)
     }

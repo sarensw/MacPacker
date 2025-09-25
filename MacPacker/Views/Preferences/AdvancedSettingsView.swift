@@ -14,7 +14,7 @@ struct AdvancedSettingsView: View {
     var body: some View {
         VStack {
             HStack(alignment: .top) {
-                Text("Cache:")
+                Text("Cache:", comment: "Cache related settings")
                     .frame(width: 160, alignment: .trailing)
                 
                 VStack(alignment: .leading) {
@@ -23,7 +23,7 @@ struct AdvancedSettingsView: View {
                             NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: url.path)
                         }
                     } label: {
-                        Text("Open cache directory")
+                        Text("Open cache directory", comment: "Allows the user to open the application support folder that holds the cache for temporarly extracted archive files")
                     }
                     .help("Show application support folder")
                     .disabled(applicationSupportDirectory == nil)
@@ -31,7 +31,7 @@ struct AdvancedSettingsView: View {
                     Button {
                         CacheCleaner.shared.clean()
                     } label: {
-                        Text("Clear cache")
+                        Text("Clear cache", comment: "Allows the user to clear the cache")
                     }
                     .help("Clears all content from the cache")
                     .disabled(applicationSupportDirectory == nil)

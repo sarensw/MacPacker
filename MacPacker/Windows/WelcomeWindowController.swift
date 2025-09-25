@@ -21,7 +21,7 @@ class WelcomeWindowController {
         welcomeWindow?.isMovableByWindowBackground = true
         welcomeWindow?.showsToolbarButton = true
         welcomeWindow?.styleMask = [.titled, .closable]
-        welcomeWindow?.setContentSize(NSSize(width: 480, height: 480))
+        welcomeWindow?.setContentSize(NSSize(width: 640, height: 480))
         welcomeWindow?.center()
         
         let rootView = WelcomeView()

@@ -25,14 +25,22 @@ struct GeneralSettingsView: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
-                Text("Columns:")
+                Text("Columns:", comment: "Let's the user choose to show or hide columns in the archive window")
                     .frame(width: 160, alignment: .trailing)
                 
                 VStack(alignment: .leading) {
-                    Toggle("Packed Size", isOn: $showCompressedSize)
-                    Toggle("Size", isOn: $showUncompressedSize)
-                    Toggle("Modified", isOn: $showModificationDate)
-                    Toggle("Permissions", isOn: $showPermissions)
+                    Toggle(isOn: $showCompressedSize) {
+                        Text("Packed Size", comment: "Column that shows the packed size of the archive files")
+                    }
+                    Toggle(isOn: $showUncompressedSize) {
+                        Text("Size", comment: "Column that shows the unpacked size of the archive files")
+                    }
+                    Toggle(isOn: $showModificationDate) {
+                        Text("Date Modified", comment: "Column that shows the date the file was modified")
+                    }
+                    Toggle(isOn: $showPermissions) {
+                        Text("Permissions", comment: "Column that shows the file permissions")
+                    }
                 }
                 .padding(.leading, 8)
                 .toggleStyle(.checkbox)
@@ -42,11 +50,11 @@ struct GeneralSettingsView: View {
             Divider()
             
             HStack(alignment: .top) {
-                Text("Breadcrumb position:")
+                Text("Breadcrumb position:", comment: "Allows the user to change the breadcrumb position to either top or bottom of the archive window")
                     .frame(width: 160, alignment: .trailing)
                 
                 HStack {
-                    Picker("", selection: $breadcrumbPosition) {
+                    Picker(String(""), selection: $breadcrumbPosition) {
                         ForEach(BreadcrumbPosition.allCases, id: \.self) { position in
                             Text(position.rawValue)
                                 .tag(position)

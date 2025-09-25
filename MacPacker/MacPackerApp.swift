@@ -42,8 +42,10 @@ struct MacPackerApp: App {
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
-                Button("About MacPacker") {
+                Button {
                     appDelegate.openAboutWindow()
+                } label: {
+                    Text("About \(Bundle.main.appName)", comment: "Link to the About page of the app. The order depends on the language. For example: English: About MacPacker, Japanese: MacPackerについて")
                 }
             }
 #if !STORE
@@ -52,6 +54,7 @@ struct MacPackerApp: App {
             }
 #endif
         }
+        .environmentObject(appDelegate)
     }
 }
 

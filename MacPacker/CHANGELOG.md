@@ -1,5 +1,6 @@
 v0.9
 - feat: Finder integration via context menu
+- core: Language support for German, French, Simplified Chinese
 
 v0.8
 - feat: gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support
