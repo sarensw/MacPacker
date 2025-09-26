@@ -234,12 +234,6 @@ struct WelcomeView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.top, 12)
-            
-            
-//            Text("2023 SarensX OÜ, Stephan Arenswald. Published as Open Source under GPL.")
-//                .font(.footnote)
-//                .foregroundColor(.secondary)
-//                .padding(.top, 14)
         }
         .padding()
     }
