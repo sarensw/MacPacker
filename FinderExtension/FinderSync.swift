@@ -118,14 +118,14 @@ class FinderSync: FIFinderSync {
             let macPackerSubmenu = NSMenu(title: "MacPacker")
             
             // Open
-            macPackerSubmenu.addItem(withTitle: "Open Archive\(count > 1 ? "s…" : "")",
+            macPackerSubmenu.addItem(withTitle: String(localized: "Open \(count) Archive", comment: "Opens the archive in an archive window"),
                                      action: #selector(openArchive(_:)),
                                      keyEquivalent: "")
             
 //            macPackerSubmenu.addItem(withTitle: "Extract files…",
 //                                     action: #selector(extractFiles(_:)),
 //                                     keyEquivalent: "")
-            macPackerSubmenu.addItem(withTitle: "Extract Here",
+            macPackerSubmenu.addItem(withTitle: NSLocalizedString("Extract Here", comment: "Tell the user in the Finder context menu to extract the archive in the current directory as is"),
                                      action: #selector(extractHere(_:)),
                                      keyEquivalent: "")
             
@@ -137,7 +137,7 @@ class FinderSync: FIFinderSync {
             } else if selecteditems.count > 1 {
                 folderName = "*/"
             }
-            macPackerSubmenu.addItem(withTitle: "Extract to \"\(folderName)\"",
+            macPackerSubmenu.addItem(withTitle: String(localized: "Extract to \"\(folderName)\"", comment: "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to."),
                                      action: #selector(extractToFolder(_:)),
                                      keyEquivalent: "")
             
