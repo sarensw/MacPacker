@@ -9,6 +9,7 @@ import AppKit
 import Cocoa
 import FinderSync
 import Foundation
+import TailBeat
 
 extension Bundle {
 
@@ -41,6 +42,11 @@ class FinderSync: FIFinderSync {
     
     override init() {
         super.init()
+        
+        let _ = TailBeat.start { config in
+            config.collectStderr = true
+            config.collectStdout = true
+        }
         
         Logger.start()
         Logger.log("FinderSync() launched from \(Bundle.main.bundlePath as NSString)")
@@ -101,7 +107,7 @@ class FinderSync: FIFinderSync {
         }
         let selecteditems = FIFinderSyncController.default().selectedItemURLs()?.filter({ !$0.hasDirectoryPath }) ?? []
         Logger.log(String(describing: selecteditems))
-        Logger.log("here")
+        
         if selecteditems.count > 0 // let selecteditems = FIFinderSyncController.default().selectedItemURLs()?.filter({ !$0.hasDirectoryPath })
         {
             Logger.log("Creating menu for \(selecteditems[0].absoluteString), isDir? \(selecteditems[0].hasDirectoryPath)")

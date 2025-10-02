@@ -1,5 +1,5 @@
 {
-  "originHash" : "c7b6472c6ff8f0a8060dd8e842c9d59e5f0de64371d0b50eb69e7ea91fc2eb46",
+  "originHash" : "be390fd64aa45aadfd6937cdc3e791c982d7ef209241d70b480e08bb34807694",
   "pins" : [
     {
       "identity" : "bitbytedata",
@@ -26,6 +26,15 @@
       "state" : {
         "revision" : "390e0b0af8dd19a600005a242a89e570ff482e09",
         "version" : "4.8.6"
+      }
+    },
+    {
+      "identity" : "tailbeat-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tailbeat/tailbeat-swift",
+      "state" : {
+        "revision" : "4648d98c1675b9f1c0cd569f3129b55605fea8c6",
+        "version" : "0.2.0"
       }
     },
     {

@@ -5,6 +5,8 @@
 //  Created by Stephan Arenswald on 04.09.25.
 //
 
+import TailBeat
+
 class Dummy {
     func dummyFunc() {
         Logger.log("")
@@ -22,7 +24,7 @@ enum LogLevel: Int {
     case Error = 4
     case Fatal = 5
     
-    var tailBeatLevel: TailBeatLevel {
+    var tailBeatLevel: TailBeatLogLevel {
         switch self {
         case .Trace: return .Trace
         case .Debug: return .Debug
@@ -35,21 +37,18 @@ enum LogLevel: Int {
 }
 
 class Logger {
-    private static var tailBeat: TailBeat?
+    private static var tailBeatLogger: TailBeatLogger = TailBeat.logger
     private static var initialized: Bool = false
     
     static func initialize() {
         guard !Self.initialized else { return }
         
-        Self.tailBeat = TailBeat.logger.start(
-            collectOSLogs: false,
-            collectStdout: true,
-            collectStderr: true
-        )
         Self.initialized = true
     }
     
     static func start() {
+        Self.tailBeatLogger = TailBeat.logger
+        
         initialize()
     }
     
@@ -60,7 +59,8 @@ class Logger {
         function: String = #function,
         line: Int = #line,
     ) {
-        log(level: level, String(describing: message), file: file, function: function, line: line)
+        //Logger.logger.logTest()
+        // log(level: level, String(describing: message), file: file, function: function, line: line)
     }
     
     static func log(
@@ -73,7 +73,7 @@ class Logger {
         initialize()
         
         #if DEBUG
-        tailBeat?.log(
+        tailBeatLogger.log(
             level: level.tailBeatLevel,
             "\(message)",
             file: file,

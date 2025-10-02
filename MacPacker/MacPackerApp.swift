@@ -10,6 +10,7 @@ import SwiftUI
 #if !STORE
 import Sparkle
 #endif
+import TailBeat
 
 @main
 struct MacPackerApp: App {
@@ -22,6 +23,11 @@ struct MacPackerApp: App {
     let appState: AppState = AppState.shared
     
     init() {
+        let _ = TailBeat.start { config in
+            config.collectStderr = true
+            config.collectStdout = true
+        }
+        
         Logger.start()
         
         // register all handlers

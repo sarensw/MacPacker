@@ -9,20 +9,6 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : {
-      "targets" : [
-        {
-          "containerPath" : "container:MacPacker.xcodeproj",
-          "identifier" : "25C0A8A32A78DE5F002C1C2A",
-          "name" : "MacPacker"
-        },
-        {
-          "containerPath" : "container:MacPacker.xcodeproj",
-          "identifier" : "25C0A8B42A78DE62002C1C2A",
-          "name" : "MacPackerTests"
-        }
-      ]
-    },
     "targetForVariableExpansion" : {
       "containerPath" : "container:MacPacker.xcodeproj",
       "identifier" : "25C0A8A32A78DE5F002C1C2A",

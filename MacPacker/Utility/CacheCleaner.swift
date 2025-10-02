@@ -16,8 +16,8 @@ class CacheCleaner {
             do {
                 try FileManager.default.removeItem(at: url.appendingPathComponent("ta", conformingTo: .directory))
             } catch {
-                print("Could not clear cache because...")
-                print(error)
+                Logger.error("Could not clear cache because...")
+                Logger.error(error.localizedDescription)
             }
         }
     }
