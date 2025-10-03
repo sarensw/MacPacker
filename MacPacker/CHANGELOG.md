@@ -1,3 +1,7 @@
+v0.10
+- fix: App crashes when all windows are closed and then the app gets terminated
+- core: Cleanup logging
+
 v0.9
 - feat: Finder integration via context menu
 - core: Language support for German, French, Simplified Chinese

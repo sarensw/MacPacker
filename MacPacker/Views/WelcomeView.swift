@@ -59,8 +59,7 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            WhatsNewPill(title: "Finder integration via context menu", type: .feature)
-            WhatsNewPill(title: "Language support for German, French, Simplified Chinese", type: .core)
+            WhatsNewPill(title: "App crashes when all windows are closed and then the app gets terminated", type: .bug)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()

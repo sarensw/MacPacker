@@ -17,13 +17,6 @@ class ArchiveWindowManager {
         self.appDelegate = appDelegate
     }
     
-    func closeAll() {
-        windows.forEach { window in
-            window.close()
-        }
-        windows.removeAll()
-    }
-    
     func openArchiveWindow() {
         openArchiveWindow(for: nil)
     }

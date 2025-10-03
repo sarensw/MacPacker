@@ -133,7 +133,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     func applicationWillTerminate(_ notification: Notification) {
-        archiveWindowManager?.closeAll()
+//        archiveWindowManager?.closeAll()
         
         CacheCleaner.shared.clean()
     }
@@ -177,7 +177,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // show the window
         window.makeKeyAndOrderFront(nil)
     }
-    
-    func applicationShouldSaveApplicationState(_ app: NSApplication) -> Bool { false }
-    func applicationShouldRestoreApplicationState(_ app: NSApplication) -> Bool { false }
 }
