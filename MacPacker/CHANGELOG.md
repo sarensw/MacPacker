@@ -1,4 +1,5 @@
 v0.10
+- feat: Quick Look extension
 - fix: App crashes when all windows are closed and then the app gets terminated
 - core: Cleanup logging
 

@@ -11,6 +11,10 @@
 		254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 254BB55C2ABBE8F50059A1D5 /* Sparkle */; };
 		2567C8282E8F429B008E1BD8 /* TailBeat in Frameworks */ = {isa = PBXBuildFile; productRef = 2567C8272E8F429B008E1BD8 /* TailBeat */; };
 		2567C82A2E8F42D2008E1BD8 /* TailBeat in Frameworks */ = {isa = PBXBuildFile; productRef = 2567C8292E8F42D2008E1BD8 /* TailBeat */; };
+		2567C8312E8FB75F008E1BD8 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2567C8302E8FB75F008E1BD8 /* Quartz.framework */; };
+		2567C83D2E8FB75F008E1BD8 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		2567C85E2E8FC876008E1BD8 /* TailBeat in Frameworks */ = {isa = PBXBuildFile; productRef = 2567C85D2E8FC876008E1BD8 /* TailBeat */; };
+		2567C8602E8FC87B008E1BD8 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2567C85F2E8FC87B008E1BD8 /* XADMasterSwift */; };
 		258D985F2E89772F00666BB7 /* TailBeat in Frameworks */ = {isa = PBXBuildFile; productRef = 258D985E2E89772F00666BB7 /* TailBeat */; };
 		2592CEDD2AD4F765008DEFF8 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2592CEDC2AD4F765008DEFF8 /* ZIPFoundation */; };
 		2592CEDF2AD4F77E008DEFF8 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2592CEDE2AD4F77E008DEFF8 /* ZIPFoundation */; };
@@ -40,6 +44,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 252F12012E7ABDD9004CCEBE;
 			remoteInfo = FinderExtension;
+		};
+		2567C83B2E8FB75F008E1BD8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 25C0A89C2A78DE5F002C1C2A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2567C82E2E8FB75F008E1BD8;
+			remoteInfo = QuickLookExtension;
 		};
 		25C0A8B62A78DE62002C1C2A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -96,6 +107,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				25D80C9E2E80204A00A55040 /* FinderExtension.appex in Embed Foundation Extensions */,
+				2567C83D2E8FB75F008E1BD8 /* QuickLookExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -106,6 +118,8 @@
 		252F12022E7ABDD9004CCEBE /* FinderExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FinderExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		254BB5592ABBE8430059A1D5 /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		254BB55A2ABBE8430059A1D5 /* MacPacker copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MacPacker copy-Info.plist"; path = "/Users/sarensw/Documents/Private/Projects/MacPacker/MacPacker copy-Info.plist"; sourceTree = "<absolute>"; };
+		2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickLookExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		2567C8302E8FB75F008E1BD8 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		25C0A8A42A78DE5F002C1C2A /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8B52A78DE62002C1C2A /* MacPackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8BF2A78DE62002C1C2A /* MacPackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -150,6 +164,13 @@
 			);
 			target = 252F12012E7ABDD9004CCEBE /* FinderExtension */;
 		};
+		2567C8412E8FB75F008E1BD8 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 2567C82E2E8FB75F008E1BD8 /* QuickLookExtension */;
+		};
 		257A675B2E829CF100532C84 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -162,6 +183,7 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		251114B22DC6D3AA0056D272 /* MacPacker */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (251114F72DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 251114F82DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 257A675B2E829CF100532C84 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MacPacker; sourceTree = "<group>"; };
 		252F12032E7ABDD9004CCEBE /* FinderExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (252F120E2E7ABDD9004CCEBE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FinderExtension; sourceTree = "<group>"; };
+		2567C8322E8FB75F008E1BD8 /* QuickLookExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (2567C8412E8FB75F008E1BD8 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = QuickLookExtension; sourceTree = "<group>"; };
 		25D62A342E6D61DE00E7FF69 /* MacPackerTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (25161E2C2E6D64BE00CCFEF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MacPackerTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -182,6 +204,16 @@
 				25CD1EBF2D829DEA007B53EE /* BitByteData in Frameworks */,
 				25CD1EBD2D829DEA007B53EE /* SWCompression in Frameworks */,
 				2592CEDF2AD4F77E008DEFF8 /* ZIPFoundation in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2567C82C2E8FB75F008E1BD8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2567C85E2E8FC876008E1BD8 /* TailBeat in Frameworks */,
+				2567C8312E8FB75F008E1BD8 /* Quartz.framework in Frameworks */,
+				2567C8602E8FC87B008E1BD8 /* XADMasterSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,6 +258,7 @@
 				25D62A342E6D61DE00E7FF69 /* MacPackerTests */,
 				25C0A8C22A78DE62002C1C2A /* MacPackerUITests */,
 				252F12032E7ABDD9004CCEBE /* FinderExtension */,
+				2567C8322E8FB75F008E1BD8 /* QuickLookExtension */,
 				25C0A8A52A78DE5F002C1C2A /* Products */,
 				25C0A8DF2A7B5569002C1C2A /* Frameworks */,
 				254BB55A2ABBE8430059A1D5 /* MacPacker copy-Info.plist */,
@@ -240,6 +273,7 @@
 				25C0A8BF2A78DE62002C1C2A /* MacPackerUITests.xctest */,
 				254BB5592ABBE8430059A1D5 /* MacPacker.app */,
 				252F12022E7ABDD9004CCEBE /* FinderExtension.appex */,
+				2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -265,6 +299,7 @@
 			children = (
 				25C5188A2AEA11660001697F /* SWCompression.framework */,
 				25C518862AEA115E0001697F /* BitByteData.framework */,
+				2567C8302E8FB75F008E1BD8 /* Quartz.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -324,6 +359,30 @@
 			productReference = 254BB5592ABBE8430059A1D5 /* MacPacker.app */;
 			productType = "com.apple.product-type.application";
 		};
+		2567C82E2E8FB75F008E1BD8 /* QuickLookExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2567C83E2E8FB75F008E1BD8 /* Build configuration list for PBXNativeTarget "QuickLookExtension" */;
+			buildPhases = (
+				2567C82B2E8FB75F008E1BD8 /* Sources */,
+				2567C82C2E8FB75F008E1BD8 /* Frameworks */,
+				2567C82D2E8FB75F008E1BD8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				2567C8322E8FB75F008E1BD8 /* QuickLookExtension */,
+			);
+			name = QuickLookExtension;
+			packageProductDependencies = (
+				2567C85D2E8FC876008E1BD8 /* TailBeat */,
+				2567C85F2E8FC87B008E1BD8 /* XADMasterSwift */,
+			);
+			productName = QuickLookExtension;
+			productReference = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		25C0A8A32A78DE5F002C1C2A /* MacPacker */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 25C0A8C92A78DE62002C1C2A /* Build configuration list for PBXNativeTarget "MacPacker" */;
@@ -338,6 +397,7 @@
 			);
 			dependencies = (
 				252F13CF2E801C4C004CCEBE /* PBXTargetDependency */,
+				2567C83C2E8FB75F008E1BD8 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				251114B22DC6D3AA0056D272 /* MacPacker */,
@@ -403,11 +463,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					252F12012E7ABDD9004CCEBE = {
 						CreatedOnToolsVersion = 16.4;
+					};
+					2567C82E2E8FB75F008E1BD8 = {
+						CreatedOnToolsVersion = 26.0.1;
 					};
 					25C0A8A32A78DE5F002C1C2A = {
 						CreatedOnToolsVersion = 14.3.1;
@@ -451,6 +514,7 @@
 				25C0A8B42A78DE62002C1C2A /* MacPackerTests */,
 				25C0A8BE2A78DE62002C1C2A /* MacPackerUITests */,
 				252F12012E7ABDD9004CCEBE /* FinderExtension */,
+				2567C82E2E8FB75F008E1BD8 /* QuickLookExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -464,6 +528,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		254BB5532ABBE8430059A1D5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2567C82D2E8FB75F008E1BD8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -508,6 +579,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2567C82B2E8FB75F008E1BD8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		25C0A8A02A78DE5F002C1C2A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -543,6 +621,11 @@
 			isa = PBXTargetDependency;
 			target = 252F12012E7ABDD9004CCEBE /* FinderExtension */;
 			targetProxy = 252F13CE2E801C4C004CCEBE /* PBXContainerItemProxy */;
+		};
+		2567C83C2E8FB75F008E1BD8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2567C82E2E8FB75F008E1BD8 /* QuickLookExtension */;
+			targetProxy = 2567C83B2E8FB75F008E1BD8 /* PBXContainerItemProxy */;
 		};
 		25C0A8B72A78DE62002C1C2A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -696,6 +779,101 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
 				PRODUCT_NAME = MacPacker;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		2567C83F2E8FB75F008E1BD8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = QuickLookExtension/QuickLookExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuickLookExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QuickLookExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.QuickLookExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		2567C8402E8FB75F008E1BD8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = QuickLookExtension/QuickLookExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QuickLookExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QuickLookExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.QuickLookExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -988,6 +1166,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		2567C83E2E8FB75F008E1BD8 /* Build configuration list for PBXNativeTarget "QuickLookExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2567C83F2E8FB75F008E1BD8 /* Debug */,
+				2567C8402E8FB75F008E1BD8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		25C0A89F2A78DE5F002C1C2A /* Build configuration list for PBXProject "MacPacker" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1092,6 +1279,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */;
 			productName = TailBeat;
+		};
+		2567C85D2E8FC876008E1BD8 /* TailBeat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */;
+			productName = TailBeat;
+		};
+		2567C85F2E8FC87B008E1BD8 /* XADMasterSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */;
+			productName = XADMasterSwift;
 		};
 		258D985E2E89772F00666BB7 /* TailBeat */ = {
 			isa = XCSwiftPackageProductDependency;
