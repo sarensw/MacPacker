@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>QLIsDataBasedPreview</key>
+			<false/>
+			<key>QLSupportedContentTypes</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.bzip2-archive</string>
+				<string>com.microsoft.cab</string>
+				<string>public.cpio-archive</string>
+				<string>public.zip-archive</string>
+				<string>com.rarlab.rar-archive</string>
+				<string>org.gnu.gnu-zip-archive</string>
+				<string>public.iso-image</string>
+				<string>org.tukaani.lzma-archive</string>
+				<string>cx.c3.lzx-archive</string>
+				<string>com.stuffit.archive.sit</string>
+				<string>com.stuffit.archive.sitx</string>
+				<string>public.tar-archive</string>
+				<string>org.tukaani.xz-archive</string>
+				<string>public.z-archive</string>
+				<string>com.winzip.zipx-archive</string>
+			</array>
+			<key>QLSupportsSearchableItems</key>
+			<false/>
+		</dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.quicklook.preview</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).PreviewViewController</string>
+	</dict>
+</dict>
+</plist>
