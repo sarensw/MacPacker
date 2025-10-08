@@ -1,5 +1,6 @@
 v0.10
 - feat: Quick Look extension
+- feat: Added Send-a-smile menu to let users quickly star the repo or add a review in the App Store
 - fix: App crashes when all windows are closed and then the app gets terminated
 - core: Cleanup logging
 

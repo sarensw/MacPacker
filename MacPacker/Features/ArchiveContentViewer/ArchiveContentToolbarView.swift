@@ -134,6 +134,8 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 
                 Divider()
                 
+                SendSmileView()
+                
                 Menu {
                     Button {
                         openURL(URL(string: "https://github.com/sarensw/MacPacker/issues/new?assignees=&labels=enhancement&projects=&template=&title=")!)

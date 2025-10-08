@@ -60,6 +60,7 @@ struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             WhatsNewPill(title: "Quick Look extension to preview archives in Finder", type: .feature)
+            WhatsNewPill(title: "Added Send-a-smile menu to let users quickly star the repo or add a review in the App Store", type: .feature)
             WhatsNewPill(title: "App crashes when all windows are closed and then the app gets terminated", type: .bug)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

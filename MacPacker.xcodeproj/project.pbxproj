@@ -15,6 +15,7 @@
 		2567C83D2E8FB75F008E1BD8 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2567C85E2E8FC876008E1BD8 /* TailBeat in Frameworks */ = {isa = PBXBuildFile; productRef = 2567C85D2E8FC876008E1BD8 /* TailBeat */; };
 		2567C8602E8FC87B008E1BD8 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2567C85F2E8FC87B008E1BD8 /* XADMasterSwift */; };
+		25711FF32E96400100DF0DE4 /* TailBeat in Frameworks */ = {isa = PBXBuildFile; productRef = 25711FF22E96400100DF0DE4 /* TailBeat */; };
 		258D985F2E89772F00666BB7 /* TailBeat in Frameworks */ = {isa = PBXBuildFile; productRef = 258D985E2E89772F00666BB7 /* TailBeat */; };
 		2592CEDD2AD4F765008DEFF8 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2592CEDC2AD4F765008DEFF8 /* ZIPFoundation */; };
 		2592CEDF2AD4F77E008DEFF8 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2592CEDE2AD4F77E008DEFF8 /* ZIPFoundation */; };
@@ -203,6 +204,7 @@
 				25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */,
 				25CD1EBF2D829DEA007B53EE /* BitByteData in Frameworks */,
 				25CD1EBD2D829DEA007B53EE /* SWCompression in Frameworks */,
+				25711FF32E96400100DF0DE4 /* TailBeat in Frameworks */,
 				2592CEDF2AD4F77E008DEFF8 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -354,6 +356,7 @@
 				25CD1EBC2D829DEA007B53EE /* SWCompression */,
 				25CD1EBE2D829DEA007B53EE /* BitByteData */,
 				25C764262E6C6D6200464CF5 /* XADMasterSwift */,
+				25711FF22E96400100DF0DE4 /* TailBeat */,
 			);
 			productName = MacPacker;
 			productReference = 254BB5592ABBE8430059A1D5 /* MacPacker.app */;
@@ -1289,6 +1292,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */;
 			productName = XADMasterSwift;
+		};
+		25711FF22E96400100DF0DE4 /* TailBeat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */;
+			productName = TailBeat;
 		};
 		258D985E2E89772F00666BB7 /* TailBeat */ = {
 			isa = XCSwiftPackageProductDependency;
