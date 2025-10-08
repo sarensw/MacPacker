@@ -122,9 +122,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // even if it is empyt
         archiveWindowManager?.openArchiveWindow()
         
-        if Bundle.main.appVersionLong > welcomeScreenShownInVersion {
-            WelcomeWindowController.shared.show()
-            welcomeScreenShownInVersion = Bundle.main.appVersionLong
+        if let appVersion = Version(Bundle.main.appVersionLong),
+           let welcomeVersion = Version(welcomeScreenShownInVersion) {
+            if appVersion > welcomeVersion {
+                Logger.debug("Higher app version detected, showing welcome screen")
+                WelcomeWindowController.shared.show()
+                welcomeScreenShownInVersion = Bundle.main.appVersionLong
+            }
         }
         
         if FIFinderSyncController.isExtensionEnabled == false {
@@ -133,8 +137,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     func applicationWillTerminate(_ notification: Notification) {
-//        archiveWindowManager?.closeAll()
-        
         CacheCleaner.shared.clean()
     }
     
