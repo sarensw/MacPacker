@@ -68,8 +68,9 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            WhatsNewPill(title: "Re-enable macOS 13 as minimum deployment target", type: .core)
+            WhatsNewPill(title: "Use system preview instead of internal previewer", type: .feature)
             WhatsNewPill(title: "Crash when using the open with option", type: .bug)
+            WhatsNewPill(title: "Re-enable macOS 13 as minimum deployment target", type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
