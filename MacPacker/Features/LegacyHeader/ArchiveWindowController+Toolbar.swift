@@ -217,11 +217,7 @@ extension ArchiveWindowController: NSToolbarDelegate {
     //
     
     @objc func previewSelected() {
-        if let archive = archiveState.archive,
-           let selectedItem = archiveState.selectedItems.first,
-           let url = archive.extractFileToTemp(selectedItem) {
-            appDelegate.openPreviewerWindow(for: url)
-        }
+        archiveState.updateSelectedItemForQuickLook()
     }
     
     @objc func extractSelected() {

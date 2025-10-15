@@ -28,11 +28,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
     var body: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
             Button {
-                if let archive = archiveState.archive,
-                   let selectedItem = archiveState.selectedItems.first,
-                   let url = archive.extractFileToTemp(selectedItem) {
-                    appDelegate.openPreviewerWindow(for: url)
-                }
+                archiveState.updateSelectedItemForQuickLook()
             } label: {
                 Label {
                     Text("Preview", comment: "Button in the tooblar that allows the user to preview the selected file.")
