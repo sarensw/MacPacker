@@ -70,11 +70,109 @@ struct ArchiveView: View {
         }
         .onKeyPress(.space) {
             if let archive = state.archive,
-               let selectedItem = state.selectedItems.first,
-               let url = archive.extractFileToTemp(selectedItem) {
-                appDelegate.openPreviewerWindow(for: url)
+                let selectedItem = state.selectedItems.first {
+
+                // Only preview files, not directories
+                if selectedItem.type == .file,
+                   let url = archive.extractFileToTemp(selectedItem) {
+                    appDelegate.openPreviewerWindow(for: url)
+                    return .handled
+                }
             }
-            return .handled
+            return .ignored
+        }
+        .onKeyPress(.return) {
+            // Enter: Open selected item (enter directory or preview file)
+            if let archive = state.archive,
+                let selectedItem = state.selectedItems.first {
+                // Only enter if it's a directory
+                if selectedItem.type == .directory {
+                    DispatchQueue.main.async {
+                        do {
+                            _ = try archive.open(selectedItem)
+                            state.archiveContainer.isReloadNeeded = true
+                            state.selectedItems = []
+                            selection = nil
+                        } catch {
+                            print("Error opening directory: \(error)")
+                        }
+                    }
+                    return .handled
+                }
+            }
+            return .ignored
+        }
+        .onKeyPress("o") {
+            // Cmd+O: Open the selected item (same as double-click)
+            // Check for command modifier using NSEvent
+            guard NSEvent.modifierFlags.contains(.command) else {
+                return .ignored
+            }
+
+            if let archive = state.archive,
+               let selectedItem = state.selectedItems.first {
+                DispatchQueue.main.async {
+                    do {
+                        _ = try archive.open(selectedItem)
+                        state.archiveContainer.isReloadNeeded = true
+                        state.selectedItems = []
+                        selection = nil
+                    } catch {
+                        print("Error opening item: \(error)")
+                    }
+                }
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(.downArrow) {
+            // Cmd+Down: Enter the selected directory
+            // Check for command modifier using NSEvent
+            guard NSEvent.modifierFlags.contains(.command) else {
+                return .ignored
+            }
+
+            if let archive = state.archive,
+                let selectedItem = state.selectedItems.first,
+                selectedItem.type == .directory {
+                DispatchQueue.main.async {
+                    do {
+                        _ = try archive.open(selectedItem)
+                        state.archiveContainer.isReloadNeeded = true
+                        state.selectedItems = []
+                        selection = nil
+                    } catch {
+                        print("Error opening directory: \(error)")
+                    }
+                }
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(.upArrow) {
+            // Cmd+Up: Go up one level
+            // Check for command modifier using NSEvent
+            guard NSEvent.modifierFlags.contains(.command) else {
+                return .ignored
+            }
+
+            if let archive = state.archive {
+                // Check if we can go up (stack has more than one item)
+                if archive.stack.count > 1 {
+                    DispatchQueue.main.async {
+                        do {
+                            _ = try archive.open(ArchiveItem.parent)
+                            state.archiveContainer.isReloadNeeded = true
+                            state.selectedItems = []
+                            selection = nil
+                        } catch {
+                            print("Error going up: \(error)")
+                        }
+                    }
+                    return .handled
+                }
+            }
+            return .ignored
         }
     }
     
@@ -92,7 +190,7 @@ struct ArchiveView: View {
                 print(error)
             }
         }
-        
+
         state.createArchive(url: url)
     }
 }

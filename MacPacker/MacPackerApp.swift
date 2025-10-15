@@ -163,16 +163,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     func openPreviewerWindow(for url: URL) {
         
         let window = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 420),
-            styleMask: [.titled, .closable, .fullSizeContentView],
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
+            styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
             backing: .buffered,
             defer: true
         )
         window.titlebarAppearsTransparent = true
         window.center()
         window.isRestorable = false
+        window.title = url.lastPathComponent
         
-        let contentView = InternalEditorView(for: url)
+        // Use QuickLook preview instead of the custom text editor
+        let contentView = QuickLookPreview(url: url)
         
         window.contentView = NSHostingView(rootView: contentView)
         
