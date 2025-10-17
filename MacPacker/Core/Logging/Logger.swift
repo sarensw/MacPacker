@@ -5,7 +5,7 @@
 //  Created by Stephan Arenswald on 04.09.25.
 //
 
-import TailBeat
+import TailBeatKit
 
 class Dummy {
     func dummyFunc() {
@@ -36,9 +36,37 @@ enum LogLevel: Int {
     }
 }
 
+protocol LoggerSink {
+    func log(level: LogLevel, _ message: String, file: String, function: String, line: Int)
+    func debug(_ message: String, file: String, function: String, line: Int)
+    func info(_ message: String, file: String, function: String, line: Int)
+    func warning(_ message: String, file: String, function: String, line: Int)
+    func error(_ message: String, file: String, function: String, line: Int)
+}
+
+class TailBeatSink: LoggerSink {
+    func log(level: LogLevel, _ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+        #if DEBUG
+        TailBeat.logger.log(level: level.tailBeatLevel, message, file: file, function: function, line: line)
+        #endif
+    }
+    func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+        log(level: .Debug, message, file: file, function: function, line: line)
+    }
+    func info(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+        log(level: .Info, message, file: file, function: function, line: line)
+    }
+    func warning(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+        log(level: .Warning, message, file: file, function: function, line: line)
+    }
+    func error(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+        log(level: .Error, message, file: file, function: function, line: line)
+    }
+}
+
 class Logger {
-    private static var tailBeatLogger: TailBeatLogger = TailBeat.logger
     private static var initialized: Bool = false
+    private static var sinks: [LoggerSink] = []
     
     static func initialize() {
         guard !Self.initialized else { return }
@@ -47,20 +75,9 @@ class Logger {
     }
     
     static func start() {
-        Self.tailBeatLogger = TailBeat.logger
+        sinks.append(TailBeatSink())
         
         initialize()
-    }
-    
-    static func log(
-        level: LogLevel = .Debug,
-        _ message: Bool,
-        file: String = #file,
-        function: String = #function,
-        line: Int = #line,
-    ) {
-        //Logger.logger.logTest()
-        // log(level: level, String(describing: message), file: file, function: function, line: line)
     }
     
     static func log(
@@ -72,15 +89,9 @@ class Logger {
     ) {
         initialize()
         
-        #if DEBUG
-        tailBeatLogger.log(
-            level: level.tailBeatLevel,
-            "\(message)",
-            file: file,
-            function: function,
-            line: line
-        )
-        #endif
+        for sink in sinks {
+            sink.log(level: level, "\(message)", file: file, function: function, line: line)
+        }
     }
     
     static func debug(

@@ -10,7 +10,7 @@ import SwiftUI
 #if !STORE
 import Sparkle
 #endif
-import TailBeat
+import TailBeatKit
 
 @main
 struct MacPackerApp: App {
@@ -23,10 +23,11 @@ struct MacPackerApp: App {
     let appState: AppState = AppState.shared
     
     init() {
-        let _ = TailBeat.start { config in
-            config.collectStderr = true
-            config.collectStdout = true
-        }
+        #if !STORE
+        // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
+        // This is where you can also pass an updater delegate if you need one
+        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        #endif
         
         Logger.start()
         
@@ -34,12 +35,6 @@ struct MacPackerApp: App {
         ArchiveHandlerXad.register()
         ArchiveHandlerLz4.register()
         ArchiveHandlerZip.registerZip()
-        
-        #if !STORE
-        // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
-        // This is where you can also pass an updater delegate if you need one
-        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
-        #endif
     }
     
     var body: some Scene {
@@ -64,6 +59,7 @@ struct MacPackerApp: App {
     }
 }
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("welcomeScreenShownInVersion") private var welcomeScreenShownInVersion = "0.0"
     private var openWithUrls: [URL] = []
@@ -71,7 +67,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     
     override init() {
         super.init()
-        
         archiveWindowManager = ArchiveWindowManager(appDelegate: self)
     }
     
@@ -116,6 +111,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
+        TailBeat.start()
+        
         Logger.log("finish launching")
         
         // make sure that at least one window will be shown

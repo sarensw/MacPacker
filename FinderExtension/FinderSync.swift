@@ -9,7 +9,7 @@ import AppKit
 import Cocoa
 import FinderSync
 import Foundation
-import TailBeat
+import TailBeatKit
 
 extension Bundle {
 
@@ -42,11 +42,6 @@ class FinderSync: FIFinderSync {
     
     override init() {
         super.init()
-        
-        let _ = TailBeat.start { config in
-            config.collectStderr = true
-            config.collectStdout = true
-        }
         
         Logger.start()
         Logger.log("FinderSync() launched from \(Bundle.main.bundlePath as NSString)")
