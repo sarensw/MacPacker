@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 
 class ArchiveWindowManager {
-    private var windows: [ArchiveWindow] = []
+    private var windowControllers: [ArchiveWindowController] = []
     private let appDelegate: AppDelegate
     
     init(appDelegate: AppDelegate) {
@@ -26,7 +26,7 @@ class ArchiveWindowManager {
         
         // first check if there is a window that can be reused
         if let url {
-            for window in windows {
+            for windowController in windowControllers {
                 // two cases here
                 //
                 // 1. There is a window where this exact archive is loaded
@@ -35,15 +35,15 @@ class ArchiveWindowManager {
                 // 2. There is a window that has no archive loaded, and
                 //    where the user did not start to create a new archive.
                 //    In this case .archive == nil
-                if let archive = window.archiveState.archive {
+                if let archive = windowController.archiveState.archive {
                     // 1st case
                     if archive.url == url {
-                        window.makeKeyAndOrderFront(nil)
+                        windowController.showWindow(nil)
                         return
                     }
                 } else {
                     // 2nd case
-                    let archiveState = window.archiveState
+                    let archiveState = windowController.archiveState
                     archiveState.loadUrl(url)
                     
                     // stop here, we have just loaded the url into an
@@ -63,29 +63,14 @@ class ArchiveWindowManager {
         // create the window and place the archive state in it to check
         // later if there is a window without archive that could be used
         // to open a new archive
-        let delegate = ArchiveWindowDelegate()
-        delegate.willClose = { [weak self] in
-            Logger.log("window closed")
-            if let self {
-                Logger.log(String(describing: self.windows.count))
-                self.windows.removeAll { $0 === $0 }
-            }
+        let archiveWindowController = ArchiveWindowController(
+            archiveState: archiveState,
+            appDelegate: appDelegate
+        )
+        windowControllers.append(archiveWindowController)
+        archiveWindowController.willCloseHandler = { [weak self] in
+            self?.windowControllers.removeAll { $0 === archiveWindowController }
         }
-        let window = ArchiveWindow(archiveState: archiveState)
-        window.isRestorable = false
-        window.center()
-        window.delegate = delegate
-        windows.append(window)
-        
-        // show the content view
-        let contentView = ContentView()
-            .environment(AppState.shared)
-            .environmentObject(appDelegate)
-            .environmentObject(archiveState)
-        
-        window.contentView = NSHostingView(rootView: contentView)
-        
-        // show the window
-        window.makeKeyAndOrderFront(nil)
+        archiveWindowController.showWindow(nil)
     }
 }
