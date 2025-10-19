@@ -60,6 +60,7 @@ struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             WhatsNewPill(title: "Crash when using the open with option", type: .bug)
+            WhatsNewPill(title: "Prevent empty tab on \"Open with\"", type: .bug)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()

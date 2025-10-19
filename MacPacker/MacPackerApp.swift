@@ -64,6 +64,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("welcomeScreenShownInVersion") private var welcomeScreenShownInVersion = "0.0"
     private var openWithUrls: [URL] = []
     private var archiveWindowManager: ArchiveWindowManager? = nil
+    private var hasOpenedFilesOnLaunch = false
     
     override init() {
         super.init()
@@ -73,6 +74,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     func application(_ application: NSApplication, open urls: [URL]) {
         Logger.log("open \(urls)")
         
+        // Mark that files were opened, so we don't show an empty window
+        hasOpenedFilesOnLaunch = true
+
         // first check if this is an app url, and handle it accordingly
         if let url = urls.first,
            let appUrl: AppUrl = UrlParser().parse(appUrl: url) {
@@ -116,8 +120,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         Logger.log("finish launching")
         
         // make sure that at least one window will be shown
-        // even if it is empyt
-        archiveWindowManager?.openArchiveWindow()
+        // even if it is empty, but only if no files were opened on launch
+        if !hasOpenedFilesOnLaunch {
+            archiveWindowManager?.openArchiveWindow()
+        }
         
         if let appVersion = Version(Bundle.main.appVersionLong),
            let welcomeVersion = Version(welcomeScreenShownInVersion) {
