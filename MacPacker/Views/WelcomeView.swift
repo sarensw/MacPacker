@@ -60,6 +60,7 @@ struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             WhatsNewPill(title: "Crash when using the open with option", type: .bug)
+            WhatsNewPill(title: "File preview in archive content opens the quick view with the system default for the filetype", type: .feature)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
