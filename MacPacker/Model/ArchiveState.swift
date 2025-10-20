@@ -18,23 +18,10 @@ class ArchiveState: ObservableObject {
     @Published var previewItemUrl: URL?
     
     init() {
-        setUpEvents()
     }
     
     init(completePath: String) {
         self.completePath = completePath
-    }
-}
-
-extension ArchiveState {
-    func setUpEvents() {
-        NSEvent.addLocalMonitorForEvents(matching: .keyUp) { event in
-            if event.keyCode == 49 { // Space
-                self.updateSelectedItemForQuickLook()
-            }
-            
-            return event
-        }
     }
 }
 

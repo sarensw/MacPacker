@@ -321,6 +321,28 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         }
     }
     
+    func openSelected(_ tableView: NSTableView) {
+        guard let archive = archiveState.archive else { return }
+        guard let item = archiveState.selectedItems.first else { return }
+        _ = try? archive.open(item)
+        isReloadNeeded = true
+        archiveState.selectedItems = []
+        tableView.deselectAll(nil)
+    }
+    
+    func openParent(_ tableView: NSTableView) {
+        guard let archive = archiveState.archive else { return }
+        guard archive.items.first == .parent else { return }
+        _ = try? archive.open(archive.items.first!)
+        isReloadNeeded = true
+        archiveState.selectedItems = []
+        tableView.deselectAll(nil)
+    }
+    
+    func openPreview() {
+        archiveState.updateSelectedItemForQuickLook()
+    }
+    
     //
     // Constructor
     //
@@ -334,7 +356,12 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     /// - Returns: desc
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
-        let tableView = NSTableView()
+        
+        let tableView = ArchiveTableView()
+        tableView.openSelected = openSelected
+        tableView.openParent = openParent
+        tableView.openPreview = openPreview
+        
         // make sure the table is scrollable
         scrollView.documentView = tableView
         
@@ -431,4 +458,23 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     //
     // Functions
     //
+}
+
+class ArchiveTableView: NSTableView {
+    var openSelected: ((NSTableView) -> Void)?
+    var openParent: ((NSTableView) -> Void)?
+    var openPreview: (() -> Void)?
+    
+    override func keyDown(with event: NSEvent) {
+        
+        if event.keyCode == 49 {
+            openPreview?()
+        } else if event.keyCode == 125 && event.modifierFlags.contains(.command) {
+            openSelected?(self)
+        } else if event.keyCode == 126 && event.modifierFlags.contains(.command) {
+            openParent?(self)
+        } else {
+            super.keyDown(with: event)
+        }
+    }
 }
