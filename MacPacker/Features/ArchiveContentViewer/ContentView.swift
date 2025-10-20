@@ -31,7 +31,7 @@ struct ContentView: View {
     
     // environment
     @Environment(\.openWindow) var openWindow
-    @Environment(AppState.self) var state: AppState
+    @EnvironmentObject var state: AppState
     @EnvironmentObject var archiveState: ArchiveState
     
     // state
@@ -57,12 +57,14 @@ struct ContentView: View {
                 BreadcrumbView(archive: archiveState.archive ?? nil)
             }
         }
-        .toolbar {
-            ArchiveContentToolbarView(
-                archiveState: archiveState
-            )
+        .if(!.macOS13) { view in
+            view.toolbar {
+                ArchiveContentToolbarView(
+                    archiveState: archiveState
+                )
+            }
         }
-        .navigationTitle(archiveState.archive == nil ? "MacPacker" : archiveState.archive!.name)
+        .navigationTitle(archiveState.archive == nil ? Bundle.main.appName : archiveState.archive!.name)
         .environmentObject(archiveState)
     }
     

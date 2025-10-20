@@ -1,5 +1,6 @@
 v0.11
 - fix: Crash when using the open with option
+- core: Re-enable macOS 13 as minimum deployment target
 
 v0.10
 - feat: Quick Look extension

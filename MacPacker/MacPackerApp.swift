@@ -40,6 +40,7 @@ struct MacPackerApp: App {
     var body: some Scene {
         Settings {
             PreferencesView()
+                .environmentObject(appDelegate)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
@@ -55,7 +56,6 @@ struct MacPackerApp: App {
             }
 #endif
         }
-        .environmentObject(appDelegate)
     }
 }
 
@@ -128,9 +128,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
         
+        #if !DEBUG
         if FIFinderSyncController.isExtensionEnabled == false {
             FIFinderSyncController.showExtensionManagementInterface()
         }
+        #endif
     }
     
     func applicationWillTerminate(_ notification: Notification) {
