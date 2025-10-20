@@ -56,7 +56,7 @@ struct ArchiveView: View {
                 self.drop(state.openWithUrls[0])
             }
         }
-        .onChange(of: selection) {
+        .onChange(of: selection) { _ in
             print("selection changed: \(String(describing: selection))")
             if let indexes = selection,
                 let archive = state.archive {
@@ -67,14 +67,6 @@ struct ArchiveView: View {
                     state.selectedItems.append(archiveItem)
                 }
             }
-        }
-        .onKeyPress(.space) {
-            if let archive = state.archive,
-               let selectedItem = state.selectedItems.first,
-               let url = archive.extractFileToTemp(selectedItem) {
-                appDelegate.openPreviewerWindow(for: url)
-            }
-            return .handled
         }
     }
     

@@ -24,7 +24,10 @@ struct WhatsNewPill: View {
             case .feature:
                 Capsule()
                     .fill(.green.opacity(0.4))
-                    .stroke(.green, lineWidth: 1)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.green, lineWidth: 1)
+                    )
                     .frame(width: 32, height: 16)
                     .overlay {
                         Text(verbatim: "feat")
@@ -33,7 +36,10 @@ struct WhatsNewPill: View {
             case .bug:
                 Capsule()
                     .fill(.red.opacity(0.4))
-                    .stroke(.red, lineWidth: 1)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.red, lineWidth: 1)
+                    )
                     .frame(width: 32, height: 16)
                     .overlay {
                         Text(verbatim: "bug")
@@ -42,7 +48,10 @@ struct WhatsNewPill: View {
             case .core:
                 Capsule()
                     .fill(.blue.opacity(0.4))
-                    .stroke(.blue, lineWidth: 1)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.blue, lineWidth: 1)
+                    )
                     .frame(width: 32, height: 16)
                     .overlay {
                         Text(verbatim: "core")
@@ -59,6 +68,7 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
+            WhatsNewPill(title: "Re-enable macOS 13 as minimum deployment target", type: .core)
             WhatsNewPill(title: "Crash when using the open with option", type: .bug)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
