@@ -1,4 +1,6 @@
 v0.11
+- feat: Use system preview instead of internal previewer
+- feat: Navigate the archive using keys similar to Finder
 - fix: Crash when using the open with option
 - core: Re-enable macOS 13 as minimum deployment target
 

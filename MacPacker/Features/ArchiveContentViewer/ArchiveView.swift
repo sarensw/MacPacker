@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import QuickLook
 import SwiftUI
 
 class ArchiveContainer: ObservableObject {
@@ -66,8 +67,15 @@ struct ArchiveView: View {
                     let archiveItem = archive.items[index]
                     state.selectedItems.append(archiveItem)
                 }
+                
+                // in case quick look is open right now, then change the
+                // previewed item
+                if self.state.previewItemUrl != nil {
+                    state.updateSelectedItemForQuickLook()
+                }
             }
         }
+        .quickLookPreview($state.previewItemUrl)
     }
     
     //

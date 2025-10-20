@@ -158,24 +158,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // show the window
         window.makeKeyAndOrderFront(nil)
     }
-    
-    func openPreviewerWindow(for url: URL) {
-        
-        let window = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 420),
-            styleMask: [.titled, .closable, .fullSizeContentView],
-            backing: .buffered,
-            defer: true
-        )
-        window.titlebarAppearsTransparent = true
-        window.center()
-        window.isRestorable = false
-        
-        let contentView = InternalEditorView(for: url)
-        
-        window.contentView = NSHostingView(rootView: contentView)
-        
-        // show the window
-        window.makeKeyAndOrderFront(nil)
-    }
 }

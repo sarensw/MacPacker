@@ -18,8 +18,6 @@
 		259511052E9C52A30065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511042E9C52A30065F366 /* TailBeatKit */; };
 		259511072E9C56B20065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511062E9C56B20065F366 /* TailBeatKit */; };
 		259511092E9C56BC0065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511082E9C56BC0065F366 /* TailBeatKit */; };
-		25A286382EA510CC00271329 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 25A286372EA510CC00271329 /* KeyboardShortcuts */; };
-		25A2863A2EA510E000271329 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 25A286392EA510E000271329 /* KeyboardShortcuts */; };
 		25C0A8C42A78DE62002C1C2A /* MacPackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C32A78DE62002C1C2A /* MacPackerUITests.swift */; };
 		25C0A8C62A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C52A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift */; };
 		25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764242E6C6D5300464CF5 /* XADMasterSwift */; };
@@ -207,7 +205,6 @@
 				25CD1EBD2D829DEA007B53EE /* SWCompression in Frameworks */,
 				2592CEDF2AD4F77E008DEFF8 /* ZIPFoundation in Frameworks */,
 				259511052E9C52A30065F366 /* TailBeatKit in Frameworks */,
-				25A2863A2EA510E000271329 /* KeyboardShortcuts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,7 +223,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */,
-				25A286382EA510CC00271329 /* KeyboardShortcuts in Frameworks */,
 				25CD1EBB2D829CBB007B53EE /* BitByteData in Frameworks */,
 				259511032E9C529A0065F366 /* TailBeatKit in Frameworks */,
 				25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */,
@@ -359,7 +355,6 @@
 				25CD1EBE2D829DEA007B53EE /* BitByteData */,
 				25C764262E6C6D6200464CF5 /* XADMasterSwift */,
 				259511042E9C52A30065F366 /* TailBeatKit */,
-				25A286392EA510E000271329 /* KeyboardShortcuts */,
 			);
 			productName = MacPacker;
 			productReference = 254BB5592ABBE8430059A1D5 /* MacPacker.app */;
@@ -417,7 +412,6 @@
 				25E426C92E6BEB3800F10BE5 /* XADMasterSwift */,
 				25C764242E6C6D5300464CF5 /* XADMasterSwift */,
 				259511022E9C529A0065F366 /* TailBeatKit */,
-				25A286372EA510CC00271329 /* KeyboardShortcuts */,
 			);
 			productName = MacPacker;
 			productReference = 25C0A8A42A78DE5F002C1C2A /* MacPacker.app */;
@@ -510,7 +504,6 @@
 				25CD1EB92D829CBB007B53EE /* XCRemoteSwiftPackageReference "BitByteData" */,
 				25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */,
 				2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */,
-				25A286362EA510CC00271329 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
 			);
 			productRefGroup = 25C0A8A52A78DE5F002C1C2A /* Products */;
 			projectDirPath = "";
@@ -1245,14 +1238,6 @@
 				minimumVersion = 0.9.17;
 			};
 		};
-		25A286362EA510CC00271329 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.0;
-			};
-		};
 		25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sarensw/XADMasterSwift";
@@ -1319,16 +1304,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */;
 			productName = TailBeatKit;
-		};
-		25A286372EA510CC00271329 /* KeyboardShortcuts */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 25A286362EA510CC00271329 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
-			productName = KeyboardShortcuts;
-		};
-		25A286392EA510E000271329 /* KeyboardShortcuts */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 25A286362EA510CC00271329 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
-			productName = KeyboardShortcuts;
 		};
 		25C764242E6C6D5300464CF5 /* XADMasterSwift */ = {
 			isa = XCSwiftPackageProductDependency;

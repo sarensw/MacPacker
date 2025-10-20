@@ -15,9 +15,9 @@ class ArchiveState: ObservableObject {
     @Published var openWithUrls: [URL] = []
     @Published var completePathArray: [String] = []
     @Published var completePath: String?
+    @Published var previewItemUrl: URL?
     
     init() {
-        
     }
     
     init(completePath: String) {
@@ -57,6 +57,24 @@ extension ArchiveState {
     /// - Returns: true in case supported, false otherwise
     public func isSupportedArchive(ext: String) -> Bool {
         return ArchiveHandlerRegistry.shared.isSupported(ext: ext)
+    }
+    
+    /// Updates the quick look preview URL. The previewer we're using is the default systems
+    /// preview that is called Quick Look and that can be reached via Space in Finder
+    ///
+    /// When Space is pressed by the user while any item is selected, we're opening this default
+    /// preview to support any file type that is supported by the system anyways. This might
+    /// also override any previously selected item in which case quick look will just adopt.
+    ///
+    /// In case no item is selected then set the preview url to nil to make sure Quick Look is closing.
+    func updateSelectedItemForQuickLook() {
+        if let archive = self.archive,
+           let selectedItem = self.selectedItems.first,
+           let url = archive.extractFileToTemp(selectedItem) {
+            self.previewItemUrl = url
+        } else if self.selectedItems.isEmpty {
+            self.previewItemUrl = nil
+        }
     }
     
     //
