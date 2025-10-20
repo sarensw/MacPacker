@@ -11,6 +11,8 @@
 			<key>QLSupportedContentTypes</key>
 			<array>
 				<string>public.archive</string>
+				<string>org.7-zip.7-zip-archive</string>
+				<string>org.7-zip.lha-archive</string>
 				<string>public.bzip2-archive</string>
 				<string>com.microsoft.cab</string>
 				<string>public.cpio-archive</string>
