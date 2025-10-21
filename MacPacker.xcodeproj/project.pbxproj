@@ -18,6 +18,7 @@
 		259511052E9C52A30065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511042E9C52A30065F366 /* TailBeatKit */; };
 		259511072E9C56B20065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511062E9C56B20065F366 /* TailBeatKit */; };
 		259511092E9C56BC0065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511082E9C56BC0065F366 /* TailBeatKit */; };
+		25A28EEB2EA7799200271329 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		25C0A8C42A78DE62002C1C2A /* MacPackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C32A78DE62002C1C2A /* MacPackerUITests.swift */; };
 		25C0A8C62A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C52A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift */; };
 		25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764242E6C6D5300464CF5 /* XADMasterSwift */; };
@@ -52,6 +53,13 @@
 			remoteGlobalIDString = 2567C82E2E8FB75F008E1BD8;
 			remoteInfo = QuickLookExtension;
 		};
+		25A28EEC2EA7799200271329 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 25C0A89C2A78DE5F002C1C2A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2567C82E2E8FB75F008E1BD8;
+			remoteInfo = QuickLookExtension;
+		};
 		25C0A8B62A78DE62002C1C2A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 25C0A89C2A78DE5F002C1C2A /* Project object */;
@@ -76,6 +84,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				252F12102E7BAC5D004CCEBE /* FinderExtension.appex in Embed Foundation Extensions */,
+				25A28EEB2EA7799200271329 /* QuickLookExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -344,6 +353,7 @@
 			);
 			dependencies = (
 				252F12122E7BAC5D004CCEBE /* PBXTargetDependency */,
+				25A28EED2EA7799200271329 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				251114B22DC6D3AA0056D272 /* MacPacker */,
@@ -626,6 +636,11 @@
 			isa = PBXTargetDependency;
 			target = 2567C82E2E8FB75F008E1BD8 /* QuickLookExtension */;
 			targetProxy = 2567C83B2E8FB75F008E1BD8 /* PBXContainerItemProxy */;
+		};
+		25A28EED2EA7799200271329 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2567C82E2E8FB75F008E1BD8 /* QuickLookExtension */;
+			targetProxy = 25A28EEC2EA7799200271329 /* PBXContainerItemProxy */;
 		};
 		25C0A8B72A78DE62002C1C2A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
