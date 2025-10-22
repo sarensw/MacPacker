@@ -15,7 +15,7 @@
 Say hello to **MacPacker**, the archive manager for macOS. Open source, because essential tools should be free. Preview (nested) archives. Extract selected files. Creating or editing archives will follow. Inspired by 7-Zip, but without any claim to comparability. See the roadmap for more details.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sarensw/MacPacker/main/assets/v0.7_main.gif" alt="Demo GIF" />
+  <img src="https://raw.githubusercontent.com/sarensw/MacPacker/main/assets/v0.10_main.gif" alt="Demo GIF" />
 </p>
 
 ## Installation
@@ -31,6 +31,12 @@ Download the .zip file from <a href="https://github.com/sarensw/MacPacker/releas
 
 <a href="https://apps.apple.com/us/app/macpacker/id6473273874"><img src="https://raw.githubusercontent.com/sarensw/MacPacker/main/assets/mas.svg" alt="MacPacker" width="128"></a>
 
+### Option 3: Homebrew
+
+```bash
+brew install --cask macpacker
+```
+
 ## Roadmap
 
 - [x] Navigate through (nested) archives
@@ -39,8 +45,8 @@ Download the .zip file from <a href="https://github.com/sarensw/MacPacker/releas
 - [x] Support (my) most needed archives .zip, .tar, .lz4
 - [x] Extract the full archive at once
 - [x] Preview files without extraction
+- [x] Finder extensions for quick access to the most important functions
 - [ ] Support all formats that TheUnarchiver supports
-- [ ] Finder extensions for quick access to the most important functions
 - [ ] Create archives and edit archives (most common ones only)
 - [ ] Fully fledged internal previewer
 
