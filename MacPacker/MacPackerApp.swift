@@ -64,18 +64,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("welcomeScreenShownInVersion") private var welcomeScreenShownInVersion = "0.0"
     private var openWithUrls: [URL] = []
     private var archiveWindowManager: ArchiveWindowManager? = nil
-    private var hasOpenedFilesOnLaunch = false
     
     override init() {
         super.init()
         archiveWindowManager = ArchiveWindowManager(appDelegate: self)
+        TailBeat.start()
     }
     
     func application(_ application: NSApplication, open urls: [URL]) {
         Logger.log("open \(urls)")
-        
-        // Mark that files were opened, so we don't show an empty window
-        hasOpenedFilesOnLaunch = true
 
         // first check if this is an app url, and handle it accordingly
         if let url = urls.first,
@@ -115,15 +112,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        TailBeat.start()
-        
         Logger.log("finish launching")
         
         // make sure that at least one window will be shown
-        // even if it is empty, but only if no files were opened on launch
-        if !hasOpenedFilesOnLaunch {
-            archiveWindowManager?.openArchiveWindow()
-        }
+        // even if it is empty
+        archiveWindowManager?.openLaunchArchiveWindow()
         
         if let appVersion = Version(Bundle.main.appVersionLong),
            let welcomeVersion = Version(welcomeScreenShownInVersion) {
@@ -134,9 +127,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
         
+        #if !DEBUG
         if FIFinderSyncController.isExtensionEnabled == false {
             FIFinderSyncController.showExtensionManagementInterface()
         }
+        #endif
+    }
+    
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if !hasVisibleWindows {
+            archiveWindowManager?.openArchiveWindow()
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        return true
     }
     
     func applicationWillTerminate(_ notification: Notification) {

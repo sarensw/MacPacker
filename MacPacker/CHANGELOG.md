@@ -1,5 +1,10 @@
 v0.11
+- feat: Use system preview instead of internal previewer
+- feat: Navigate the archive using keys similar to Finder
 - fix: Crash when using the open with option
+- fix: Quick look extension missing in App Store version
+- fix: Empty window opened in addition to file opened with 'Open With' option in Finder
+- core: Re-enable macOS 13 as minimum deployment target
 
 v0.10
 - feat: Quick Look extension
