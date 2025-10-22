@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tailbeat/tailbeat-swift",
       "state" : {
-        "revision" : "aae610d4cf4249408aae8a04d665e77e9a0b5ae4",
-        "version" : "0.9.0"
+        "revision" : "6b1e584ead6e5d339e12e97a0cd81b98cd0d7c31",
+        "version" : "0.10.0"
       }
     },
     {
