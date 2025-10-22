@@ -6,11 +6,9 @@
 //
 
 import Foundation
-import Observation
 import SwiftUI
 
-@Observable
-class AppState {
+class AppState: ObservableObject {
     static var shared: AppState = AppState()
     
     private init() { }

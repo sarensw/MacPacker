@@ -40,6 +40,7 @@ struct MacPackerApp: App {
     var body: some Scene {
         Settings {
             PreferencesView()
+                .environmentObject(appDelegate)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
@@ -55,7 +56,6 @@ struct MacPackerApp: App {
             }
 #endif
         }
-        .environmentObject(appDelegate)
     }
 }
 
@@ -159,26 +159,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         window.isRestorable = false
         
         let contentView = AboutView()
-        
-        window.contentView = NSHostingView(rootView: contentView)
-        
-        // show the window
-        window.makeKeyAndOrderFront(nil)
-    }
-    
-    func openPreviewerWindow(for url: URL) {
-        
-        let window = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 420),
-            styleMask: [.titled, .closable, .fullSizeContentView],
-            backing: .buffered,
-            defer: true
-        )
-        window.titlebarAppearsTransparent = true
-        window.center()
-        window.isRestorable = false
-        
-        let contentView = InternalEditorView(for: url)
         
         window.contentView = NSHostingView(rootView: contentView)
         
