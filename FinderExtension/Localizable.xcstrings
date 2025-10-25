@@ -16,6 +16,12 @@
             "value" : "Extraire ici"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrai qui"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37,6 +43,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Extraire vers \"%@\""
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrai in \"%@\""
           }
         },
         "zh-Hans" : {
@@ -99,6 +111,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Ouvrir les %lld archives"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Apri archivio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Apri %lld archivi"
                 }
               }
             }

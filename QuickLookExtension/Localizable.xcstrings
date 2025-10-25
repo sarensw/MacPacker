@@ -16,6 +16,12 @@
             "value" : "Date de modification"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data di modifica"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37,6 +43,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Extraire l’archive"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrai archivio"
           }
         },
         "zh-Hans" : {
@@ -62,6 +74,12 @@
             "value" : "Extraire la sélection"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrai elementi selezionati"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -83,6 +101,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nom"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome"
           }
         },
         "zh-Hans" : {
@@ -108,6 +132,12 @@
             "value" : "Taille compressée"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensioni imballate"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -129,6 +159,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Taille"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensioni"
           }
         },
         "zh-Hans" : {

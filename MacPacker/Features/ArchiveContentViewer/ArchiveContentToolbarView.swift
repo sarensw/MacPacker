@@ -132,6 +132,17 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 
                 SendSmileView()
                 
+                Button {
+                    openURL(URL(string: "https://poeditor.com/join/project/J2Qq2SUzYr")!)
+                } label: {
+                    Label {
+                        Text(verbatim: "Help with translation")
+                    } icon: {
+                        Image(systemName: "flag")
+                    }
+                    .labelStyle(.titleAndIcon)
+                }
+                
                 Menu {
                     Button {
                         openURL(URL(string: "https://github.com/sarensw/MacPacker/issues/new?assignees=&labels=enhancement&projects=&template=&title=")!)

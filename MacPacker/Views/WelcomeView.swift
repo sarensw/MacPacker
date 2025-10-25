@@ -74,6 +74,7 @@ struct WelcomeWhatsNewView: View {
             WhatsNewPill(title: "Quick look extension missing in App Store version", type: .bug)
             WhatsNewPill(title: "Empty window opened in addition to file opened with 'Open With' option in Finder", type: .bug)
             WhatsNewPill(title: "Re-enable macOS 13 as minimum deployment target", type: .core)
+            WhatsNewPill(title: "Language support for Italian", type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
