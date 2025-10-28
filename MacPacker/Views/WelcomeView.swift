@@ -68,13 +68,7 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            WhatsNewPill(title: "Use system preview instead of internal previewer", type: .feature)
-            WhatsNewPill(title: "Navigate the archive using keys similar to Finder", type: .feature)
-            WhatsNewPill(title: "Crash when using the open with option", type: .bug)
-            WhatsNewPill(title: "Quick look extension missing in App Store version", type: .bug)
-            WhatsNewPill(title: "Empty window opened in addition to file opened with 'Open With' option in Finder", type: .bug)
-            WhatsNewPill(title: "Re-enable macOS 13 as minimum deployment target", type: .core)
-            WhatsNewPill(title: "Language support for Italian", type: .core)
+            WhatsNewPill(title: "Added 'File' > 'Open...' menu to open archives when no window is open", type: .feature)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()

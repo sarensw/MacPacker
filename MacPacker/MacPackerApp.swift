@@ -55,6 +55,18 @@ struct MacPackerApp: App {
                 CheckForUpdatesView(updater: updaterController.updater)
             }
 #endif
+            
+            CommandGroup(replacing: .newItem) {
+                Button {
+                    appDelegate.openArchiveUsingOpenPanel()
+                } label: {
+                    Label {
+                        Text(verbatim: "Open...")
+                    } icon: {
+                        Image(systemName: "arrow.up.right")
+                    }
+                }
+            }
         }
     }
 }
@@ -164,5 +176,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         
         // show the window
         window.makeKeyAndOrderFront(nil)
+    }
+    
+    func openArchiveUsingOpenPanel() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [
+            .data
+        ]
+        panel.allowsMultipleSelection = false
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.canCreateDirectories = false
+        panel.begin() { response in
+            if response == .OK, let url = panel.url {
+                self.archiveWindowManager?.openArchiveWindow(for: url)
+            }
+        }
     }
 }

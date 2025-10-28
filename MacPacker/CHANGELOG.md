@@ -1,3 +1,6 @@
+v0.12
+- feat: Added 'File' > 'Open...' menu to open archives when no window is open
+
 v0.11
 - feat: Use system preview instead of internal previewer
 - feat: Navigate the archive using keys similar to Finder
