@@ -15,7 +15,8 @@ struct WhatsNewPill: View {
         case core
     }
     
-    var title: LocalizedStringResource
+//    var title: LocalizedStringResource
+    var key: LocalizedStringResource
     var type: PillType
     
     var body: some View {
@@ -59,7 +60,7 @@ struct WhatsNewPill: View {
                     }
             }
             
-            Text(title)
+            Text(key)
         }
         
     }
@@ -68,7 +69,8 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            WhatsNewPill(title: "Added 'File' > 'Open...' menu to open archives when no window is open", type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.12_added_open_menu", defaultValue: "Added 'File' > 'Open...' menu to open archives when no window is open", table: "LocalizableWhatsNew"), type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.12_separate_changelog_localization", defaultValue: "Separated localization of changelog from app localization", table: "LocalizableWhatsNew"), type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
