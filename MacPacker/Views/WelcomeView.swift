@@ -71,6 +71,7 @@ struct WelcomeWhatsNewView: View {
         VStack(alignment: .leading, spacing: 4) {
             WhatsNewPill(key: LocalizedStringResource("v0.12_added_open_menu", defaultValue: "Added 'File' > 'Open...' menu to open archives when no window is open", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.12_separate_changelog_localization", defaultValue: "Separated localization of changelog from app localization", table: "LocalizableWhatsNew"), type: .core)
+            WhatsNewPill(key: LocalizedStringResource("v0.12_new_lang_ru_ua", defaultValue: "Language support for Ukranian, Russian", table: "LocalizableWhatsNew"), type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()

@@ -10,6 +10,12 @@
             "value" : "… einen Fehler zu melden"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... raise a Bug"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20,6 +26,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "... solleva un bug"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... сообщить об ошибке"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... повідомити про помилку"
           }
         },
         "zh-Hans" : {
@@ -39,6 +57,12 @@
             "value" : "… eine Funktion vorzuschlagen"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... request a Feature"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -49,6 +73,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "... richiedi una funzionalità"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... запросить функцию"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... запросити функцію"
           }
         },
         "zh-Hans" : {
@@ -68,6 +104,12 @@
             "value" : "… eine E-Mail an %@ senden"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... send a mail to %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -78,6 +120,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "... invia una mail a %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... отправить письмо по адресу %@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... надіслати листа на адресу %@"
           }
         },
         "zh-Hans" : {
@@ -97,6 +151,12 @@
             "value" : "%@ wird präsentiert von"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has been brought to you by"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -107,6 +167,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ ti è stato offerto da"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ была предоставлена ​​вам"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ було надано вам"
           }
         },
         "zh-Hans" : {
@@ -126,6 +198,12 @@
             "value" : "Über %@"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -136,6 +214,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Di %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Про %@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Про %@"
           }
         },
         "zh-Hans" : {
@@ -155,6 +245,12 @@
             "value" : "Erweitert"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -165,6 +261,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avanzato"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дополнительные"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додаткові"
           }
         },
         "zh-Hans" : {
@@ -184,6 +292,12 @@
             "value" : "Archivinformationen"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archive info"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -194,6 +308,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Informazioni dell'archivio"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Информация об архиве"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Інформація про архів"
           }
         },
         "zh-Hans" : {
@@ -213,6 +339,12 @@
             "value" : "Breadcrumb-Position:"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breadcrumb position:"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -223,6 +355,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posizione del breadcrumb:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позиция строки навигации:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позиція рядка навігації:"
           }
         },
         "zh-Hans" : {
@@ -242,6 +386,12 @@
             "value" : "Cache:"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache:"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -252,6 +402,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cache:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кэш:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кеш:"
           }
         },
         "zh-Hans" : {
@@ -271,6 +433,12 @@
             "value" : "Nach Updates suchen…"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates…"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -281,6 +449,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Controlla gli aggiornamenti…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить наличие обновлений…"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевірити наявність оновлень…"
           }
         },
         "zh-Hans" : {
@@ -300,6 +480,12 @@
             "value" : "Cache leeren"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear cache"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -310,6 +496,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancella cache"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить кэш"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистити кеш"
           }
         },
         "zh-Hans" : {
@@ -329,6 +527,12 @@
             "value" : "Löscht den gesamten Inhalt des Caches"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clears all content from the cache"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -339,6 +543,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancella tutto il contenuto dalla cache"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить все содержимое кэша"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистити весь вміст кешу"
           }
         },
         "zh-Hans" : {
@@ -358,6 +574,12 @@
             "value" : "Spalten:"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Columns:"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -368,6 +590,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Colonne:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Столбцы:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стовпці:"
           }
         },
         "zh-Hans" : {
@@ -387,6 +621,12 @@
             "value" : "Änderungsdatum"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date Modified"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -397,6 +637,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Data di modifica"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дата модификации"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дата модифікації"
           }
         },
         "zh-Hans" : {
@@ -416,6 +668,12 @@
             "value" : "Archive entpacken"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extract archive"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -426,6 +684,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estrai archivio"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковать архив"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розпакувати архів"
           }
         },
         "zh-Hans" : {
@@ -445,6 +715,12 @@
             "value" : "Auswahl entpacken"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extract selected"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -455,6 +731,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estrai elementi selezionati"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковать выбранное"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розпакувати вибране"
           }
         },
         "zh-Hans" : {
@@ -474,6 +762,12 @@
             "value" : "Feedback"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feedback"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -484,6 +778,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Feedback"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отзыв"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відгук"
           }
         },
         "zh-Hans" : {
@@ -503,6 +809,12 @@
             "value" : "Allgemein"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -513,6 +825,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Generale"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Общие"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загальні"
           }
         },
         "zh-Hans" : {
@@ -532,6 +856,12 @@
             "value" : "Gehe hierhin, um …"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go here to ..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -542,6 +872,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vai qui per ..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перейти сюда, чтобы ..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перейти сюди, щоб ..."
           }
         },
         "zh-Hans" : {
@@ -561,6 +903,12 @@
             "value" : "Ich habe folgenden Fehler gefunden …"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I found the following bug ..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -571,6 +919,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ho trovato il seguente bug ..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Я нашел следующую ошибку..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Я знайшов наступну помилку ..."
           }
         },
         "zh-Hans" : {
@@ -590,6 +950,12 @@
             "value" : "Idee, Code"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "idea, code"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -600,6 +966,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "idea, codice"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "идея, код"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ідея, код"
           }
         },
         "zh-Hans" : {
@@ -619,6 +997,12 @@
             "value" : "Bewerte die App im App Store"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave a review in the App Store"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -629,6 +1013,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lascia una recensione nell'App Store"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оставить отзыв в App Store"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Залишити відгук в App Store"
           }
         },
         "zh-Hans" : {
@@ -648,6 +1044,12 @@
             "value" : "Mehr"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -658,6 +1060,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Di più"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Більше"
           }
         },
         "zh-Hans" : {
@@ -677,6 +1091,12 @@
             "value" : "Weitere Apps"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More apps"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -687,6 +1107,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Altre app"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше программ"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Більше програм"
           }
         },
         "zh-Hans" : {
@@ -706,6 +1138,12 @@
             "value" : "Weitere Apps"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More Apps"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -716,6 +1154,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Altre app"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше программ"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Більше Програм"
           }
         },
         "zh-Hans" : {
@@ -735,6 +1185,12 @@
             "value" : "Name"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -745,6 +1201,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nome"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назва"
           }
         },
         "zh-Hans" : {
@@ -764,6 +1232,12 @@
             "value" : "Cache-Ordner öffnen"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open cache directory"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -774,6 +1248,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apri la directory della cache"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть каталог кэша"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити каталог кешу"
           }
         },
         "zh-Hans" : {
@@ -793,6 +1279,12 @@
             "value" : "Oder kontaktiere uns über"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Or reach out via..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -803,6 +1295,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Oppure contattaci tramite..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Или связаться через..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Або зв'язатися через..."
           }
         },
         "zh-Hans" : {
@@ -822,6 +1326,12 @@
             "value" : "Dateien organisieren - ohne unzählige Finder-Fenster"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organize files without tons of Finder windows."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -832,6 +1342,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Organizza i file senza dover aprire tonnellate di finestre del Finder."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Организуйте файлы без множества окон Finder."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Організовуйте файли без безлічі вікон Finder."
           }
         },
         "zh-Hans" : {
@@ -851,6 +1373,12 @@
             "value" : "Komprimierte Größe"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Packed Size"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -861,6 +1389,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dimensioni imballate"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Упакованный размер"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запакований розмір"
           }
         },
         "zh-Hans" : {
@@ -880,6 +1420,12 @@
             "value" : "Berechtigungen"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissions"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -890,6 +1436,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Permessi"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешения"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дозволи"
           }
         },
         "zh-Hans" : {
@@ -909,6 +1467,12 @@
             "value" : "Bitte folgende Funktion hinzufügen …"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please add feature ..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -919,6 +1483,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Si prega di aggiungere la funzionalità ..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пожалуйста, добавьте функцию ..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Будь ласка, додайте функцію ..."
           }
         },
         "zh-Hans" : {
@@ -938,6 +1514,12 @@
             "value" : "Bitte folgenden Archivtyp unterstützen …"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please support the archive type ..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -948,6 +1530,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Si prega di supportare il tipo di archivio ..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пожалуйста, добавьте поддержку архивов ..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Будь ласка, додайте підтримку архівів ..."
           }
         },
         "zh-Hans" : {
@@ -967,6 +1561,12 @@
             "value" : "Vorschau"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -977,6 +1577,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anteprima"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Предварительный просмотр"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попередній перегляд"
           }
         },
         "zh-Hans" : {
@@ -996,6 +1608,12 @@
             "value" : "Als Open Source unter GPL veröffentlicht."
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Published as Open Source under GPL."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1006,6 +1624,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pubblicato come Open Source sotto licenza GPL."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Опубликовано под открытой лицензией ПО GPL."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Опубліковано під відкритою ліцензією програмного забезпечення GPL."
           }
         },
         "zh-Hans" : {
@@ -1025,6 +1655,12 @@
             "value" : "Kontakt aufnehmen ..."
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reach out..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1035,6 +1671,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Contatta..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Связаться..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зв'язатися..."
           }
         },
         "zh-Hans" : {
@@ -1054,6 +1702,12 @@
             "value" : "Senden"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1064,6 +1718,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inviare"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отправить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Надіслати"
           }
         },
         "zh-Hans" : {
@@ -1083,6 +1749,12 @@
             "value" : "Schenke ein Lächeln"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send a smile"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1093,6 +1765,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invia un sorriso"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отправить улыбку"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Надіслати посмішку"
           }
         },
         "zh-Hans" : {
@@ -1112,6 +1796,12 @@
             "value" : "Einstellungen…"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1122,6 +1812,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impostazioni..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройка..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Налаштування..."
           }
         },
         "zh-Hans" : {
@@ -1141,6 +1843,12 @@
             "value" : "Ordner “Application Support” anzeigen"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show application support folder"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1151,6 +1859,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra la cartella di supporto dell'applicazione"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать папку настроек программы"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати папку налаштувань програми"
           }
         },
         "zh-Hans" : {
@@ -1170,6 +1890,12 @@
             "value" : "Größe"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1180,6 +1906,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dimensioni"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Размер"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розмір"
           }
         },
         "zh-Hans" : {
@@ -1199,6 +1937,12 @@
             "value" : "Repository auf GitHub mit einem Stern markieren"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star the repository on GitHub"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1209,6 +1953,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aggiungi una stella al repository su GitHub"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отметить репозиторий на GitHub"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відмітити репозиторій на GitHub"
           }
         },
         "zh-Hans" : {
@@ -1228,6 +1984,12 @@
             "value" : "Entwicklung unterstützen…"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support the development..."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1238,6 +2000,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sostieni lo sviluppo..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддержать разработку..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Підтримати розробку..."
           }
         },
         "zh-Hans" : {
@@ -1257,6 +2031,12 @@
             "value" : "Version v%@"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version v%@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1267,6 +2047,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Versione v%@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версия v%@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версія v%@"
           }
         },
         "zh-Hans" : {
@@ -1286,6 +2078,12 @@
             "value" : "Webseite"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1296,6 +2094,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sito web"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Веб-сайт"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Веб-сайт"
           }
         },
         "zh-Hans" : {
@@ -1315,6 +2125,12 @@
             "value" : "Willkommen bei %@"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1325,6 +2141,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Benvenuti a %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добро пожаловать на %@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ласкаво просимо до %@"
           }
         },
         "zh-Hans" : {
@@ -1344,6 +2172,12 @@
             "value" : "Neuigkeiten"
           }
         },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's new"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1356,6 +2190,18 @@
             "value" : "Cosa c'è di nuovo"
           }
         },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Что нового"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Що нового"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1365,5 +2211,5 @@
       }
     }
   },
-  "version" : "1.1"
+  "version" : "1.0"
 }
