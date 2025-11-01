@@ -6,26 +6,31 @@
 	<array>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string></string>
+			<string>Archive</string>
 			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
+			<string>Viewer</string>
 			<key>LSHandlerRank</key>
-			<string>Default</string>
+			<string>Alternate</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.apple.installer-package-archive</string>
 				<string>public.archive</string>
-				<string>com.apple.application</string>
-				<string>public.pluginBundle</string>
-				<string>public.bundle</string>
-				<string>com.apple.package</string>
-				<string>public.composite-content</string>
-				<string>public.data</string>
-				<string>public.content</string>
-				<string>public.item</string>
+				<string>public.zip-archive</string>
+				<string>org.7-zip.7-zip-archive</string>
+				<string>public.tar-archive</string>
+				<string>org.gnu.gnu-zip-archive</string>
+				<string>public.bzip2-archive</string>
+				<string>org.tukaani.xz-archive</string>
+				<string>public.z-archive</string>
+				<string>com.rarlab.rar-archive</string>
+				<string>com.microsoft.cab</string>
+				<string>public.cpio-archive</string>
+				<string>public.iso-image</string>
+				<string>org.tukaani.lzma-archive</string>
+				<string>com.stuffit.archive.sit</string>
+				<string>org.7-zip.lha-archive</string>
+				<string>cx.c3.lzx-archive</string>
+				<string>org.lz4.lz4-archive</string>
 			</array>
-			<key>NSDocumentClass</key>
-			<string></string>
 		</dict>
 	</array>
 	<key>CFBundleURLTypes</key>
@@ -72,10 +77,8 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>RAR Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
 			<key>UTTypeIdentifier</key>
-			<string>com.sarensw.rar-archive</string>
+			<string>com.rarlab.rar-archive</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -85,6 +88,177 @@
 				<key>public.mime-type</key>
 				<array>
 					<string>application/x-rar-compressed</string>
+					<string>application/vnd.rar</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>7-Zip Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.7-zip.7-zip-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>7z</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/x-7z-compressed</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>LHA/LZH Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.7-zip.lha-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>lha</string>
+					<string>lzh</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/x-lha</string>
+					<string>application/x-lzh</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>LZX Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>cx.c3.lzx-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>lzx</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>LZMA Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.tukaani.lzma-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>lzma</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/x-lzma</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>StuffIt Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.stuffit.archive.sit</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sit</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/x-stuffit</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Self-Extracting Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.apple.self-extracting-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sea</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>LZ4 Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.lz4.lz4-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>lz4</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/x-lz4</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Microsoft Cabinet Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.microsoft.cab</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>cab</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/vnd.ms-cab-compressed</string>
 				</array>
 			</dict>
 		</dict>
