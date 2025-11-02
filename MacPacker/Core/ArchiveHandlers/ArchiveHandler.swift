@@ -8,10 +8,6 @@
 import Foundation
 
 class ArchiveHandler {
-    static func `for`(ext: String) -> ArchiveHandler? {
-        return ArchiveHandlerRegistry.shared.handler(for: ext)
-    }
-    
     public static func getTempDirectory(id: String) -> URL {
         let applicationSupport = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         let appSupportSubDirectory = applicationSupport

@@ -26,12 +26,13 @@ class ArchiveService {
             Logger.debug("No stack available")
             return
         }
-        guard let ext = stackItem.archiveType else {
+        guard let archivePath = stackItem.archivePath else {
             Logger.debug("Archive seems to be a new one, no type/ext set yet")
             // TODO: In this case, the file has a physical on the device and should be opened there
             return
         }
-        guard let handler = ArchiveHandlerRegistry.shared.handler(for: ext) else {
+        let url = URL(fileURLWithPath: archivePath)
+        guard let handler = ArchiveTypeRegistry.shared.handler(for: url) else {
             Logger.debug("No handler registered for \(String(describing: archive.ext))")
             return
         }
@@ -77,12 +78,7 @@ class ArchiveService {
             Logger.debug("URL not a valid URL")
             return
         }
-        guard let ext = archive.ext else {
-            Logger.debug("Archive seems to be a new one, no type/ext set yet")
-            // TODO: In this case, the file has a physical on the device and should be opened there
-            return
-        }
-        guard let handler = ArchiveHandlerRegistry.shared.handler(for: ext) else {
+        guard let handler = ArchiveTypeRegistry.shared.handler(for: url) else {
             Logger.debug("No handler registered for \(String(describing: archive.ext))")
             return
         }

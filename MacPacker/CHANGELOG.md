@@ -2,6 +2,7 @@ v0.12
 - feat: Added 'File' > 'Open...' menu to open archives when no window is open
 - core: Separated localization of changelog from app localization
 - core: Language support for Ukranian, Russian
+- core: Detect archive type based on magic number independent on the file extension
 
 v0.11
 - feat: Use system preview instead of internal previewer

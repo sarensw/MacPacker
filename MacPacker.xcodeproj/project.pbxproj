@@ -126,7 +126,6 @@
 /* Begin PBXFileReference section */
 		252F12022E7ABDD9004CCEBE /* FinderExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FinderExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		254BB5592ABBE8430059A1D5 /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		254BB55A2ABBE8430059A1D5 /* MacPacker copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MacPacker copy-Info.plist"; path = "/Users/sarensw/Documents/Private/Projects/MacPacker/MacPacker copy-Info.plist"; sourceTree = "<absolute>"; };
 		2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickLookExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2567C8302E8FB75F008E1BD8 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		25C0A8A42A78DE5F002C1C2A /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -270,7 +269,6 @@
 				2567C8322E8FB75F008E1BD8 /* QuickLookExtension */,
 				25C0A8A52A78DE5F002C1C2A /* Products */,
 				25C0A8DF2A7B5569002C1C2A /* Frameworks */,
-				254BB55A2ABBE8430059A1D5 /* MacPacker copy-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -756,7 +754,7 @@
 					"$(PROJECT_DIR)/Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "MacPacker copy-Info.plist";
+				INFOPLIST_FILE = MacPacker/Info_Store.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MacPacker;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -805,7 +803,7 @@
 					"$(PROJECT_DIR)/Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "MacPacker copy-Info.plist";
+				INFOPLIST_FILE = MacPacker/Info_Store.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MacPacker;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";

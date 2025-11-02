@@ -72,6 +72,7 @@ struct WelcomeWhatsNewView: View {
             WhatsNewPill(key: LocalizedStringResource("v0.12_added_open_menu", defaultValue: "Added 'File' > 'Open...' menu to open archives when no window is open", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.12_separate_changelog_localization", defaultValue: "Separated localization of changelog from app localization", table: "LocalizableWhatsNew"), type: .core)
             WhatsNewPill(key: LocalizedStringResource("v0.12_new_lang_ru_ua", defaultValue: "Language support for Ukranian, Russian", table: "LocalizableWhatsNew"), type: .core)
+            WhatsNewPill(key: LocalizedStringResource("v0.12_magic_number", defaultValue: "Detect archive type based on magic number independent on the file extension", table: "LocalizableWhatsNew"), type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()

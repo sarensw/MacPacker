@@ -12,10 +12,12 @@ class ArchiveHandlerLz4: ArchiveHandler {
     private static let ext = "lz4"
     
     static func register() {
-        let registry = ArchiveHandlerRegistry.shared
         let handler = ArchiveHandlerLz4()
         
-        registry.register(ext: ext, handler: handler)
+        let typeRegistry = ArchiveTypeRegistry.shared
+        
+        typeRegistry.register(typeID: "lz4", capabilities: [.view, .extract], handler: handler)
+        
     }
     
     /// Returns the content of the lz4 file. Note that an lz4 file is just a compression algorithm.

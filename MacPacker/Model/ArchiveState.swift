@@ -53,10 +53,10 @@ extension ArchiveState {
     }
     
     /// Checks if the given archive extension is supported to be loaded in MacPacker
-    /// - Parameter ext: extension
+    /// - Parameter url: url to the archive in question
     /// - Returns: true in case supported, false otherwise
-    public func isSupportedArchive(ext: String) -> Bool {
-        return ArchiveHandlerRegistry.shared.isSupported(ext: ext)
+    public func isSupportedArchive(url: URL) -> Bool {
+        return ArchiveTypeRegistry.shared.isSupported(url: url)
     }
     
     /// Updates the quick look preview URL. The previewer we're using is the default systems
@@ -103,9 +103,8 @@ extension ArchiveState {
             
             // stack item is archive
             if let archivePath = entry.archivePath,
-               let archiveType = entry.archiveType,
                let archive = self.archive,
-               let handler = ArchiveHandler.for(ext: archiveType)
+               let handler = ArchiveTypeRegistry.shared.handler(for: entry.localPath)
             {
 //                let archiveType = try ArchiveType.with(archiveType)
                 
@@ -175,7 +174,7 @@ extension ArchiveState {
             }
             
             var fileItemType: ArchiveItemType = isDirectory ? .directory : .file
-            if fileItemType == .file && isSupportedArchive(ext: url.pathExtension) {
+            if fileItemType == .file && ArchiveTypeRegistry.shared.isSupported(ext: url.pathExtension) {
                 fileItemType = .archive
             }
             let fileItem = ArchiveItem(

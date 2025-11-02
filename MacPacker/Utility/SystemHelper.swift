@@ -37,7 +37,7 @@ final class SystemHelper {
         let suffixes = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
         let k: Double = 1000
         let bytesAsDouble = Double(bytes) // Convert Int64 to Double for calculations
-        let i = floor(log(bytesAsDouble) / log(k))
+        let i = bytesAsDouble == 0 ? 0 : floor(log(bytesAsDouble) / log(k))
 
         // Format number with thousands separator and everything below 1 GB with no decimal places.
         let numberFormatter = NumberFormatter()

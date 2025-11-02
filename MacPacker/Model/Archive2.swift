@@ -49,8 +49,7 @@ class Archive2: ObservableObject {
         self.url = url
         self.name = url.lastPathComponent
         determineFileExtension(from: url)
-        if let ext,
-           !ArchiveHandlerRegistry.shared.isSupported(ext: ext) {
+        if !ArchiveTypeRegistry.shared.isSupported(url: url) {
             throw Archive2Error.unknownType("Unknown archive type")
         }
         try load(url)
@@ -65,8 +64,7 @@ class Archive2: ObservableObject {
         self.url = url
         self.name = url.lastPathComponent
         determineFileExtension(from: url)
-        if let ext,
-           !ArchiveHandlerRegistry.shared.isSupported(ext: ext) {
+        if !ArchiveTypeRegistry.shared.isSupported(url: url) {
             throw Archive2Error.unknownType("Unknown archive type")
         }
         try load(url)
@@ -123,8 +121,8 @@ class Archive2: ObservableObject {
     /// Adds the given files to the archive. Note that this only works for editable archives
     /// - Parameter urls: the urls of the files to add
     func add(urls: [URL]) throws {
-        if let ext,
-           let handler = ArchiveHandler.for(ext: ext),
+        if let url,
+           let handler = ArchiveTypeRegistry.shared.handler(for: url),
            handler.isEditable {
             for url in urls {
                 items.append(ArchiveItem(path: url, type: .file))
@@ -143,7 +141,7 @@ class Archive2: ObservableObject {
     /// - Parameter ext: the archive extension, hence type to save the archive in
     func save(to url: URL, as ext: String) throws {
         // save the archive
-        if let handler = ArchiveHandler.for(ext: ext),
+        if let handler = ArchiveTypeRegistry.shared.handler(for: url),
            handler.isEditable {
             try handler.save(to: url, items: items)
         } else {
@@ -169,9 +167,7 @@ class Archive2: ObservableObject {
             
             // stack item is archive
             if let archivePath = entry.archivePath,
-               let archiveType = entry.archiveType,
-               let handler = ArchiveHandler.for(ext: archiveType) {
-//                let archive = try ArchiveType.with(archiveType)
+               let handler = ArchiveTypeRegistry.shared.handler(for: entry.localPath) {
                 
                 if let content: [ArchiveItem] = try? handler.content(
                     archiveUrl: entry.localPath,
@@ -214,10 +210,10 @@ class Archive2: ObservableObject {
     }
     
     /// Checks if the given archive extension is supported to be loaded in MacPacker
-    /// - Parameter ext: extension
+    /// - Parameter url: URL to the archive in question
     /// - Returns: true in case supported, false otherwise
-    public func isSupportedArchive(ext: String) -> Bool {
-        return ArchiveHandlerRegistry.shared.isSupported(ext: ext)
+    public func isSupportedArchive(url: URL) -> Bool {
+        return ArchiveTypeRegistry.shared.isSupported(url: url)
     }
     
     /// Checks if the given path is a directory
@@ -324,7 +320,7 @@ class Archive2: ObservableObject {
         // The item selected is not the parent. So check if this is a file,
         // and if yes, whether it is a supported archive.
         if item.type == .file {
-            if isSupportedArchive(ext: item.ext) {
+            if ArchiveTypeRegistry.shared.isSupported(ext: item.ext) {
                 // file, and supported archive, open as a new stack entry
                 
                 // two possibilities
@@ -357,8 +353,7 @@ class Archive2: ObservableObject {
                         // the previous stack entry is an archive, but there is no
                         // temp id, so it was not extracted yet
                         // > extract first
-                        if let archiveType = currentStackEntry.archiveType,
-                           let handler = ArchiveHandler.for(ext: archiveType),
+                        if let handler = ArchiveTypeRegistry.shared.handler(for: currentStackEntry.localPath),
                            let tempDir = handler.extractFileToTemp(
                                 path: currentStackEntry.localPath,
                                 item: item) {
@@ -394,8 +389,7 @@ class Archive2: ObservableObject {
                 }
             } else {
                 if let currentStackEntry = stack.peek(),
-                   let archiveType = currentStackEntry.archiveType,
-                   let handler = ArchiveHandler.for(ext: archiveType),
+                   let handler = ArchiveTypeRegistry.shared.handler(for: currentStackEntry.localPath),
                    let tempUrl = handler.extractFileToTemp(
 //                   let tempUrl = try? ArchiveType
 //                    .with(archiveType)
@@ -439,8 +433,7 @@ class Archive2: ObservableObject {
     /// - Returns: The URL to which the item was extracted. This is a temporary URL
     public func extractFileToTemp(_ item: ArchiveItem) -> URL? {
         if let currentStackEntry = stack.peek(),
-           let archiveType = currentStackEntry.archiveType,
-           let handler = ArchiveHandler.for(ext: archiveType),
+           let handler = ArchiveTypeRegistry.shared.handler(for: currentStackEntry.localPath),
            let tempUrl = handler.extractFileToTemp(
 //           let tempUrl = try? ArchiveType
 //            .with(archiveType)
@@ -477,7 +470,7 @@ class Archive2: ObservableObject {
             }
             
             var fileItemType: ArchiveItemType = isDirectory ? .directory : .file
-            if fileItemType == .file && isSupportedArchive(ext: url.pathExtension) {
+            if fileItemType == .file && ArchiveTypeRegistry.shared.isSupported(ext: url.pathExtension) {
                 fileItemType = .archive
             }
             let fileItem = ArchiveItem(

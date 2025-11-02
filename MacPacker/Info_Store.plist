@@ -3,59 +3,22 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDocumentTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeName</key>
-			<string></string>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSHandlerRank</key>
-			<string>Default</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>com.apple.installer-package-archive</string>
-				<string>public.archive</string>
-				<string>com.apple.application</string>
-				<string>public.pluginBundle</string>
-				<string>public.bundle</string>
-				<string>com.apple.package</string>
-				<string>public.composite-content</string>
-				<string>public.data</string>
-				<string>public.content</string>
-				<string>public.item</string>
-			</array>
-			<key>NSDocumentClass</key>
-			<string></string>
-		</dict>
-	</array>
+	<array/>
 	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>app.macpacker</string>
-			</array>
-		</dict>
-	</array>
-	<key>SUEnableInstallerLauncherService</key>
-	<true/>
-	<key>SUFeedURL</key>
-	<string>https://macpacker-releases.s3.eu-central-1.amazonaws.com/appcast.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>ow1WipJFlCIvVfMWz643G1nhDDzp1mamE2M2Z7KonU0=</string>
+	<array/>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
 			<key>UTTypeConformsTo</key>
-			<array/>
+			<array>
+				<string>public.file-url</string>
+			</array>
 			<key>UTTypeDescription</key>
-			<string></string>
+			<string>MacPacker File</string>
 			<key>UTTypeIcons</key>
 			<dict/>
 			<key>UTTypeIdentifier</key>
-			<string></string>
+			<string>com.sarensx.MacPacker.file</string>
 			<key>UTTypeTagSpecification</key>
 			<dict/>
 		</dict>

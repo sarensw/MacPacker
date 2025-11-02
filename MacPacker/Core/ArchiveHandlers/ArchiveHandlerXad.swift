@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UniformTypeIdentifiers
 import XADMaster
 
 enum XADMasterEntryType {
@@ -16,27 +17,29 @@ enum XADMasterEntryType {
 class ArchiveHandlerXad: ArchiveHandler {
     
     static func register() {
-        let registry = ArchiveHandlerRegistry.shared
         let handler = ArchiveHandlerXad()
         
-        registry.register(ext: "7z", handler: handler)
-        registry.register(ext: "bz2", handler: handler)
-        registry.register(ext: "cab", handler: handler)
-        registry.register(ext: "cpio", handler: handler)
-        registry.register(ext: "gz", handler: handler)
-        registry.register(ext: "iso", handler: handler)
-        registry.register(ext: "lzma", handler: handler)
-        registry.register(ext: "rar", handler: handler)
-        registry.register(ext: "sea", handler: handler)
-        registry.register(ext: "sit", handler: handler)
-        registry.register(ext: "tar", handler: handler)
-        registry.register(ext: "xz", handler: handler)
-        registry.register(ext: "z", handler: handler)
+        let typeRegistry = ArchiveTypeRegistry.shared
         
-        // Amiga formats
-        registry.register(ext: "lzh", handler: handler)
-        registry.register(ext: "lha", handler: handler)
-        registry.register(ext: "lzx", handler: handler)
+        typeRegistry.register(typeID: "7zip", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "bzip2", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "cab", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "cpio", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "gzip", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "iso", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "lha", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "lzx", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "rar", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "sea", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "sit", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "sitx", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "tar", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "tar.bz2", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "tar.gz", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "tar.xz", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "xz", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "z", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: "zip", capabilities: [.view, .extract], handler: handler)
     }
     
     override func content(
