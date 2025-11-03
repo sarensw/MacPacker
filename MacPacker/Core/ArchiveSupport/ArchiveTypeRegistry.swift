@@ -9,14 +9,14 @@ import Foundation
 
 public class ArchiveTypeRegistry {
     static let shared: ArchiveTypeRegistry = .init()
-    var archiveHandlers: [String: ArchiveHandler] = [:]
+    var archiveHandlers: [ArchiveTypeId: ArchiveHandler] = [:]
     
     let detector = ArchiveTypeDetector()
     
     private init() {}
     
     func register(
-        typeID: String,
+        typeID: ArchiveTypeId,
         capabilities: [ArchiveCapability],
         handler: ArchiveHandler
     ) {
@@ -28,7 +28,7 @@ public class ArchiveTypeRegistry {
         return handler(for: result.type.id)
     }
     
-    func handler(for id: String) -> ArchiveHandler? {
+    func handler(for id: ArchiveTypeId) -> ArchiveHandler? {
         for key in archiveHandlers.keys {
             if key == id {
                 return archiveHandlers[key]

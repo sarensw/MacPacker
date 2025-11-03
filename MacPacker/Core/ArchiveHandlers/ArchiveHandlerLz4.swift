@@ -16,7 +16,7 @@ class ArchiveHandlerLz4: ArchiveHandler {
         
         let typeRegistry = ArchiveTypeRegistry.shared
         
-        typeRegistry.register(typeID: "lz4", capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: .lz4, capabilities: [.view, .extract], handler: handler)
         
     }
     

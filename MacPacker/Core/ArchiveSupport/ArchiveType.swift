@@ -9,22 +9,22 @@ import Foundation
 import UniformTypeIdentifiers
 
 struct ArchiveType: Hashable, Identifiable {
-    let id: String
+    let id: ArchiveTypeId
     let kind: Kind
     let displayName: String
     let uti: UTType
     let extensions: [String]
-    let magicSignatures: [MagicSignature]
+    let magicRule: [MagicRule]
     let composition: Composition?
     let multipartPatterns: [MultipartPattern]
     
     init(
-        id: String,
+        id: ArchiveTypeId,
         kind: Kind,
         displayName: String,
         uti: UTType,
         extensions: [String],
-        magicSignatures: [MagicSignature] = [],
+        magicRule: [MagicRule],
         composition: Composition? = nil,
         multipartPatterns: [MultipartPattern] = []
     ) {
@@ -33,7 +33,7 @@ struct ArchiveType: Hashable, Identifiable {
         self.displayName = displayName
         self.uti = uti
         self.extensions = extensions
-        self.magicSignatures = magicSignatures
+        self.magicRule = magicRule
         self.composition = composition
         self.multipartPatterns = multipartPatterns
     }

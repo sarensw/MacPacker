@@ -79,16 +79,47 @@ class ArchiveTypeDetector {
         guard let header = data, !header.isEmpty else { return nil }
         let bytes = [UInt8](header)
         
-        // now scann all types and see if there is any signature mapping
+        // now scan all types and see if any rule matches
         for type in catalog.allTypes() {
-            for signature in type.magicSignatures {
-                let start = signature.offset
-                let end = start + signature.bytes.count
-                
-                if end <= bytes.count {
-                    // check if the given slice matches the known signature
-                    let slice = Array(bytes[start..<end])
-                    if slice == signature.bytes {
+            for rule in type.magicRule {
+                switch rule.policy {
+                case .any:
+                    for signature in rule.signatures {
+                        let start = signature.offset
+                        let end = start + signature.bytes.count
+                        
+                        if end <= bytes.count {
+                            // check if the given slice matches the known signature
+                            let slice = Array(bytes[start..<end])
+                            if slice == signature.bytes {
+                                return DetectionResult(
+                                    type: type,
+                                    confidence: 1.0,
+                                    source: .magic,
+                                    notes: nil
+                                )
+                            }
+                        }
+                    }
+                case .all:
+                    var result = true
+                    for signature in rule.signatures {
+                        let start = signature.offset
+                        let end = start + signature.bytes.count
+                        
+                        if end <= bytes.count {
+                            let slice = Array(bytes[start..<end])
+                            if slice == signature.bytes {
+                                result = result && true
+                            } else {
+                                result = false
+                            }
+                        } else {
+                            result = false
+                        }
+                    }
+                    
+                    if result {
                         return DetectionResult(
                             type: type,
                             confidence: 1.0,

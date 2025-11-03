@@ -19,7 +19,7 @@ import UniformTypeIdentifiers
         let result = detector.detectByExtension(for: url)
         
         #expect(result?.source == .fileExtension)
-        #expect(result?.type.id == "7zip")
+        #expect(result?.type.id == .`7zip`)
         #expect(result?.type.uti == UTType(importedAs: "org.7-zip.7-zip-archive"))
     }
     
@@ -30,7 +30,7 @@ import UniformTypeIdentifiers
         let result = detector.detectByMagicNumber(for: url)
         
         #expect(result?.source == .magic)
-        #expect(result?.type.id == "7zip")
+        #expect(result?.type.id == .`7zip`)
         #expect(result?.type.uti == UTType(importedAs: "org.7-zip.7-zip-archive"))
     }
     
@@ -41,7 +41,7 @@ import UniformTypeIdentifiers
         let result = detector.detectByExtension(for: url)
         
         #expect(result?.source == .fileExtension)
-        #expect(result?.type.id == "zip")
+        #expect(result?.type.id == .zip)
         #expect(result?.type.uti == UTType.zip)
     }
     
@@ -52,7 +52,7 @@ import UniformTypeIdentifiers
         let result = detector.detectByMagicNumber(for: url)
         
         #expect(result?.source == .magic)
-        #expect(result?.type.id == "zip")
+        #expect(result?.type.id == .zip)
         #expect(result?.type.uti == UTType.zip)
     }
     
@@ -63,18 +63,18 @@ import UniformTypeIdentifiers
         let result = detector.detect(for: url)
         
         #expect(result?.source == .magic)
-        #expect(result?.type.id == "zip")
+        #expect(result?.type.id == .zip)
         #expect(result?.type.uti == UTType.zip)
     }
     
-    @Test func verifyZipByMagicNumberWithOffset() throws {
+    @Test func verifyIsoByMagicNumberWithOffset() throws {
         let url = try testBase.getTestFile(name: "defaultArchive.iso")
         
         let detector = ArchiveTypeDetector()
         let result = detector.detectByMagicNumber(for: url)
         
         #expect(result?.source == .magic)
-        #expect(result?.type.id == "iso")
+        #expect(result?.type.id == .iso)
         #expect(result?.type.uti == UTType(importedAs: "public.iso-image"))
     }
     

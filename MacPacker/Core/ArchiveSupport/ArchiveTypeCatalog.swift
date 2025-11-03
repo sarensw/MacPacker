@@ -10,285 +10,175 @@
 
 import UniformTypeIdentifiers
 
+private extension String {
+    func hexBytes() -> [UInt8]? {
+        // keep only hex digits, drop whitespace
+        let filtered = self.filter { $0.isHexDigit }
+        guard filtered.count % 2 == 0 else { return nil }
+
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(filtered.count / 2)
+
+        var i = filtered.startIndex
+        while i < filtered.endIndex {
+            let j = filtered.index(i, offsetBy: 2)
+            guard let b = UInt8(filtered[i..<j], radix: 16) else { return nil }
+            bytes.append(b)
+            i = j
+        }
+        return bytes
+    }
+}
+
+extension ArchiveType.MagicSignature {
+    static func hex(_ s: String, offset: Int = 0) -> Self {
+        .init(offset: offset, bytes: s.hexBytes() ?? [])
+    }
+    
+    static func any(_ sigs: ArchiveType.MagicSignature...) -> Self {
+        .init(offset: 0, bytes: sigs.flatMap(\.bytes))
+    }
+    
+    static func all(_ sigs: ArchiveType.MagicSignature...) -> Self {
+        .init(offset: 0, bytes: sigs.flatMap(\.bytes))
+    }
+}
+
+struct MagicRule: Hashable {
+    enum Policy { case any, all }
+    let policy: Policy
+    let signatures: [ArchiveType.MagicSignature]
+    
+    static func any(_ sigs: ArchiveType.MagicSignature...) -> MagicRule {
+        .init(policy: .any, signatures: sigs)
+    }
+    
+    static func all(_ sigs: ArchiveType.MagicSignature...) -> MagicRule {
+        .init(policy: .all, signatures: sigs)
+    }
+}
+
+enum Sig { case any([ArchiveType.MagicSignature]) }
+
+enum ArchiveTypeId: String, CaseIterable {
+    case `7zip` = "7-Zip Archive"
+    case bzip2  = "Bzip2 File"
+    case cab    = "CAB Archive"
+    case cpio   = "CPIO Archive"
+    case gzip   = "Gzip File"
+    case iso    = "ISO Image"
+    case lha    = "LhA Archive"
+    case lz4    = "Lz4 Archive"
+    case lzx    = "Lzx Archive"
+    case rar    = "RAR Archive"
+    case sea    = "Self-extracting Archive"
+    case sit    = "StuffIt Archive"
+    case sitx   = "StuffIt X Archive"
+    case tar    = "Tar Archive"
+    case `tar.bz2`  = "Bzip2 Tar Archive"
+    case `tar.gz`   = "Gzip Tar Archive"
+    case `tar.xz`   = "XZ Tar Archive"
+    case xz     = "XZ File"
+    case Z      = "Unix Compress File"
+    case zip    = "Zip Archive"
+}
+
 final class ArchiveTypeCatalog {
     static let shared = ArchiveTypeCatalog()
     
     /// This is the full list of all known archive types. Whether they are supported or
     /// not depends on which ID is registered in an archive handler. This list will allow
     /// later use cases like "I know the format, but don't support it yet"
-    public private(set) var typesByID: [String: ArchiveType] = [:]
+    public private(set) var typesByID: [ArchiveTypeId: ArchiveType] = [:]
     
     private init() {
         loadAllTypes()
     }
     
-    private func loadAllTypes() {
-        register(
-            .init(
-                id: "7zip",
-                kind: .archive,
-                displayName: "7-Zip Archive",
-                uti: UTType(importedAs: "org.7-zip.7-zip-archive"),
-                extensions: ["7z"],
-                magicSignatures: [
-                    .init(bytes: [0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "bzip2",
-                kind: .compression,
-                displayName: "Bzip2 File",
-                uti: .bz2,
-                extensions: ["bz2", "bzip2", "bz"],
-                magicSignatures: [
-                    .init(bytes: [0x42, 0x5A, 0x68])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "cab",
-                kind: .archive,
-                displayName: "CAB Archive",
-                uti: UTType(importedAs: "com.microsoft.cab"),
-                extensions: ["cab"],
-                magicSignatures: [
-                    .init(bytes: [0x4D, 0x53, 0x43, 0x46])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "cpio",
-                kind: .archive,
-                displayName: "CPIO Archive",
-                uti: UTType(importedAs: "public.cpio-archive"),
-                extensions: ["cpio"],
-                magicSignatures: [
-                    // cpio "new" ASCII archive file
-                    .init(bytes: [0x30, 0x37, 0x30, 0x37, 0x30, 0x31]),
-                    // cpio ASCII archive file with crc
-                    .init(bytes: [0x30, 0x37, 0x30, 0x37, 0x30, 0x32]),
-                    // cpio ASCII archive file
-                    .init(bytes: [0x30, 0x37, 0x30, 0x37, 0x30, 0x37])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "gzip",
-                kind: .compression,
-                displayName: "Gzip File",
-                uti: .gzip,
-                extensions: ["gz", "gzip"],
-                magicSignatures: [
-                    .init(bytes: [0x1F, 0x8B])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "iso",
-                kind: .image,
-                displayName: "ISO Disk Image",
-                uti: UTType(importedAs: "public.iso-image"),
-                extensions: ["iso"],
-                magicSignatures: [
-                    .init(offset: 0x8001, bytes: [0x43, 0x44, 0x30, 0x30, 0x31]),
-                    // and
-                    .init(offset: 0x8801, bytes: [0x43, 0x44, 0x30, 0x30, 0x31]),
-                    // and
-                    .init(offset: 0x9001, bytes: [0x43, 0x44, 0x30, 0x30, 0x31])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "lha",
-                kind: .archive,
-                displayName: "LhA Archive",
-                uti: UTType(importedAs: "org.7-zip.lha-archive"),
-                extensions: ["lha", "lzh"],
-                magicSignatures: [
-                    .init(offset: 0x02, bytes: [0x2D, 0x6C, 0x68, 0x30, 0x2D]),
-                    // or
-                    .init(offset: 0x02, bytes: [0x2D, 0x6C, 0x68, 0x35, 0x2D]),
-                    // or
-                    .init(offset: 0x9001, bytes: [0x2D, 0x6C, 0x68, 0x64, 0x2D])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "lz4",
-                kind: .compression,
-                displayName: "Lz4 File",
-                uti: UTType(importedAs: "public.lz4-archive"),
-                extensions: ["lz4"],
-                magicSignatures: [
-                    .init(bytes: [0x04, 0x22, 0x4D, 0x18])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "lzx",
-                kind: .archive,
-                displayName: "Amiga LZX Archive",
-                uti: UTType(importedAs: "cx.c3.lzx-archive"),
-                extensions: ["lzx"],
-                magicSignatures: [])
-        )
-        
-        register(
-            .init(
-                id: "rar",
-                kind: .archive,
-                displayName: "RAR Archive",
-                uti: UTType(importedAs: "com.rarlab.rar-archive"),
-                extensions: ["lzx"],
-                magicSignatures: [
-                    .init(bytes: [0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00]),
-                    
-                    // or
-                    .init(bytes: [0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "sea",
-                kind: .archive,
-                displayName: "Self-extracting Archive",
-                uti: UTType(importedAs: "com.apple.self-extracting-archive"),
-                extensions: ["sea"],
-                magicSignatures: [
-                    .init(bytes: [0x53, 0x74, 0x75, 0x66, 0x66, 0x49, 0x74, 0x20])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "sit",
-                kind: .archive,
-                displayName: "StuffIt Archive",
-                uti: UTType(importedAs: "com.stuffit.archive.sit"),
-                extensions: ["sit"],
-                magicSignatures: [
-                    .init(bytes: [0x53, 0x74, 0x75, 0x66, 0x66, 0x49, 0x74, 0x20])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "sitx",
-                kind: .archive,
-                displayName: "StuffIt X Archive",
-                uti: UTType(importedAs: "com.stuffit.archive.sitx"),
-                extensions: ["sitx"],
-                magicSignatures: [
-                    .init(bytes: [0x53, 0x74, 0x75, 0x66, 0x66, 0x49, 0x74, 0x21])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "tar",
-                kind: .archive,
-                displayName: "Tar Archive",
-                uti: UTType(importedAs: "public.tar-archive"),
-                extensions: ["tar"],
-                magicSignatures: [
-                    .init(offset: 257, bytes: [0x75, 0x73, 0x74, 0x61, 0x72, 0x00, 0x30, 0x30]),
-                    // or
-                    .init(offset: 257, bytes: [0x75, 0x73, 0x74, 0x61, 0x72, 0x20, 0x20, 0x00])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "tar.bz2",
-                kind: .archive,
-                displayName: "Bzip2 Tar Archive",
-                uti: UTType(importedAs: "org.bzip.bzip2-tar-archive"),
-                extensions: ["tbz2", "tbz"],
-                magicSignatures: [
-                    .init(bytes: [0x42, 0x5A, 0x68])
-                ],
-                composition: .compressed(outer: "bzip2", inner: "tar"))
-        )
-        
-        register(
-            .init(
-                id: "tar.gz",
-                kind: .archive,
-                displayName: "Gzip Tar Archive",
-                uti: UTType(importedAs: "org.gnu.gnu-zip-tar-archive"),
-                extensions: ["tgz"],
-                magicSignatures: [
-                    .init(bytes: [0x1F, 0x8B])
-                ],
-                composition: .compressed(outer: "gzip", inner: "tar"))
-        )
-        
-        register(
-            .init(
-                id: "tar.xz",
-                kind: .archive,
-                displayName: "XZ Tar Archive",
-                uti: UTType(importedAs: "org.tukaani.tar-xz-archive"),
-                extensions: ["txz"],
-                magicSignatures: [
-                    .init(bytes: [0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00])
-                ],
-                composition: .compressed(outer: "xz", inner: "tar"))
-        )
-        
-        register(
-            .init(
-                id: "xz",
-                kind: .compression,
-                displayName: "XZ File",
-                uti: UTType(importedAs: "org.tukaani.xz-archive"),
-                extensions: ["xz"],
-                magicSignatures: [
-                    .init(bytes: [0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "Z",
-                kind: .archive,
-                displayName: "Unix Compress File",
-                uti: UTType(importedAs: "public.z-archive"),
-                extensions: ["z"],
-                magicSignatures: [
-                    .init(bytes: [0x1F, 0x9D])
-                ])
-        )
-        
-        register(
-            .init(
-                id: "zip",
-                kind: .archive,
-                displayName: "Zip Archive",
-                uti: .zip,
-                extensions: ["zip"],
-                magicSignatures: [
-                    .init(bytes: [0x50, 0x4B, 0x03, 0x04]),
-                    // or (for empty archive)
-                    .init(bytes: [0x50, 0x4B, 0x05, 0x06]),
-                    // or (spanned archive)
-                    .init(bytes: [0x50, 0x4B, 0x07, 0x08])
-                ])
-        )
+    private func ra(_ id: ArchiveTypeId, uti: String, ext: [String], rls: [MagicRule]) {
+        register(id, type: .archive, uti: UTType.init(importedAs: uti), ext: ext, rls: rls)
     }
     
-    private func register(_ type: ArchiveType) {
-        typesByID[type.id] = type
+    private func ra(_ id: ArchiveTypeId, uti: UTType, ext: [String], rls: [MagicRule]) {
+        register(id, type: .archive, uti: uti, ext: ext, rls: rls)
+    }
+    
+    private func rc(_ id: ArchiveTypeId, uti: String, ext: [String], rls: [MagicRule]) {
+        register(id, type: .compression, uti: UTType.init(importedAs: uti), ext: ext, rls: rls)
+    }
+    
+    private func rc(_ id: ArchiveTypeId, uti: UTType, ext: [String], rls: [MagicRule]) {
+        register(id, type: .compression, uti: uti, ext: ext, rls: rls)
+    }
+    
+    private func ri(_ id: ArchiveTypeId, uti: String, ext: [String], rls: [MagicRule]) {
+        register(id, type: .image, uti: UTType.init(importedAs: uti), ext: ext, rls: rls)
+    }
+    
+    private func ri(_ id: ArchiveTypeId, uti: UTType, ext: [String], rls: [MagicRule]) {
+        register(id, type: .image, uti: uti, ext: ext, rls: rls)
+    }
+    
+    private func register(_ id: ArchiveTypeId, type: ArchiveType.Kind, uti: UTType, ext: [String], rls: [MagicRule]) {
+        let archiveType = ArchiveType(
+            id: id,
+            kind: type,
+            displayName: id.rawValue,
+            uti: uti,
+            extensions: ext,
+            magicRule: rls
+        )
+        typesByID[id] = archiveType
+    }
+    
+    private func loadAllTypes() {
+        // compressions
+        rc(.bzip2,      uti: .bz2,                          ext: ["bz2", "bzip2", "bz"],    rls: [.any(.hex("42 5A 68"))])
+        rc(.gzip,       uti: .gzip,                         ext: ["gz", "gzip"],            rls: [.any(.hex("1F 8B"))])
+        rc(.lz4,        uti: "public.lz4-archive",          ext: ["lz4"],                   rls: [.any(.hex("04 22 4D 18"))])
+        rc(.xz,         uti: "org.tukaani.xz-archive",      ext: ["xz"],                    rls: [.any(.hex("FD 37 7A 58 5A 00"))])
+        
+        // archives
+        ra(.`7zip`,     uti: "org.7-zip.7-zip-archive",     ext: ["7z"],                    rls: [.any(.hex("37 7A BC AF 27 1C"))])
+        ra(.cab,        uti: "com.microsoft.cab",           ext: ["cab"],                   rls: [.any(.hex("4D 53 43 46"))])
+        ra(.cpio,       uti: "public.cpio-archive",         ext: ["cpio"],                  rls: [.any(
+            .hex("30 37 30 37 30 31"),
+            .hex("30 37 30 37 30 32"),
+            .hex("30 37 30 37 30 37")
+        )])
+        ra(.lha,        uti: "org.7-zip.lha-archive",       ext: ["lha", "lzh"],            rls: [.any(
+            .hex("2D 6C 68 30 2D", offset: 0x02),
+            .hex("2D 6C 68 35 2D", offset: 0x02),
+            .hex("2D 6C 68 64 2D", offset: 0x02)
+        )])
+        ra(.lzx,        uti: "cx.c3.lzx-archive",           ext: ["lzx"],                   rls: [])
+        ra(.rar,        uti: "com.rarlab.rar-archive",      ext: ["rar"],                   rls: [.any(
+            .hex("52 61 72 21 1A 07 00"),
+            .hex("52 61 72 21 1A 07 01 00")
+        )])
+        ra(.sea,        uti: "com.apple.self-extracting-archive", ext: ["sea"],             rls: [.any(.hex("53 74 75 66 66 49 74 20"))])
+        ra(.sit,        uti: "com.stuffit.archive.sit",     ext: ["sit"],                   rls: [.any(.hex("53 74 75 66 66 49 74 20"))])
+        ra(.sitx,       uti: "com.stuffit.archive.sitx",    ext: ["sitx"],                  rls: [.any(.hex("53 74 75 66 66 49 74 21"))])
+        ra(.tar,        uti: "public.tar-archive",          ext: ["tar"],                   rls: [.any(
+            .hex("75 73 74 61 72 00 30 30", offset: 257),
+            .hex("75 73 74 61 72 20 20 00", offset: 257)
+        )])
+        ra(.`tar.bz2`,  uti: "org.bzip.bzip2-tar-archive",  ext: ["tbz2", "tbz"],           rls: [.any(.hex("42 5A 68"))])
+        ra(.`tar.gz`,   uti: "org.gnu.gnu-zip-tar-archive", ext: ["tgz"],                   rls: [.any(.hex("1F 8B"))])
+        ra(.`tar.xz`,   uti: "org.tukaani.tar-xz-archive",  ext: ["txz"],                   rls: [.any(.hex("FD 37 7A 58 5A 00"))])
+        ra(.Z,          uti: "public.z-archive",            ext: ["z"],                     rls: [.any(.hex("1F 9D"))])
+        ra(.zip,        uti: .zip,                          ext: ["zip"],                   rls: [.any(
+            .hex("50 4B 03 04"),
+            .hex("50 4B 03 06"), // (for empty archive)
+            .hex("50 4B 03 08")  // (spanned archive)
+        )])
+        
+        // images
+        ri(.iso,        uti: "public.iso-image",            ext: ["iso"],                   rls: [.all(
+            .hex("43 44 30 30 31", offset: 0x8001),
+            .hex("43 44 30 30 31", offset: 0x8801),
+            .hex("43 44 30 30 31", offset: 0x9001)
+        )])
     }
     
     public func allTypes() -> [ArchiveType] {
