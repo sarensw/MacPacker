@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MacPackerCore
 
 class AppUrlExtractToFolderHandler: AppUrlHandler {
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {

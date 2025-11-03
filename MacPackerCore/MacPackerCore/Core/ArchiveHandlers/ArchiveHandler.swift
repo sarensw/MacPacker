@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ArchiveHandler {
+public class ArchiveHandler {
     public static func getTempDirectory(id: String) -> URL {
         let applicationSupport = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         let appSupportSubDirectory = applicationSupport
@@ -68,19 +68,19 @@ class ArchiveHandler {
         return components.joined(separator: ".")
     }
     
-    func content(archiveUrl: URL, archivePath: String) throws -> [ArchiveItem] {
+    public func content(archiveUrl: URL, archivePath: String) throws -> [ArchiveItem] {
         return []
     }
     
-    func extractToTemp(path: URL) -> URL? {
+    public func extractToTemp(path: URL) -> URL? {
         return nil
     }
     
-    func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
+    public func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
         return nil
     }
     
-    func extract(
+    public func extract(
         archiveUrl: URL,
         archiveItem: ArchiveItem,
         to url: URL
@@ -88,18 +88,18 @@ class ArchiveHandler {
         Logger.debug("Calling extract(archiveUrl:archiveItem:to:) without implementation")
     }
     
-    func extract(
+    public func extract(
         archiveUrl: URL,
         to url: URL
     ) {
         Logger.debug("Calling extract(archiveURL:to:) without implementation")
     }
     
-    var isEditable: Bool {
+    public var isEditable: Bool {
         get {
             return false
         }
     }
     
-    func save(to: URL, items: [ArchiveItem]) throws {}
+    public func save(to: URL, items: [ArchiveItem]) throws {}
 }

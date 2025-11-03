@@ -8,7 +8,7 @@
 import Foundation
 
 public class ArchiveTypeRegistry {
-    static let shared: ArchiveTypeRegistry = .init()
+    public static let shared: ArchiveTypeRegistry = .init()
     var archiveHandlers: [ArchiveTypeId: ArchiveHandler] = [:]
     
     let detector = ArchiveTypeDetector()
@@ -23,12 +23,12 @@ public class ArchiveTypeRegistry {
         archiveHandlers[typeID] = handler
     }
     
-    func handler(for url: URL) -> ArchiveHandler? {
+    public func handler(for url: URL) -> ArchiveHandler? {
         guard let result = detector.detect(for: url) else { return nil }
         return handler(for: result.type.id)
     }
     
-    func handler(for id: ArchiveTypeId) -> ArchiveHandler? {
+    public func handler(for id: ArchiveTypeId) -> ArchiveHandler? {
         for key in archiveHandlers.keys {
             if key == id {
                 return archiveHandlers[key]
@@ -37,11 +37,11 @@ public class ArchiveTypeRegistry {
         return nil
     }
     
-    func isSupported(url: URL) -> Bool {
+    public func isSupported(url: URL) -> Bool {
         return handler(for: url) != nil
     }
     
-    func isSupported(ext: String) -> Bool {
+    public func isSupported(ext: String) -> Bool {
         guard let result = detector.detectBy(ext: ext) else { return false }
         return true
     }

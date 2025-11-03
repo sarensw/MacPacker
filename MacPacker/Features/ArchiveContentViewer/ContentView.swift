@@ -5,8 +5,9 @@
 //  Created by Stephan Arenswald on 01.08.23.
 //
 
-import SwiftUI
 import AppKit
+import MacPackerCore
+import SwiftUI
 
 struct PathControlView: NSViewRepresentable {
     var path: String?

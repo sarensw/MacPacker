@@ -6,7 +6,7 @@
 //
 
 import Testing
-@testable import MacPacker
+@testable import MacPackerCore
 import UniformTypeIdentifiers
 
 @Suite("Archive Support Tests") struct ArchiveSupportTests {
@@ -52,8 +52,8 @@ import UniformTypeIdentifiers
         let result = detector.detectByMagicNumber(for: url)
         
         #expect(result?.source == .magic)
-        #expect(result?.type.id == .zip)
-        #expect(result?.type.uti == UTType.zip)
+        #expect(result?.type.id == .zip || result?.type.id == .zipx)
+        #expect(result?.type.uti == UTType.zip || result?.type.uti == UTType(importedAs: "com.winzip.zipx-archive"))
     }
     
     @Test func verifyXlsxAsZip() throws {
@@ -63,8 +63,8 @@ import UniformTypeIdentifiers
         let result = detector.detect(for: url)
         
         #expect(result?.source == .magic)
-        #expect(result?.type.id == .zip)
-        #expect(result?.type.uti == UTType.zip)
+        #expect(result?.type.id == .zip || result?.type.id == .zipx)
+        #expect(result?.type.uti == UTType.zip || result?.type.uti == UTType(importedAs: "com.winzip.zipx-archive"))
     }
     
     @Test func verifyIsoByMagicNumberWithOffset() throws {

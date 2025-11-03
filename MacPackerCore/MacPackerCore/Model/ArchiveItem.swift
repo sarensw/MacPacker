@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ArchiveItemType: Comparable, Codable {
+public enum ArchiveItemType: Comparable, Codable {
     case file
     case directory
     case archive
@@ -15,20 +15,20 @@ enum ArchiveItemType: Comparable, Codable {
     case unknown
 }
 
-struct ArchiveItem: Identifiable, Hashable, Codable {
+public struct ArchiveItem: Identifiable, Hashable, Codable {
     public static let parent: ArchiveItem = ArchiveItem(name: "..", type: .parent)
-    var id = UUID()
-    var path: URL? = nil
-    var virtualPath: String? = nil
-    let type: ArchiveItemType
-    var name: String
-    var ext: String
-    var compressedSize: Int = -1
-    var uncompressedSize: Int = -1
-    var data: Data? = nil
-    var index: Int? = nil
-    var modificationDate: Date? = nil
-    var posixPermissions: Int? = nil
+    public var id = UUID()
+    public var path: URL? = nil
+    public var virtualPath: String? = nil
+    public let type: ArchiveItemType
+    public var name: String
+    public var ext: String
+    public var compressedSize: Int = -1
+    public var uncompressedSize: Int = -1
+    public var data: Data? = nil
+    public var index: Int? = nil
+    public var modificationDate: Date? = nil
+    public var posixPermissions: Int? = nil
     
     //
     // Initializers
@@ -40,7 +40,7 @@ struct ArchiveItem: Identifiable, Hashable, Codable {
     ///   - type: Type of item
     ///   - size: Size of the item
     ///   - name: Name of the titem. If this is nil, then the last path component from path is used
-    init(
+    public init(
         path: URL,
         type: ArchiveItemType,
         compressedSize: Int? = nil,
@@ -68,7 +68,7 @@ struct ArchiveItem: Identifiable, Hashable, Codable {
     ///   - size: Size of the item
     ///   - data: Data of the item if available
     ///   - index: Index of the item within the archive
-    init(
+    public init(
         name: String,
         type: ArchiveItemType,
         virtualPath: String? = nil,
@@ -138,17 +138,17 @@ struct ArchiveItem: Identifiable, Hashable, Codable {
         
     }
     
-    static func == (lhs: ArchiveItem, rhs: ArchiveItem) -> Bool {
+    public static func == (lhs: ArchiveItem, rhs: ArchiveItem) -> Bool {
         return lhs.id == rhs.id
     }
     
-    func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
 }
 
 extension ArchiveItem: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         return path == nil ? "" : path!.absoluteString
     }
 }

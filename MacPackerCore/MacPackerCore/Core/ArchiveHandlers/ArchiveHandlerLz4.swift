@@ -8,10 +8,10 @@
 import Foundation
 import SWCompression
 
-class ArchiveHandlerLz4: ArchiveHandler {
+public class ArchiveHandlerLz4: ArchiveHandler {
     private static let ext = "lz4"
     
-    static func register() {
+    public static func register() {
         let handler = ArchiveHandlerLz4()
         
         let typeRegistry = ArchiveTypeRegistry.shared
@@ -27,7 +27,7 @@ class ArchiveHandlerLz4: ArchiveHandler {
     ///   - path: Path to the lz4 file
     ///   - archivePath: Path within the archive. This is ignored for lz4 (is always "/")
     /// - Returns: The items to show in the UI
-    override public func content(archiveUrl: URL, archivePath: String) throws -> [ArchiveItem] {
+    public override func content(archiveUrl: URL, archivePath: String) throws -> [ArchiveItem] {
         if archiveUrl.lastPathComponent.hasSuffix(Self.ext) {
             let name = stripFileExtension(archiveUrl.lastPathComponent)
             return [
@@ -37,13 +37,13 @@ class ArchiveHandlerLz4: ArchiveHandler {
         throw ArchiveError.invalidArchive("The given archive does not seem to be an lz4 archive in contrast to what is expected")
     }
     
-    override func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
+    public override func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
         return extractToTemp(path: path)
     }
     
     /// Extracts this archive to a temporary location in the sandbox
     /// - Returns: the directory as a file item to further process this
-    override func extractToTemp(path: URL) -> URL? {
+    public override func extractToTemp(path: URL) -> URL? {
         if let tempUrl = createTempDirectory() {
             
             let sourceFileName = path.lastPathComponent
@@ -78,7 +78,7 @@ class ArchiveHandlerLz4: ArchiveHandler {
         return nil
     }
     
-    override func extract(
+    public override func extract(
         archiveUrl: URL,
         archiveItem: ArchiveItem,
         to url: URL
@@ -86,7 +86,7 @@ class ArchiveHandlerLz4: ArchiveHandler {
         extract(archiveUrl: archiveUrl, to: url)
     }
     
-    override func extract(
+    public override func extract(
         archiveUrl: URL,
         to url: URL
     ) {

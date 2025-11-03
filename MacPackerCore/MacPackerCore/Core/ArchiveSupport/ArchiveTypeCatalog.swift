@@ -60,7 +60,7 @@ struct MagicRule: Hashable {
 
 enum Sig { case any([ArchiveType.MagicSignature]) }
 
-enum ArchiveTypeId: String, CaseIterable {
+public enum ArchiveTypeId: String, CaseIterable {
     case `7zip` = "7-Zip Archive"
     case bzip2  = "Bzip2 File"
     case cab    = "CAB Archive"
@@ -81,6 +81,7 @@ enum ArchiveTypeId: String, CaseIterable {
     case xz     = "XZ File"
     case Z      = "Unix Compress File"
     case zip    = "Zip Archive"
+    case zipx    = "Zipx Archive"
 }
 
 final class ArchiveTypeCatalog {
@@ -168,6 +169,11 @@ final class ArchiveTypeCatalog {
         ra(.`tar.xz`,   uti: "org.tukaani.tar-xz-archive",  ext: ["txz"],                   rls: [.any(.hex("FD 37 7A 58 5A 00"))])
         ra(.Z,          uti: "public.z-archive",            ext: ["z"],                     rls: [.any(.hex("1F 9D"))])
         ra(.zip,        uti: .zip,                          ext: ["zip"],                   rls: [.any(
+            .hex("50 4B 03 04"),
+            .hex("50 4B 03 06"), // (for empty archive)
+            .hex("50 4B 03 08")  // (spanned archive)
+        )])
+        ra(.zipx,        uti: "com.winzip.zipx-archive",    ext: ["zipx"],                   rls: [.any(
             .hex("50 4B 03 04"),
             .hex("50 4B 03 06"), // (for empty archive)
             .hex("50 4B 03 08")  // (spanned archive)

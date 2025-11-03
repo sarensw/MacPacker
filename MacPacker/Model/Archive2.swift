@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MacPackerCore
 import AppKit
 
 enum Archive2Error: Error {

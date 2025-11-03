@@ -6,6 +6,7 @@
 //
 
 import FinderSync
+import MacPackerCore
 import SwiftUI
 #if !STORE
 import Sparkle

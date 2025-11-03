@@ -14,9 +14,9 @@ enum XADMasterEntryType {
     case file
 }
 
-class ArchiveHandlerXad: ArchiveHandler {
+public class ArchiveHandlerXad: ArchiveHandler {
     
-    static func register() {
+    public static func register() {
         let handler = ArchiveHandlerXad()
         
         let typeRegistry = ArchiveTypeRegistry.shared
@@ -40,9 +40,10 @@ class ArchiveHandlerXad: ArchiveHandler {
         typeRegistry.register(typeID: .xz, capabilities: [.view, .extract], handler: handler)
         typeRegistry.register(typeID: .Z, capabilities: [.view, .extract], handler: handler)
         typeRegistry.register(typeID: .zip, capabilities: [.view, .extract], handler: handler)
+        typeRegistry.register(typeID: .zipx, capabilities: [.view, .extract], handler: handler)
     }
     
-    override func content(
+    public override func content(
         archiveUrl: URL,
         archivePath: String
     ) throws -> [ArchiveItem] {
@@ -118,7 +119,7 @@ class ArchiveHandlerXad: ArchiveHandler {
         return result
     }
     
-    override func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
+    public override func extractFileToTemp(path: URL, item: ArchiveItem) -> URL? {
         guard let index = item.index else { return nil }
         guard let virtualPath = item.virtualPath else { return nil }
         
@@ -140,7 +141,7 @@ class ArchiveHandlerXad: ArchiveHandler {
         return nil
     }
     
-    override func extract(
+    public override func extract(
         archiveUrl: URL,
         archiveItem: ArchiveItem,
         to url: URL
@@ -161,7 +162,7 @@ class ArchiveHandlerXad: ArchiveHandler {
         }
     }
     
-    override func extract(
+    public override func extract(
         archiveUrl: URL,
         to url: URL
     ) {

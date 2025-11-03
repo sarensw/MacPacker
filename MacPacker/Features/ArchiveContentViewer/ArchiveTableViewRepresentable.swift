@@ -5,11 +5,12 @@
 //  Created by Stephan Arenswald on 30.08.23.
 //
 
-import Foundation
 import AppKit
+import Cocoa
+import Foundation
+import MacPackerCore
 import SwiftUI
 import UniformTypeIdentifiers
-import Cocoa
 
 enum ArchiveViewerColumn: String, CaseIterable {
     case name
