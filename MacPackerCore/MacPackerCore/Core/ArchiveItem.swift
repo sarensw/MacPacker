@@ -5,7 +5,9 @@
 //  Created by Stephan Arenswald on 06.11.25.
 //
 
+import AppKit
 import Foundation
+import UniformTypeIdentifiers
 
 public enum ArchiveItemType: Comparable, Codable {
     case file
@@ -25,6 +27,7 @@ public class ArchiveItem: Identifiable, Hashable {
     public let virtualPath: String? // "folder/file1"
     public let type: ArchiveItemType
     public var ext: String
+    public var icon: NSImage
     
     // properties
     public let compressedSize: Int
@@ -66,12 +69,15 @@ public class ArchiveItem: Identifiable, Hashable {
         self.posixPermissions = posixPermissions
         self.index = index
         self.ext = ""
+        self.icon = NSWorkspace.shared.icon(forFileType: ext)
         
         if type != .directory {
             self.ext = getExtension(name: name)
+            self.icon = NSWorkspace.shared.icon(forFileType: ext)
         }
         if type == .directory {
             self.children = []
+            self.icon = NSWorkspace.shared.icon(for: .folder)
         }
     }
     

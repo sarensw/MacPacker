@@ -112,6 +112,15 @@ extension ArchiveState {
         }
     }
     
+    public func openParent() {
+        if archive?.selectedItem == .root {
+            archive?.selectedItem = archive?.rootNode
+            return
+        }
+        
+        archive?.selectedItem = archive?.selectedItem?.parent
+    }
+    
     /// This will extract the given item from the archive to a temporary destination
     /// - Parameter archiveItem: item to extract
     /// - Returns: the url of the extracted file when successful

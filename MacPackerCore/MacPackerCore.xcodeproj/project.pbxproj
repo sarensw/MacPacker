@@ -10,16 +10,33 @@
 		25C52F5B2EB8D79500A5E8C1 /* SWCompression in Frameworks */ = {isa = PBXBuildFile; productRef = 25C52F5A2EB8D79500A5E8C1 /* SWCompression */; };
 		25C52F5E2EB8D7B100A5E8C1 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C52F5D2EB8D7B100A5E8C1 /* XADMasterSwift */; };
 		25C52F6A2EB8D88F00A5E8C1 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 25C52F692EB8D88F00A5E8C1 /* TailBeatKit */; };
+		25C52FE72EC1EB0300A5E8C1 /* MacPackerCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F2B2EB8D5AC00A5E8C1 /* MacPackerCore.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		25C52FE82EC1EB0300A5E8C1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 25C52F222EB8D5AC00A5E8C1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 25C52F2A2EB8D5AC00A5E8C1;
+			remoteInfo = MacPackerCore;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		25C52F2B2EB8D5AC00A5E8C1 /* MacPackerCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MacPackerCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		25C52FE32EC1EB0300A5E8C1 /* MacPackerCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		25C52F2D2EB8D5AC00A5E8C1 /* MacPackerCore */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MacPackerCore;
+			sourceTree = "<group>";
+		};
+		25C52FE42EC1EB0300A5E8C1 /* MacPackerCoreTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MacPackerCoreTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -35,6 +52,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		25C52FE02EC1EB0300A5E8C1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				25C52FE72EC1EB0300A5E8C1 /* MacPackerCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -42,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				25C52F2D2EB8D5AC00A5E8C1 /* MacPackerCore */,
+				25C52FE42EC1EB0300A5E8C1 /* MacPackerCoreTests */,
 				25C52F2C2EB8D5AC00A5E8C1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,6 +76,7 @@
 			isa = PBXGroup;
 			children = (
 				25C52F2B2EB8D5AC00A5E8C1 /* MacPackerCore.framework */,
+				25C52FE32EC1EB0300A5E8C1 /* MacPackerCoreTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -93,6 +120,29 @@
 			productReference = 25C52F2B2EB8D5AC00A5E8C1 /* MacPackerCore.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		25C52FE22EC1EB0300A5E8C1 /* MacPackerCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 25C52FEA2EC1EB0300A5E8C1 /* Build configuration list for PBXNativeTarget "MacPackerCoreTests" */;
+			buildPhases = (
+				25C52FDF2EC1EB0300A5E8C1 /* Sources */,
+				25C52FE02EC1EB0300A5E8C1 /* Frameworks */,
+				25C52FE12EC1EB0300A5E8C1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				25C52FE92EC1EB0300A5E8C1 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				25C52FE42EC1EB0300A5E8C1 /* MacPackerCoreTests */,
+			);
+			name = MacPackerCoreTests;
+			packageProductDependencies = (
+			);
+			productName = MacPackerCoreTests;
+			productReference = 25C52FE32EC1EB0300A5E8C1 /* MacPackerCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -104,6 +154,9 @@
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					25C52F2A2EB8D5AC00A5E8C1 = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
+					25C52FE22EC1EB0300A5E8C1 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
 				};
@@ -128,12 +181,20 @@
 			projectRoot = "";
 			targets = (
 				25C52F2A2EB8D5AC00A5E8C1 /* MacPackerCore */,
+				25C52FE22EC1EB0300A5E8C1 /* MacPackerCoreTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		25C52F292EB8D5AC00A5E8C1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		25C52FE12EC1EB0300A5E8C1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -150,7 +211,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		25C52FDF2EC1EB0300A5E8C1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		25C52FE92EC1EB0300A5E8C1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 25C52F2A2EB8D5AC00A5E8C1 /* MacPackerCore */;
+			targetProxy = 25C52FE82EC1EB0300A5E8C1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		25C52F322EB8D5AC00A5E8C1 /* Debug */ = {
@@ -353,6 +429,42 @@
 			};
 			name = Release;
 		};
+		25C52FEB2EC1EB0300A5E8C1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sarensw.MacPackerCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		25C52FEC2EC1EB0300A5E8C1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sarensw.MacPackerCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -370,6 +482,15 @@
 			buildConfigurations = (
 				25C52F352EB8D5AC00A5E8C1 /* Debug */,
 				25C52F362EB8D5AC00A5E8C1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		25C52FEA2EC1EB0300A5E8C1 /* Build configuration list for PBXNativeTarget "MacPackerCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25C52FEB2EC1EB0300A5E8C1 /* Debug */,
+				25C52FEC2EC1EB0300A5E8C1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

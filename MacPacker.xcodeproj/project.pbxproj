@@ -56,6 +56,20 @@
 			remoteGlobalIDString = 2567C82E2E8FB75F008E1BD8;
 			remoteInfo = QuickLookExtension;
 		};
+		2570A7562EC1EB800048FD4A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 25C52F2B2EB8D5AC00A5E8C1;
+			remoteInfo = MacPackerCore;
+		};
+		2570A7582EC1EB800048FD4A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 25C52FE32EC1EB0300A5E8C1;
+			remoteInfo = MacPackerCoreTests;
+		};
 		25A28EEC2EA7799200271329 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 25C0A89C2A78DE5F002C1C2A /* Project object */;
@@ -173,15 +187,6 @@
 			);
 			target = 254BB53C2ABBE8430059A1D5 /* MacPacker Store */;
 		};
-		25161E2C2E6D64BE00CCFEF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				README.md,
-				TestArchives/lha_lzh/README.md,
-				TestArchives/lzx/README.md,
-			);
-			target = 25C0A8B42A78DE62002C1C2A /* MacPackerTests */;
-		};
 		252F120E2E7ABDD9004CCEBE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -209,7 +214,6 @@
 		251114B22DC6D3AA0056D272 /* MacPacker */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (251114F72DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 251114F82DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 257A675B2E829CF100532C84 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MacPacker; sourceTree = "<group>"; };
 		252F12032E7ABDD9004CCEBE /* FinderExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (252F120E2E7ABDD9004CCEBE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FinderExtension; sourceTree = "<group>"; };
 		2567C8322E8FB75F008E1BD8 /* QuickLookExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (2567C8412E8FB75F008E1BD8 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = QuickLookExtension; sourceTree = "<group>"; };
-		25D62A342E6D61DE00E7FF69 /* MacPackerTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (25161E2C2E6D64BE00CCFEF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MacPackerTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -274,13 +278,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2570A7522EC1EB800048FD4A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2570A7572EC1EB800048FD4A /* MacPackerCore.framework */,
+				2570A7592EC1EB800048FD4A /* MacPackerCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		25C0A89B2A78DE5F002C1C2A = {
 			isa = PBXGroup;
 			children = (
 				25EF27352AD7098300C8CC56 /* MacPacker.xctestplan */,
 				25C0A8DA2A7B5339002C1C2A /* Packages */,
 				251114B22DC6D3AA0056D272 /* MacPacker */,
-				25D62A342E6D61DE00E7FF69 /* MacPackerTests */,
 				25C0A8C22A78DE62002C1C2A /* MacPackerUITests */,
 				252F12032E7ABDD9004CCEBE /* FinderExtension */,
 				2567C8322E8FB75F008E1BD8 /* QuickLookExtension */,
@@ -456,9 +468,6 @@
 			dependencies = (
 				25C0A8B72A78DE62002C1C2A /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				25D62A342E6D61DE00E7FF69 /* MacPackerTests */,
-			);
 			name = MacPackerTests;
 			productName = MacPackerTests;
 			productReference = 25C0A8B52A78DE62002C1C2A /* MacPackerTests.xctest */;
@@ -535,6 +544,12 @@
 			);
 			productRefGroup = 25C0A8A52A78DE5F002C1C2A /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 2570A7522EC1EB800048FD4A /* Products */;
+					ProjectRef = 25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				25C0A8A32A78DE5F002C1C2A /* MacPacker */,
@@ -546,6 +561,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		2570A7572EC1EB800048FD4A /* MacPackerCore.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = MacPackerCore.framework;
+			remoteRef = 2570A7562EC1EB800048FD4A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2570A7592EC1EB800048FD4A /* MacPackerCoreTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = MacPackerCoreTests.xctest;
+			remoteRef = 2570A7582EC1EB800048FD4A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		252F12002E7ABDD9004CCEBE /* Resources */ = {
