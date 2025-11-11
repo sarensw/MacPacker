@@ -14,6 +14,42 @@ enum XADMasterEntryType {
     case file
 }
 
+struct XadArchiveEntry {
+    let index: Int32
+    let name: String // "file1"
+    let path: String // "folder/file1"
+    let type: ArchiveItemType
+    let compressedSize: Int?
+    let uncompressedSize: Int?
+    let modificationDate: Date?
+    let posixPermissions: Int?
+    
+    init(
+        index: Int32,
+        path: String,
+        type: ArchiveItemType,
+        compressedSize: Int?,
+        uncompressedSize: Int?,
+        modificationDate: Date?,
+        posixPermissions: Int?
+    ) {
+        self.index = index
+        self.path = path
+        self.type = type
+        self.compressedSize = compressedSize
+        self.uncompressedSize = uncompressedSize
+        self.modificationDate = modificationDate
+        self.posixPermissions = posixPermissions
+        
+        let parts = path.split(separator: "/")
+        if let last = parts.last {
+            self.name = String(last)
+        } else {
+            self.name = path
+        }
+    }
+}
+
 public class ArchiveHandlerXad: ArchiveHandler {
     
     public static func register() {
@@ -41,6 +77,66 @@ public class ArchiveHandlerXad: ArchiveHandler {
         typeRegistry.register(typeID: .Z, capabilities: [.view, .extract], handler: handler)
         typeRegistry.register(typeID: .zip, capabilities: [.view, .extract], handler: handler)
         typeRegistry.register(typeID: .zipx, capabilities: [.view, .extract], handler: handler)
+    }
+    
+    public override func contents(
+        of url: URL
+    ) throws -> [ArchiveItem] {
+        guard let archive = XADArchive(file: url.path) else {
+            throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
+        }
+        
+        if archive.isEncrypted() && archive.password()!.isEmpty {
+            throw NSError(domain: "XADMasterSwift", code: 2, userInfo: [NSLocalizedDescriptionKey: "Password required"])
+        }
+
+        var entries: [ArchiveItem] = []
+        for index in 0..<archive.numberOfEntries() {
+            // name
+            guard let path = archive.name(ofEntry: index) else { continue }
+            let isDir = archive.entryIsDirectory(index)
+            
+            // tar archives (and similar) don't have a compressed size as they
+            // just package up files.
+            var compressedSize: Int = -1
+            var uncompressedSize: Int = -1
+            compressedSize = Int(archive.compressedSize(ofEntry: index))
+            if archive.entryHasSize(index) {
+                uncompressedSize = Int(archive.uncompressedSize(ofEntry: index))
+            } else {
+                uncompressedSize = Int(archive.compressedSize(ofEntry: index))
+            }
+            
+            // get more attributes
+            var modificationDate: Date?
+            var posixPermissions: Int?
+            let attributes = archive.attributes(ofEntry: index)
+            if let dict = attributes as? [String: Any] {
+                modificationDate = dict["NSFileModificationDate"] as? Date
+                posixPermissions = dict["NSFilePosixPermissions"] as? Int
+            }
+            
+            var name = path
+            let parts = path.split(separator: "/")
+            if let last = parts.last {
+                name = String(last)
+            }
+
+            let entry = ArchiveItem(
+                index: Int(index),
+                name: name,
+                virtualPath: path, // the name in the archive dictionary is usually the full path
+                type: isDir ? .directory : .file,
+                compressedSize: Int(compressedSize),
+                uncompressedSize: Int(uncompressedSize),
+                modificationDate: modificationDate,
+                posixPermissions: posixPermissions
+            )
+            
+            entries.append(entry)
+            
+        }
+        return entries
     }
     
     public override func content(
@@ -94,20 +190,21 @@ public class ArchiveHandlerXad: ArchiveHandler {
                         dirs.append(npc.name)
                         
                         result.append(ArchiveItem(
+                            index: Int(index),
                             name: npc.name,
-                            type: .directory,
                             virtualPath: archivePath + "/" + npc.name,
-                            index: Int(index)))
+                            type: .directory
+                            ))
                     }
                 } else {
                     if let fileName = npc.name.components(separatedBy: "/").last {
                         result.append(ArchiveItem(
+                            index: Int(index),
                             name: fileName,
-                            type: .file,
                             virtualPath: name,
+                            type: .file,
                             compressedSize: Int(compressedSize),
                             uncompressedSize: Int(uncompressedSize),
-                            index: Int(index),
                             modificationDate: modificationDate,
                             posixPermissions: posixPermissions
                         ))

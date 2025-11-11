@@ -8,8 +8,8 @@
 import Foundation
 import UniformTypeIdentifiers
 
-struct ArchiveType: Hashable, Identifiable {
-    let id: ArchiveTypeId
+public struct ArchiveType: Hashable, Identifiable {
+    public let id: ArchiveTypeId
     let kind: Kind
     let displayName: String
     let uti: UTType

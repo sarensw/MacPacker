@@ -41,7 +41,9 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             if breadcrumbPosition == .top {
-                BreadcrumbView(archive: archiveState.archive ?? nil)
+                if let selectedItem = archiveState.archive?.selectedItem {
+                    BreadcrumbView(for: selectedItem)
+                }
                 
                 Divider()
                     .frame(height: 1)
@@ -55,7 +57,9 @@ struct ContentView: View {
                     .frame(height: 1)
                     .background(.quinary)
                 
-                BreadcrumbView(archive: archiveState.archive ?? nil)
+                if let selectedItem = archiveState.archive?.selectedItem {
+                    BreadcrumbView(for: selectedItem)
+                }
             }
         }
         .if(!.macOS13) { view in

@@ -7,6 +7,7 @@
 
 import AppKit
 import Foundation
+import MacPackerCore
 import SwiftUI
 
 class ArchiveWindowManager {

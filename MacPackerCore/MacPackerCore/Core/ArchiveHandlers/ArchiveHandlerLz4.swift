@@ -20,6 +20,12 @@ public class ArchiveHandlerLz4: ArchiveHandler {
         
     }
     
+    public override func contents(
+        of url: URL
+    ) throws -> [ArchiveItem] {
+        []
+    }
+    
     /// Returns the content of the lz4 file. Note that an lz4 file is just a compression algorithm.
     /// It will not contain files or folders. Therefore, this method will just return the name without
     /// the lz4 extension.
@@ -31,7 +37,7 @@ public class ArchiveHandlerLz4: ArchiveHandler {
         if archiveUrl.lastPathComponent.hasSuffix(Self.ext) {
             let name = stripFileExtension(archiveUrl.lastPathComponent)
             return [
-                ArchiveItem(name: String(name), type: .file)
+                ArchiveItem(name: String(name), virtualPath: name, type: .file)
             ]
         }
         throw ArchiveError.invalidArchive("The given archive does not seem to be an lz4 archive in contrast to what is expected")

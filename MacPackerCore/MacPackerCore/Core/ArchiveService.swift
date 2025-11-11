@@ -6,12 +6,18 @@
 //
 
 import Foundation
-import MacPackerCore
 
-class ArchiveService {
+public class ArchiveService {
     //
     // MARK: Archive extract operations
     //
+    
+    /// This is the archive that this service belongs to
+    private weak var archive: Archive?
+    
+    init(archive: Archive) {
+        self.archive = archive
+    }
     
     /// Extracts a number of items from the given archive to a given destination
     /// - Parameters:
@@ -19,22 +25,12 @@ class ArchiveService {
     ///   - items: items to extract (files or folders)
     ///   - destination: target destination choosen by the user
     func extract(
-        archive: Archive2,
+        archive: Archive,
         items: [ArchiveItem],
         to destination: URL
     ) {
-        guard let stackItem = archive.stack.peek() else {
+        guard let stackItem = archive.selectedItem else {
             Logger.debug("No stack available")
-            return
-        }
-        guard let archivePath = stackItem.archivePath else {
-            Logger.debug("Archive seems to be a new one, no type/ext set yet")
-            // TODO: In this case, the file has a physical on the device and should be opened there
-            return
-        }
-        let url = URL(fileURLWithPath: archivePath)
-        guard let handler = ArchiveTypeRegistry.shared.handler(for: url) else {
-            Logger.debug("No handler registered for \(String(describing: archive.ext))")
             return
         }
         
@@ -46,8 +42,8 @@ class ArchiveService {
             // reasons, then move from there to the target destination.
             // The move is instant as macOS will just updates the
             // filesystem metadata (directory entry / inode pointers)
-            guard let tempUrl = handler.extractFileToTemp(
-                path: stackItem.localPath,
+            guard let tempUrl = archive.handler.extractFileToTemp(
+                path: archive.url,
                 item: item) else {
                 Logger.debug("Failed to extract item to temp file")
                 return
@@ -72,23 +68,14 @@ class ArchiveService {
     ///   - archive: the archive to extract
     ///   - destination: the destination where to extract the archive to
     func extract(
-        archive: Archive2,
+        archive: Archive,
         to destination: URL
     ) {
-        guard let url = archive.url else {
-            Logger.debug("URL not a valid URL")
-            return
-        }
-        guard let handler = ArchiveTypeRegistry.shared.handler(for: url) else {
-            Logger.debug("No handler registered for \(String(describing: archive.ext))")
-            return
-        }
-        
         let _ = destination.startAccessingSecurityScopedResource()
         defer { destination.stopAccessingSecurityScopedResource()}
         
-        handler.extract(
-            archiveUrl: url,
+        archive.handler.extract(
+            archiveUrl: archive.url,
             to: destination)
     }
 }

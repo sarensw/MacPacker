@@ -7,15 +7,11 @@
 
 import Foundation
 import QuickLook
+import MacPackerCore
 import SwiftUI
-
-class ArchiveContainer: ObservableObject {
-    @Published var isReloadNeeded: Bool = false
-}
 
 struct ArchiveView: View {
     @Environment(\.openWindow) var openWindow
-    @EnvironmentObject private var appDelegate: AppDelegate
     @EnvironmentObject private var state: ArchiveState
     
     @AppStorage(Keys.showColumnCompressedSize) var showCompressedSize: Bool = true
@@ -30,7 +26,7 @@ struct ArchiveView: View {
         VStack {
             ArchiveTableViewRepresentable(
                 selection: $selection,
-                isReloadNeeded: $state.archiveContainer.isReloadNeeded,
+                isReloadNeeded: $state.isReloadNeeded,
                 showCompressedSizeColumn: $showCompressedSize,
                 showUncompressedSizeColumn: $showUncompressedSize,
                 showModificationDateColumn: $showModificationDate,
@@ -60,11 +56,13 @@ struct ArchiveView: View {
         .onChange(of: selection) { _ in
             print("selection changed: \(String(describing: selection))")
             if let indexes = selection,
-                let archive = state.archive {
+               let archive = state.archive,
+               let selectedItem = archive.selectedItem,
+               let children = selectedItem.children {
                 
                 state.selectedItems.removeAll()
                 for index in indexes {
-                    let archiveItem = archive.items[index]
+                    let archiveItem = children[index]
                     state.selectedItems.append(archiveItem)
                 }
                 

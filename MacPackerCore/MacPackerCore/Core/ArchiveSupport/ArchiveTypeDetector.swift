@@ -8,22 +8,24 @@
 import Foundation
 import UniformTypeIdentifiers
 
-enum DetectionSource: String {
+public enum DetectionSource: String {
     case fileExtension
     case systemUTI
     case magic
     case combined
 }
 
-struct DetectionResult {
-    let type: ArchiveType
-    let confidence: Double
-    let source: DetectionSource
-    let notes: String?
+public struct DetectionResult {
+    public let type: ArchiveType
+    public let confidence: Double
+    public let source: DetectionSource
+    public let notes: String?
 }
 
-class ArchiveTypeDetector {
-    func detect(for url: URL) -> DetectionResult? {
+public class ArchiveTypeDetector {
+    public init() {}
+    
+    public func detect(for url: URL) -> DetectionResult? {
         if let byExt = detectByExtension(for: url) {
             return byExt
         }

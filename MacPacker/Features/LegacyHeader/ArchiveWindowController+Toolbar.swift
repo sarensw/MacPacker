@@ -231,7 +231,7 @@ extension ArchiveWindowController: NSToolbarDelegate {
             if response == .OK,
                let destinationURL = openPanel.url {
                 if let archive = self.archiveState.archive {
-                    self.archiveService.extract(
+                    self.archiveState.extract(
                         archive: archive,
                         items: self.archiveState.selectedItems,
                         to: destinationURL)
@@ -251,7 +251,7 @@ extension ArchiveWindowController: NSToolbarDelegate {
             if response == .OK,
                let destinationURL = openPanel.url {
                 if let archive = self.archiveState.archive {
-                    self.archiveService.extract(
+                    self.archiveState.extract(
                         archive: archive,
                         to: destinationURL)
                 }

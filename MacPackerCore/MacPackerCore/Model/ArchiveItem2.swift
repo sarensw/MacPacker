@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum ArchiveItemType: Comparable, Codable {
+public enum ArchiveItemType2: Comparable, Codable {
     case file
     case directory
     case archive
@@ -15,12 +15,12 @@ public enum ArchiveItemType: Comparable, Codable {
     case unknown
 }
 
-public struct ArchiveItem: Identifiable, Hashable, Codable {
-    public static let parent: ArchiveItem = ArchiveItem(name: "..", type: .parent)
+public struct ArchiveItem2: Identifiable, Hashable, Codable {
+    public static let parent: ArchiveItem2 = ArchiveItem2(name: "..", type: .parent)
     public var id = UUID()
     public var path: URL? = nil
     public var virtualPath: String? = nil
-    public let type: ArchiveItemType
+    public let type: ArchiveItemType2
     public var name: String
     public var ext: String
     public var compressedSize: Int = -1
@@ -42,7 +42,7 @@ public struct ArchiveItem: Identifiable, Hashable, Codable {
     ///   - name: Name of the titem. If this is nil, then the last path component from path is used
     public init(
         path: URL,
-        type: ArchiveItemType,
+        type: ArchiveItemType2,
         compressedSize: Int? = nil,
         uncompressedSize: Int? = nil,
         name: String? = nil
@@ -70,7 +70,7 @@ public struct ArchiveItem: Identifiable, Hashable, Codable {
     ///   - index: Index of the item within the archive
     public init(
         name: String,
-        type: ArchiveItemType,
+        type: ArchiveItemType2,
         virtualPath: String? = nil,
         compressedSize: Int? = nil,
         uncompressedSize: Int? = nil,
@@ -138,7 +138,7 @@ public struct ArchiveItem: Identifiable, Hashable, Codable {
         
     }
     
-    public static func == (lhs: ArchiveItem, rhs: ArchiveItem) -> Bool {
+    public static func == (lhs: ArchiveItem2, rhs: ArchiveItem2) -> Bool {
         return lhs.id == rhs.id
     }
     
@@ -147,7 +147,7 @@ public struct ArchiveItem: Identifiable, Hashable, Codable {
     }
 }
 
-extension ArchiveItem: CustomStringConvertible {
+extension ArchiveItem2: CustomStringConvertible {
     public var description: String {
         return path == nil ? "" : path!.absoluteString
     }

@@ -68,6 +68,12 @@ public class ArchiveHandler {
         return components.joined(separator: ".")
     }
     
+    public func contents(
+        of url: URL
+    ) throws -> [ArchiveItem] {
+        return []
+    }
+    
     public func content(archiveUrl: URL, archivePath: String) throws -> [ArchiveItem] {
         return []
     }
