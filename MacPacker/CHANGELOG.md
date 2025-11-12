@@ -1,8 +1,10 @@
 v0.12
 - feat: Added 'File' > 'Open...' menu to open archives when no window is open
+- feat: Improved TAR archive handling
+- fix: MacPacker not showing up in 'Open With…' menu in Finder (App Store version only)
 - core: Separated localization of changelog from app localization
 - core: Language support for Ukranian, Russian
-- core: Detect archive type based on magic number independent on the file extension
+- core: Detect archive type based on magic number in addition to file extension
 
 v0.11
 - feat: Use system preview instead of internal previewer
