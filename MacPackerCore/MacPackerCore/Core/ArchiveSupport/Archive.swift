@@ -24,9 +24,10 @@ public class Archive: ObservableObject, Equatable {
     @Published public var selectedItem: ArchiveItem?
     @Published public private(set) var entries: [ArchiveItem] = []
     
-    var rootNode: ArchiveItem = .root
+    var rootNode: ArchiveItem = .init(name: "<root>", virtualPath: "/", type: .root)
     
     public init(
+        name: String,
         url: URL,
         handler: ArchiveHandler,
         type: ArchiveType
@@ -34,7 +35,7 @@ public class Archive: ObservableObject, Equatable {
         self.url = url
         self.type = type
         self.handler = handler
-        self.name = url.lastPathComponent
+        self.name = name
         self.rootNode.set(name: name)
         
         do {

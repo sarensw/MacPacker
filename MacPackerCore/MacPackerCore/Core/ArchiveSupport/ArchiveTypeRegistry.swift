@@ -23,8 +23,12 @@ public class ArchiveTypeRegistry {
         archiveHandlers[typeID] = handler
     }
     
+    public func handler(for detectionResult: DetectionResult) -> ArchiveHandler? {
+        return handler(for: detectionResult.type.id)
+    }
+    
     public func handler(for url: URL) -> ArchiveHandler? {
-        guard let result = detector.detect(for: url) else { return nil }
+        guard let result = detector.detect(for: url, considerComposition: false) else { return nil }
         return handler(for: result.type.id)
     }
     

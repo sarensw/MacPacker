@@ -54,7 +54,7 @@ struct BreadcrumbView: View {
     
     init(for selectedItem: ArchiveItem) {
         var parent: ArchiveItem? = selectedItem
-        while parent != nil && parent != .root {
+        while parent != nil && parent!.type != .root {
             guard let p = parent else { break }
             items.insert(p, at: 0)
             parent = parent?.parent

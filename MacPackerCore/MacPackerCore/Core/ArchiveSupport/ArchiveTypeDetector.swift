@@ -15,18 +15,25 @@ public enum DetectionSource: String {
     case combined
 }
 
-public struct DetectionResult {
+public struct DetectionResult: CustomStringConvertible {
     public let type: ArchiveType
-    public let confidence: Double
+    public let composition: CompositionType?
     public let source: DetectionSource
-    public let notes: String?
+    
+    public var description: String {
+        if let composition {
+            return "\(type) (\(composition))"
+        } else {
+            return "\(type)"
+        }
+    }
 }
 
 public class ArchiveTypeDetector {
     public init() {}
     
-    public func detect(for url: URL) -> DetectionResult? {
-        if let byExt = detectByExtension(for: url) {
+    public func detect(for url: URL, considerComposition: Bool = true) -> DetectionResult? {
+        if let byExt = detectByExtension(for: url, considerComposition: considerComposition) {
             return byExt
         }
         
@@ -37,31 +44,42 @@ public class ArchiveTypeDetector {
         return nil
     }
     
-    func detectBy(ext: String) -> DetectionResult? {
-        let catalog = ArchiveTypeCatalog.shared
-        
-        if let type = catalog.allTypes().first(where: { $0.extensions.contains(ext) }) {
-            return DetectionResult(
-                type: type,
-                confidence: 0.6,
-                source: .fileExtension,
-                notes: nil
-            )
-        }
-        
-        return nil
+    func detectBy(ext: String, considerComposition: Bool = true) -> DetectionResult? {
+        let dummyUrl = URL(fileURLWithPath: "fakePath.\(ext)")
+        let result = detectByExtension(for: dummyUrl, considerComposition: considerComposition)
+        return result
     }
     
-    func detectByExtension(for url: URL) -> DetectionResult? {
+    func detectByExtension(for url: URL, considerComposition: Bool) -> DetectionResult? {
         let catalog = ArchiveTypeCatalog.shared
         let lc = url.pathExtension.lowercased()
+        
+        // first check if this is a known composition (e.g. tar.gz)
+        if considerComposition {
+            for composition in catalog.allCompositions() {
+                for ext in composition.extensions {
+                    if url.lastPathComponent.hasSuffix(".\(ext)") {
+                        // composition found
+                        if let baseType = catalog.typesByID[composition.composition.first!] {
+                            
+                            return DetectionResult(
+                                type: baseType,
+                                composition: composition,
+                                source: .fileExtension
+                            )
+                        } else {
+                            Logger.error("Composition found, but could not retrieve the base type for \(ext)")
+                        }
+                    }
+                }
+            }
+        }
         
         if let type = catalog.allTypes().first(where: { $0.extensions.contains(lc) }) {
             return DetectionResult(
                 type: type,
-                confidence: 0.6,
-                source: .fileExtension,
-                notes: nil
+                composition: nil,
+                source: .fileExtension
             )
         }
         
@@ -96,9 +114,8 @@ public class ArchiveTypeDetector {
                             if slice == signature.bytes {
                                 return DetectionResult(
                                     type: type,
-                                    confidence: 1.0,
-                                    source: .magic,
-                                    notes: nil
+                                    composition: nil,
+                                    source: .magic
                                 )
                             }
                         }
@@ -124,9 +141,8 @@ public class ArchiveTypeDetector {
                     if result {
                         return DetectionResult(
                             type: type,
-                            confidence: 1.0,
+                            composition: nil,
                             source: .magic,
-                            notes: nil
                         )
                     }
                 }

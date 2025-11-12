@@ -61,7 +61,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             guard let children = selectedItem.children else { return 0 }
             
             var childrenCount = children.count
-            if selectedItem.parent != nil && selectedItem.parent != .root {
+            if selectedItem.parent != nil && selectedItem.type != .root {
                 // we're adding +1 in order to show ".." at the top,
                 // but only if there is a parent to go to
                 childrenCount += 1
@@ -129,7 +129,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let isParent = selectedItem.type != .root && row == 0
             let hasParent = selectedItem.type != .root
             let item = hasParent
-            ? (isParent ? ArchiveItem.root : selectedItem.children![row - 1])
+            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : selectedItem.children![row - 1])
             : selectedItem.children![row]
             
             let cellView = NSTableCellView()
@@ -252,7 +252,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let isParent = selectedItem.type != .root && row == 0
             let hasParent = selectedItem.type != .root
             let item = hasParent
-            ? (isParent ? ArchiveItem.root : selectedItem.children![row - 1])
+            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : selectedItem.children![row - 1])
             : selectedItem.children![row]
             
             // ignore the parent item
@@ -315,7 +315,6 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let hasParent = selectedItem.type != .root
             
             if let tableView = notification.object as? NSTableView {
-                print(tableView.selectedRowIndexes.count.description)
                 tableView.selectedRowIndexes.forEach { print($0) }
                 
                 // remove the offset if there is any because we don't want
@@ -370,7 +369,6 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     }
     
     func openSelected(_ tableView: NSTableView) {
-        guard let archive = archiveState.archive else { return }
         guard let item = archiveState.selectedItems.first else { return }
         archiveState.open(item)
         isReloadNeeded = true
@@ -380,12 +378,10 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     
     func openParent(_ tableView: NSTableView) {
         print("TODO: openParent")
-//        guard let archive = archiveState.archive else { return }
-//        guard archive.items.first == .parent else { return }
-//        _ = try? archive.open(archive.items.first!)
-//        isReloadNeeded = true
-//        archiveState.selectedItems = []
-//        tableView.deselectAll(nil)
+        archiveState.openParent()
+        isReloadNeeded = true
+        archiveState.selectedItems = []
+        tableView.deselectAll(nil)
     }
     
     func openPreview() {

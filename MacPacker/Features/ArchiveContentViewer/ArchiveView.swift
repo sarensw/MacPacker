@@ -91,6 +91,6 @@ struct ArchiveView: View {
             }
         }
         
-        state.createArchive(url: url)
+        state.load(from: url)
     }
 }

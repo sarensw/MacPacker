@@ -15,7 +15,6 @@ public struct ArchiveType: Hashable, Identifiable {
     let uti: UTType
     let extensions: [String]
     let magicRule: [MagicRule]
-    let composition: Composition?
     let multipartPatterns: [MultipartPattern]
     
     init(
@@ -25,7 +24,6 @@ public struct ArchiveType: Hashable, Identifiable {
         uti: UTType,
         extensions: [String],
         magicRule: [MagicRule],
-        composition: Composition? = nil,
         multipartPatterns: [MultipartPattern] = []
     ) {
         self.id = id
@@ -34,7 +32,6 @@ public struct ArchiveType: Hashable, Identifiable {
         self.uti = uti
         self.extensions = extensions
         self.magicRule = magicRule
-        self.composition = composition
         self.multipartPatterns = multipartPatterns
     }
     
@@ -52,10 +49,6 @@ public struct ArchiveType: Hashable, Identifiable {
         case archive
         case compression
         case image
-    }
-    
-    enum Composition: Hashable {
-        case compressed(outer: String, inner: String)
     }
     
     struct MultipartPattern: Hashable {

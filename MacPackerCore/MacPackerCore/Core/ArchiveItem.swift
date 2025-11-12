@@ -18,10 +18,6 @@ public enum ArchiveItemType: Comparable, Codable {
 }
 
 public class ArchiveItem: Identifiable, Hashable {
-    public static var root: ArchiveItem {
-        ArchiveItem(name: "<root>", virtualPath: "/", type: .root)
-    }
-    
     public let index: Int?
     public var name: String // "file1"
     public let virtualPath: String? // "folder/file1"

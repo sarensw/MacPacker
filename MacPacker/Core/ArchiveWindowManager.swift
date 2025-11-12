@@ -27,7 +27,7 @@ class ArchiveWindowManager {
         // (not yet loaded archives) or loaded archives
         let archiveState = ArchiveState()
         if let url {
-            archiveState.loadUrl(url)
+            archiveState.load(from: url)
         }
         
         // create the window and place the archive state in it to check
@@ -78,7 +78,7 @@ class ArchiveWindowManager {
         } else if let ewc = windowControllers.first(where: { $0.archiveState.archive == nil }) {
             // Case 2: archive not loaded yet, but empty window available > load archive in empty
             // and bring window to front
-            ewc.archiveState.loadUrl(url)
+            ewc.archiveState.load(from: url)
             ewc.showWindow(nil)
         } else {
             // Case 3: archive not loaded yet, no empty window available > create new window and

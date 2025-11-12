@@ -32,10 +32,6 @@ extension ArchiveState {
     // MARK: General
     //
     
-    public func loadUrl(_ url: URL) {
-        createArchive(url: url)
-    }
-    
     public func open(_ item: ArchiveItem) {
         guard let archive else { return }
         
@@ -75,7 +71,7 @@ extension ArchiveState {
                     //
                     // TODO: Add the possibility via right click menu in MacPacker
                     //       to open the file as archive instead.
-                    if let detectionResult = detector.detectByExtension(for: tempUrl) {
+                    if let detectionResult = detector.detectByExtension(for: tempUrl, considerComposition: false) {
                         if let handler = ArchiveTypeRegistry.shared.handler(for: tempUrl) {
                             // set the services required for this nested archive
                             item.set(
@@ -113,7 +109,7 @@ extension ArchiveState {
     }
     
     public func openParent() {
-        if archive?.selectedItem == .root {
+        if archive?.selectedItem?.type == .root {
             archive?.selectedItem = archive?.rootNode
             return
         }
@@ -226,15 +222,44 @@ extension ArchiveState {
             to: destination)
     }
     
-    public func createArchive(url: URL) {
-//            let archive = try Archive2(
-//                url: url,
-//                breadcrumbsUpdated: breadcrumbsUpdated(breadcrumbs:))
+    public func load(from url: URL) {
         let detector = ArchiveTypeDetector()
         if let detectorResult = detector.detect(for: url),
-           let handler = ArchiveTypeRegistry.shared.handler(for: url) {
+           let handler = ArchiveTypeRegistry.shared.handler(for: detectorResult) {
+            
+            // we have to check here if this is a composition, in which
+            // case we need to decompress to a temporary location first
+            // and then hand over the result to the archive
+            let name = url.lastPathComponent
+            var archiveUrl = url
+            // The algorithm to handle compound archives right now is oversimplified
+            // and assumes that there is always a compound of two items. This is true
+            // for all tar.xxx archives and should never fail. However, this does not cover
+            // special archives like .pkg that is a zip file that contains another binary that
+            // needs to be extracted before showing the content
+            // TODO: Make this algorithm more robus
+            if let compositionType = detectorResult.composition {
+                let compressionArchiveTypeId = compositionType.composition[1]
+                let compressionArchiveType = ArchiveTypeCatalog.shared.typesByID[compressionArchiveTypeId]!
+                let decompressionHandler = ArchiveTypeRegistry.shared.handler(for: compressionArchiveTypeId)!
+                
+                let compressedArchive = Archive(
+                    name: name,
+                    url: url,
+                    handler: decompressionHandler,
+                    type: compressionArchiveType
+                )
+                // in a compressed archive (e.g. tar.bz2, tbz2) there is only one entry (e.g. the tar file)
+                let archiveItem = compressedArchive.entries[0]
+                if let extractedArchiveUrl = decompressionHandler.extractFileToTemp(path: url, item: archiveItem) {
+                    archiveUrl = extractedArchiveUrl
+                }
+            }
+            
+            // loading the actual underlying archive now
             let archive = Archive(
-                url: url,
+                name: name,
+                url: archiveUrl,
                 handler: handler,
                 type: detectorResult.type
             )

@@ -75,9 +75,6 @@ public enum ArchiveTypeId: String, CaseIterable {
     case sit    = "StuffIt Archive"
     case sitx   = "StuffIt X Archive"
     case tar    = "Tar Archive"
-    case `tar.bz2`  = "Bzip2 Tar Archive"
-    case `tar.gz`   = "Gzip Tar Archive"
-    case `tar.xz`   = "XZ Tar Archive"
     case xz     = "XZ File"
     case Z      = "Unix Compress File"
     case zip    = "Zip Archive"
@@ -91,9 +88,12 @@ final class ArchiveTypeCatalog {
     /// not depends on which ID is registered in an archive handler. This list will allow
     /// later use cases like "I know the format, but don't support it yet"
     public private(set) var typesByID: [ArchiveTypeId: ArchiveType] = [:]
+    public private(set) var compositionsByID: [CompositionTypeId: CompositionType] = [:]
     
     private init() {
-        loadAllTypes()
+        loadAllArchiveTypes()
+        loadAllCompoundTypes()
+        loadAllSpecialTypes()
     }
     
     private func ra(_ id: ArchiveTypeId, uti: String, ext: [String], rls: [MagicRule]) {
@@ -120,6 +120,14 @@ final class ArchiveTypeCatalog {
         register(id, type: .image, uti: uti, ext: ext, rls: rls)
     }
     
+    private func rco(_ id: CompositionTypeId, composition: [ArchiveTypeId], uti: String, ext: [String], rls: [MagicRule]) {
+        registerComposition(id, composition: composition, uti: UTType.init(importedAs: uti), ext: ext, rls: rls)
+    }
+    
+    private func rco(_ id: CompositionTypeId, composition: [ArchiveTypeId], uti: UTType, ext: [String], rls: [MagicRule]) {
+        registerComposition(id, composition: composition, uti: uti, ext: ext, rls: rls)
+    }
+    
     private func register(_ id: ArchiveTypeId, type: ArchiveType.Kind, uti: UTType, ext: [String], rls: [MagicRule]) {
         let archiveType = ArchiveType(
             id: id,
@@ -132,7 +140,28 @@ final class ArchiveTypeCatalog {
         typesByID[id] = archiveType
     }
     
-    private func loadAllTypes() {
+    private func registerComposition(_ id: CompositionTypeId, composition: [ArchiveTypeId], uti: UTType, ext: [String], rls: [MagicRule]) {
+        let compositionType = CompositionType(
+            id: id,
+            composition: composition,
+            uti: uti,
+            extensions: ext,
+            magicRule: rls
+        )
+        compositionsByID[id] = compositionType
+    }
+    
+    private func loadAllSpecialTypes() {
+        
+    }
+    
+    private func loadAllCompoundTypes() {
+        rco(.`tar.bz2`, composition: [.tar, .bzip2],    uti: "org.bzip.bzip2-tar-archive",  ext: ["tbz2", "tbz", "tar.bz2"],    rls: [.any(.hex("42 5A 68"))])
+        rco(.`tar.gz`,  composition: [.tar, .gzip],     uti: "org.gnu.gnu-zip-tar-archive", ext: ["tgz", "tar.gz"],             rls: [.any(.hex("1F 8B"))])
+        rco(.`tar.xz`,  composition: [.tar, .xz],       uti: "org.tukaani.tar-xz-archive",  ext: ["txz", "tar.xz"],             rls: [.any(.hex("FD 37 7A 58 5A 00"))])
+    }
+    
+    private func loadAllArchiveTypes() {
         // compressions
         rc(.bzip2,      uti: .bz2,                          ext: ["bz2", "bzip2", "bz"],    rls: [.any(.hex("42 5A 68"))])
         rc(.gzip,       uti: .gzip,                         ext: ["gz", "gzip"],            rls: [.any(.hex("1F 8B"))])
@@ -164,9 +193,6 @@ final class ArchiveTypeCatalog {
             .hex("75 73 74 61 72 00 30 30", offset: 257),
             .hex("75 73 74 61 72 20 20 00", offset: 257)
         )])
-        ra(.`tar.bz2`,  uti: "org.bzip.bzip2-tar-archive",  ext: ["tbz2", "tbz"],           rls: [.any(.hex("42 5A 68"))])
-        ra(.`tar.gz`,   uti: "org.gnu.gnu-zip-tar-archive", ext: ["tgz"],                   rls: [.any(.hex("1F 8B"))])
-        ra(.`tar.xz`,   uti: "org.tukaani.tar-xz-archive",  ext: ["txz"],                   rls: [.any(.hex("FD 37 7A 58 5A 00"))])
         ra(.Z,          uti: "public.z-archive",            ext: ["z"],                     rls: [.any(.hex("1F 9D"))])
         ra(.zip,        uti: .zip,                          ext: ["zip"],                   rls: [.any(
             .hex("50 4B 03 04"),
@@ -189,5 +215,9 @@ final class ArchiveTypeCatalog {
     
     public func allTypes() -> [ArchiveType] {
         return Array(typesByID.values)
+    }
+    
+    public func allCompositions() -> [CompositionType] {
+        return Array(compositionsByID.values)
     }
 }
