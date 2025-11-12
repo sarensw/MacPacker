@@ -289,14 +289,15 @@ extension ArchiveState {
     ///
     /// In case no item is selected then set the preview url to nil to make sure Quick Look is closing.
     public func updateSelectedItemForQuickLook() {
-        if let archive = self.archive,
-           let selectedItem = self.selectedItems.first {
-            let handler = archive.handler
-            let url = handler.extractFileToTemp(
-                path: archive.url,
-                item: selectedItem
-            )
-            self.previewItemUrl = url
+        if let selectedItem = self.selectedItems.first {
+            let (handler, archiveUrl) = findHandlerAndUrl(for: selectedItem)
+            if let handler, let archiveUrl {
+                let url = handler.extractFileToTemp(
+                    path: archiveUrl,
+                    item: selectedItem
+                )
+                self.previewItemUrl = url
+            }
         } else if self.selectedItems.isEmpty {
             self.previewItemUrl = nil
         }
