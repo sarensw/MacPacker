@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 08.09.25.
 //
 
+import MacPackerCore
 import SwiftUI
 
 extension NSImage {
@@ -23,7 +24,6 @@ struct ArchiveContentToolbarView: ToolbarContent {
     
     let archiveState: ArchiveState
     let contentService: ArchiveContentService = ArchiveContentService()
-    let service: ArchiveService = ArchiveService()
     
     var body: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
@@ -56,7 +56,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 if case .success(let urls) = result,
                    let folderURL = urls.first {
                     if let archive = archiveState.archive {
-                        service.extract(
+                        archiveState.extract(
                             archive: archive,
                             items: archiveState.selectedItems,
                             to: folderURL)
@@ -83,7 +83,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 if case .success(let urls) = result,
                    let folderURL = urls.first {
                     if let archive = archiveState.archive {
-                        service.extract(
+                        archiveState.extract(
                             archive: archive,
                             to: folderURL)
                     }

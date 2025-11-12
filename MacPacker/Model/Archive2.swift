@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MacPackerCore
 import AppKit
 
 enum Archive2Error: Error {
@@ -121,19 +122,19 @@ class Archive2: ObservableObject {
     /// Adds the given files to the archive. Note that this only works for editable archives
     /// - Parameter urls: the urls of the files to add
     func add(urls: [URL]) throws {
-        if let url,
-           let handler = ArchiveTypeRegistry.shared.handler(for: url),
-           handler.isEditable {
-            for url in urls {
-                items.append(ArchiveItem(path: url, type: .file))
-            }
-        } else if ext == nil {
-            for url in urls {
-                items.append(ArchiveItem(path: url, type: .file))
-            }
-        } else {
-            throw Archive2Error.nonEditable("Archive is not editable")
-        }
+//        if let url,
+//           let handler = ArchiveTypeRegistry.shared.handler(for: url),
+//           handler.isEditable {
+//            for url in urls {
+//                items.append(ArchiveItem(path: url, type: .file))
+//            }
+//        } else if ext == nil {
+//            for url in urls {
+//                items.append(ArchiveItem(path: url, type: .file))
+//            }
+//        } else {
+//            throw Archive2Error.nonEditable("Archive is not editable")
+//        }
     }
     
     /// Saves the current list of items to the given URL as an archvie
@@ -141,12 +142,12 @@ class Archive2: ObservableObject {
     /// - Parameter ext: the archive extension, hence type to save the archive in
     func save(to url: URL, as ext: String) throws {
         // save the archive
-        if let handler = ArchiveTypeRegistry.shared.handler(for: url),
-           handler.isEditable {
-            try handler.save(to: url, items: items)
-        } else {
-            throw Archive2Error.nonEditable("Archive is not editable")
-        }
+//        if let handler = ArchiveTypeRegistry.shared.handler(for: url),
+//           handler.isEditable {
+//            try handler.save(to: url, items: items)
+//        } else {
+//            throw Archive2Error.nonEditable("Archive is not editable")
+//        }
     }
     
     
@@ -158,55 +159,55 @@ class Archive2: ObservableObject {
     ///   - clear: true to clear the full stack
     ///   - push: true to push the entry on that stack
     private func loadStackEntry(_ entry: ArchiveItemStackEntry, clear: Bool = false, push: Bool = true) {
-        do {
-            // stack item is directory that actually exists
-            if entry.archivePath == nil {
-                try loadDirectoryContent(url: entry.localPath)
-                print("enable this")
-            }
-            
-            // stack item is archive
-            if let archivePath = entry.archivePath,
-               let handler = ArchiveTypeRegistry.shared.handler(for: entry.localPath) {
-                
-                if let content: [ArchiveItem] = try? handler.content(
-                    archiveUrl: entry.localPath,
-                    archivePath: archivePath) {
-                    
-                    // sort the result
-                    items = content.sorted {
-                        if $0.type == $1.type {
-                            return $0.name < $1.name
-                        }
-                        
-                        return $0.type > $1.type
-                    }
-                    if (stack.count > 0 && push == true) || stack.count > 1 {
-                        items.insert(ArchiveItem.parent, at: 0)
-                    }
-                }
-            }
-            
-            // add the item to the stack and clear if requested
-//            if clear { resetStack() }
-            if push {
-                stack.push(entry)
-            }
-            
-            // update the breadcrumb with the current path
-            var names = stack.names()
-            if let last = stack.last() {
-                names.insert(last.localPath.deletingLastPathComponent().path, at: 0)
-            }
-//            names[0] = stack.last()!.localPath.path
-            breadcrumbsUpdated?(names)
-            
-            self.currentStackEntry = entry
-        } catch {
-            print(error)
-        }
-        
-        Logger.log(stack.description)
+//        do {
+//            // stack item is directory that actually exists
+//            if entry.archivePath == nil {
+////                try loadDirectoryContent(url: entry.localPath)
+//                print("enable this")
+//            }
+//            
+//            // stack item is archive
+//            if let archivePath = entry.archivePath,
+//               let handler = ArchiveTypeRegistry.shared.handler(for: entry.localPath) {
+//                
+//                if let content: [ArchiveItem] = try? handler.content(
+//                    archiveUrl: entry.localPath,
+//                    archivePath: archivePath) {
+//                    
+//                    // sort the result
+//                    items = content.sorted {
+//                        if $0.type == $1.type {
+//                            return $0.name < $1.name
+//                        }
+//                        
+//                        return $0.type > $1.type
+//                    }
+//                    if (stack.count > 0 && push == true) || stack.count > 1 {
+//                        items.insert(ArchiveItem.parent, at: 0)
+//                    }
+//                }
+//            }
+//            
+//            // add the item to the stack and clear if requested
+////            if clear { resetStack() }
+//            if push {
+//                stack.push(entry)
+//            }
+//            
+//            // update the breadcrumb with the current path
+//            var names = stack.names()
+//            if let last = stack.last() {
+//                names.insert(last.localPath.deletingLastPathComponent().path, at: 0)
+//            }
+////            names[0] = stack.last()!.localPath.path
+//            breadcrumbsUpdated?(names)
+//            
+//            self.currentStackEntry = entry
+//        } catch {
+//            print(error)
+//        }
+//        
+//        Logger.log(stack.description)
     }
     
     /// Checks if the given archive extension is supported to be loaded in MacPacker
@@ -291,6 +292,10 @@ class Archive2: ObservableObject {
         }
     }
     
+    func open(_ item: ArchiveItem) throws -> Archive2OpenResult {
+        return .success
+    }
+    
     /// Opens the given item. This can be one of the following cases:
     /// - File in directory > open the file with system default action
     /// - Directory > show the content of the directory
@@ -298,135 +303,135 @@ class Archive2: ObservableObject {
     /// - File in archive > extract just this file if possible, then open it with system default
     /// - Directory in archive > go one level down in archive if this is supported, otherwise, extract and then go to directory
     /// - Parameter item: The item to open
-    func open(_ item: ArchiveItem) throws -> Archive2OpenResult {
-        // if the selected item is the parent item (the one with ..),
-        // then just go back in the stack
-        if item == ArchiveItem.parent {
-            // Problem when going up on parent on first stack level.
-            stack.pop()
-            if let parent = stack.peek() {
-                loadStackEntry(parent, push: false)
-            } else {
-                // we're at the top of the archive, the next level
-                // is a directory for sure
-                // so let's check access first
-//                try moveDirectoryUp(item)
-                return .leaveDirectory
-            }
-            
-            return .success
-        }
-        
-        // The item selected is not the parent. So check if this is a file,
-        // and if yes, whether it is a supported archive.
-        if item.type == .file {
-            if ArchiveTypeRegistry.shared.isSupported(ext: item.ext) {
-                // file, and supported archive, open as a new stack entry
-                
-                // two possibilities
-                // 1. the archive selected is extracted already > just open it,
-                //    but set tempId, not archive path
-                // 2. it is not extracted, so it was shown in the file list based
-                //    on the virtual archive contetn > extract first, then create
-                //    stackentry
-                if let currentStackEntry = stack.peek() {
-                    if currentStackEntry.type == .Archive && currentStackEntry.archivePath == nil {
-                        // the previous stack entry is an archive, and the archive path is nil which
-                        // means that it physically exists on the local drive
-                        
-                        // distinguish between a real local drive vs a temp drive
-                        if currentStackEntry.tempId == nil {
-                            print("Error: this should not happen")
-                        } else {
-                            if let path = item.path {
-                                let stackEntry = ArchiveItemStackEntry(
-                                    type: .Archive,
-                                    name: item.name,
-                                    localPath: path,
-                                    archivePath: "",
-                                    tempId: nil,
-                                    archiveType: item.ext)
-                                loadStackEntry(stackEntry)
-                            }
-                        }
-                    } else if (currentStackEntry.type == .Archive || currentStackEntry.type == .ArchiveDirectory) && currentStackEntry.archivePath != nil {
-                        // the previous stack entry is an archive, but there is no
-                        // temp id, so it was not extracted yet
-                        // > extract first
-                        if let handler = ArchiveTypeRegistry.shared.handler(for: currentStackEntry.localPath),
-                           let tempDir = handler.extractFileToTemp(
-                                path: currentStackEntry.localPath,
-                                item: item) {
-//                           let tempDir = try? ArchiveType
-//                            .with(archiveType)
-//                            .extractFileToTemp(
+//    func open(_ item: ArchiveItem) throws -> Archive2OpenResult {
+//        // if the selected item is the parent item (the one with ..),
+//        // then just go back in the stack
+//        if item == ArchiveItem.parent {
+//            // Problem when going up on parent on first stack level.
+//            stack.pop()
+//            if let parent = stack.peek() {
+//                loadStackEntry(parent, push: false)
+//            } else {
+//                // we're at the top of the archive, the next level
+//                // is a directory for sure
+//                // so let's check access first
+////                try moveDirectoryUp(item)
+//                return .leaveDirectory
+//            }
+//            
+//            return .success
+//        }
+//        
+//        // The item selected is not the parent. So check if this is a file,
+//        // and if yes, whether it is a supported archive.
+//        if item.type == .file {
+//            if ArchiveTypeRegistry.shared.isSupported(ext: item.ext) {
+//                // file, and supported archive, open as a new stack entry
+//                
+//                // two possibilities
+//                // 1. the archive selected is extracted already > just open it,
+//                //    but set tempId, not archive path
+//                // 2. it is not extracted, so it was shown in the file list based
+//                //    on the virtual archive contetn > extract first, then create
+//                //    stackentry
+//                if let currentStackEntry = stack.peek() {
+//                    if currentStackEntry.type == .Archive && currentStackEntry.archivePath == nil {
+//                        // the previous stack entry is an archive, and the archive path is nil which
+//                        // means that it physically exists on the local drive
+//                        
+//                        // distinguish between a real local drive vs a temp drive
+//                        if currentStackEntry.tempId == nil {
+//                            print("Error: this should not happen")
+//                        } else {
+//                            if let path = item.virtualPath {
+//                                let stackEntry = ArchiveItemStackEntry(
+//                                    type: .Archive,
+//                                    name: item.name,
+//                                    localPath: path,
+//                                    archivePath: "",
+//                                    tempId: nil,
+//                                    archiveType: item.ext)
+//                                loadStackEntry(stackEntry)
+//                            }
+//                        }
+//                    } else if (currentStackEntry.type == .Archive || currentStackEntry.type == .ArchiveDirectory) && currentStackEntry.archivePath != nil {
+//                        // the previous stack entry is an archive, but there is no
+//                        // temp id, so it was not extracted yet
+//                        // > extract first
+//                        if let handler = ArchiveTypeRegistry.shared.handler(for: currentStackEntry.localPath),
+//                           let tempDir = handler.extractFileToTemp(
 //                                path: currentStackEntry.localPath,
 //                                item: item) {
-                            
-                            // now, create the new stack entry
-                            let stackEntry = ArchiveItemStackEntry(
-                                type: .Archive,
-                                name: item.name,
-                                localPath: tempDir,
-                                archivePath: "",
-                                tempId: nil,
-                                archiveType: item.ext)
-                            loadStackEntry(stackEntry)
-                            
-                            // adds the newly created temp dir to the list of temp dirs. This
-                            // is required to clean them up later.
-                            if tempDir.isDirectory {
-                                tempDirs.append(tempDir)
-                            } else {
-                                var td = tempDir
-                                td.deleteLastPathComponent()
-                                tempDirs.append(td)
-                            }
-                        }
-                    } else if currentStackEntry.type == .Directory {
-                        // just open the file in this case using the system methods
-                    }
-                }
-            } else {
-                if let currentStackEntry = stack.peek(),
-                   let handler = ArchiveTypeRegistry.shared.handler(for: currentStackEntry.localPath),
-                   let tempUrl = handler.extractFileToTemp(
-//                   let tempUrl = try? ArchiveType
-//                    .with(archiveType)
-//                    .extractFileToTemp(
-                        path: currentStackEntry.localPath,
-                        item: item) {
-                    
-                    NSWorkspace.shared.open(tempUrl)
-                }
-            }
-        } else if item.type == .directory {
-            if item.virtualPath == nil {
-                let stackEntry = ArchiveItemStackEntry(
-                    type: .Directory,
-                    name: item.name,
-                    localPath: item.path!,
-                    archivePath: nil,
-                    tempId: nil,
-                    archiveType: nil)
-                loadStackEntry(stackEntry, push: false)
-            } else if let currentStackEntry = stack.peek(),
-                      let archivePath = currentStackEntry.archivePath {
-                let stackEntry = ArchiveItemStackEntry(
-                    type: .ArchiveDirectory, //Directory,
-                    name: item.name,
-                    localPath: currentStackEntry.localPath,
-                    archivePath: archivePath == "" ? item.name : archivePath + "/" + item.name,
-                    tempId: currentStackEntry.tempId,
-                    archiveType: currentStackEntry.archiveType)
-                loadStackEntry(stackEntry)
-            } else {
-                print("else")
-            }
-        }
-        
-        return .success
-    }
+////                           let tempDir = try? ArchiveType
+////                            .with(archiveType)
+////                            .extractFileToTemp(
+////                                path: currentStackEntry.localPath,
+////                                item: item) {
+//                            
+//                            // now, create the new stack entry
+//                            let stackEntry = ArchiveItemStackEntry(
+//                                type: .Archive,
+//                                name: item.name,
+//                                localPath: tempDir,
+//                                archivePath: "",
+//                                tempId: nil,
+//                                archiveType: item.ext)
+//                            loadStackEntry(stackEntry)
+//                            
+//                            // adds the newly created temp dir to the list of temp dirs. This
+//                            // is required to clean them up later.
+//                            if tempDir.isDirectory {
+//                                tempDirs.append(tempDir)
+//                            } else {
+//                                var td = tempDir
+//                                td.deleteLastPathComponent()
+//                                tempDirs.append(td)
+//                            }
+//                        }
+//                    } else if currentStackEntry.type == .Directory {
+//                        // just open the file in this case using the system methods
+//                    }
+//                }
+//            } else {
+//                if let currentStackEntry = stack.peek(),
+//                   let handler = ArchiveTypeRegistry.shared.handler(for: currentStackEntry.localPath),
+//                   let tempUrl = handler.extractFileToTemp(
+////                   let tempUrl = try? ArchiveType
+////                    .with(archiveType)
+////                    .extractFileToTemp(
+//                        path: currentStackEntry.localPath,
+//                        item: item) {
+//                    
+//                    NSWorkspace.shared.open(tempUrl)
+//                }
+//            }
+//        } else if item.type == .directory {
+//            if item.virtualPath == nil {
+//                let stackEntry = ArchiveItemStackEntry(
+//                    type: .Directory,
+//                    name: item.name,
+//                    localPath: item.path!,
+//                    archivePath: nil,
+//                    tempId: nil,
+//                    archiveType: nil)
+//                loadStackEntry(stackEntry, push: false)
+//            } else if let currentStackEntry = stack.peek(),
+//                      let archivePath = currentStackEntry.archivePath {
+//                let stackEntry = ArchiveItemStackEntry(
+//                    type: .ArchiveDirectory, //Directory,
+//                    name: item.name,
+//                    localPath: currentStackEntry.localPath,
+//                    archivePath: archivePath == "" ? item.name : archivePath + "/" + item.name,
+//                    tempId: currentStackEntry.tempId,
+//                    archiveType: currentStackEntry.archiveType)
+//                loadStackEntry(stackEntry)
+//            } else {
+//                print("else")
+//            }
+//        }
+//        
+//        return .success
+//    }
     
     /// Extracts the given item to a temporary location. This is usually used to peek into that item
     /// - Parameter item: The item to extract
@@ -449,49 +454,49 @@ class Archive2: ObservableObject {
     /// Loads the content of the given directory. This is especially used
     /// when navigating outside of archives
     /// - Parameter url: url to load
-    private func loadDirectoryContent(url: URL) throws {
-        let contents = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isDirectoryKey])
-        var resultDirectories: [ArchiveItem] = []
-        var resultFiles: [ArchiveItem] = []
-        
-        // add the possibility to go up
-        resultDirectories.append(ArchiveItem.parent)
-        
-        // now add all items in the dir
-        for url in contents {
-            var isDirectory = false
-            var fileSize: Int = -1
-            do {
-                let resourceValue = try url.resourceValues(forKeys: [.isDirectoryKey, .totalFileSizeKey])
-                isDirectory = resourceValue.isDirectory ?? false
-                fileSize = resourceValue.totalFileSize ?? -1
-            } catch {
-
-            }
-            
-            var fileItemType: ArchiveItemType = isDirectory ? .directory : .file
-            if fileItemType == .file && ArchiveTypeRegistry.shared.isSupported(ext: url.pathExtension) {
-                fileItemType = .archive
-            }
-            let fileItem = ArchiveItem(
-                path: url,
-                type: fileItemType,
-                compressedSize: fileSize,
-                uncompressedSize: fileSize
-            )
-            
-            if fileItemType == .directory {
-                resultDirectories.append(fileItem)
-            } else {
-                resultFiles.append(fileItem)
-            }
-        }
-        items = resultDirectories.sorted {
-            return $0.name < $1.name
-        }
-        items.append(contentsOf: resultFiles.sorted {
-            return $0.name < $1.name
-        })
-        print("items loaded \(items.count)")
-    }
+//    private func loadDirectoryContent(url: URL) throws {
+//        let contents = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isDirectoryKey])
+//        var resultDirectories: [ArchiveItem] = []
+//        var resultFiles: [ArchiveItem] = []
+//        
+//        // add the possibility to go up
+//        resultDirectories.append(ArchiveItem.parent)
+//        
+//        // now add all items in the dir
+//        for url in contents {
+//            var isDirectory = false
+//            var fileSize: Int = -1
+//            do {
+//                let resourceValue = try url.resourceValues(forKeys: [.isDirectoryKey, .totalFileSizeKey])
+//                isDirectory = resourceValue.isDirectory ?? false
+//                fileSize = resourceValue.totalFileSize ?? -1
+//            } catch {
+//
+//            }
+//            
+//            var fileItemType: ArchiveItemType = isDirectory ? .directory : .file
+//            if fileItemType == .file && ArchiveTypeRegistry.shared.isSupported(ext: url.pathExtension) {
+//                fileItemType = .archive
+//            }
+//            let fileItem = ArchiveItem(
+//                path: url,
+//                type: fileItemType,
+//                compressedSize: fileSize,
+//                uncompressedSize: fileSize
+//            )
+//            
+//            if fileItemType == .directory {
+//                resultDirectories.append(fileItem)
+//            } else {
+//                resultFiles.append(fileItem)
+//            }
+//        }
+//        items = resultDirectories.sorted {
+//            return $0.name < $1.name
+//        }
+//        items.append(contentsOf: resultFiles.sorted {
+//            return $0.name < $1.name
+//        })
+//        print("items loaded \(items.count)")
+//    }
 }

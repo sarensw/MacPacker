@@ -12,17 +12,6 @@ final class SystemHelper {
     
     private init() {}
     
-    func getNSImageByExtension(fileName: String) -> NSImage? {
-        let fileExtension = (fileName as NSString).pathExtension
-        let icon = NSWorkspace.shared.icon(forFileType: fileExtension)
-        return icon
-    }
-    
-    func getNSImageForFolder() -> NSImage {
-        return NSWorkspace.shared.icon(for: .folder)
-    }
-    
-    
     /// Takes in bytes and formats it to a human readible string (e.g. 512000 > 512 KB). It returns
     /// an empty string in case the number of bytes is less than 0. This can happen for folder
     /// or special entries (e.g. parent entry "..")

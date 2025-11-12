@@ -11,9 +11,6 @@
 		254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 254BB55C2ABBE8F50059A1D5 /* Sparkle */; };
 		2567C8312E8FB75F008E1BD8 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2567C8302E8FB75F008E1BD8 /* Quartz.framework */; };
 		2567C83D2E8FB75F008E1BD8 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		2567C8602E8FC87B008E1BD8 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 2567C85F2E8FC87B008E1BD8 /* XADMasterSwift */; };
-		2592CEDD2AD4F765008DEFF8 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2592CEDC2AD4F765008DEFF8 /* ZIPFoundation */; };
-		2592CEDF2AD4F77E008DEFF8 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2592CEDE2AD4F77E008DEFF8 /* ZIPFoundation */; };
 		259511032E9C529A0065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511022E9C529A0065F366 /* TailBeatKit */; };
 		259511052E9C52A30065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511042E9C52A30065F366 /* TailBeatKit */; };
 		259511072E9C56B20065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511062E9C56B20065F366 /* TailBeatKit */; };
@@ -21,6 +18,12 @@
 		25A28EEB2EA7799200271329 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		25C0A8C42A78DE62002C1C2A /* MacPackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C32A78DE62002C1C2A /* MacPackerUITests.swift */; };
 		25C0A8C62A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C52A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift */; };
+		25C52F3E2EB8D72700A5E8C1 /* MacPackerCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */; };
+		25C52F3F2EB8D72700A5E8C1 /* MacPackerCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		25C52F412EB8D72D00A5E8C1 /* MacPackerCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */; };
+		25C52F422EB8D72D00A5E8C1 /* MacPackerCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		25C52F6E2EB8DD8600A5E8C1 /* MacPackerCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */; };
+		25C52F6F2EB8DD8600A5E8C1 /* MacPackerCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764242E6C6D5300464CF5 /* XADMasterSwift */; };
 		25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764262E6C6D6200464CF5 /* XADMasterSwift */; };
 		25CD1EB82D829C14007B53EE /* SWCompression in Frameworks */ = {isa = PBXBuildFile; productRef = 25CD1EB72D829C14007B53EE /* SWCompression */; };
@@ -52,6 +55,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 2567C82E2E8FB75F008E1BD8;
 			remoteInfo = QuickLookExtension;
+		};
+		2570A7562EC1EB800048FD4A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 25C52F2B2EB8D5AC00A5E8C1;
+			remoteInfo = MacPackerCore;
+		};
+		2570A7582EC1EB800048FD4A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 25C52FE32EC1EB0300A5E8C1;
+			remoteInfo = MacPackerCoreTests;
 		};
 		25A28EEC2EA7799200271329 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -95,6 +112,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				25C52F3F2EB8D72700A5E8C1 /* MacPackerCore.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -105,6 +123,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				25C52F422EB8D72D00A5E8C1 /* MacPackerCore.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -121,6 +140,17 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		25C52F702EB8DD8600A5E8C1 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				25C52F6F2EB8DD8600A5E8C1 /* MacPackerCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -135,6 +165,9 @@
 		25C0A8C52A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPackerUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		25C518862AEA115E0001697F /* BitByteData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BitByteData.framework; path = "Carthage/Build/BitByteData.xcframework/macos-arm64_x86_64/BitByteData.framework"; sourceTree = "<group>"; };
 		25C5188A2AEA11660001697F /* SWCompression.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SWCompression.framework; path = "Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64/SWCompression.framework"; sourceTree = "<group>"; };
+		25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MacPackerCore.xcodeproj; path = MacPackerCore/MacPackerCore.xcodeproj; sourceTree = "<group>"; };
+		25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MacPackerCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MacPackerCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		25EF27352AD7098300C8CC56 /* MacPacker.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MacPacker.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -153,17 +186,6 @@
 				Views/CheckForUpdatesView.swift,
 			);
 			target = 254BB53C2ABBE8430059A1D5 /* MacPacker Store */;
-		};
-		25161E2C2E6D64BE00CCFEF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				README.md,
-				TestArchives/defaultContent/folder/bond.txt,
-				TestArchives/defaultContent/hello.txt,
-				TestArchives/lha_lzh/README.md,
-				TestArchives/lzx/README.md,
-			);
-			target = 25C0A8B42A78DE62002C1C2A /* MacPackerTests */;
 		};
 		252F120E2E7ABDD9004CCEBE /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -192,7 +214,6 @@
 		251114B22DC6D3AA0056D272 /* MacPacker */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (251114F72DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 251114F82DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 257A675B2E829CF100532C84 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MacPacker; sourceTree = "<group>"; };
 		252F12032E7ABDD9004CCEBE /* FinderExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (252F120E2E7ABDD9004CCEBE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FinderExtension; sourceTree = "<group>"; };
 		2567C8322E8FB75F008E1BD8 /* QuickLookExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (2567C8412E8FB75F008E1BD8 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = QuickLookExtension; sourceTree = "<group>"; };
-		25D62A342E6D61DE00E7FF69 /* MacPackerTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (25161E2C2E6D64BE00CCFEF4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MacPackerTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -209,9 +230,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */,
+				25C52F412EB8D72D00A5E8C1 /* MacPackerCore.framework in Frameworks */,
 				25CD1EBF2D829DEA007B53EE /* BitByteData in Frameworks */,
 				25CD1EBD2D829DEA007B53EE /* SWCompression in Frameworks */,
-				2592CEDF2AD4F77E008DEFF8 /* ZIPFoundation in Frameworks */,
 				259511052E9C52A30065F366 /* TailBeatKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -221,8 +242,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				259511092E9C56BC0065F366 /* TailBeatKit in Frameworks */,
+				25C52F6E2EB8DD8600A5E8C1 /* MacPackerCore.framework in Frameworks */,
 				2567C8312E8FB75F008E1BD8 /* Quartz.framework in Frameworks */,
-				2567C8602E8FC87B008E1BD8 /* XADMasterSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,9 +254,9 @@
 				25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */,
 				25CD1EBB2D829CBB007B53EE /* BitByteData in Frameworks */,
 				259511032E9C529A0065F366 /* TailBeatKit in Frameworks */,
+				25C52F3E2EB8D72700A5E8C1 /* MacPackerCore.framework in Frameworks */,
 				25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */,
 				254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */,
-				2592CEDD2AD4F765008DEFF8 /* ZIPFoundation in Frameworks */,
 				25CD1EB82D829C14007B53EE /* SWCompression in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -257,13 +278,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2570A7522EC1EB800048FD4A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2570A7572EC1EB800048FD4A /* MacPackerCore.framework */,
+				2570A7592EC1EB800048FD4A /* MacPackerCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		25C0A89B2A78DE5F002C1C2A = {
 			isa = PBXGroup;
 			children = (
 				25EF27352AD7098300C8CC56 /* MacPacker.xctestplan */,
 				25C0A8DA2A7B5339002C1C2A /* Packages */,
 				251114B22DC6D3AA0056D272 /* MacPacker */,
-				25D62A342E6D61DE00E7FF69 /* MacPackerTests */,
 				25C0A8C22A78DE62002C1C2A /* MacPackerUITests */,
 				252F12032E7ABDD9004CCEBE /* FinderExtension */,
 				2567C8322E8FB75F008E1BD8 /* QuickLookExtension */,
@@ -304,9 +333,12 @@
 		25C0A8DF2A7B5569002C1C2A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */,
+				25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */,
 				25C5188A2AEA11660001697F /* SWCompression.framework */,
 				25C518862AEA115E0001697F /* BitByteData.framework */,
 				2567C8302E8FB75F008E1BD8 /* Quartz.framework */,
+				25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -358,7 +390,6 @@
 			);
 			name = "MacPacker Store";
 			packageProductDependencies = (
-				2592CEDE2AD4F77E008DEFF8 /* ZIPFoundation */,
 				25CD1EBC2D829DEA007B53EE /* SWCompression */,
 				25CD1EBE2D829DEA007B53EE /* BitByteData */,
 				25C764262E6C6D6200464CF5 /* XADMasterSwift */,
@@ -375,6 +406,7 @@
 				2567C82B2E8FB75F008E1BD8 /* Sources */,
 				2567C82C2E8FB75F008E1BD8 /* Frameworks */,
 				2567C82D2E8FB75F008E1BD8 /* Resources */,
+				25C52F702EB8DD8600A5E8C1 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -385,7 +417,6 @@
 			);
 			name = QuickLookExtension;
 			packageProductDependencies = (
-				2567C85F2E8FC87B008E1BD8 /* XADMasterSwift */,
 				259511082E9C56BC0065F366 /* TailBeatKit */,
 			);
 			productName = QuickLookExtension;
@@ -414,7 +445,6 @@
 			name = MacPacker;
 			packageProductDependencies = (
 				254BB55C2ABBE8F50059A1D5 /* Sparkle */,
-				2592CEDC2AD4F765008DEFF8 /* ZIPFoundation */,
 				25CD1EB72D829C14007B53EE /* SWCompression */,
 				25CD1EBA2D829CBB007B53EE /* BitByteData */,
 				25E426C92E6BEB3800F10BE5 /* XADMasterSwift */,
@@ -437,9 +467,6 @@
 			);
 			dependencies = (
 				25C0A8B72A78DE62002C1C2A /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				25D62A342E6D61DE00E7FF69 /* MacPackerTests */,
 			);
 			name = MacPackerTests;
 			productName = MacPackerTests;
@@ -510,7 +537,6 @@
 			mainGroup = 25C0A89B2A78DE5F002C1C2A;
 			packageReferences = (
 				254BB55B2ABBE8F50059A1D5 /* XCRemoteSwiftPackageReference "Sparkle" */,
-				2592CEDB2AD4F765008DEFF8 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				25CD1EB62D829C14007B53EE /* XCRemoteSwiftPackageReference "SWCompression" */,
 				25CD1EB92D829CBB007B53EE /* XCRemoteSwiftPackageReference "BitByteData" */,
 				25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */,
@@ -518,6 +544,12 @@
 			);
 			productRefGroup = 25C0A8A52A78DE5F002C1C2A /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 2570A7522EC1EB800048FD4A /* Products */;
+					ProjectRef = 25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				25C0A8A32A78DE5F002C1C2A /* MacPacker */,
@@ -529,6 +561,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		2570A7572EC1EB800048FD4A /* MacPackerCore.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = MacPackerCore.framework;
+			remoteRef = 2570A7562EC1EB800048FD4A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2570A7592EC1EB800048FD4A /* MacPackerCoreTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = MacPackerCoreTests.xctest;
+			remoteRef = 2570A7582EC1EB800048FD4A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		252F12002E7ABDD9004CCEBE /* Resources */ = {
@@ -1290,14 +1339,6 @@
 				minimumVersion = 0.2.0;
 			};
 		};
-		2592CEDB2AD4F765008DEFF8 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.17;
-			};
-		};
 		25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sarensw/XADMasterSwift";
@@ -1329,21 +1370,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 254BB55B2ABBE8F50059A1D5 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
-		};
-		2567C85F2E8FC87B008E1BD8 /* XADMasterSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */;
-			productName = XADMasterSwift;
-		};
-		2592CEDC2AD4F765008DEFF8 /* ZIPFoundation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2592CEDB2AD4F765008DEFF8 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
-			productName = ZIPFoundation;
-		};
-		2592CEDE2AD4F77E008DEFF8 /* ZIPFoundation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2592CEDB2AD4F765008DEFF8 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
-			productName = ZIPFoundation;
 		};
 		259511022E9C529A0065F366 /* TailBeatKit */ = {
 			isa = XCSwiftPackageProductDependency;

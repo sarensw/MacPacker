@@ -70,6 +70,8 @@ struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             WhatsNewPill(key: LocalizedStringResource("v0.12_added_open_menu", defaultValue: "Added 'File' > 'Open...' menu to open archives when no window is open", table: "LocalizableWhatsNew"), type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.12_tar_handling", defaultValue: "Improved TAR archive handling", table: "LocalizableWhatsNew"), type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.12_store_mp_not_in_open_with", defaultValue: "MacPacker not showing up in 'Open With…' menu in Finder (App Store version only)", table: "LocalizableWhatsNew"), type: .bug)
             WhatsNewPill(key: LocalizedStringResource("v0.12_separate_changelog_localization", defaultValue: "Separated localization of changelog from app localization", table: "LocalizableWhatsNew"), type: .core)
             WhatsNewPill(key: LocalizedStringResource("v0.12_new_lang_ru_ua", defaultValue: "Language support for Ukranian, Russian", table: "LocalizableWhatsNew"), type: .core)
             WhatsNewPill(key: LocalizedStringResource("v0.12_magic_number", defaultValue: "Detect archive type based on magic number independent on the file extension", table: "LocalizableWhatsNew"), type: .core)

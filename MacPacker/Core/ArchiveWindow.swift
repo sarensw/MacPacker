@@ -6,13 +6,13 @@
 //
 
 import AppKit
+import MacPackerCore
 import SwiftUI
 
 class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     let archiveState: ArchiveState
     let appDelegate: AppDelegate
     
-    let archiveService = ArchiveService()
     let contentService: ArchiveContentService = ArchiveContentService()
     
     var willCloseHandler: (() -> Void)?

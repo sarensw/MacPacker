@@ -134,7 +134,14 @@ class FinderSync: FIFinderSync {
             // "Extract to defaultArchive\"" > if one archive is selected
             var folderName: String = ""
             if selecteditems.count == 1 {
-                folderName = selecteditems[0].deletingPathExtension().lastPathComponent
+                // We're deleting the path extension here twice by purpose because compound archives
+                // will be extracted twice. First decompressed, then extracted. And we need to show
+                // the correct folder name
+                //
+                // Examples:
+                // - archive.zip > archive
+                // - archive.tar.gz > archive
+                folderName = selecteditems[0].deletingPathExtension().deletingPathExtension().lastPathComponent
             } else if selecteditems.count > 1 {
                 folderName = "*/"
             }
