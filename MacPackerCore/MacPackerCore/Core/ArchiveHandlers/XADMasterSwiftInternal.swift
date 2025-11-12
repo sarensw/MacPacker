@@ -17,6 +17,7 @@ public class XADMasterSwiftInternal {
         guard let archive = XADArchive(file: path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
         archive.extract(to: destination)
     }
 
@@ -24,6 +25,7 @@ public class XADMasterSwiftInternal {
         guard let archive = XADArchive(file: path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
 
         if archive.isEncrypted() && archive.password()!.isEmpty {
             throw NSError(domain: "XADMasterSwift", code: 2, userInfo: [NSLocalizedDescriptionKey: "Password required"])
@@ -42,6 +44,7 @@ public class XADMasterSwiftInternal {
         guard let archive = XADArchive(file: path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
 
         archive.extractEntry(Int32(entryIndex), to: destination)
     }
@@ -50,6 +53,7 @@ public class XADMasterSwiftInternal {
         guard let archive = XADArchive(file: path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
 
         archive.setPassword(password)
     }
@@ -58,6 +62,7 @@ public class XADMasterSwiftInternal {
         guard let archive = XADArchive(file: path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
 
         return archive.formatName()
     }

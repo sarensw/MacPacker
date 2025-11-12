@@ -82,6 +82,7 @@ public class ArchiveHandlerXad: ArchiveHandler {
         guard let archive = XADArchive(file: url.path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
         
         if archive.isEncrypted() && archive.password()!.isEmpty {
             throw NSError(domain: "XADMasterSwift", code: 2, userInfo: [NSLocalizedDescriptionKey: "Password required"])
@@ -149,6 +150,7 @@ public class ArchiveHandlerXad: ArchiveHandler {
                 )
             return []
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
         
         for index in 0..<archive.numberOfEntries() {
             let name = archive.name(ofEntry: index) ?? "<unknown>"

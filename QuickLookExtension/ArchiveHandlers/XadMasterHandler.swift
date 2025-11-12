@@ -54,6 +54,7 @@ class XadMasterHandler {
         guard let archive = XADArchive(file: path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
         
         if archive.isEncrypted() && archive.password()!.isEmpty {
             throw NSError(domain: "XADMasterSwift", code: 2, userInfo: [NSLocalizedDescriptionKey: "Password required"])
@@ -109,6 +110,7 @@ class XadMasterHandler {
         guard let archive = XADArchive(file: archive.url.path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
         
         for item in items {
             guard let index = item.index else {
@@ -129,6 +131,7 @@ class XadMasterHandler {
         guard let archive = XADArchive(file: archive.url.path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
+        archive.setNameEncoding(NSUTF8StringEncoding)
         
         archive.extract(
             to: path
