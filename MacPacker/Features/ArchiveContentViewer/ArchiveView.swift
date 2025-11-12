@@ -54,7 +54,6 @@ struct ArchiveView: View {
             }
         }
         .onChange(of: selection) { _ in
-            print("selection changed: \(String(describing: selection))")
             if let indexes = selection,
                let archive = state.archive,
                let selectedItem = archive.selectedItem,

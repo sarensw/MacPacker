@@ -315,8 +315,6 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let hasParent = selectedItem.type != .root
             
             if let tableView = notification.object as? NSTableView {
-                tableView.selectedRowIndexes.forEach { print($0) }
-                
                 // remove the offset if there is any because we don't want
                 // to have the parent offset
                 if hasParent {
@@ -377,7 +375,6 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     }
     
     func openParent(_ tableView: NSTableView) {
-        print("TODO: openParent")
         archiveState.openParent()
         isReloadNeeded = true
         archiveState.selectedItems = []
