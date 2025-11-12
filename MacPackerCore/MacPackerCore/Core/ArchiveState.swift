@@ -222,6 +222,19 @@ extension ArchiveState {
             to: destination)
     }
     
+    public func extract(
+        to destination: URL
+    ) {
+        if let archive {
+            let _ = destination.startAccessingSecurityScopedResource()
+            defer { destination.stopAccessingSecurityScopedResource()}
+            
+            archive.handler.extract(
+                archiveUrl: archive.url,
+                to: destination)
+        }
+    }
+    
     public func load(from url: URL) {
         let detector = ArchiveTypeDetector()
         if let detectorResult = detector.detect(for: url),

@@ -14,14 +14,11 @@ class AppUrlExtractHereHandler: AppUrlHandler {
             
             requestAccessToDir(for: appUrl.target) { response, url in
                 if response == .OK {
-                    if let url,
-                       let archiveHandler = ArchiveTypeRegistry.shared.handler(for: fileUrl)
-                    {
-                        Logger.log("Found archive handler for \(fileUrl.lastPathComponent)")
-                        archiveHandler.extract(
-                            archiveUrl: fileUrl,
-                            to: url,
-                        )
+                    Logger.log("Found archive handler for \(fileUrl.lastPathComponent)")
+                    if let url {
+                        let state = ArchiveState()
+                        state.load(from: fileUrl)
+                        state.extract(to: url)
                     }
                 }
             }

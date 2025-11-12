@@ -15,10 +15,8 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
             
             requestAccessToDir(for: appUrl.target) { response, url in
                 if response == .OK {
-                    if let url,
-                       let archiveHandler = ArchiveTypeRegistry.shared.handler(for: fileUrl)
-                    {
-                        let folderName = fileUrl.deletingPathExtension().lastPathComponent
+                    if let url {
+                        let folderName = ArchiveTypeDetector().getNameWithoutExtension(for: url)
                         let folderUrl = url.appendingPathComponent(folderName)
                         do {
                             try FileManager.default.createDirectory(
@@ -27,10 +25,9 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
                             )
                             
                             Logger.log("Found archive handler for \(fileUrl.lastPathComponent)")
-                            archiveHandler.extract(
-                                archiveUrl: fileUrl,
-                                to: folderUrl,
-                            )
+                            let state = ArchiveState()
+                            state.load(from: fileUrl)
+                            state.extract(to: folderUrl)
                         } catch {
                             Logger.error(error.localizedDescription)
                         }

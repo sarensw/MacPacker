@@ -32,6 +32,29 @@ public struct DetectionResult: CustomStringConvertible {
 public class ArchiveTypeDetector {
     public init() {}
     
+    public func getNameWithoutExtension(for url: URL) -> String {
+        var name = url.lastPathComponent
+        if let byExt = detectByExtension(for: url, considerComposition: true) {
+            if let composition = byExt.composition {
+                for compExt in composition.extensions {
+                    if name.hasSuffix(".\(compExt)") {
+                        name.removeLast(compExt.count + 1)
+                        break
+                    }
+                }
+            } else {
+                for ext in byExt.type.extensions {
+                    if name.hasSuffix(".\(ext)") {
+                        name.removeLast(ext.count + 1)
+                        break
+                    }
+                }
+            }
+        }
+        
+        return url.lastPathComponent
+    }
+    
     public func detect(for url: URL, considerComposition: Bool = true) -> DetectionResult? {
         if let byExt = detectByExtension(for: url, considerComposition: considerComposition) {
             return byExt
