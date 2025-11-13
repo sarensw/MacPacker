@@ -75,6 +75,7 @@ public enum ArchiveTypeId: String, CaseIterable {
     case sit    = "StuffIt Archive"
     case sitx   = "StuffIt X Archive"
     case tar    = "Tar Archive"
+    case vhdx    = "VHDX Image"
     case xz     = "XZ File"
     case Z      = "Unix Compress File"
     case zip    = "Zip Archive"
@@ -211,6 +212,9 @@ final class ArchiveTypeCatalog {
             .hex("43 44 30 30 31", offset: 0x8001),
             .hex("43 44 30 30 31", offset: 0x8801),
             .hex("43 44 30 30 31", offset: 0x9001)
+        )])
+        ri(.vhdx,       uti: .diskImage,            ext: ["vhdx"],                   rls: [.any(
+            .hex("76 68 64 78 66 69 6C 65")
         )])
     }
     
