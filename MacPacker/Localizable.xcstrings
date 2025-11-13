@@ -372,7 +372,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "面包屑位置："
+            "value" : "路径栏位置："
           }
         }
       }
@@ -1218,7 +1218,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "姓名"
+            "value" : "名称"
           }
         }
       }
