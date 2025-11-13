@@ -156,14 +156,15 @@ final class ArchiveTypeCatalog {
     }
     
     private func loadAllCompoundTypes() {
-        rco(.`tar.bz2`, composition: [.tar, .bzip2],    uti: "org.bzip.bzip2-tar-archive",  ext: ["tbz2", "tbz", "tar.bz2"],    rls: [.any(.hex("42 5A 68"))])
-        rco(.`tar.gz`,  composition: [.tar, .gzip],     uti: "org.gnu.gnu-zip-tar-archive", ext: ["tgz", "tar.gz"],             rls: [.any(.hex("1F 8B"))])
+        rco(.`tar.lz4`, composition: [.tar, .lz4],      uti: "public.lz4-tar-archive",      ext: ["tlz4", "tar.lz4"],    rls: [.any(.hex("04 22 4D 18"))])
+        rco(.`tar.bz2`, composition: [.tar, .bzip2],    uti: "org.bzip.bzip2-tar-archive",  ext: ["tbz2", "tbz", "tbzip2", "tb", "tar.bz2"],    rls: [.any(.hex("42 5A 68"))])
+        rco(.`tar.gz`,  composition: [.tar, .gzip],     uti: "org.gnu.gnu-zip-tar-archive", ext: ["tgz", "tgzip", "tar.gz"],             rls: [.any(.hex("1F 8B"))])
         rco(.`tar.xz`,  composition: [.tar, .xz],       uti: "org.tukaani.tar-xz-archive",  ext: ["txz", "tar.xz"],             rls: [.any(.hex("FD 37 7A 58 5A 00"))])
     }
     
     private func loadAllArchiveTypes() {
         // compressions
-        rc(.bzip2,      uti: .bz2,                          ext: ["bz2", "bzip2", "bz"],    rls: [.any(.hex("42 5A 68"))])
+        rc(.bzip2,      uti: .bz2,                          ext: ["bz2", "bzip2", "tb"],    rls: [.any(.hex("42 5A 68"))])
         rc(.gzip,       uti: .gzip,                         ext: ["gz", "gzip"],            rls: [.any(.hex("1F 8B"))])
         rc(.lz4,        uti: "public.lz4-archive",          ext: ["lz4"],                   rls: [.any(.hex("04 22 4D 18"))])
         rc(.xz,         uti: "org.tukaani.xz-archive",      ext: ["xz"],                    rls: [.any(.hex("FD 37 7A 58 5A 00"))])

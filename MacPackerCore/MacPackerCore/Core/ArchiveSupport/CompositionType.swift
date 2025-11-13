@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 public enum CompositionTypeId: String, CaseIterable {
     case `tar.bz2`  = "Bzip2 Tar Archive"
     case `tar.gz`   = "Gzip Tar Archive"
+    case `tar.lz4`  = "LZ4 Tar Archive"
     case `tar.xz`   = "XZ Tar Archive"
 }
 
