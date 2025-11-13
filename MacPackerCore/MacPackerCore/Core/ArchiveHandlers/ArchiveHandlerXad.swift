@@ -72,7 +72,7 @@ public class ArchiveHandlerXad: ArchiveHandler {
         typeRegistry.register(typeID: .tar, capabilities: [.view, .extract], handler: handler)
         typeRegistry.register(typeID: .xz, capabilities: [.view, .extract], handler: handler)
         typeRegistry.register(typeID: .Z, capabilities: [.view, .extract], handler: handler)
-        typeRegistry.register(typeID: .zip, capabilities: [.view, .extract], handler: handler)
+//        typeRegistry.register(typeID: .zip, capabilities: [.view, .extract], handler: handler)
         typeRegistry.register(typeID: .zipx, capabilities: [.view, .extract], handler: handler)
     }
     

@@ -10,25 +10,28 @@ import Foundation
 public class ArchiveHierarchy {
     public func buildTree(for entries: [ArchiveItem], at root: ArchiveItem) {
         for entry in entries {
-            guard let virtualPath = entry.virtualPath else { continue }
+//            guard let virtualPath = entry.virtualPath else { continue }
+            var virtualPath = entry.virtualPath ?? "/"
             var parent: ArchiveItem = root
             
             let components = virtualPath.split(separator: "/")
             
-            for i in 0..<components.count - 1 {
-                let component = components[i]
-                
-                if let n = parent.children?.first(where: { $0.name == String(component) }) {
-                    parent = n
-                } else {
-                    let n = ArchiveItem(
-                        name: String(component),
-                        virtualPath: virtualPath,
-                        type: .directory,
-                        parent: parent
-                    )
-                    parent.addChild(n)
-                    parent = n
+            if components.count > 0 {
+                for i in 0..<components.count - 1 {
+                    let component = components[i]
+                    
+                    if let n = parent.children?.first(where: { $0.name == String(component) }) {
+                        parent = n
+                    } else {
+                        let n = ArchiveItem(
+                            name: String(component),
+                            virtualPath: virtualPath,
+                            type: .directory,
+                            parent: parent
+                        )
+                        parent.addChild(n)
+                        parent = n
+                    }
                 }
             }
             
