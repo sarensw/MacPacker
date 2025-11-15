@@ -432,6 +432,7 @@
 				25C0A8A22A78DE5F002C1C2A /* Resources */,
 				252F12872E7C01C1004CCEBE /* Embed Frameworks */,
 				252F13D02E801C4C004CCEBE /* Embed Foundation Extensions */,
+				25951DF52EC62EB000890351 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -623,6 +624,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		25951DF52EC62EB000890351 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\n\n# Only for Release (optional but recommended)\nif [ \"$CONFIGURATION\" != \"Release\" ]; then\n  exit 0\nfi\n\nAPP_RESOURCES=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\n\nHELPERS=(\n  \"$APP_RESOURCES/7zz\"\n  \"$APP_RESOURCES/7zCon.sfx\"\n)\n\nfor helper in \"${HELPERS[@]}\"; do\n  if [ -f \"$helper\" ]; then\n    echo \"Codesigning helper with hardened runtime: $helper\"\n    /usr/bin/codesign \\\n      --force \\\n      --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n      --options runtime \\\n      --entitlements \"${CODE_SIGN_ENTITLEMENTS}\" \\\n      \"$helper\"\n  else\n    echo \"Helper not found (skipping): $helper\"\n  fi\ndone\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		252F11FE2E7ABDD9004CCEBE /* Sources */ = {
