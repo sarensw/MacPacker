@@ -16,8 +16,6 @@
 		259511072E9C56B20065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511062E9C56B20065F366 /* TailBeatKit */; };
 		259511092E9C56BC0065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511082E9C56BC0065F366 /* TailBeatKit */; };
 		25A28EEB2EA7799200271329 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		25C0A8C42A78DE62002C1C2A /* MacPackerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C32A78DE62002C1C2A /* MacPackerUITests.swift */; };
-		25C0A8C62A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C0A8C52A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift */; };
 		25C52F3E2EB8D72700A5E8C1 /* MacPackerCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */; };
 		25C52F3F2EB8D72700A5E8C1 /* MacPackerCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		25C52F412EB8D72D00A5E8C1 /* MacPackerCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */; };
@@ -161,8 +159,6 @@
 		25C0A8A42A78DE5F002C1C2A /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8B52A78DE62002C1C2A /* MacPackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8BF2A78DE62002C1C2A /* MacPackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		25C0A8C32A78DE62002C1C2A /* MacPackerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPackerUITests.swift; sourceTree = "<group>"; };
-		25C0A8C52A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPackerUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		25C518862AEA115E0001697F /* BitByteData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BitByteData.framework; path = "Carthage/Build/BitByteData.xcframework/macos-arm64_x86_64/BitByteData.framework"; sourceTree = "<group>"; };
 		25C5188A2AEA11660001697F /* SWCompression.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SWCompression.framework; path = "Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64/SWCompression.framework"; sourceTree = "<group>"; };
 		25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MacPackerCore.xcodeproj; path = MacPackerCore/MacPackerCore.xcodeproj; sourceTree = "<group>"; };
@@ -291,9 +287,7 @@
 			isa = PBXGroup;
 			children = (
 				25EF27352AD7098300C8CC56 /* MacPacker.xctestplan */,
-				25C0A8DA2A7B5339002C1C2A /* Packages */,
 				251114B22DC6D3AA0056D272 /* MacPacker */,
-				25C0A8C22A78DE62002C1C2A /* MacPackerUITests */,
 				252F12032E7ABDD9004CCEBE /* FinderExtension */,
 				2567C8322E8FB75F008E1BD8 /* QuickLookExtension */,
 				25C0A8A52A78DE5F002C1C2A /* Products */,
@@ -312,22 +306,6 @@
 				2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		25C0A8C22A78DE62002C1C2A /* MacPackerUITests */ = {
-			isa = PBXGroup;
-			children = (
-				25C0A8C32A78DE62002C1C2A /* MacPackerUITests.swift */,
-				25C0A8C52A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift */,
-			);
-			path = MacPackerUITests;
-			sourceTree = "<group>";
-		};
-		25C0A8DA2A7B5339002C1C2A /* Packages */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Packages;
 			sourceTree = "<group>";
 		};
 		25C0A8DF2A7B5569002C1C2A /* Frameworks */ = {
@@ -686,8 +664,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				25C0A8C62A78DE62002C1C2A /* MacPackerUITestsLaunchTests.swift in Sources */,
-				25C0A8C42A78DE62002C1C2A /* MacPackerUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
