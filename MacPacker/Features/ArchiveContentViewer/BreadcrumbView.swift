@@ -5,7 +5,7 @@
 //  Created by Stephan Arenswald on 05.05.25.
 //
 
-import MacPackerCore
+import Core
 import SwiftUI
 
 struct BreadcrumbItemView: View {

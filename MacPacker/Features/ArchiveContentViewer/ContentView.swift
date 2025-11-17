@@ -6,7 +6,7 @@
 //
 
 import AppKit
-import MacPackerCore
+import Core
 import SwiftUI
 
 struct PathControlView: NSViewRepresentable {

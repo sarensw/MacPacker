@@ -5,7 +5,7 @@
 //  Created by Stephan Arenswald on 24.09.25.
 //
 
-import MacPackerCore
+import Core
 
 class AppUrlExtractHereHandler: AppUrlHandler {
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {

@@ -6,7 +6,7 @@
 //
 
 import AppKit
-import MacPackerCore
+import Core
 import SwiftUI
 
 class ArchiveWindowController: NSWindowController, NSWindowDelegate {

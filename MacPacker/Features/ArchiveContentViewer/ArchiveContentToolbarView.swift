@@ -5,7 +5,7 @@
 //  Created by Stephan Arenswald on 08.09.25.
 //
 
-import MacPackerCore
+import Core
 import SwiftUI
 
 extension NSImage {

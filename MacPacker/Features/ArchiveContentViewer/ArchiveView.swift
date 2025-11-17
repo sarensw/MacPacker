@@ -7,7 +7,7 @@
 
 import Foundation
 import QuickLook
-import MacPackerCore
+import Core
 import SwiftUI
 
 struct ArchiveView: View {

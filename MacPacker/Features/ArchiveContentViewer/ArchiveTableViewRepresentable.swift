@@ -8,7 +8,7 @@
 import AppKit
 import Cocoa
 import Foundation
-import MacPackerCore
+import Core
 import SwiftUI
 import UniformTypeIdentifiers
 
