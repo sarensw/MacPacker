@@ -153,6 +153,7 @@
 
 /* Begin PBXFileReference section */
 		252F12022E7ABDD9004CCEBE /* FinderExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FinderExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		254045152ECB4EBE004A4380 /* Modules */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Modules; sourceTree = "<group>"; };
 		254BB5592ABBE8430059A1D5 /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickLookExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2567C8302E8FB75F008E1BD8 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
@@ -284,6 +285,7 @@
 		25C0A89B2A78DE5F002C1C2A = {
 			isa = PBXGroup;
 			children = (
+				254045152ECB4EBE004A4380 /* Modules */,
 				25EF27352AD7098300C8CC56 /* MacPacker.xctestplan */,
 				251114B22DC6D3AA0056D272 /* MacPacker */,
 				252F12032E7ABDD9004CCEBE /* FinderExtension */,
