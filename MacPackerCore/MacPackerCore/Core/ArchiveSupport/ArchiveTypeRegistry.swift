@@ -8,7 +8,7 @@
 import Foundation
 
 public class ArchiveTypeRegistry {
-    public static let shared: ArchiveTypeRegistry = .init()
+    nonisolated(unsafe) public static let shared: ArchiveTypeRegistry = .init()
     var archiveHandlers: [ArchiveTypeId: ArchiveHandler] = [:]
     
     let detector = ArchiveTypeDetector()

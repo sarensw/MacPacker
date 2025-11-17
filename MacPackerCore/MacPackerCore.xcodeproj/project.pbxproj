@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2595205C2ECB0AE500890351 /* Subprocess in Frameworks */ = {isa = PBXBuildFile; productRef = 2595205B2ECB0AE500890351 /* Subprocess */; };
 		25C52F5B2EB8D79500A5E8C1 /* SWCompression in Frameworks */ = {isa = PBXBuildFile; productRef = 25C52F5A2EB8D79500A5E8C1 /* SWCompression */; };
 		25C52F5E2EB8D7B100A5E8C1 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C52F5D2EB8D7B100A5E8C1 /* XADMasterSwift */; };
 		25C52F6A2EB8D88F00A5E8C1 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 25C52F692EB8D88F00A5E8C1 /* TailBeatKit */; };
@@ -49,6 +50,7 @@
 				25C52F6A2EB8D88F00A5E8C1 /* TailBeatKit in Frameworks */,
 				25C52F5E2EB8D7B100A5E8C1 /* XADMasterSwift in Frameworks */,
 				25C52F5B2EB8D79500A5E8C1 /* SWCompression in Frameworks */,
+				2595205C2ECB0AE500890351 /* Subprocess in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,6 +117,7 @@
 				25C52F5A2EB8D79500A5E8C1 /* SWCompression */,
 				25C52F5D2EB8D7B100A5E8C1 /* XADMasterSwift */,
 				25C52F692EB8D88F00A5E8C1 /* TailBeatKit */,
+				2595205B2ECB0AE500890351 /* Subprocess */,
 			);
 			productName = MacPackerCore;
 			productReference = 25C52F2B2EB8D5AC00A5E8C1 /* MacPackerCore.framework */;
@@ -174,6 +177,7 @@
 				25C52F592EB8D79500A5E8C1 /* XCRemoteSwiftPackageReference "SWCompression" */,
 				25C52F5C2EB8D7B100A5E8C1 /* XCRemoteSwiftPackageReference "XADMasterSwift" */,
 				25C52F682EB8D88F00A5E8C1 /* XCRemoteSwiftPackageReference "tailbeat-swift" */,
+				2595205A2ECB0AE500890351 /* XCRemoteSwiftPackageReference "swift-subprocess" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 25C52F2C2EB8D5AC00A5E8C1 /* Products */;
@@ -384,11 +388,13 @@
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -421,11 +427,13 @@
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -498,6 +506,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		2595205A2ECB0AE500890351 /* XCRemoteSwiftPackageReference "swift-subprocess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/swiftlang/swift-subprocess.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.1;
+			};
+		};
 		25C52F592EB8D79500A5E8C1 /* XCRemoteSwiftPackageReference "SWCompression" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tsolomko/SWCompression.git";
@@ -525,6 +541,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2595205B2ECB0AE500890351 /* Subprocess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2595205A2ECB0AE500890351 /* XCRemoteSwiftPackageReference "swift-subprocess" */;
+			productName = Subprocess;
+		};
 		25C52F5A2EB8D79500A5E8C1 /* SWCompression */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 25C52F592EB8D79500A5E8C1 /* XCRemoteSwiftPackageReference "SWCompression" */;

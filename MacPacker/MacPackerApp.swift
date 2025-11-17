@@ -35,8 +35,9 @@ struct MacPackerApp: App {
         // register all handlers
         ArchiveHandlerXad.register()
         ArchiveHandlerLz4.register()
-        ArchiveHandlerP7Zip.register()
+//        ArchiveHandlerP7Zip.register()
 //        ArchiveHandlerZip.registerZip()
+        ArchiveHandlerP7ZipSubProcess.register()
     }
     
     var body: some Scene {

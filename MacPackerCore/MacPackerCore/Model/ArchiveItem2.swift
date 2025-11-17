@@ -16,7 +16,7 @@ public enum ArchiveItemType2: Comparable, Codable {
 }
 
 public struct ArchiveItem2: Identifiable, Hashable, Codable {
-    public static let parent: ArchiveItem2 = ArchiveItem2(name: "..", type: .parent)
+    nonisolated(unsafe) public static let parent: ArchiveItem2 = ArchiveItem2(name: "..", type: .parent)
     public var id = UUID()
     public var path: URL? = nil
     public var virtualPath: String? = nil

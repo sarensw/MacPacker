@@ -39,11 +39,14 @@ public class Archive: ObservableObject, Equatable {
         self.rootNode.set(name: name)
         
         do {
+            Date.now.printNowWithMs("0")
             let entries = try handler.contents(of: url)
             self.entries = entries
+            Date.now.printNowWithMs("10")
             self.hierarchy = ArchiveHierarchy()
             self.hierarchy?.buildTree(for: self.entries, at: rootNode)
-            self.hierarchy?.printHierarchy(item: rootNode)
+            Date.now.printNowWithMs("11")
+//            self.hierarchy?.printHierarchy(item: rootNode)
             self.selectedItem = rootNode
         } catch {
             Logger.error(error.localizedDescription)

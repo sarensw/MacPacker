@@ -70,20 +70,21 @@ public enum ArchiveTypeId: String, CaseIterable {
     case lha    = "LhA Archive"
     case lz4    = "Lz4 Archive"
     case lzx    = "Lzx Archive"
+    case ntfs   = "NTFS Image"
     case rar    = "RAR Archive"
     case sea    = "Self-extracting Archive"
     case sit    = "StuffIt Archive"
     case sitx   = "StuffIt X Archive"
     case tar    = "Tar Archive"
-    case vhdx    = "VHDX Image"
+    case vhdx   = "VHDX Image"
     case xz     = "XZ File"
     case Z      = "Unix Compress File"
     case zip    = "Zip Archive"
-    case zipx    = "Zipx Archive"
+    case zipx   = "Zipx Archive"
 }
 
 final class ArchiveTypeCatalog {
-    static let shared = ArchiveTypeCatalog()
+    nonisolated(unsafe) static let shared = ArchiveTypeCatalog()
     
     /// This is the full list of all known archive types. Whether they are supported or
     /// not depends on which ID is registered in an archive handler. This list will allow
@@ -216,6 +217,7 @@ final class ArchiveTypeCatalog {
         ri(.vhdx,       uti: .diskImage,            ext: ["vhdx"],                   rls: [.any(
             .hex("76 68 64 78 66 69 6C 65")
         )])
+        ri(.ntfs,       uti: .diskImage,            ext: ["ntfs"],                   rls: [])
     }
     
     public func allTypes() -> [ArchiveType] {

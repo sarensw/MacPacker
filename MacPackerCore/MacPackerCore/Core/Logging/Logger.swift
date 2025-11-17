@@ -65,8 +65,8 @@ class TailBeatSink: LoggerSink {
 }
 
 class Logger {
-    private static var initialized: Bool = false
-    private static var sinks: [LoggerSink] = []
+    nonisolated(unsafe) private static var initialized: Bool = false
+    nonisolated(unsafe) private static var sinks: [LoggerSink] = []
     
     static func initialize() {
         guard !Self.initialized else { return }
