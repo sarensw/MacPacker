@@ -159,8 +159,6 @@
 		25C0A8A42A78DE5F002C1C2A /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8B52A78DE62002C1C2A /* MacPackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8BF2A78DE62002C1C2A /* MacPackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		25C518862AEA115E0001697F /* BitByteData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BitByteData.framework; path = "Carthage/Build/BitByteData.xcframework/macos-arm64_x86_64/BitByteData.framework"; sourceTree = "<group>"; };
-		25C5188A2AEA11660001697F /* SWCompression.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SWCompression.framework; path = "Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64/SWCompression.framework"; sourceTree = "<group>"; };
 		25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MacPackerCore.xcodeproj; path = MacPackerCore/MacPackerCore.xcodeproj; sourceTree = "<group>"; };
 		25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MacPackerCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MacPackerCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -313,8 +311,6 @@
 			children = (
 				25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */,
 				25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */,
-				25C5188A2AEA11660001697F /* SWCompression.framework */,
-				25C518862AEA115E0001697F /* BitByteData.framework */,
 				2567C8302E8FB75F008E1BD8 /* Quartz.framework */,
 				25C52F372EB8D5AC00A5E8C1 /* MacPackerCore.xcodeproj */,
 			);
@@ -795,11 +791,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/BitByteData.xcframework/macos-arm64_x86_64",
-					"$(PROJECT_DIR)/Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MacPacker/Info_Store.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MacPacker;
@@ -844,11 +836,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/BitByteData.xcframework/macos-arm64_x86_64",
-					"$(PROJECT_DIR)/Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MacPacker/Info_Store.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MacPacker;
@@ -1103,11 +1091,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/BitByteData.xcframework/macos-arm64_x86_64",
-					"$(PROJECT_DIR)/Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MacPacker/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MacPacker;
@@ -1154,11 +1138,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/BitByteData.xcframework/macos-arm64_x86_64",
-					"$(PROJECT_DIR)/Carthage/Build/SWCompression.xcframework/macos-arm64_x86_64",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MacPacker/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MacPacker;
