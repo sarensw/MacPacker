@@ -106,8 +106,6 @@
 		25C0A8A42A78DE5F002C1C2A /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8B52A78DE62002C1C2A /* MacPackerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25C0A8BF2A78DE62002C1C2A /* MacPackerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacPackerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MacPackerCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MacPackerCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		25EF27352AD7098300C8CC56 /* MacPacker.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MacPacker.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -243,8 +241,6 @@
 		25C0A8DF2A7B5569002C1C2A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				25C52F402EB8D72D00A5E8C1 /* MacPackerCore.framework */,
-				25C52F3D2EB8D72700A5E8C1 /* MacPackerCore.framework */,
 				2567C8302E8FB75F008E1BD8 /* Quartz.framework */,
 			);
 			name = Frameworks;
