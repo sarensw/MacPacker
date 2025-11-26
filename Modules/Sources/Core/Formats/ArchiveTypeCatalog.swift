@@ -60,30 +60,7 @@ struct MagicRule: Hashable {
 
 enum Sig { case any([ArchiveType.MagicSignature]) }
 
-public enum ArchiveTypeId: String, CaseIterable {
-    case `7zip` = "7-Zip Archive"
-    case bzip2  = "Bzip2 File"
-    case cab    = "CAB Archive"
-    case cpio   = "CPIO Archive"
-    case gzip   = "Gzip File"
-    case iso    = "ISO Image"
-    case lha    = "LhA Archive"
-    case lz4    = "Lz4 Archive"
-    case lzx    = "Lzx Archive"
-    case ntfs   = "NTFS Image"
-    case rar    = "RAR Archive"
-    case sea    = "Self-extracting Archive"
-    case sit    = "StuffIt Archive"
-    case sitx   = "StuffIt X Archive"
-    case tar    = "Tar Archive"
-    case vhdx   = "VHDX Image"
-    case xz     = "XZ File"
-    case Z      = "Unix Compress File"
-    case zip    = "Zip Archive"
-    case zipx   = "Zipx Archive"
-}
-
-final class ArchiveTypeCatalog {
+public final class ArchiveTypeCatalog {
     nonisolated(unsafe) static let shared = ArchiveTypeCatalog()
     
     /// This is the full list of all known archive types. Whether they are supported or

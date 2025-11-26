@@ -33,11 +33,11 @@ struct MacPackerApp: App {
         Logger.start()
         
         // register all handlers
-        ArchiveHandlerXad.register()
-        ArchiveHandlerLz4.register()
+//        ArchiveHandlerXad.register()
+//        ArchiveHandlerLz4.register()
 //        ArchiveHandlerP7Zip.register()
 //        ArchiveHandlerZip.registerZip()
-        ArchiveHandlerP7ZipSubProcess.register()
+//        ArchiveHandlerP7ZipSubProcess.register()
     }
     
     var body: some Scene {

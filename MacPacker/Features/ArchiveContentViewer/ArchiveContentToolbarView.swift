@@ -38,7 +38,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
             
             Button {
-                if archiveState.archive != nil {
+                if archiveState.url != nil {
                     isExportingItem.toggle()
                 }
             } label: {
@@ -55,17 +55,14 @@ struct ArchiveContentToolbarView: ToolbarContent {
             ) { result in
                 if case .success(let urls) = result,
                    let folderURL = urls.first {
-                    if let archive = archiveState.archive {
                         archiveState.extract(
-                            archive: archive,
                             items: archiveState.selectedItems,
                             to: folderURL)
-                    }
                 }
             }
             
             Button {
-                if archiveState.archive != nil {
+                if archiveState.url != nil {
                     isExportingAll.toggle()
                 }
             } label: {
@@ -82,11 +79,8 @@ struct ArchiveContentToolbarView: ToolbarContent {
             ) { result in
                 if case .success(let urls) = result,
                    let folderURL = urls.first {
-                    if let archive = archiveState.archive {
                         archiveState.extract(
-                            archive: archive,
                             to: folderURL)
-                    }
                 }
             }
         
@@ -116,7 +110,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 Divider()
                 
                 Button {
-                    if let url = archiveState.archive?.url {
+                    if let url = archiveState.url {
                         contentService.openGetInfoWnd(for: [url])
                     }
                 } label: {

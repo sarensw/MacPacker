@@ -41,7 +41,7 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             if breadcrumbPosition == .top {
-                if let selectedItem = archiveState.archive?.selectedItem {
+                if let selectedItem = archiveState.selectedItem {
                     BreadcrumbView(for: selectedItem)
                 }
                 
@@ -57,7 +57,7 @@ struct ContentView: View {
                     .frame(height: 1)
                     .background(.quinary)
                 
-                if let selectedItem = archiveState.archive?.selectedItem {
+                if let selectedItem = archiveState.selectedItem {
                     BreadcrumbView(for: selectedItem)
                 }
             }
@@ -69,7 +69,7 @@ struct ContentView: View {
                 )
             }
         }
-        .navigationTitle(archiveState.archive == nil ? Bundle.main.appName : archiveState.archive!.name)
+        .navigationTitle(archiveState.url == nil ? Bundle.main.appName : archiveState.name!)
         .environmentObject(archiveState)
     }
     

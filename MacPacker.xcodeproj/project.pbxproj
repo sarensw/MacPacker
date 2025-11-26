@@ -11,13 +11,10 @@
 		254045192ECB50CD004A4380 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 254045182ECB50CD004A4380 /* Core */; };
 		2540451B2ECB50D5004A4380 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 2540451A2ECB50D5004A4380 /* Core */; };
 		2540451D2ECB5DEB004A4380 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 2540451C2ECB5DEB004A4380 /* Core */; };
+		25404E0C2ED71F86004A4380 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 25404E0B2ED71F86004A4380 /* TailBeatKit */; };
 		254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 254BB55C2ABBE8F50059A1D5 /* Sparkle */; };
 		2567C8312E8FB75F008E1BD8 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2567C8302E8FB75F008E1BD8 /* Quartz.framework */; };
 		2567C83D2E8FB75F008E1BD8 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		259511032E9C529A0065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511022E9C529A0065F366 /* TailBeatKit */; };
-		259511052E9C52A30065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511042E9C52A30065F366 /* TailBeatKit */; };
-		259511072E9C56B20065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511062E9C56B20065F366 /* TailBeatKit */; };
-		259511092E9C56BC0065F366 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 259511082E9C56BC0065F366 /* TailBeatKit */; };
 		25A28EEB2EA7799200271329 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764242E6C6D5300464CF5 /* XADMasterSwift */; };
 		25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764262E6C6D6200464CF5 /* XADMasterSwift */; };
@@ -159,7 +156,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				259511072E9C56B20065F366 /* TailBeatKit in Frameworks */,
+				25404E0C2ED71F86004A4380 /* TailBeatKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,7 +165,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */,
-				259511052E9C52A30065F366 /* TailBeatKit in Frameworks */,
 				2540451B2ECB50D5004A4380 /* Core in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -177,7 +173,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				259511092E9C56BC0065F366 /* TailBeatKit in Frameworks */,
 				2567C8312E8FB75F008E1BD8 /* Quartz.framework in Frameworks */,
 				2540451D2ECB5DEB004A4380 /* Core in Frameworks */,
 			);
@@ -188,7 +183,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */,
-				259511032E9C529A0065F366 /* TailBeatKit in Frameworks */,
 				25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */,
 				254045192ECB50CD004A4380 /* Core in Frameworks */,
 				254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */,
@@ -266,7 +260,7 @@
 			);
 			name = FinderExtension;
 			packageProductDependencies = (
-				259511062E9C56B20065F366 /* TailBeatKit */,
+				25404E0B2ED71F86004A4380 /* TailBeatKit */,
 			);
 			productName = FinderExtension;
 			productReference = 252F12022E7ABDD9004CCEBE /* FinderExtension.appex */;
@@ -294,7 +288,6 @@
 			name = "MacPacker Store";
 			packageProductDependencies = (
 				25C764262E6C6D6200464CF5 /* XADMasterSwift */,
-				259511042E9C52A30065F366 /* TailBeatKit */,
 				2540451A2ECB50D5004A4380 /* Core */,
 			);
 			productName = MacPacker;
@@ -318,7 +311,6 @@
 			);
 			name = QuickLookExtension;
 			packageProductDependencies = (
-				259511082E9C56BC0065F366 /* TailBeatKit */,
 				2540451C2ECB5DEB004A4380 /* Core */,
 			);
 			productName = QuickLookExtension;
@@ -349,7 +341,6 @@
 				254BB55C2ABBE8F50059A1D5 /* Sparkle */,
 				25E426C92E6BEB3800F10BE5 /* XADMasterSwift */,
 				25C764242E6C6D5300464CF5 /* XADMasterSwift */,
-				259511022E9C529A0065F366 /* TailBeatKit */,
 				254045182ECB50CD004A4380 /* Core */,
 			);
 			productName = MacPacker;
@@ -439,7 +430,7 @@
 			packageReferences = (
 				254BB55B2ABBE8F50059A1D5 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */,
-				2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */,
+				25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "tailbeatkit" */,
 			);
 			productRefGroup = 25C0A8A52A78DE5F002C1C2A /* Products */;
 			projectDirPath = "";
@@ -1224,20 +1215,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "tailbeatkit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tailbeat/tailbeatkit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.11.0;
+			};
+		};
 		254BB55B2ABBE8F50059A1D5 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.0.0;
-			};
-		};
-		2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tailbeat/tailbeat-swift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.2.0;
 			};
 		};
 		25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */ = {
@@ -1263,30 +1254,15 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Core;
 		};
+		25404E0B2ED71F86004A4380 /* TailBeatKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "tailbeatkit" */;
+			productName = TailBeatKit;
+		};
 		254BB55C2ABBE8F50059A1D5 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 254BB55B2ABBE8F50059A1D5 /* XCRemoteSwiftPackageReference "Sparkle" */;
 			productName = Sparkle;
-		};
-		259511022E9C529A0065F366 /* TailBeatKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */;
-			productName = TailBeatKit;
-		};
-		259511042E9C52A30065F366 /* TailBeatKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */;
-			productName = TailBeatKit;
-		};
-		259511062E9C56B20065F366 /* TailBeatKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */;
-			productName = TailBeatKit;
-		};
-		259511082E9C56BC0065F366 /* TailBeatKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 2567C8262E8F429B008E1BD8 /* XCRemoteSwiftPackageReference "tailbeat-swift" */;
-			productName = TailBeatKit;
 		};
 		25C764242E6C6D5300464CF5 /* XADMasterSwift */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -17,7 +17,9 @@ public enum ArchiveItemType: Comparable, Codable {
     case unknown
 }
 
-public class ArchiveItem: Identifiable, Hashable {
+public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
+    public let id: ArchiveItemId = ArchiveItemId(rawValue: UUID())
+    
     public let index: Int?
     public var name: String // "file1"
     public let virtualPath: String? // "folder/file1"
@@ -40,9 +42,8 @@ public class ArchiveItem: Identifiable, Hashable {
     
     // The following are only relevant if this is a nested archive
     // that can be opened
-    public private(set) var url: URL?
-    public private(set) var handler: ArchiveHandler?
-    public private(set) var archiveType: ArchiveType?
+    public private(set) var url: URL? = nil
+    public private(set) var archiveTypeId: ArchiveTypeId? = nil
     
     public init(
         index: Int? = nil,
@@ -107,12 +108,10 @@ public class ArchiveItem: Identifiable, Hashable {
     
     public func set(
         url: URL,
-        handler: ArchiveHandler,
-        type: ArchiveType
+        typeId: ArchiveTypeId
     ) {
         self.url = url
-        self.handler = handler
-        self.archiveType = type
+        self.archiveTypeId = typeId
     }
     
     public func set(

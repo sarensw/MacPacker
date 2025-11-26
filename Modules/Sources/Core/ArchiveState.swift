@@ -9,14 +9,49 @@ import Combine
 import Foundation
 import SwiftUI
 
+public class Archive {
+    
+}
+
+@MainActor
 public class ArchiveState: ObservableObject {
-    @Published public var archive: Archive?
-    @Published public var isReloadNeeded: Bool = false
+    // MARK: UI
+    // Basic archive metadata
+    @Published private(set) public var url: URL?
+    @Published private(set) public var name: String?
+    @Published private(set) public var type: ArchiveType?
+    @Published private(set) public var ext: String?
+    
+    // Full list of entries
+    @Published private(set) public var entries: [ArchiveItemId: ArchiveItem] = [:]
+    
+    // Root item
+    @Published private(set) public var root: ArchiveItem?
+    
+    // Currently selected item (i.e. its children are shown in the
+    // table of the archive view
+    @Published private(set) public var selectedItem: ArchiveItem?
+    
+    // Items currently selected by the user in the tree / table
     @Published public var selectedItems: [ArchiveItem] = []
+    
+    // UI State
+    @Published private(set) public var isBusy: Bool = false
+    @Published private(set) public var progress: Double = 0.0
+    @Published private(set) public var error: String? = nil
+    @Published public var isReloadNeeded: Bool = false
+    
+    // TODO: Still needed?
     @Published public var openWithUrls: [URL] = []
     @Published public var completePathArray: [String] = []
     @Published public var completePath: String?
     @Published public var previewItemUrl: URL?
+    
+    // MARK: Logic
+//    private let handlerRegistry: HandlerRegistry
+//    private let formatCatalog: ArchiveTypeCatalog
+    
+//    private let extractor = ArchiveExtractor()
     
     public init() {
     }
@@ -29,24 +64,218 @@ public class ArchiveState: ObservableObject {
 extension ArchiveState {
     
     //
-    // MARK: General
+    // MARK: General Sync
+    //
+    // The list of function s down here is the synchrounous pendant
+    // that shall be used by the UI. This keeps the async handling and
+    // task handling within the Core library
     //
     
-    public func open(_ item: ArchiveItem) {
-        guard let archive else { return }
+    /// Opens the given url. Calls the async version in a Task to keep the heavy load
+    /// in the library
+    public func open(url: URL) {
+        Task {
+            do {
+                try await self.openAsync(url: url)
+                
+                self.isReloadNeeded = true
+                self.selectedItems = []
+            } catch {
+                await MainActor.run {
+                    self.error = error.localizedDescription
+                    self.isBusy = false
+                }
+            }
+        }
+    }
+    
+    /// Opens the given item which can be anything (e.g. file, folder, archive, root, ...)
+    /// - Parameter item: The item to open
+    public func open(item: ArchiveItem) {
+        Task {
+            do {
+                try await self.openAsync(item: item)
+                
+                self.isReloadNeeded = true
+                self.selectedItems = []
+            } catch {
+                await MainActor.run {
+                    self.error = error.localizedDescription
+                    self.isBusy = false
+                }
+            }
+        }
+    }
+    
+    /// Extracts the given set of items to the given destination. This is usually triggered by the
+    /// user from within the UI
+    /// - Parameters:
+    ///   - items: <#items description#>
+    ///   - destination: <#destination description#>
+    public func extract(items: [ArchiveItem], to destination: URL) {
+        Task {
+            do {
+//                _ = try await self.extractAsync(item: item)
+            } catch {
+                await MainActor.run {
+                    self.error = error.localizedDescription
+                    self.isBusy = false
+                }
+            }
+        }
+    }
+    
+    public func extract(to destination: URL) {
+        Task {
+            do {
+//                _ = try await self.extractAsync(item: item)
+            } catch {
+                await MainActor.run {
+                    self.error = error.localizedDescription
+                    self.isBusy = false
+                }
+            }
+        }
+    }
+    
+    public func clean() {
         
+    }
+    
+    public func openParent() {
+        if selectedItem?.type == .root {
+            return
+        }
+        
+        let previousItem = selectedItem
+        
+        selectedItem = selectedItem?.parent
+        
+        self.isReloadNeeded = true
+        
+        if let previousItem {
+            self.selectedItems = [previousItem]
+        } else {
+            self.selectedItems = []
+        }
+    }
+    
+    /// Updates the quick look preview URL. The previewer we're using is the default systems
+    /// preview that is called Quick Look and that can be reached via Space in Finder
+    ///
+    /// When Space is pressed by the user while any item is selected, we're opening this default
+    /// preview to support any file type that is supported by the system anyways. This might
+    /// also override any previously selected item in which case quick look will just adopt.
+    ///
+    /// In case no item is selected then set the preview url to nil to make sure Quick Look is closing.
+    public func updateSelectedItemForQuickLook() {
+        Task {
+            if let selectedItem = self.selectedItems.first,
+               let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: selectedItem),
+               let temp = createTempDirectory(),
+               let engine = ArchiveEngineSelector().engine(for: archiveTypeId) {
+                let url = try await engine.extract(
+                    item: selectedItem,
+                    from: archiveUrl,
+                    to: temp.url
+                )
+                self.previewItemUrl = url
+            } else if self.selectedItems.isEmpty {
+                self.previewItemUrl = nil
+            }
+        }
+    }
+    
+    public func changeSelection(selection: IndexSet) {
+        Logger.log("Selection changed: tableViewSelectionDidChange(_:)")
+        
+        guard let selectedItem else { return }
+        let hasParent = selectedItem.type != .root
+        
+        // Adjust selection to account for parent row when present
+        var adjustedSelection: IndexSet? = selection
+        if hasParent {
+            // Shift each selected index down by 1 to skip the parent row (at index 0)
+            let shifted = selection.compactMap { idx -> Int? in
+                let v = idx - 1
+                return v >= 0 ? v : nil
+            }
+            adjustedSelection = IndexSet(shifted)
+        }
+        
+        if let indexes = adjustedSelection,
+           let children = selectedItem.children {
+            
+            selectedItems.removeAll()
+            for index in indexes {
+                let archiveItem = children[index]
+                selectedItems.append(archiveItem)
+            }
+            
+            // in case quick look is open right now, then change the
+            // previewed item
+            if previewItemUrl != nil {
+                updateSelectedItemForQuickLook()
+            }
+        }
+    }
+    
+    //
+    // MARK: General Async
+    //
+    // The methods below do the actual work in a Swift 6 concurrency safe way.
+    // Those are not called from the UI, but rather from the unit tests
+    // directly to ensure that the unit tests can run properly.
+    //
+    
+    /// Opens the given URL, assuming this is an archive. `openAsync(url:)` will figure out the
+    /// archive type, select the proper engine and then load all info like type info, entries, hierarchy ... .
+    /// - Parameter url: The url to open
+    public func openAsync(url: URL) async throws {
+        self.url = url
+        self.name = url.lastPathComponent
+        self.ext = url.pathExtension
+        
+        self.isBusy = true
+        self.progress = 0
+        self.error = nil
+        
+        let detector = ArchiveTypeDetector()
+        let engineSelector = ArchiveEngineSelector()
+        
+        if let detectorResult = detector.detect(for: url, considerComposition: true),
+           let engine = engineSelector.engine(for: detectorResult.type.id) {
+            
+            // set the type
+            self.type = detectorResult.type
+            
+            // set the entries
+            let entries = try await engine.loadArchive(url: url)
+            self.entries = Dictionary(uniqueKeysWithValues: entries.map({ ($0.id, $0) }))
+            
+            // build the hierarchy
+            let rootItem = ArchiveItem(name: self.name ?? "/", type: .root)
+            rootItem.set(url: url, typeId: detectorResult.type.id)
+            buildTree(for: entries, at: rootItem)
+            
+            // set the root item
+            self.root = rootItem
+            self.selectedItem = rootItem
+        }
+    }
+    
+    public func openAsync(item: ArchiveItem) async throws {
         switch item.type {
         case .file:
-            
             // If it is a file, check first if it has children > this can
             // only happen if the file is an archive and if the archive
             // was temporarily extracted before
             if item.children != nil {
                 // Do nothing here. It is an archive. It is extracted already.
                 // We have updated the hierarchy already. Just select the item
-                archive.selectedItem = item
+                selectedItem = item
             }
-            
+
             // If the children is nil, then we need to figure out if this
             // is an archive that we actually support, or whether it is
             // a regular file.
@@ -60,10 +289,11 @@ extension ArchiveState {
                 // handler responsible for it because the item is in a nested
                 // archive, otherwise, use the main archives handler to extract the item
                 
-                if let tempUrl = extract(archiveItem: item) {
-                    
+                if let tempUrl = try await extractAsync(item: item) {
+
                     let detector = ArchiveTypeDetector()
-                    
+                    let engineSelector = ArchiveEngineSelector()
+
                     // We check by extension here because we don't want to end up
                     // opening files like .xlsx as an archive. An Excel file (or any
                     // other archived file that is basically a .zip file) should be
@@ -71,22 +301,24 @@ extension ArchiveState {
                     //
                     // TODO: Add the possibility via right click menu in MacPacker
                     //       to open the file as archive instead.
-                    if let detectionResult = detector.detectByExtension(for: tempUrl, considerComposition: false) {
-                        if let handler = ArchiveTypeRegistry.shared.handler(for: tempUrl) {
-                            // set the services required for this nested archive
-                            item.set(
-                                url: tempUrl,
-                                handler: handler,
-                                type: detectionResult.type
-                            )
-                            
-                            // nested archive is extracted > time to parse its hierarchy
-                            archive.hierarchy?.unfold(item)
-                            archive.hierarchy?.printHierarchy(item: archive.rootNode)
-                            
-                            // set the nested archive as item
-                            archive.selectedItem = item
-                        }
+                    // TODO: considerComposition result should be true here
+                    if let detectionResult = detector.detectByExtension(for: tempUrl, considerComposition: false),
+                       let engine = engineSelector.engine(for: detectionResult.type.id) {
+                        
+                        // set the services required for this nested archive
+                        item.set(
+                            url: tempUrl,
+                            typeId: detectionResult.type.id
+                        )
+
+                        // nested archive is extracted > time to parse its hierarchy
+                        try await unfold(item, using: engine)
+//                        let entries = try await engine.loadArchive(url: tempUrl)
+//                        buildTree(for: entries, at: archiveItem)
+//                        ArchiveHierarchyPrinter().printHierarchy(item: archive.rootNode)
+
+                        // set the nested archive as item
+                        selectedItem = item
                     } else {
                         // Could not detect any archive, just open the file
                         NSWorkspace.shared.open(tempUrl)
@@ -100,7 +332,7 @@ extension ArchiveState {
             // cannot happen as this never shows up
             break
         case .directory:
-            archive.selectedItem = item
+            selectedItem = item
             break
         case .unknown:
             Logger.error("Unhandled ArchiveItem.Type: \(item.name)")
@@ -108,52 +340,112 @@ extension ArchiveState {
         }
     }
     
-    public func openParent() {
-        if archive?.selectedItem?.type == .root {
-            archive?.selectedItem = archive?.rootNode
-            return
-        }
-        
-        archive?.selectedItem = archive?.selectedItem?.parent
-    }
-    
     /// This will extract the given item from the archive to a temporary destination
     /// - Parameter archiveItem: item to extract
     /// - Returns: the url of the extracted file when successful
-    public func extract(archiveItem: ArchiveItem) -> URL? {
+    public func extractAsync(item: ArchiveItem) async throws -> URL? {
         // We need to figure out first which archive actually contains
         // the currently selected file. Is it the root archive, or is
         // it a nested archive?
         
-        let (handler, archiveUrl) = findHandlerAndUrl(for: archiveItem)
-        if let handler, let archiveUrl {
-            let url = handler.extractFileToTemp(path: archiveUrl, item: archiveItem)
+        let engineSelector = ArchiveEngineSelector()
+        
+        guard let temp = createTempDirectory() else {
+            Logger.error("Could not create temp directory for extraction")
+            return nil
+        }
+        
+        if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
+           let engine = engineSelector.engine(for: archiveTypeId) {
+            
+            let url = try await engine.extract(
+                item: item,
+                from: archiveUrl,
+                to: temp.url
+            )
+            
             return url
         }
         
         return nil
     }
     
-    private func findHandlerAndUrl(for archiveItem: ArchiveItem) -> (ArchiveHandler?, URL?) {
+    /// This func is called with an item that is an archive (typed as .file, but detected as supported
+    /// archive) to be unfold in the sense that its hiearchy is loaded into the given hierarchy.
+    /// - Parameters:
+    ///   - archiveItem: item to load as archive
+    ///   - engine: engine to use
+    private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine) async throws {
+        if let url = archiveItem.url {
+            let entries = try await engine.loadArchive(url: url)
+            buildTree(for: entries, at: archiveItem)
+        }
+    }
+    
+    public func createTempDirectory() -> (id: String, url: URL)? {
+        do {
+            let applicationSupport = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+            let id = UUID().uuidString
+            let appSupportSubDirectory = applicationSupport
+                .appendingPathComponent("ta", isDirectory: true)
+                .appendingPathComponent(id, isDirectory: true)
+            try FileManager.default.createDirectory(at: appSupportSubDirectory, withIntermediateDirectories: true, attributes: nil)
+            print(appSupportSubDirectory.path) // /Users/.../Library/Application Support/YourBundleIdentifier
+            return (id, appSupportSubDirectory)
+        } catch {
+            print(error)
+        }
+        return nil
+    }
+    
+    private func findHandlerAndUrl(for archiveItem: ArchiveItem) -> (ArchiveTypeId, URL)? {
         var item: ArchiveItem? = archiveItem
         var url: URL?
-        var handler: ArchiveHandler?
-        
+        var typeId: ArchiveTypeId?
+    
         while item != nil {
-            if item?.handler != nil && item?.url != nil {
+            if item?.archiveTypeId != nil && item?.url != nil {
                 url = item?.url
-                handler = item?.handler
+                typeId = item?.archiveTypeId
                 break
             }
             item = item?.parent
         }
         
-        if handler == nil || url == nil {
-            handler = archive?.handler
-            url = archive?.url
+        guard let url, let typeId else { return nil }
+    
+        return (typeId, url)
+    }
+    
+    private func buildTree(for entries: [ArchiveItem], at root: ArchiveItem) {
+        for entry in entries {
+            var virtualPath = entry.virtualPath ?? "/"
+            var parent: ArchiveItem = root
+            
+            let components = virtualPath.split(separator: "/")
+            
+            if components.count > 0 {
+                for i in 0..<components.count - 1 {
+                    let component = components[i]
+                    
+                    if let n = parent.children?.first(where: { $0.name == String(component) }) {
+                        parent = n
+                    } else {
+                        let n = ArchiveItem(
+                            name: String(component),
+                            virtualPath: virtualPath,
+                            type: .directory,
+                            parent: parent
+                        )
+                        parent.addChild(n)
+                        parent = n
+                    }
+                }
+            }
+            
+            entry.parent = parent
+            parent.addChild(entry)
         }
-        
-        return (handler, url)
     }
     
     /// Extracts a number of items from the given archive to a given destination
@@ -165,41 +457,39 @@ extension ArchiveState {
         archive: Archive,
         items: [ArchiveItem],
         to destination: URL
-    ) {
-        guard let stackItem = archive.selectedItem else {
-            Logger.debug("No stack available")
-            return
-        }
-        
-        let _ = destination.startAccessingSecurityScopedResource()
-        defer { destination.stopAccessingSecurityScopedResource()}
-        
-        for item in items {
-            let (handler, url) = findHandlerAndUrl(for: item)
-            guard let handler, let url else {
-                Logger.debug("Failed to find handler or url for item")
-                return
-            }
-            
-            // Extract to a temporary place first for sandboxing
-            // reasons, then move from there to the target destination.
-            // The move is instant as macOS will just updates the
-            // filesystem metadata (directory entry / inode pointers)
-            guard let tempUrl = handler.extractFileToTemp(
-                path: url,
-                item: item) else {
-                Logger.debug("Failed to extract item to temp file")
-                return
-            }
-            
-            do {
-                try FileManager.default.moveItem(
-                    at: tempUrl,
-                    to: destination.appending(component: item.name))
-            } catch {
-                Logger.debug("Failed to move item: \(error.localizedDescription)")
-            }
-        }
+    ) async throws {
+//        guard let stackItem = selectedItem else {
+//            Logger.debug("No stack available")
+//            return
+//        }
+//        
+//        let _ = destination.startAccessingSecurityScopedResource()
+//        defer { destination.stopAccessingSecurityScopedResource()}
+//        
+//        for item in items {
+//            let (handler, url) = findHandlerAndUrl(for: item)
+//            guard let handler, let url else {
+//                Logger.debug("Failed to find handler or url for item")
+//                return
+//            }
+//            
+//            // Extract to a temporary place first for sandboxing
+//            // reasons, then move from there to the target destination.
+//            // The move is instant as macOS will just updates the
+//            // filesystem metadata (directory entry / inode pointers)
+//            let tempUrl = try await extractor.extractToTemp(
+//                archiveItem: item,
+//                using: handler
+//            )
+//            
+//            do {
+//                try FileManager.default.moveItem(
+//                    at: tempUrl,
+//                    to: destination.appending(component: item.name))
+//            } catch {
+//                Logger.debug("Failed to move item: \(error.localizedDescription)")
+//            }
+//        }
     }
     
     /// Extracts the full archive to the given destination, preserving the folder structure.
@@ -213,73 +503,84 @@ extension ArchiveState {
     public func extract(
         archive: Archive,
         to destination: URL
-    ) {
-        let _ = destination.startAccessingSecurityScopedResource()
-        defer { destination.stopAccessingSecurityScopedResource()}
-        
-        archive.handler.extract(
-            archiveUrl: archive.url,
-            to: destination)
+    ) async throws {
+//        let _ = destination.startAccessingSecurityScopedResource()
+//        defer { destination.stopAccessingSecurityScopedResource()}
+//        
+//        try await extractor.extract(
+//            archive,
+//            to: destination)
     }
     
     public func extract(
         to destination: URL
-    ) {
-        if let archive {
-            let _ = destination.startAccessingSecurityScopedResource()
-            defer { destination.stopAccessingSecurityScopedResource()}
-            
-            archive.handler.extract(
-                archiveUrl: archive.url,
-                to: destination)
-        }
+    ) async throws {
+//        if let archive {
+//            let _ = destination.startAccessingSecurityScopedResource()
+//            defer { destination.stopAccessingSecurityScopedResource()}
+//            
+//            try await extractor.extract(
+//                archive,
+//                to: destination)
+//        }
     }
     
-    public func load(from url: URL) {
-        let detector = ArchiveTypeDetector()
-        if let detectorResult = detector.detect(for: url),
-           let handler = ArchiveTypeRegistry.shared.handler(for: detectorResult) {
-            
-            // we have to check here if this is a composition, in which
-            // case we need to decompress to a temporary location first
-            // and then hand over the result to the archive
-            let name = url.lastPathComponent
-            var archiveUrl = url
-            // The algorithm to handle compound archives right now is oversimplified
-            // and assumes that there is always a compound of two items. This is true
-            // for all tar.xxx archives and should never fail. However, this does not cover
-            // special archives like .pkg that is a zip file that contains another binary that
-            // needs to be extracted before showing the content
-            // TODO: Make this algorithm more robus
-            if let compositionType = detectorResult.composition {
-                let compressionArchiveTypeId = compositionType.composition[1]
-                let compressionArchiveType = ArchiveTypeCatalog.shared.typesByID[compressionArchiveTypeId]!
-                let decompressionHandler = ArchiveTypeRegistry.shared.handler(for: compressionArchiveTypeId)!
-                
-                let compressedArchive = Archive(
-                    name: name,
-                    url: url,
-                    handler: decompressionHandler,
-                    type: compressionArchiveType
-                )
-                // in a compressed archive (e.g. tar.bz2, tbz2) there is only one entry (e.g. the tar file)
-                let archiveItem = compressedArchive.entries[0]
-                if let extractedArchiveUrl = decompressionHandler.extractFileToTemp(path: url, item: archiveItem) {
-                    archiveUrl = extractedArchiveUrl
-                }
-            }
-            
-            // loading the actual underlying archive now
-            let archive = Archive(
-                name: name,
-                url: archiveUrl,
-                handler: handler,
-                type: detectorResult.type
-            )
-            self.archive = archive
-        }
-        self.isReloadNeeded = true
-    }
+//    public func load(from url: URL) async throws {
+//        do {
+//            let detector = ArchiveTypeDetector()
+//            if let detectorResult = detector.detect(for: url),
+//               let handler = ArchiveTypeRegistry.shared.handler(for: detectorResult) {
+//                
+//                // we have to check here if this is a composition, in which
+//                // case we need to decompress to a temporary location first
+//                // and then hand over the result to the archive
+//                let name = url.lastPathComponent
+//                var archiveUrl = url
+//                // The algorithm to handle compound archives right now is oversimplified
+//                // and assumes that there is always a compound of two items. This is true
+//                // for all tar.xxx archives and should never fail. However, this does not cover
+//                // special archives like .pkg that is a zip file that contains another binary that
+//                // needs to be extracted before showing the content
+//                // TODO: Make this algorithm more robust
+//                if let compositionType = detectorResult.composition {
+//                    let compressionArchiveTypeId = compositionType.composition[1]
+//                    let compressionArchiveType = ArchiveTypeCatalog.shared.typesByID[compressionArchiveTypeId]!
+//                    let decompressionHandler = ArchiveTypeRegistry.shared.handler(for: compressionArchiveTypeId)!
+//                    
+//                    //                    let compressedArchive = Archive(
+//                    //                        name: name,
+//                    //                        url: url,
+//                    //                        handler: decompressionHandler,
+//                    //                        type: compressionArchiveType
+//                    //                    )
+//                    //                    try await compressedArchive.load()
+//                    
+//                    if let compressionSnapshot = try await loader.load(
+//                        from: url,
+//                        using: decompressionHandler
+//                    ) {
+//                        // in a compressed archive (e.g. tar.bz2, tbz2) there is only one entry (e.g. the tar file)
+//                        let archiveItem = compressionSnapshot.entries[0]
+//                        let extractedArchiveUrl = try await extractor.extractToTemp(archiveItem: archiveItem, using: decompressionHandler)
+//                        //                        if let extractedArchiveUrl = decompressionHandler.extractFileToTemp(path: url, item: archiveItem) {
+//                        archiveUrl = extractedArchiveUrl
+//                    }
+//                }
+//                
+//                // loading the actual underlying archive now
+//                if let archiveSnapshot = try await loader.load(
+//                    from: archiveUrl,
+//                    using: handler
+//                ) {
+//                    let archive = Archive(snapshot: archiveSnapshot)
+//                    self.archive = archive
+//                }
+//            }
+//            self.isReloadNeeded = true
+//        } catch {
+//            Logger.error(error)
+//        }
+//    }
     
     public func breadcrumbsUpdated(breadcrumbs: [String]) {
         self.completePathArray = breadcrumbs
@@ -290,30 +591,8 @@ extension ArchiveState {
     /// - Parameter url: url to the archive in question
     /// - Returns: true in case supported, false otherwise
     public func isSupportedArchive(url: URL) -> Bool {
-        return ArchiveTypeRegistry.shared.isSupported(url: url)
-    }
-    
-    /// Updates the quick look preview URL. The previewer we're using is the default systems
-    /// preview that is called Quick Look and that can be reached via Space in Finder
-    ///
-    /// When Space is pressed by the user while any item is selected, we're opening this default
-    /// preview to support any file type that is supported by the system anyways. This might
-    /// also override any previously selected item in which case quick look will just adopt.
-    ///
-    /// In case no item is selected then set the preview url to nil to make sure Quick Look is closing.
-    public func updateSelectedItemForQuickLook() {
-        if let selectedItem = self.selectedItems.first {
-            let (handler, archiveUrl) = findHandlerAndUrl(for: selectedItem)
-            if let handler, let archiveUrl {
-                let url = handler.extractFileToTemp(
-                    path: archiveUrl,
-                    item: selectedItem
-                )
-                self.previewItemUrl = url
-            }
-        } else if self.selectedItems.isEmpty {
-            self.previewItemUrl = nil
-        }
+//        return ArchiveTypeRegistry.shared.isSupported(url: url)
+        return true
     }
 }
 

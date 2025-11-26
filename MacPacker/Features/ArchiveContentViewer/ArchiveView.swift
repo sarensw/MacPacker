@@ -21,6 +21,7 @@ struct ArchiveView: View {
     
     @State private var isDraggingOver = false
     @State private var selection: IndexSet?
+    @State private var loading: Bool = false
     
     var body: some View {
         VStack {
@@ -40,8 +41,8 @@ struct ArchiveView: View {
                     if let data = data as? Data,
                         let fileURL = URL(dataRepresentation: data, relativeTo: nil) {
                         // Update the state variable with the accepted file URL
-                        DispatchQueue.main.async {
-                            self.drop(fileURL)
+                        Task {
+                            await self.drop(fileURL)
                         }
                     }
                 }
@@ -50,25 +51,8 @@ struct ArchiveView: View {
         }
         .onAppear {
             if state.openWithUrls.count > 0 {
-                self.drop(state.openWithUrls[0])
-            }
-        }
-        .onChange(of: selection) { _ in
-            if let indexes = selection,
-               let archive = state.archive,
-               let selectedItem = archive.selectedItem,
-               let children = selectedItem.children {
-                
-                state.selectedItems.removeAll()
-                for index in indexes {
-                    let archiveItem = children[index]
-                    state.selectedItems.append(archiveItem)
-                }
-                
-                // in case quick look is open right now, then change the
-                // previewed item
-                if self.state.previewItemUrl != nil {
-                    state.updateSelectedItemForQuickLook()
+                Task {
+                    await self.drop(state.openWithUrls[0])
                 }
             }
         }
@@ -79,17 +63,9 @@ struct ArchiveView: View {
     // functions
     //
     
-    func drop(_ url: URL) {
-        // we're loading a new archive here, so clean up the current stack first
-        if let arc = state.archive {
-            do {
-                try arc.clean()
-            } catch {
-                print("clean during drop failed")
-                print(error)
-            }
-        }
-        
-        state.load(from: url)
+    @MainActor
+    func drop(_ url: URL) async {
+        state.clean()
+        state.open(url: url)
     }
 }

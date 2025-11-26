@@ -25,9 +25,12 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
                             )
                             
                             Logger.log("Found archive handler for \(fileUrl.lastPathComponent)")
-                            let state = ArchiveState()
-                            state.load(from: fileUrl)
-                            state.extract(to: folderUrl)
+                            
+                            // TODO: Reenable
+                            fatalError("Reenable")
+//                            let state = ArchiveState()
+//                            state.open(url: fileUrl)
+//                            state.extract(to: folderUrl)
                         } catch {
                             Logger.error(error.localizedDescription)
                         }

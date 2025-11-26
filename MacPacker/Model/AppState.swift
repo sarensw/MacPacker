@@ -18,5 +18,5 @@ class AppState: ObservableObject {
     //
     
     /// Holds all archives that the app currently takes care of
-    var archives: [UUID: Archive2] = [:]
+//    var archives: [UUID: Archive2] = [:]
 }

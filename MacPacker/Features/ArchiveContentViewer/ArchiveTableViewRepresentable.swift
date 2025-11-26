@@ -43,7 +43,8 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     //
     
     /// Coordinator used to sync with the SwiftUI code portion
-    final class Coordinator: NSObject, NSTableViewDelegate, NSTableViewDataSource, NSFilePromiseProviderDelegate {
+    @MainActor
+    final class Coordinator: NSObject, @MainActor NSTableViewDelegate, NSTableViewDataSource, NSFilePromiseProviderDelegate {
         var parent: ArchiveTableViewRepresentable
         
         var filePromiseQueue: OperationQueue = {
@@ -56,8 +57,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         }
         
         func numberOfRows(in tableView: NSTableView) -> Int {
-            guard let archive = parent.archiveState.archive else { return 0 }
-            guard let selectedItem = archive.selectedItem else { return 0 }
+            guard let selectedItem = parent.archiveState.selectedItem else { return 0 }
             guard let children = selectedItem.children else { return 0 }
             
             var childrenCount = children.count
@@ -120,8 +120,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             row: Int
         ) -> NSView? {
             guard let columnIdentifier = tableColumn?.identifier else { return nil }
-            guard let archive = parent.archiveState.archive else { return nil }
-            guard let selectedItem = archive.selectedItem else { return nil }
+            guard let selectedItem = parent.archiveState.selectedItem else { return nil }
             
             // The root of an archive does not allow to go up.
             // All other levels allow to go up with the first item
@@ -246,8 +245,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         ) -> NSPasteboardWriting? {
             Logger.debug("Starting to drag item in row \(row)")
             
-            guard let archive = parent.archiveState.archive else { return nil }
-            guard let selectedItem = archive.selectedItem else { return nil }
+            guard let selectedItem = parent.archiveState.selectedItem else { return nil }
             
             let isParent = selectedItem.type != .root && row == 0
             let hasParent = selectedItem.type != .root
@@ -285,8 +283,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 // The root of an archive does not allow to go up.
                 // All other levels allow to go up with the first item
                 // in the list which is ".."
-                guard let archive = parent.archiveState.archive else { return }
-                guard let selectedItem = archive.selectedItem else { return }
+                guard let selectedItem = parent.archiveState.selectedItem else { return }
                 let isParent = selectedItem.type != .root && clickedRow == 0
                 let hasParent = selectedItem.type != .root
                 
@@ -295,11 +292,11 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                         parent.archiveState.openParent()
                     } else {
                         let item = selectedItem.children![clickedRow - 1]
-                        parent.archiveState.open(item)
+                        parent.archiveState.open(item: item)
                     }
                 } else {
                     let item = selectedItem.children![clickedRow]
-                    parent.archiveState.open(item)
+                    parent.archiveState.open(item: item)
                 }
                 parent.isReloadNeeded = true
                 parent.archiveState.selectedItems = []
@@ -310,20 +307,10 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         /// that any other part of the code is able to understand that the selection has changed.
         /// - Parameter notification: notification
         func tableViewSelectionDidChange(_ notification: Notification) {
-            guard let archive = parent.archiveState.archive else { return }
-            guard let selectedItem = archive.selectedItem else { return }
-            let hasParent = selectedItem.type != .root
-            
             if let tableView = notification.object as? NSTableView {
                 // remove the offset if there is any because we don't want
                 // to have the parent offset
-                if hasParent {
-                    var indexes = tableView.selectedRowIndexes.map { $0 - 1 }
-                    indexes.removeAll(where: { $0 < 0 })
-                    parent.selection = IndexSet(indexes)
-                } else {
-                    parent.selection = tableView.selectedRowIndexes
-                }
+                parent.archiveState.changeSelection(selection: tableView.selectedRowIndexes)
             }
         }
         
@@ -339,13 +326,13 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             (filePromiseProvider.userInfo as? ArchiveItem)?.name ?? "unknown"
         }
         
-        func filePromiseProvider(
+        // TODO: Is this corrrect here to have @MainActor???
+        @MainActor func filePromiseProvider(
             _ filePromiseProvider: NSFilePromiseProvider,
             writePromiseTo url: URL,
             completionHandler: @escaping (Error?) -> Void
         ) {
             guard
-                let archive = parent.archiveState.archive,
                 let item = filePromiseProvider.userInfo as? ArchiveItem
             else {
                 Logger.error("Could not fulfill file promise")
@@ -353,7 +340,6 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             }
             
             parent.archiveState.extract(
-                archive: archive,
                 items: [item],
                 to: url.deletingLastPathComponent() // delete because writePromiseTo will give you all
             )
@@ -368,7 +354,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     
     func openSelected(_ tableView: NSTableView) {
         guard let item = archiveState.selectedItems.first else { return }
-        archiveState.open(item)
+        archiveState.open(item: item)
         isReloadNeeded = true
         archiveState.selectedItems = []
         tableView.deselectAll(nil)

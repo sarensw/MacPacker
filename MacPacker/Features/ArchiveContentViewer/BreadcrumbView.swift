@@ -54,7 +54,7 @@ struct BreadcrumbView: View {
     
     init(for selectedItem: ArchiveItem) {
         var parent: ArchiveItem? = selectedItem
-        while parent != nil && parent!.type != .root {
+        while parent != nil {
             guard let p = parent else { break }
             items.insert(p, at: 0)
             parent = parent?.parent
@@ -67,9 +67,7 @@ struct BreadcrumbView: View {
                 HStack(alignment: .firstTextBaseline,spacing: 4) {
                     ForEach(items.indices, id: \.self) { index in
                         BreadcrumbItemView(archiveItem: items[index], onTap: {
-                            self.archiveState.archive?.selectedItem = items[index]
-                            self.archiveState.isReloadNeeded = true
-                            self.archiveState.selectedItems = []
+                            self.archiveState.open(item: items[index])
                         })
                         
                         if index != items.indices.last {

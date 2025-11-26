@@ -153,4 +153,19 @@ class Logger {
             line: line
         )
     }
+    
+    static func error(
+        _ message: any Error,
+        file: String = #file,
+        function: String = #function,
+        line: Int = #line,
+    ) {
+        Logger.log(
+            level: .Error,
+            message.localizedDescription,
+            file: file,
+            function: function,
+            line: line
+        )
+    }
 }

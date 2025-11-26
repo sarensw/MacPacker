@@ -13,7 +13,8 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-subprocess.git", from: "0.2.1"),
         .package(url: "https://github.com/kumamotone/XADMasterSwift.git", branch: "main"),
         .package(url: "https://github.com/tsolomko/BitByteData.git", from: "2.0.0"),
-        .package(url: "https://github.com/tsolomko/SWCompression.git", from: "4.8.0")
+        .package(url: "https://github.com/tsolomko/SWCompression.git", from: "4.8.0"),
+        .package(url: "https://github.com/tailbeat/TailBeatKit.git", from: "0.10.0")
     ],
     targets: [
         .target(
@@ -22,7 +23,18 @@ let package = Package(
                 .product(name: "Subprocess", package: "swift-subprocess"),
                 .product(name: "XADMasterSwift", package: "XADMasterSwift"),
                 "BitByteData",
-                "SWCompression"
+                "SWCompression",
+                .product(name: "TailBeatKit", package: "TailBeatKit")
+            ]
+        ),
+        .testTarget(
+            name: "CoreTests",
+            dependencies: [
+                "Core",
+                "TailBeatKit"
+            ],
+            resources: [
+                .copy("TestArchives/defaultArchive.zip")
             ]
         )
     ]

@@ -29,34 +29,34 @@ public class ArchiveService {
         items: [ArchiveItem],
         to destination: URL
     ) {
-        guard let stackItem = archive.selectedItem else {
-            Logger.debug("No stack available")
-            return
-        }
-        
-        let _ = destination.startAccessingSecurityScopedResource()
-        defer { destination.stopAccessingSecurityScopedResource()}
-        
-        for item in items {
-            // Extract to a temporary place first for sandboxing
-            // reasons, then move from there to the target destination.
-            // The move is instant as macOS will just updates the
-            // filesystem metadata (directory entry / inode pointers)
-            guard let tempUrl = archive.handler.extractFileToTemp(
-                path: archive.url,
-                item: item) else {
-                Logger.debug("Failed to extract item to temp file")
-                return
-            }
-            
-            do {
-                try FileManager.default.moveItem(
-                    at: tempUrl,
-                    to: destination.appending(component: item.name))
-            } catch {
-                Logger.debug("Failed to move item: \(error.localizedDescription)")
-            }
-        }
+//        guard let stackItem = archive.selectedItem else {
+//            Logger.debug("No stack available")
+//            return
+//        }
+//        
+//        let _ = destination.startAccessingSecurityScopedResource()
+//        defer { destination.stopAccessingSecurityScopedResource()}
+//        
+//        for item in items {
+//            // Extract to a temporary place first for sandboxing
+//            // reasons, then move from there to the target destination.
+//            // The move is instant as macOS will just updates the
+//            // filesystem metadata (directory entry / inode pointers)
+//            guard let tempUrl = archive.handler.extractFileToTemp(
+//                path: archive.url,
+//                item: item) else {
+//                Logger.debug("Failed to extract item to temp file")
+//                return
+//            }
+//            
+//            do {
+//                try FileManager.default.moveItem(
+//                    at: tempUrl,
+//                    to: destination.appending(component: item.name))
+//            } catch {
+//                Logger.debug("Failed to move item: \(error.localizedDescription)")
+//            }
+//        }
     }
     
     /// Extracts the full archive to the given destination, preserving the folder structure.
@@ -71,11 +71,11 @@ public class ArchiveService {
         archive: Archive,
         to destination: URL
     ) {
-        let _ = destination.startAccessingSecurityScopedResource()
-        defer { destination.stopAccessingSecurityScopedResource()}
-        
-        archive.handler.extract(
-            archiveUrl: archive.url,
-            to: destination)
+//        let _ = destination.startAccessingSecurityScopedResource()
+//        defer { destination.stopAccessingSecurityScopedResource()}
+//        
+//        archive.handler.extract(
+//            archiveUrl: archive.url,
+//            to: destination)
     }
 }

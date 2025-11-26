@@ -230,12 +230,9 @@ extension ArchiveWindowController: NSToolbarDelegate {
         openPanel.begin { response in
             if response == .OK,
                let destinationURL = openPanel.url {
-                if let archive = self.archiveState.archive {
-                    self.archiveState.extract(
-                        archive: archive,
-                        items: self.archiveState.selectedItems,
-                        to: destinationURL)
-                }
+                self.archiveState.extract(
+                    items: self.archiveState.selectedItems,
+                    to: destinationURL)
             }
         }
     }
@@ -250,11 +247,8 @@ extension ArchiveWindowController: NSToolbarDelegate {
         openPanel.begin { response in
             if response == .OK,
                let destinationURL = openPanel.url {
-                if let archive = self.archiveState.archive {
-                    self.archiveState.extract(
-                        archive: archive,
-                        to: destinationURL)
-                }
+                self.archiveState.extract(
+                    to: destinationURL)
             }
         }
     }
@@ -264,7 +258,7 @@ extension ArchiveWindowController: NSToolbarDelegate {
     }
     
     @objc func showArchiveInfoWindow() {
-        if let url = archiveState.archive?.url {
+        if let url = archiveState.url {
             contentService.openGetInfoWnd(for: [url])
         }
     }
