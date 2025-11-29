@@ -16,7 +16,7 @@ class Dummy {
     }
 }
 
-enum LogLevel: Int {
+public enum LogLevel: Int {
     case Trace = 0
     case Debug = 1
     case Info = 2
@@ -45,45 +45,49 @@ protocol LoggerSink {
 }
 
 class TailBeatSink: LoggerSink {
-    func log(level: LogLevel, _ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+    func log(level: LogLevel, _ message: String, file: String = #filePath, function: String = #function, line: Int = #line) {
         #if DEBUG
         TailBeat.logger.log(level: level.tailBeatLevel, message, file: file, function: function, line: line)
         #endif
     }
-    func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+    func debug(_ message: String, file: String = #filePath, function: String = #function, line: Int = #line) {
         log(level: .Debug, message, file: file, function: function, line: line)
     }
-    func info(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+    func info(_ message: String, file: String = #filePath, function: String = #function, line: Int = #line) {
         log(level: .Info, message, file: file, function: function, line: line)
     }
-    func warning(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+    func warning(_ message: String, file: String = #filePath, function: String = #function, line: Int = #line) {
         log(level: .Warning, message, file: file, function: function, line: line)
     }
-    func error(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+    func error(_ message: String, file: String = #filePath, function: String = #function, line: Int = #line) {
         log(level: .Error, message, file: file, function: function, line: line)
     }
 }
 
-class Logger {
+public class Logger {
     nonisolated(unsafe) private static var initialized: Bool = false
     nonisolated(unsafe) private static var sinks: [LoggerSink] = []
     
     static func initialize() {
         guard !Self.initialized else { return }
         
+        if sinks.count == 0 {
+            sinks.append(TailBeatSink())
+        }
+        
         Self.initialized = true
     }
     
-    static func start() {
+    public static func start() {
         sinks.append(TailBeatSink())
         
         initialize()
     }
     
-    static func log(
+    public static func log(
         level: LogLevel = .Debug,
         _ message: String,
-        file: String = #file,
+        file: String = #filePath,
         function: String = #function,
         line: Int = #line,
     ) {
@@ -94,9 +98,9 @@ class Logger {
         }
     }
     
-    static func debug(
+    public static func debug(
         _ message: String,
-        file: String = #file,
+        file: String = #filePath,
         function: String = #function,
         line: Int = #line,
     ) {
@@ -109,9 +113,9 @@ class Logger {
         )
     }
     
-    static func info(
+    public static func info(
         _ message: String,
-        file: String = #file,
+        file: String = #filePath,
         function: String = #function,
         line: Int = #line,
     ) {
@@ -124,9 +128,9 @@ class Logger {
         )
     }
     
-    static func warning(
+    public static func warning(
         _ message: String,
-        file: String = #file,
+        file: String = #filePath,
         function: String = #function,
         line: Int = #line,
     ) {
@@ -139,9 +143,9 @@ class Logger {
         )
     }
     
-    static func error(
+    public static func error(
         _ message: String,
-        file: String = #file,
+        file: String = #filePath,
         function: String = #function,
         line: Int = #line,
     ) {
@@ -154,9 +158,9 @@ class Logger {
         )
     }
     
-    static func error(
+    public static func error(
         _ message: any Error,
-        file: String = #file,
+        file: String = #filePath,
         function: String = #function,
         line: Int = #line,
     ) {

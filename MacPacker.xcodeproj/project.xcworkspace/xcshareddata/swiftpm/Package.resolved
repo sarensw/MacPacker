@@ -1,5 +1,5 @@
 {
-  "originHash" : "45325f1fe90d472fdf4ed4993a6fdff6a98db70117277f5816a15148990d929a",
+  "originHash" : "1dbe18660cd4489bfa903666f1bd3b250d63efdf5f0b22e9ea3917fa2eda3c10",
   "pins" : [
     {
       "identity" : "bitbytedata",
@@ -49,10 +49,10 @@
     {
       "identity" : "tailbeatkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/tailbeat/tailbeatkit.git",
+      "location" : "https://github.com/tailbeat/tailbeatkit",
       "state" : {
-        "revision" : "c7af395eff1a04c8537a8abb62cefcf301ac860d",
-        "version" : "0.11.0"
+        "revision" : "caf2eb04a26c72ee79eb9531fcb13f43cbb1a7f5",
+        "version" : "0.12.0"
       }
     },
     {

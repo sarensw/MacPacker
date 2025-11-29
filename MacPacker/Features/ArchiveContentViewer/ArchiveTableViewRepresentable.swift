@@ -298,8 +298,6 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                     let item = selectedItem.children![clickedRow]
                     parent.archiveState.open(item: item)
                 }
-                parent.isReloadNeeded = true
-                parent.archiveState.selectedItems = []
             }
         }
         
@@ -319,7 +317,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         // The following methods are used to drag a file out of the archive to another app
         //
         
-        func filePromiseProvider(
+        @MainActor func filePromiseProvider(
             _ filePromiseProvider: NSFilePromiseProvider,
             fileNameForType fileType: String
         ) -> String {
@@ -340,8 +338,8 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             }
             
             parent.archiveState.extract(
-                items: [item],
-                to: url.deletingLastPathComponent() // delete because writePromiseTo will give you all
+                item: item,
+                to: url
             )
             
             completionHandler(nil)

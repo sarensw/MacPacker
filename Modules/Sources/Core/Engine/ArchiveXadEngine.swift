@@ -136,9 +136,15 @@ public final class ArchiveXadEngine: ArchiveEngine {
         archive.setNameEncoding(NSUTF8StringEncoding)
 
         let result = archive.extractEntry(Int32(index), to: destination.path)
+        let lastErrorMessage = archive.describeLastError()
+        print(lastErrorMessage)
         
         if result == true {
-            return destination.appending(component: virtualPath)
+            print("1: \(destination.startAccessingSecurityScopedResource())")
+//            let resultUrl = destination.appending(component: virtualPath)
+            let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: false)
+            print("2: \(resultUrl.startAccessingSecurityScopedResource())")
+            return resultUrl
         }
         
         return nil

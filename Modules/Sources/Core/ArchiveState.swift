@@ -107,16 +107,107 @@ extension ArchiveState {
         }
     }
     
+    /// <#Description#>
+    /// - Parameters:
+    ///   - item: <#item description#>
+    ///   - destination: <#destination description#>
+    public func extract(
+        item: ArchiveItem,
+        to destination: URL
+    ) {
+        Task {
+            do {
+                if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
+                   let engine = ArchiveEngineSelector().engine(for: archiveTypeId),
+                   let temp = createTempDirectory() {
+                    
+                    // first extract to our own directory where we have full rights to write to
+                    let tempUrl = try await engine.extract(
+                        item: item,
+                        from: archiveUrl,
+                        to: temp.url
+                    )
+                    
+                    // guard the extracted url
+                    guard let tempUrl else {
+                        Logger.error("Could not get url for extracted file")
+                        return
+                    }
+                    
+                    // then move the file to the actual target... This is required
+                    // because in case of a file promise we only get access to write
+                    // to the file, but not to the directory where the file is being
+                    // dragged to.
+                    
+                    let _ = destination.startAccessingSecurityScopedResource()
+                    defer { destination.stopAccessingSecurityScopedResource() }
+                    
+                    Logger.debug("Extraction successful. Now moving \(tempUrl) to \(destination)")
+                    
+                    try FileManager.default.moveItem(
+                        at: tempUrl,
+                        to: destination)
+                }
+            } catch {
+                Logger.error(error)
+                Logger.error("Could not extract item \(item) to \(destination)")
+                await MainActor.run {
+                    self.error = error.localizedDescription
+                    self.isBusy = false
+                }
+            }
+        }
+    }
+    
     /// Extracts the given set of items to the given destination. This is usually triggered by the
     /// user from within the UI
     /// - Parameters:
     ///   - items: <#items description#>
     ///   - destination: <#destination description#>
-    public func extract(items: [ArchiveItem], to destination: URL) {
+    public func extract(
+        items: [ArchiveItem],
+        to destination: URL
+    ) {
+        
         Task {
             do {
-//                _ = try await self.extractAsync(item: item)
+                for item in items {
+                    if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
+                       let engine = ArchiveEngineSelector().engine(for: archiveTypeId),
+                       let temp = createTempDirectory() {
+                        
+                        // first extract to our own directory where we have full rights to write to
+                        let tempUrl = try await engine.extract(
+                            item: item,
+                            from: archiveUrl,
+                            to: temp.url
+                        )
+                        
+                        // guard the extracted url
+                        guard let tempUrl else {
+                            Logger.error("Could not get url for extracted file")
+                            return
+                        }
+                        
+                        // then move the file to the actual target... This is required
+                        // because in case of a file promise we only get access to write
+                        // to the file, but not to the directory where the file is being
+                        // dragged to.
+                        
+                        let targetUrl = destination.appending(component: item.name)
+                        
+                        let _ = destination.startAccessingSecurityScopedResource()
+                        defer { destination.stopAccessingSecurityScopedResource() }
+                        
+                        Logger.debug("Extraction successful. Now moving \(tempUrl) to \(targetUrl) at destination \(destination)")
+                        
+                        try FileManager.default.moveItem(
+                            at: tempUrl,
+                            to: targetUrl)
+                    }
+                }
             } catch {
+                Logger.error(error)
                 await MainActor.run {
                     self.error = error.localizedDescription
                     self.isBusy = false

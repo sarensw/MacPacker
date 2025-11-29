@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import Core
 
 class AppUrlOpenHandler: AppUrlHandler {
     

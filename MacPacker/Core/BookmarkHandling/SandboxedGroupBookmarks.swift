@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 22.09.25.
 //
 
+import Core
 import Foundation
 
 class SandboxedGroupBookmarks {

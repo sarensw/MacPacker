@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 24.09.25.
 //
 
+import Core
 import Foundation
 
 enum AppUrlAction: String {
