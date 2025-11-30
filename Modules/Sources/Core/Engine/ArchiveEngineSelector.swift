@@ -21,6 +21,7 @@ public struct ArchiveEngineSelector {
         handlerRegistry = HandlerRegistry()
         engines = [:]
         engines[.xad] = ArchiveXadEngine()
+        engines[.`7zip`] = Archive7ZipEngine()
     }
     
     public func engine(for id: ArchiveTypeId) -> ArchiveEngine? {

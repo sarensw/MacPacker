@@ -12,7 +12,7 @@ public class HandlerRegistry {
     
     init() {
         bindings[.zip] = [
-            HandlerBinding(formatId: .zip, archiveEngineId: .xad, capabilities: [.listContents, .extractFiles], isDefault: true)
+            HandlerBinding(formatId: .zip, archiveEngineId: .`7zip`, capabilities: [.listContents, .extractFiles], isDefault: true)
         ]
     }
     

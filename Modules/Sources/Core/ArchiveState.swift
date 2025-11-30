@@ -144,6 +144,9 @@ extension ArchiveState {
                     
                     Logger.debug("Extraction successful. Now moving \(tempUrl) to \(destination)")
                     
+                    print(FileManager.default.fileExists(atPath: tempUrl.path))
+                    print(FileManager.default.fileExists(atPath: destination.path))
+                    
                     try FileManager.default.moveItem(
                         at: tempUrl,
                         to: destination)
