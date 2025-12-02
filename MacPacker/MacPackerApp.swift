@@ -42,7 +42,7 @@ struct MacPackerApp: App {
     
     var body: some Scene {
         Settings {
-            PreferencesView()
+            SettingsView()
                 .environmentObject(appDelegate)
         }
         .commands {
