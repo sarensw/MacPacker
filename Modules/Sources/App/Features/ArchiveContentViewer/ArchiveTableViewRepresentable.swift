@@ -44,7 +44,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     
     /// Coordinator used to sync with the SwiftUI code portion
     @MainActor
-    final class Coordinator: NSObject, @MainActor NSTableViewDelegate, NSTableViewDataSource, NSFilePromiseProviderDelegate {
+    final class Coordinator: NSObject, @MainActor NSTableViewDelegate, NSTableViewDataSource, @MainActor NSFilePromiseProviderDelegate {
         var parent: ArchiveTableViewRepresentable
         
         var filePromiseQueue: OperationQueue = {

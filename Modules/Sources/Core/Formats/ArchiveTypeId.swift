@@ -6,7 +6,9 @@
 //
 
 
-public enum ArchiveTypeId: String, CaseIterable, Sendable {
+public enum ArchiveTypeId: String, CaseIterable, Identifiable, Sendable {
+    public var id: String { rawValue }
+    
     case `7zip` = "7-Zip Archive"
     case bzip2  = "Bzip2 File"
     case cab    = "CAB Archive"

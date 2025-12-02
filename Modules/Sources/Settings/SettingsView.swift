@@ -5,11 +5,16 @@
 //  Created by Stephan Arenswald on 02.12.23.
 //
 
+import App
 import Foundation
 import SwiftUI
 
-struct SettingsView: View {
-    var body: some View {
+public struct SettingsView: View {
+    @EnvironmentObject private var appDelegate: AppDelegate
+    
+    public init() {}
+    
+    public var body: some View {
         VStack {
             TabView {
                 GeneralSettingsView()
@@ -19,12 +24,19 @@ struct SettingsView: View {
                     }
                     .tag(0)
                 
+                FormatSettingsView()
+                    .tabItem {
+                        Image(systemName: "doc.badge.gearshape")
+                        Text("Archive Formats", comment: "Archive formats title in settings")
+                    }
+                    .tag(1)
+                
                 AdvancedSettingsView()
                     .tabItem {
                         Image(systemName: "exclamationmark.octagon")
                         Text("Advanced", comment: "Advanced settings")
                     }
-                    .tag(1)
+                    .tag(2)
                 
                 #if DEBUG
                 DebugSettingsView()

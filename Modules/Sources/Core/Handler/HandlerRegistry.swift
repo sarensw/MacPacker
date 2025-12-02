@@ -7,10 +7,10 @@
 
 
 public class HandlerRegistry {
-    private var bindings: [ArchiveTypeId: [HandlerBinding]] = [:]
-    private var overrides: [ArchiveTypeId: ArchiveEngineType] = [:]
+    public private(set) var bindings: [ArchiveTypeId: [HandlerBinding]] = [:]
+    public private(set) var overrides: [ArchiveTypeId: ArchiveEngineType] = [:]
     
-    init() {
+    public init() {
         bindings[.zip] = [
             HandlerBinding(formatId: .zip, archiveEngineId: .`7zip`, capabilities: [.listContents, .extractFiles], isDefault: true)
         ]

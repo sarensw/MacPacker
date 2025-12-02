@@ -7,7 +7,9 @@ let package = Package(
     name: "Modules",
     platforms: [ .macOS(.v13) ],
     products: [
+        .library(name: "App", targets: ["App"]),
         .library(name: "Core", targets: ["Core"]),
+        .library(name: "Settings", targets: ["Settings"]),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-subprocess.git", from: "0.2.1"),
@@ -18,6 +20,12 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "App",
+            dependencies: [
+                "Core"
+            ]
+        ),
+        .target(
             name: "Core",
             dependencies: [
                 .product(name: "Subprocess", package: "swift-subprocess"),
@@ -25,6 +33,13 @@ let package = Package(
                 "BitByteData",
                 "SWCompression",
                 .product(name: "TailBeatKit", package: "TailBeatKit")
+            ]
+        ),
+        .target(
+            name: "Settings",
+            dependencies: [
+                "App",
+                "Core"
             ]
         ),
         .testTarget(

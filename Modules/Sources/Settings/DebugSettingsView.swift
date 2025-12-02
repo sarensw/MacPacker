@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 25.09.25.
 //
 
+import App
 import SwiftUI
 
 struct DebugSettingsView: View {
@@ -18,7 +19,7 @@ struct DebugSettingsView: View {
                 
                 VStack(alignment: .leading) {
                     Button {
-                        WelcomeWindowController.shared.show()
+                        WelcomeWindowController().show()
                     } label: {
                         Text(verbatim: "Show Welcome window")
                     }

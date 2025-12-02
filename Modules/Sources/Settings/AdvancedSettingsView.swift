@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 17.06.25.
 //
 
+import App
 import Foundation
 import SwiftUI
 
@@ -29,7 +30,7 @@ struct AdvancedSettingsView: View {
                     .disabled(applicationSupportDirectory == nil)
                     
                     Button {
-                        CacheCleaner.shared.clean()
+                        CacheCleaner().clean()
                     } label: {
                         Text("Clear cache", comment: "Allows the user to clear the cache")
                     }

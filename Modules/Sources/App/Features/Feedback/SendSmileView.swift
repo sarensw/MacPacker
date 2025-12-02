@@ -8,13 +8,13 @@
 import StoreKit
 import SwiftUI
 
-struct SendSmileView: View {
+public struct SendSmileView: View {
     @Environment(\.openURL) var openURL
     @State private var showInputDialog = false   // Controls sheet presentation
     @State private var userInput = ""            // Stores user input text
     @State private var showSendASmileThankYou = false
     
-    var body: some View {
+    public var body: some View {
         Menu {
             Button {
                 openURL(URL(string: "https://github.com/sarensw/MacPacker")!)

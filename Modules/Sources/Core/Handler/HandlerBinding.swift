@@ -6,9 +6,9 @@
 //
 
 
-struct HandlerBinding {
-    let formatId: ArchiveTypeId
-    let archiveEngineId: ArchiveEngineType
-    let capabilities: ArchiveCapabilities
-    let isDefault: Bool
+public struct HandlerBinding {
+    public let formatId: ArchiveTypeId
+    public let archiveEngineId: ArchiveEngineType
+    public let capabilities: ArchiveCapabilities
+    public let isDefault: Bool
 }

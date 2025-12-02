@@ -8,11 +8,12 @@
 import Core
 import Foundation
 
-class CacheCleaner {
-    public static let shared: CacheCleaner = CacheCleaner()
+public class CacheCleaner {
     private let applicationSupportDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
     
-    func clean() {
+    public init() {}
+    
+    public func clean() {
         if let url = applicationSupportDirectory {
             do {
                 try FileManager.default.removeItem(at: url.appendingPathComponent("ta", conformingTo: .directory))

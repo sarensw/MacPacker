@@ -8,7 +8,7 @@
 import AppKit
 
 final class SystemHelper {
-    public static let shared = SystemHelper()
+    @MainActor public static let shared = SystemHelper()
     
     private init() {}
     

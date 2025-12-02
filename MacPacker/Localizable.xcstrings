@@ -1,8 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "... raise a Bug" : {
       "comment" : "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -50,6 +54,7 @@
     },
     "... request a Feature" : {
       "comment" : "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -97,6 +102,7 @@
     },
     "... send a mail to %@" : {
       "comment" : "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -238,6 +244,7 @@
     },
     "Advanced" : {
       "comment" : "Advanced settings",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -285,6 +292,7 @@
     },
     "Archive info" : {
       "comment" : "Used to open Quick Look feature for the current archive file",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -332,6 +340,7 @@
     },
     "Breadcrumb position:" : {
       "comment" : "Allows the user to change the breadcrumb position to either top or bottom of the archive window",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -379,6 +388,7 @@
     },
     "Cache:" : {
       "comment" : "Cache related settings",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -473,6 +483,7 @@
     },
     "Clear cache" : {
       "comment" : "Allows the user to clear the cache",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -520,6 +531,7 @@
     },
     "Clears all content from the cache" : {
       "comment" : "Help text shown in a tool tip when hovering the \"Clear cache\" button",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -567,6 +579,7 @@
     },
     "Columns:" : {
       "comment" : "Let's the user choose to show or hide columns in the archive window",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -614,6 +627,7 @@
     },
     "Date Modified" : {
       "comment" : "Column that shows the date the file was modified",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -661,6 +675,7 @@
     },
     "Extract archive" : {
       "comment" : "Button in the toolbar that allows the user to extract the full archive to a target directory.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -708,6 +723,7 @@
     },
     "Extract selected" : {
       "comment" : "Button in the tooblar that allows the user to extract the selected files.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -755,6 +771,7 @@
     },
     "Feedback" : {
       "comment" : "Title of the tab in the welcome screen that lets the user give feedback",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -802,6 +819,7 @@
     },
     "General" : {
       "comment" : "General settings",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -849,6 +867,7 @@
     },
     "Go here to ..." : {
       "comment" : "This is the menu in the 'More' menu of the archive window to give customers a hint what they can do to reach the dev. A submenu will open with links to GitHub, a bug report form, and a mail to the developer.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -896,6 +915,7 @@
     },
     "I found the following bug ..." : {
       "comment" : "Hint on what to ask for in the feedback form",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -990,6 +1010,7 @@
     },
     "Leave a review in the App Store" : {
       "comment" : "Opens the App Store review page for the MacPacker app for the user to write a review.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1037,6 +1058,7 @@
     },
     "More" : {
       "comment" : "The 'More' menu in the archive window",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1084,6 +1106,7 @@
     },
     "More apps" : {
       "comment" : "Title of the tab in the welcome screen that links to other projects.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1131,6 +1154,7 @@
     },
     "More Apps" : {
       "comment" : "Hint to the user that the submenu contains links for more apps that they might like.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1178,6 +1202,7 @@
     },
     "Name" : {
       "comment" : "Column that shows the name of the archive files",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1225,6 +1250,7 @@
     },
     "Open cache directory" : {
       "comment" : "Allows the user to open the application support folder that holds the cache for temporarly extracted archive files",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1272,6 +1298,7 @@
     },
     "Or reach out via..." : {
       "comment" : "Hint on how to contact the developer",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1319,6 +1346,7 @@
     },
     "Organize files without tons of Finder windows." : {
       "comment" : "Short description of the app FileFillet which is referenced in the 'Other projects' section of the 'Welcome' view",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1366,6 +1394,7 @@
     },
     "Packed Size" : {
       "comment" : "Column that shows the packed size of the archive files",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1413,6 +1442,7 @@
     },
     "Permissions" : {
       "comment" : "Column that shows the file permissions",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1460,6 +1490,7 @@
     },
     "Please add feature ..." : {
       "comment" : "Hint on what to ask for in the feedback form",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1507,6 +1538,7 @@
     },
     "Please support the archive type ..." : {
       "comment" : "Hint on what to ask for in the feedback form",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1554,6 +1586,7 @@
     },
     "Preview" : {
       "comment" : "Button in the tooblar that allows the user to preview the selected file.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1695,6 +1728,7 @@
     },
     "Send" : {
       "comment" : "Button label to send feedback",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1742,6 +1776,7 @@
     },
     "Send a smile" : {
       "comment" : "This is the menu in the 'More' menu of the archive window to give customers a hint on how to support the developer. The user has the option to open the MacPacker repository on GitHub or leave a review in the App Store.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1789,6 +1824,7 @@
     },
     "Settings..." : {
       "comment" : "Used to open the settings/preferences window",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1836,6 +1872,7 @@
     },
     "Show application support folder" : {
       "comment" : "Help text shown in a tooltip when hovering the \"Open cache directory\" button",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1883,6 +1920,7 @@
     },
     "Size" : {
       "comment" : "Column that shows the unpacked size of the archive files",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1930,6 +1968,7 @@
     },
     "Star the repository on GitHub" : {
       "comment" : "Opens the GitHub page of the MacPacker repository for the user to star it.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2071,6 +2110,7 @@
     },
     "Website" : {
       "comment" : "Hint to the user that the button links to the app's website.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2118,6 +2158,7 @@
     },
     "Welcome to %@" : {
       "comment" : "'Welcome to <app name>'. The order of the greeting might be different in different languages. For example: English: Welcome to MacPacker, Japanese: MacPackerへようこそ. This is up to the translator to decide.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2165,6 +2206,7 @@
     },
     "What's new" : {
       "comment" : "Title of the tab in the welcome screen that shows the user what's new in this version.",
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

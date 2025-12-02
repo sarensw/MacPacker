@@ -32,7 +32,6 @@ struct ContentView: View {
     
     // environment
     @Environment(\.openWindow) var openWindow
-    @EnvironmentObject var state: AppState
     @EnvironmentObject var archiveState: ArchiveState
     
     // state

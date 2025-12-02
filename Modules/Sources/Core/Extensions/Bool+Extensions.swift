@@ -8,7 +8,7 @@
 //
 
 extension Bool {
-    static var macOS13: Bool {
+    public static var macOS13: Bool {
         if #available(macOS 14, *) {
             return false   // On macOS 14 or later
         } else {

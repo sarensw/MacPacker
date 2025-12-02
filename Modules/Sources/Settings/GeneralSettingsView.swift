@@ -5,14 +5,9 @@
 //  Created by Stephan Arenswald on 02.12.23.
 //
 
+import Core
 import Foundation
 import SwiftUI
-
-enum BreadcrumbPosition: String, CaseIterable {
-    case top
-    case bottom
-    case none
-}
 
 struct GeneralSettingsView: View {
     private let applicationSupportDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first

@@ -9,12 +9,12 @@ import Foundation
 import AppKit
 import SwiftUI
 
-class WelcomeWindowController {
-    static var shared = WelcomeWindowController()
+@MainActor
+public class WelcomeWindowController {
     private var welcomeWindow: NSWindow? = nil
     private var welcomeWindowController: NSWindowController? = nil
     
-    private init() {
+    public init() {
         // load the window
         welcomeWindow = NSWindow()
         welcomeWindow?.titlebarAppearsTransparent = true
@@ -32,13 +32,13 @@ class WelcomeWindowController {
         welcomeWindowController = NSWindowController(window: welcomeWindow)
     }
     
-    func show() {
+    public func show() {
         welcomeWindow?.makeKeyAndOrderFront(self)
         welcomeWindowController?.showWindow(self)
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
     
-    func close() {
+    public func close() {
         welcomeWindow?.close()
     }
 }

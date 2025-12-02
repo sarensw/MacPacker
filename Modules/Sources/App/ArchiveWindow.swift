@@ -44,7 +44,6 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         
         // show the content view
         let contentView = ContentView()
-            .environmentObject(AppState.shared)
             .environmentObject(appDelegate)
             .environmentObject(archiveState)
         

@@ -8,6 +8,7 @@
 import Foundation
 import AppKit
 
+@MainActor
 protocol AppUrlHandler {
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager)
 }
