@@ -24,4 +24,10 @@ public protocol ArchiveEngine: Sendable {
     ///   - to: destination folder
     /// - Returns: the URL of the extracted item
     func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL?
+    
+    /// Extracts the full archive to the given destination
+    /// - Parameters:
+    ///   - url: url of the archive to be extracted
+    ///   - destination: destination folder
+    func extract(_ url: URL, to destination: URL) async throws
 }

@@ -149,4 +149,22 @@ public final class ArchiveXadEngine: ArchiveEngine {
         
         return nil
     }
+    
+    public func extract(_ url: URL, to destination: URL) async throws {
+        guard let archive = XADArchive(file: url.path) else {
+            throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
+        }
+        archive.setNameEncoding(NSUTF8StringEncoding)
+        
+        let result = archive.extract(
+            to: destination.path
+        )
+        
+        if result == false {
+            let lastError = archive.lastError()
+            let lastErrorMessage = archive.describeLastError()
+            
+            throw ArchiveError.extractionFailed("\(lastError) \(String(describing: lastErrorMessage))")
+        }
+    }
 }

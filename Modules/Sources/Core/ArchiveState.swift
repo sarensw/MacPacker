@@ -222,8 +222,25 @@ extension ArchiveState {
     public func extract(to destination: URL) {
         Task {
             do {
-//                _ = try await self.extractAsync(item: item)
+                guard let root else {
+                    Logger.error("No root item set")
+                    return
+                }
+                
+                if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: root),
+                   let engine = ArchiveEngineSelector().engine(for: archiveTypeId) {
+                    
+                    let _ = destination.startAccessingSecurityScopedResource()
+                    defer { destination.stopAccessingSecurityScopedResource() }
+                    
+                    // first extract to our own directory where we have full rights to write to
+                    try await engine.extract(
+                        archiveUrl,
+                        to: destination
+                    )
+                }
             } catch {
+                Logger.error(error)
                 await MainActor.run {
                     self.error = error.localizedDescription
                     self.isBusy = false

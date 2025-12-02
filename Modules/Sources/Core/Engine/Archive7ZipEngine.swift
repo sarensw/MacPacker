@@ -48,9 +48,22 @@ public final class Archive7ZipEngine: ArchiveEngine {
         }
         let path = FilePath(cmdUrl.path)
         
+        let args = [
+            "e",
+            url.path,
+            "\(virtualPath)",
+            "-o\(destination.path)",
+            "-spf"
+        ]
+        
+        Logger.log("""
+            \(cmdUrl.path)
+                \(args.reduce("", { $0 + $1 + "\n\t" }))
+        """)
+        
         let _ = try await Subprocess.run(
             .path(path),
-            arguments: ["e", url.path, "\(virtualPath)", "-o\(destination.path)", "-spf"]
+            arguments: Arguments(args)
         ) { execution, standardOutput in
             var cnt = 0
             for try await line in standardOutput.lines() {
@@ -62,7 +75,42 @@ public final class Archive7ZipEngine: ArchiveEngine {
         
         let resultUrl = destination.appendingPathComponent(virtualPath)
         return resultUrl
-        //return nil
+    }
+    
+    public func extract(_ url: URL, to destination: URL) async throws {
+        let cmdPath = try getCommandFilePath()
+        
+        let args = [
+            "e",
+            url.path,
+            "-o\(destination.path)",
+            "-spf"
+        ]
+        
+        Logger.log("""
+            \(cmdPath)
+                \(args.reduce("", { $0 + $1 + "\n\t" }))
+        """)
+        
+        let _ = try await Subprocess.run(
+            .path(cmdPath),
+            arguments: Arguments(args)
+        ) { execution, standardOutput in
+            var cnt = 0
+            for try await line in standardOutput.lines() {
+                cnt += 1
+                print(line.trimmingCharacters(in: .whitespacesAndNewlines))
+            }
+            print("\(cnt) items found")
+        }
+    }
+    
+    private func getCommandFilePath() throws -> FilePath {
+        guard let cmdUrl = Bundle.main.url(forResource: "7zz", withExtension: nil) else {
+            Logger.error("Failed to load 7zz exec")
+            throw ArchiveError.loadFailed("Failed to load 7zz exec")
+        }
+        return FilePath(cmdUrl.path)
     }
     
     private func parse7zListLineFast(_ line: String) -> ArchiveItem? {
