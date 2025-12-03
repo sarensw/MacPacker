@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 03.11.22.
 //
 
+import App
 import SwiftUI
 
 extension Bundle {

@@ -17,7 +17,7 @@ public final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObjec
     private var openWithUrls: [URL] = []
     private var archiveWindowManager: ArchiveWindowManager? = nil
     
-    public let handlerRegistry: HandlerRegistry = HandlerRegistry()
+    public let archiveEngineConfigStore: ArchiveEngineConfigStore = ArchiveEngineConfigStore()
     
     override init() {
         super.init()

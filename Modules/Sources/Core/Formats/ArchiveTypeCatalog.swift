@@ -44,7 +44,7 @@ extension ArchiveType.MagicSignature {
     }
 }
 
-struct MagicRule: Hashable {
+public struct MagicRule: Hashable, Sendable {
     enum Policy { case any, all }
     let policy: Policy
     let signatures: [ArchiveType.MagicSignature]
@@ -61,7 +61,7 @@ struct MagicRule: Hashable {
 enum Sig { case any([ArchiveType.MagicSignature]) }
 
 public final class ArchiveTypeCatalog {
-    nonisolated(unsafe) static let shared = ArchiveTypeCatalog()
+    nonisolated(unsafe) public static let shared = ArchiveTypeCatalog()
     
     /// This is the full list of all known archive types. Whether they are supported or
     /// not depends on which ID is registered in an archive handler. This list will allow
@@ -199,6 +199,10 @@ public final class ArchiveTypeCatalog {
     
     public func allTypes() -> [ArchiveType] {
         return Array(typesByID.values)
+    }
+    
+    public func getType(for id: ArchiveTypeId) -> ArchiveType? {
+        return typesByID[id]
     }
     
     public func allCompositions() -> [CompositionType] {

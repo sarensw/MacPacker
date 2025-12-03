@@ -10,12 +10,12 @@ import UniformTypeIdentifiers
 
 public struct ArchiveType: Hashable, Identifiable, Sendable {
     public let id: ArchiveTypeId
-    let kind: Kind
-    let displayName: String
-    let uti: UTType
-    let extensions: [String]
-    let magicRule: [MagicRule]
-    let multipartPatterns: [MultipartPattern]
+    public let kind: Kind
+    public let displayName: String
+    public let uti: UTType
+    public let extensions: [String]
+    public let magicRule: [MagicRule]
+    public let multipartPatterns: [MultipartPattern]
     
     init(
         id: ArchiveTypeId,
@@ -45,13 +45,13 @@ public struct ArchiveType: Hashable, Identifiable, Sendable {
         }
     }
     
-    enum Kind: Hashable {
+    public enum Kind: Hashable, Sendable {
         case archive
         case compression
         case image
     }
     
-    struct MultipartPattern: Hashable {
+    public struct MultipartPattern: Hashable, Sendable {
         enum Kind {
             case numericSuffix, rarPartNN
         }
