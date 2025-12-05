@@ -33,6 +33,25 @@ struct DebugSettingsView: View {
                 .toggleStyle(.checkbox)
                 .frame(width: 240, alignment: .leading)
             }
+            
+            HStack(alignment: .top) {
+                Text(verbatim: "Meta:")
+                    .frame(width: 160, alignment: .trailing)
+                
+                VStack(alignment: .leading) {
+                    HStack {
+                        Text(verbatim: Bundle.main.bundlePath)
+                            .help(Bundle.main.bundlePath)
+                        
+                        Button {
+                            NSWorkspace.shared.open(Bundle.main.bundleURL.deletingLastPathComponent())
+                        } label: {
+                            Image(systemName: "arrow.up.right.square")
+                        }
+                    }
+                }
+                .frame(width: 240, alignment: .leading)
+            }
         }
         .padding()
     }
