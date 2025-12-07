@@ -9,8 +9,8 @@ import Foundation
 import Subprocess
 import System
 
-public final class Archive7ZipEngine: ArchiveEngine {
-    public func loadArchive(url: URL) async throws -> [ArchiveItem] {
+final class Archive7ZipEngine: ArchiveEngine {
+    func loadArchive(url: URL) async throws -> [ArchiveItem] {
         guard let cmdUrl = Bundle.main.url(forResource: "7zz", withExtension: nil) else {
             print("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
@@ -37,7 +37,7 @@ public final class Archive7ZipEngine: ArchiveEngine {
         return items
     }
     
-    public func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL? {
+    func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL? {
         guard let cmdUrl = Bundle.main.url(forResource: "7zz", withExtension: nil) else {
             Logger.error("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
@@ -77,7 +77,7 @@ public final class Archive7ZipEngine: ArchiveEngine {
         return resultUrl
     }
     
-    public func extract(_ url: URL, to destination: URL) async throws {
+    func extract(_ url: URL, to destination: URL) async throws {
         let cmdPath = try getCommandFilePath()
         
         let args = [

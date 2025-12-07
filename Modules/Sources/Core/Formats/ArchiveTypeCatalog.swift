@@ -58,8 +58,6 @@ public struct MagicRule: Hashable, Sendable {
     }
 }
 
-enum Sig { case any([ArchiveType.MagicSignature]) }
-
 public final class ArchiveTypeCatalog {
     nonisolated(unsafe) public static let shared = ArchiveTypeCatalog()
     

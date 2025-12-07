@@ -8,52 +8,9 @@
 import Foundation
 import XADMaster
 
-enum XADMasterEntryType {
-    case directory
-    case file
-}
-
-struct XadArchiveEntry {
-    let index: Int32
-    let name: String // "file1"
-    let path: String // "folder/file1"
-    let type: ArchiveItemType
-    let compressedSize: Int?
-    let uncompressedSize: Int?
-    let modificationDate: Date?
-    let posixPermissions: Int?
+final class ArchiveXadEngine: ArchiveEngine {
     
-    init(
-        index: Int32,
-        path: String,
-        type: ArchiveItemType,
-        compressedSize: Int?,
-        uncompressedSize: Int?,
-        modificationDate: Date?,
-        posixPermissions: Int?
-    ) {
-        self.index = index
-        self.path = path
-        self.type = type
-        self.compressedSize = compressedSize
-        self.uncompressedSize = uncompressedSize
-        self.modificationDate = modificationDate
-        self.posixPermissions = posixPermissions
-        
-        let parts = path.split(separator: "/")
-        if let last = parts.last {
-            self.name = String(last)
-        } else {
-            self.name = path
-        }
-    }
-}
-
-public final class ArchiveXadEngine: ArchiveEngine {
-    
-    public init() {}
-    
-    public func loadArchive(
+    func loadArchive(
         url: URL
     ) async throws -> [ArchiveItem] {
         guard let archive = XADArchive(file: url.path) else {
@@ -114,7 +71,7 @@ public final class ArchiveXadEngine: ArchiveEngine {
         return entries
     }
     
-    public func extract(
+    func extract(
         item: ArchiveItem,
         from url: URL,
         to destination: URL
@@ -136,12 +93,10 @@ public final class ArchiveXadEngine: ArchiveEngine {
         archive.setNameEncoding(NSUTF8StringEncoding)
 
         let result = archive.extractEntry(Int32(index), to: destination.path)
-        let lastErrorMessage = archive.describeLastError()
-        print(lastErrorMessage)
+//        let lastErrorMessage = archive.describeLastError()
         
         if result == true {
             print("1: \(destination.startAccessingSecurityScopedResource())")
-//            let resultUrl = destination.appending(component: virtualPath)
             let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: false)
             print("2: \(resultUrl.startAccessingSecurityScopedResource())")
             return resultUrl
@@ -150,7 +105,7 @@ public final class ArchiveXadEngine: ArchiveEngine {
         return nil
     }
     
-    public func extract(_ url: URL, to destination: URL) async throws {
+    func extract(_ url: URL, to destination: URL) async throws {
         guard let archive = XADArchive(file: url.path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }

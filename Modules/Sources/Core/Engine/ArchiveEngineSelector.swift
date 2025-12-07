@@ -15,7 +15,7 @@ public enum ArchiveEngineType: String, Identifiable, Sendable, Codable {
     public var id: Self { self }
 }
 
-public struct ArchiveEngineSelector {
+struct ArchiveEngineSelector {
     private let archiveEngineConfigStore: ArchiveEngineConfigStore
     private var engines: [ArchiveEngineType: ArchiveEngine]
     
@@ -26,7 +26,7 @@ public struct ArchiveEngineSelector {
         engines[.`7zip`] = Archive7ZipEngine()
     }
     
-    public func engine(for id: ArchiveTypeId) -> ArchiveEngine? {
+    func engine(for id: ArchiveTypeId) -> ArchiveEngine? {
         if let engineId = archiveEngineConfigStore.selectedEngine(for: id) {
             return engines[engineId]
         }

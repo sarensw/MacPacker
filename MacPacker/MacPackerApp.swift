@@ -5,10 +5,8 @@
 //  Created by Stephan Arenswald on 01.08.23.
 //
 
-import App
 import FinderSync
 import Core
-import Settings
 import SwiftUI
 #if !STORE
 import Sparkle

@@ -12,10 +12,6 @@
 		2540451B2ECB50D5004A4380 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 2540451A2ECB50D5004A4380 /* Core */; };
 		2540451D2ECB5DEB004A4380 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 2540451C2ECB5DEB004A4380 /* Core */; };
 		25404E0C2ED71F86004A4380 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 25404E0B2ED71F86004A4380 /* TailBeatKit */; };
-		254051652EDECDE7004A4380 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 254051642EDECDE7004A4380 /* App */; };
-		254051672EDECDEA004A4380 /* Settings in Frameworks */ = {isa = PBXBuildFile; productRef = 254051662EDECDEA004A4380 /* Settings */; };
-		254051692EDECDF0004A4380 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 254051682EDECDF0004A4380 /* App */; };
-		2540516B2EDECDF3004A4380 /* Settings in Frameworks */ = {isa = PBXBuildFile; productRef = 2540516A2EDECDF3004A4380 /* Settings */; };
 		254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 254BB55C2ABBE8F50059A1D5 /* Sparkle */; };
 		2567C8312E8FB75F008E1BD8 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2567C8302E8FB75F008E1BD8 /* Quartz.framework */; };
 		2567C83D2E8FB75F008E1BD8 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -121,8 +117,8 @@
 		251114F82DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Features/Updates/CheckForUpdatesView.swift,
 				Info.plist,
-				Views/CheckForUpdatesView.swift,
 			);
 			target = 254BB53C2ABBE8430059A1D5 /* MacPacker Store */;
 		};
@@ -168,8 +164,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				254051692EDECDF0004A4380 /* App in Frameworks */,
-				2540516B2EDECDF3004A4380 /* Settings in Frameworks */,
 				25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */,
 				2540451B2ECB50D5004A4380 /* Core in Frameworks */,
 			);
@@ -188,10 +182,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				254051652EDECDE7004A4380 /* App in Frameworks */,
 				25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */,
 				25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */,
-				254051672EDECDEA004A4380 /* Settings in Frameworks */,
 				254045192ECB50CD004A4380 /* Core in Frameworks */,
 				254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */,
 			);
@@ -297,8 +289,6 @@
 			packageProductDependencies = (
 				25C764262E6C6D6200464CF5 /* XADMasterSwift */,
 				2540451A2ECB50D5004A4380 /* Core */,
-				254051682EDECDF0004A4380 /* App */,
-				2540516A2EDECDF3004A4380 /* Settings */,
 			);
 			productName = MacPacker;
 			productReference = 254BB5592ABBE8430059A1D5 /* MacPacker.app */;
@@ -352,8 +342,6 @@
 				25E426C92E6BEB3800F10BE5 /* XADMasterSwift */,
 				25C764242E6C6D5300464CF5 /* XADMasterSwift */,
 				254045182ECB50CD004A4380 /* Core */,
-				254051642EDECDE7004A4380 /* App */,
-				254051662EDECDEA004A4380 /* Settings */,
 			);
 			productName = MacPacker;
 			productReference = 25C0A8A42A78DE5F002C1C2A /* MacPacker.app */;
@@ -1270,22 +1258,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "tailbeatkit" */;
 			productName = TailBeatKit;
-		};
-		254051642EDECDE7004A4380 /* App */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = App;
-		};
-		254051662EDECDEA004A4380 /* Settings */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Settings;
-		};
-		254051682EDECDF0004A4380 /* App */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = App;
-		};
-		2540516A2EDECDF3004A4380 /* Settings */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Settings;
 		};
 		254BB55C2ABBE8F50059A1D5 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;

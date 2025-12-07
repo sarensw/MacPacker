@@ -9,10 +9,6 @@ import Combine
 import Foundation
 import SwiftUI
 
-public class Archive {
-    
-}
-
 @MainActor
 public class ArchiveState: ObservableObject {
     // MARK: UI
@@ -43,8 +39,6 @@ public class ArchiveState: ObservableObject {
     
     // TODO: Still needed?
     @Published public var openWithUrls: [URL] = []
-    @Published public var completePathArray: [String] = []
-    @Published public var completePath: String?
     @Published public var previewItemUrl: URL?
     
     // MARK: Logic
@@ -54,10 +48,6 @@ public class ArchiveState: ObservableObject {
 //    private let extractor = ArchiveExtractor()
     
     public init() {
-    }
-    
-    public init(completePath: String) {
-        self.completePath = completePath
     }
 }
 
@@ -530,7 +520,7 @@ extension ArchiveState {
     
     private func buildTree(for entries: [ArchiveItem], at root: ArchiveItem) {
         for entry in entries {
-            var virtualPath = entry.virtualPath ?? "/"
+            let virtualPath = entry.virtualPath ?? "/"
             var parent: ArchiveItem = root
             
             let components = virtualPath.split(separator: "/")
@@ -557,145 +547,6 @@ extension ArchiveState {
             entry.parent = parent
             parent.addChild(entry)
         }
-    }
-    
-    /// Extracts a number of items from the given archive to a given destination
-    /// - Parameters:
-    ///   - archive: archive to extract the items from
-    ///   - items: items to extract (files or folders)
-    ///   - destination: target destination choosen by the user
-    public func extract(
-        archive: Archive,
-        items: [ArchiveItem],
-        to destination: URL
-    ) async throws {
-//        guard let stackItem = selectedItem else {
-//            Logger.debug("No stack available")
-//            return
-//        }
-//        
-//        let _ = destination.startAccessingSecurityScopedResource()
-//        defer { destination.stopAccessingSecurityScopedResource()}
-//        
-//        for item in items {
-//            let (handler, url) = findHandlerAndUrl(for: item)
-//            guard let handler, let url else {
-//                Logger.debug("Failed to find handler or url for item")
-//                return
-//            }
-//            
-//            // Extract to a temporary place first for sandboxing
-//            // reasons, then move from there to the target destination.
-//            // The move is instant as macOS will just updates the
-//            // filesystem metadata (directory entry / inode pointers)
-//            let tempUrl = try await extractor.extractToTemp(
-//                archiveItem: item,
-//                using: handler
-//            )
-//            
-//            do {
-//                try FileManager.default.moveItem(
-//                    at: tempUrl,
-//                    to: destination.appending(component: item.name))
-//            } catch {
-//                Logger.debug("Failed to move item: \(error.localizedDescription)")
-//            }
-//        }
-    }
-    
-    /// Extracts the full archive to the given destination, preserving the folder structure.
-    /// Right now, embedded archives are not extracted.
-    ///
-    /// TODO: Might be worth a toggle to do this?
-    ///
-    /// - Parameters:
-    ///   - archive: the archive to extract
-    ///   - destination: the destination where to extract the archive to
-    public func extract(
-        archive: Archive,
-        to destination: URL
-    ) async throws {
-//        let _ = destination.startAccessingSecurityScopedResource()
-//        defer { destination.stopAccessingSecurityScopedResource()}
-//        
-//        try await extractor.extract(
-//            archive,
-//            to: destination)
-    }
-    
-    public func extract(
-        to destination: URL
-    ) async throws {
-//        if let archive {
-//            let _ = destination.startAccessingSecurityScopedResource()
-//            defer { destination.stopAccessingSecurityScopedResource()}
-//            
-//            try await extractor.extract(
-//                archive,
-//                to: destination)
-//        }
-    }
-    
-//    public func load(from url: URL) async throws {
-//        do {
-//            let detector = ArchiveTypeDetector()
-//            if let detectorResult = detector.detect(for: url),
-//               let handler = ArchiveTypeRegistry.shared.handler(for: detectorResult) {
-//                
-//                // we have to check here if this is a composition, in which
-//                // case we need to decompress to a temporary location first
-//                // and then hand over the result to the archive
-//                let name = url.lastPathComponent
-//                var archiveUrl = url
-//                // The algorithm to handle compound archives right now is oversimplified
-//                // and assumes that there is always a compound of two items. This is true
-//                // for all tar.xxx archives and should never fail. However, this does not cover
-//                // special archives like .pkg that is a zip file that contains another binary that
-//                // needs to be extracted before showing the content
-//                // TODO: Make this algorithm more robust
-//                if let compositionType = detectorResult.composition {
-//                    let compressionArchiveTypeId = compositionType.composition[1]
-//                    let compressionArchiveType = ArchiveTypeCatalog.shared.typesByID[compressionArchiveTypeId]!
-//                    let decompressionHandler = ArchiveTypeRegistry.shared.handler(for: compressionArchiveTypeId)!
-//                    
-//                    //                    let compressedArchive = Archive(
-//                    //                        name: name,
-//                    //                        url: url,
-//                    //                        handler: decompressionHandler,
-//                    //                        type: compressionArchiveType
-//                    //                    )
-//                    //                    try await compressedArchive.load()
-//                    
-//                    if let compressionSnapshot = try await loader.load(
-//                        from: url,
-//                        using: decompressionHandler
-//                    ) {
-//                        // in a compressed archive (e.g. tar.bz2, tbz2) there is only one entry (e.g. the tar file)
-//                        let archiveItem = compressionSnapshot.entries[0]
-//                        let extractedArchiveUrl = try await extractor.extractToTemp(archiveItem: archiveItem, using: decompressionHandler)
-//                        //                        if let extractedArchiveUrl = decompressionHandler.extractFileToTemp(path: url, item: archiveItem) {
-//                        archiveUrl = extractedArchiveUrl
-//                    }
-//                }
-//                
-//                // loading the actual underlying archive now
-//                if let archiveSnapshot = try await loader.load(
-//                    from: archiveUrl,
-//                    using: handler
-//                ) {
-//                    let archive = Archive(snapshot: archiveSnapshot)
-//                    self.archive = archive
-//                }
-//            }
-//            self.isReloadNeeded = true
-//        } catch {
-//            Logger.error(error)
-//        }
-//    }
-    
-    public func breadcrumbsUpdated(breadcrumbs: [String]) {
-        self.completePathArray = breadcrumbs
-        self.completePath = breadcrumbs.joined(separator: "/")
     }
     
     /// Checks if the given archive extension is supported to be loaded in MacPacker

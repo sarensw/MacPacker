@@ -11,7 +11,7 @@ import Foundation
 /// can extract certain formats. Examples would be the `XADMaster` library
 /// that is included as an SPM package. Or the `7zip` CLI tool. An engine
 /// is stateless and has no idea about UI or logic. It always takes a url to stay stateless.
-public protocol ArchiveEngine: Sendable {
+protocol ArchiveEngine: Sendable {
     /// Loads the given archive to retrieve all entries (in form of `ArchiveItem`)
     /// - Parameter url: url of the archive
     /// - Returns: list of all entries
