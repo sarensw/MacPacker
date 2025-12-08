@@ -35,6 +35,14 @@ public class ArchiveEngineConfigStore {
             ],
             selectedEngineId: .`7zip`
         )
+        configs[.cab] = FormatEngineConfig(
+            formatId: .`7zip`,
+            options: [
+                EngineOption(engineId: .`7zip`, capabilities: [.listContents, .extractFiles]),
+                EngineOption(engineId: .xad, capabilities: [.listContents, .extractFiles])
+            ],
+            selectedEngineId: .`7zip`
+        )
         configs[.zip] = FormatEngineConfig(
             formatId: .zip,
             options: [
