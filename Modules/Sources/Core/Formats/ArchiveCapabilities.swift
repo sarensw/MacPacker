@@ -22,3 +22,28 @@ public struct ArchiveCapabilities: OptionSet, Sendable {
     static let add            = ArchiveCapabilities(rawValue: 1 << 4)
     static let rewriteInPlace = ArchiveCapabilities(rawValue: 1 << 5)
 }
+
+public extension ArchiveCapabilities {
+    static func from(string: String) -> ArchiveCapabilities? {
+        switch string {
+        case "listContents":   return .listContents
+        case "extractFiles":   return .extractFiles
+        case "create":         return .create
+        case "delete":         return .delete
+        case "add":            return .add
+        case "rewriteInPlace": return .rewriteInPlace
+        default:
+            return nil
+        }
+    }
+
+    static func from(strings: [String]) -> ArchiveCapabilities {
+        var result: ArchiveCapabilities = []
+        for s in strings {
+            if let cap = ArchiveCapabilities.from(string: s) {
+                result.insert(cap)
+            }
+        }
+        return result
+    }
+}

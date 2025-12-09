@@ -16,9 +16,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("welcomeScreenShownInVersion") private var welcomeScreenShownInVersion = "0.0"
     private var archiveWindowManager: ArchiveWindowManager? = nil
     
-    let archiveEngineConfigStore: ArchiveEngineConfigStore = ArchiveEngineConfigStore()
+    let catalog: ArchiveTypeCatalog = ArchiveTypeCatalog()
+    let archiveEngineConfigStore: ArchiveEngineConfigStore
     
     override init() {
+        archiveEngineConfigStore = ArchiveEngineConfigStore(catalog: catalog)
         super.init()
         archiveWindowManager = ArchiveWindowManager(appDelegate: self)
         TailBeat.start()
@@ -41,9 +43,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 //                handler = AppUrlExtractFilesHandler()
                 break
             case .extractHere:
-                handler = AppUrlExtractHereHandler()
+                handler = AppUrlExtractHereHandler(catalog: catalog)
             case .extractToFolder:
-                handler = AppUrlExtractToFolderHandler()
+                handler = AppUrlExtractToFolderHandler(catalog: catalog)
             }
             
             // we have all the url info, start the handlers now

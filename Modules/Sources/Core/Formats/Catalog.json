@@ -1,0 +1,361 @@
+{
+  "formats": [
+    {
+      "id": "7zip",
+      "name": "7-Zip Archive",
+      "kind": "archive",
+      "uti": ["org.7-zip.7-zip-archive"],
+      "extensions": ["7z"],
+      "mime": ["application/x-7z-compressed"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "37 7A BC AF 27 1C", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true },
+        { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
+      ]
+    },
+    {
+      "id": "bzip2",
+      "name": "Bzip2 File",
+      "kind": "compression",
+      "uti": ["public.bzip2-archive"],
+      "extensions": ["bz2","bz","bzip2"],
+      "mime": ["application/x-bzip2"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "42 5A 68", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true },
+        { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
+      ]
+    },
+    {
+      "id": "cab",
+      "name": "CAB Archive",
+      "kind": "archive",
+      "uti": ["com.microsoft.cab", "public.archive.cab", "com.microsoft.cab-archive"],
+      "extensions": ["cab"],
+      "mime": ["application/vnd.ms-cab-compressed"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "4D 53 43 46", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "cpio",
+      "name": "CPIO Archive",
+      "kind": "archive",
+      "uti": ["public.cpio-archive"],
+      "extensions": ["cpio"],
+      "mime": ["application/x-cpio"],
+      "rules": [
+        { "policy": "any", "tests": [
+          {"type": "signature", "bytes": "30 37 30 37 30 31", "offset": 0},
+          {"type": "signature", "bytes": "30 37 30 37 30 32", "offset": 0},
+          {"type": "signature", "bytes": "30 37 30 37 30 37", "offset": 0}
+          ] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "gzip",
+      "name": "Gzip File",
+      "kind": "compression",
+      "uti": ["public.gz-archive","org.gnu.gnu-zip-archive"],
+      "extensions": ["gz","gzip"],
+      "mime": ["application/gzip", "application/x-gzip"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "1F 8B", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true },
+        { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
+      ]
+    },
+    {
+      "id": "iso",
+      "name": "ISO Disk Image",
+      "kind": "image",
+      "uti": ["public.iso-image"],
+      "extensions": ["iso"],
+      "mime": ["application/x-iso9660-image"],
+      "rules": [
+        { "policy": "all", "tests": [
+          {"type": "signature", "bytes": "43 44 30 30 31", "offset": 32769},
+          {"type": "signature", "bytes": "43 44 30 30 31", "offset": 34817},
+          {"type": "signature", "bytes": "43 44 30 30 31", "offset": 36865}
+          ] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "lha",
+      "name": "LHA/LZH Archive",
+      "kind": "archive",
+      "uti": ["org.7-zip.lha-archive"],
+      "extensions": ["lha","lzh"],
+      "mime": ["application/octet-stream"],
+      "rules": [
+        { "policy": "any", "tests": [
+          {"type": "signature", "bytes": "2D 6C 68 30 2D", "offset": 2},
+          {"type": "signature", "bytes": "2D 6C 68 35 2D", "offset": 2},
+          {"type": "signature", "bytes": "2D 6C 68 64 2D", "offset": 2}
+          ] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "lz4",
+      "name": "LZ4 File",
+      "kind": "compression",
+      "uti": ["public.lz4-archive"],
+      "extensions": ["lz4"],
+      "mime": [],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "04 22 4D 18", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "swc", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "lzx",
+      "name": "LZX Archive",
+      "kind": "archive",
+      "uti": ["com.microsoft.lzx-archive", "cx.c3.lzx-archive"],
+      "extensions": ["lzx"],
+      "mime": [],
+      "rules": [],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "ntfs",
+      "name": "NTFS Disk Image",
+      "kind": "image",
+      "uti": ["public.disk-image"],
+      "extensions": ["ntfs"],
+      "mime": [],
+      "rules": [],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "rar",
+      "name": "RAR Archive",
+      "kind": "archive",
+      "uti": ["com.rarlab.rar-archive"],
+      "extensions": ["rar"],
+      "mime": ["application/x-rar-compressed", "application/vnd.rar"],
+      "rules": [
+        { "policy": "any", "tests": [
+          {"type": "signature", "bytes": "52 61 72 21 1A 07 00", "offset": 0},
+          {"type": "signature", "bytes": "52 61 72 21 1A 07 01 00", "offset": 0}
+          ] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "sea",
+      "name": "Self-Extracting Archive",
+      "kind": "archive",
+      "uti": ["com.apple.self-extracting-archive"],
+      "extensions": ["sea"],
+      "mime": ["application/x-sea", "application/sea"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "53 74 75 66 66 49 74 20", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "sit",
+      "name": "StuffIt Archive",
+      "kind": "archive",
+      "uti": ["com.stuffit.archive.sit"],
+      "extensions": ["sit"],
+      "mime": ["application/x-stuffit"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "53 74 75 66 66 49 74 20", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "sitx",
+      "name": "StuffIt X Archive",
+      "kind": "archive",
+      "uti": ["com.stuffit.archive.sitx"],
+      "extensions": ["sitx"],
+      "mime": ["application/x-stuffitx"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "53 74 75 66 66 49 74 21", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "tar",
+      "name": "Tar Archive",
+      "kind": "archive",
+      "uti": ["public.tar-archive"],
+      "extensions": ["tar"],
+      "mime": ["application/x-tar"],
+      "rules": [
+        { "policy": "any", "tests": [
+          {"type": "signature", "bytes": "75 73 74 61 72 00 30 30", "offset": 257},
+          {"type": "signature", "bytes": "75 73 74 61 72 20 20 00", "offset": 257}
+          ] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true },
+        { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
+      ]
+    },
+    {
+      "id": "vhdx",
+      "name": "VHDX Disk Image",
+      "kind": "image",
+      "uti": ["public.disk-image"],
+      "extensions": ["vhdx"],
+      "mime": ["application/vhdx"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "76 68 64 78 66 69 6C 65", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "xz",
+      "name": "XZ File",
+      "kind": "compression",
+      "uti": ["public.xz-archive","org.tukaani.xz-archive"],
+      "extensions": ["xz"],
+      "mime": ["application/x-xz"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "FD 37 7A 58 5A 00", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true },
+        { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
+      ]
+    },
+    {
+      "id": "Z",
+      "name": "Unix Compress File",
+      "kind": "compression",
+      "uti": ["public.z-archive"],
+      "extensions": ["z"],
+      "mime": ["application/x-compress", "application/x-compressed"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "1F 9D", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "zip",
+      "name": "ZIP Archive",
+      "kind": "archive",
+      "uti": ["com.pkware.zip-archive", "public.zip-archive"],
+      "extensions": ["zip"],
+      "mime": ["application/zip", "application/x-zip-compressed", "application/zip-compressed", "multipart/x-zip"],
+      "rules": [
+        { "policy": "any", "tests": [
+          {"type": "signature", "bytes": "50 4B 03 04", "offset": 0},
+          {"type": "signature", "bytes": "50 4B 03 06", "offset": 0},
+          {"type": "signature", "bytes": "50 4B 03 08", "offset": 0}
+          ] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true },
+        { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
+      ]
+    },
+    {
+      "id": "zipx",
+      "name": "ZIPX Archive",
+      "kind": "archive",
+      "uti": ["com.winzip.zipx-archive"],
+      "extensions": ["zipx"],
+      "mime": ["application/zip", "application/x-zip-compressed", "application/zip-compressed", "multipart/x-zip"],
+      "rules": [
+        { "policy": "any", "tests": [
+          {"type": "signature", "bytes": "50 4B 03 04", "offset": 0},
+          {"type": "signature", "bytes": "50 4B 03 06", "offset": 0},
+          {"type": "signature", "bytes": "50 4B 03 08", "offset": 0}
+          ] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    }
+  ],
+  "compounds": [
+    {
+      "id": "tar.bz2",
+      "name": "Bzip2 Tar Archive",
+      "uti": ["org.bzip.bzip2-tar-archive"],
+      "extensions": ["tbz2","tbz","tbzip2","tb","tar.bz2"],
+      "components": ["tar","bzip2"]
+    },
+    {
+      "id": "tar.gz",
+      "name": "Gzip Tar Archive",
+      "uti": ["org.gnu.gnu-zip-tar-archive"],
+      "extensions": ["tgz","tgzip","tar.gz"],
+      "components": ["tar","gz"]
+    },
+    {
+      "id": "tar.lz4",
+      "name": "LZ4 Tar Archive",
+      "uti": ["public.lz4-tar-archive"],
+      "extensions": ["tlz4","tar.lz4"],
+      "components": ["tar","lz4"]
+    },
+    {
+      "id": "tar.xz",
+      "name": "XZ Tar Archive",
+      "uti": ["org.tukaani.tar-xz-archive"],
+      "extensions": ["txz","tar.xz"],
+      "components": ["tar","xz"]
+    },
+    {
+      "id": "tar.z",
+      "name": "Z Tar Archive",
+      "uti": ["public.z-archive"],
+      "extensions": ["tz","tar.z"],
+      "components": ["tar","z"]
+    }
+  ]
+}

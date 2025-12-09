@@ -43,7 +43,7 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     // The following are only relevant if this is a nested archive
     // that can be opened
     public private(set) var url: URL? = nil
-    public private(set) var archiveTypeId: ArchiveTypeId? = nil
+    public private(set) var archiveTypeId: String? = nil
     
     public init(
         index: Int? = nil,
@@ -108,7 +108,7 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     
     public func set(
         url: URL,
-        typeId: ArchiveTypeId
+        typeId: String
     ) {
         self.url = url
         self.archiveTypeId = typeId

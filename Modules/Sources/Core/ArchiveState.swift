@@ -15,7 +15,7 @@ public class ArchiveState: ObservableObject {
     // Basic archive metadata
     @Published private(set) public var url: URL?
     @Published private(set) public var name: String?
-    @Published private(set) public var type: ArchiveType?
+    @Published private(set) public var type: ArchiveTypeDto?
     @Published private(set) public var ext: String?
     
     // Full list of entries
@@ -47,7 +47,14 @@ public class ArchiveState: ObservableObject {
     
 //    private let extractor = ArchiveExtractor()
     
-    public init() {
+    private let catalog: ArchiveTypeCatalog
+    private let archiveEngineSelector: ArchiveEngineSelector
+    private let archiveTypeDetector: ArchiveTypeDetector
+    
+    public init(catalog: ArchiveTypeCatalog) {
+        self.catalog = catalog
+        self.archiveEngineSelector = ArchiveEngineSelector(catalog: catalog)
+        self.archiveTypeDetector = ArchiveTypeDetector(catalog: catalog)
     }
 }
 
@@ -108,7 +115,7 @@ extension ArchiveState {
         Task {
             do {
                 if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
-                   let engine = ArchiveEngineSelector().engine(for: archiveTypeId),
+                   let engine = archiveEngineSelector.engine(for: archiveTypeId),
                    let temp = createTempDirectory() {
                     
                     // first extract to our own directory where we have full rights to write to
@@ -166,7 +173,7 @@ extension ArchiveState {
             do {
                 for item in items {
                     if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
-                       let engine = ArchiveEngineSelector().engine(for: archiveTypeId),
+                       let engine = archiveEngineSelector.engine(for: archiveTypeId),
                        let temp = createTempDirectory() {
                         
                         // first extract to our own directory where we have full rights to write to
@@ -218,7 +225,7 @@ extension ArchiveState {
                 }
                 
                 if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: root),
-                   let engine = ArchiveEngineSelector().engine(for: archiveTypeId) {
+                   let engine = archiveEngineSelector.engine(for: archiveTypeId) {
                     
                     let _ = destination.startAccessingSecurityScopedResource()
                     defer { destination.stopAccessingSecurityScopedResource() }
@@ -274,7 +281,7 @@ extension ArchiveState {
             if let selectedItem = self.selectedItems.first,
                let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: selectedItem),
                let temp = createTempDirectory(),
-               let engine = ArchiveEngineSelector().engine(for: archiveTypeId) {
+               let engine = archiveEngineSelector.engine(for: archiveTypeId) {
                 let url = try await engine.extract(
                     item: selectedItem,
                     from: archiveUrl,
@@ -341,11 +348,8 @@ extension ArchiveState {
         self.progress = 0
         self.error = nil
         
-        let detector = ArchiveTypeDetector()
-        let engineSelector = ArchiveEngineSelector()
-        
-        if let detectorResult = detector.detect(for: url, considerComposition: true),
-           let engine = engineSelector.engine(for: detectorResult.type.id) {
+        if let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true),
+           let engine = archiveEngineSelector.engine(for: detectorResult.type.id) {
             
             // set the type
             self.type = detectorResult.type
@@ -392,9 +396,6 @@ extension ArchiveState {
                 
                 if let tempUrl = try await extractAsync(item: item) {
 
-                    let detector = ArchiveTypeDetector()
-                    let engineSelector = ArchiveEngineSelector()
-
                     // We check by extension here because we don't want to end up
                     // opening files like .xlsx as an archive. An Excel file (or any
                     // other archived file that is basically a .zip file) should be
@@ -403,8 +404,8 @@ extension ArchiveState {
                     // TODO: Add the possibility via right click menu in MacPacker
                     //       to open the file as archive instead.
                     // TODO: considerComposition result should be true here
-                    if let detectionResult = detector.detectByExtension(for: tempUrl, considerComposition: false),
-                       let engine = engineSelector.engine(for: detectionResult.type.id) {
+                    if let detectionResult = archiveTypeDetector.detectByExtension(for: tempUrl, considerComposition: false),
+                       let engine = archiveEngineSelector.engine(for: detectionResult.type.id) {
                         
                         // set the services required for this nested archive
                         item.set(
@@ -449,15 +450,13 @@ extension ArchiveState {
         // the currently selected file. Is it the root archive, or is
         // it a nested archive?
         
-        let engineSelector = ArchiveEngineSelector()
-        
         guard let temp = createTempDirectory() else {
             Logger.error("Could not create temp directory for extraction")
             return nil
         }
         
         if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
-           let engine = engineSelector.engine(for: archiveTypeId) {
+           let engine = archiveEngineSelector.engine(for: archiveTypeId) {
             
             let url = try await engine.extract(
                 item: item,
@@ -499,10 +498,10 @@ extension ArchiveState {
         return nil
     }
     
-    private func findHandlerAndUrl(for archiveItem: ArchiveItem) -> (ArchiveTypeId, URL)? {
+    private func findHandlerAndUrl(for archiveItem: ArchiveItem) -> (String, URL)? {
         var item: ArchiveItem? = archiveItem
         var url: URL?
-        var typeId: ArchiveTypeId?
+        var typeId: String?
     
         while item != nil {
             if item?.archiveTypeId != nil && item?.url != nil {

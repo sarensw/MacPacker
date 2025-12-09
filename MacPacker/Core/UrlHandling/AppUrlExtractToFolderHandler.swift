@@ -9,6 +9,12 @@ import Foundation
 import Core
 
 class AppUrlExtractToFolderHandler: AppUrlHandler {
+    private let catalog: ArchiveTypeCatalog
+    
+    init(catalog: ArchiveTypeCatalog) {
+        self.catalog = catalog
+    }
+    
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
         for fileUrl in appUrl.files {
             Logger.log("Extracting \(fileUrl) to folder \(appUrl.target)")
@@ -16,7 +22,7 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
             requestAccessToDir(for: appUrl.target) { response, url in
                 if response == .OK {
                     if let url {
-                        let folderName = ArchiveTypeDetector().getNameWithoutExtension(for: url)
+                        let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: url)
                         let folderUrl = url.appendingPathComponent(folderName)
                         do {
                             try FileManager.default.createDirectory(

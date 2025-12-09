@@ -16,8 +16,8 @@ public enum DetectionSource: String {
 }
 
 public struct DetectionResult: CustomStringConvertible {
-    public let type: ArchiveType
-    public let composition: CompositionType?
+    public let type: ArchiveTypeDto
+    public let composition: CompositionTypeDto?
     public let source: DetectionSource
     
     public var description: String {
@@ -30,7 +30,11 @@ public struct DetectionResult: CustomStringConvertible {
 }
 
 public class ArchiveTypeDetector {
-    public init() {}
+    private let catalog: ArchiveTypeCatalog
+    
+    public init(catalog: ArchiveTypeCatalog) {
+        self.catalog = catalog
+    }
     
     public func getNameWithoutExtension(for url: URL) -> String {
         var name = url.lastPathComponent
@@ -74,7 +78,6 @@ public class ArchiveTypeDetector {
     }
     
     func detectByExtension(for url: URL, considerComposition: Bool) -> DetectionResult? {
-        let catalog = ArchiveTypeCatalog.shared
         let lc = url.pathExtension.lowercased()
         
         // first check if this is a known composition (e.g. tar.gz)
@@ -83,7 +86,7 @@ public class ArchiveTypeDetector {
                 for ext in composition.extensions {
                     if url.lastPathComponent.hasSuffix(".\(ext)") {
                         // composition found
-                        if let baseType = catalog.typesByID[composition.composition.first!] {
+                        if let baseType = catalog.getType(for: composition.components.first!) {
                             
                             return DetectionResult(
                                 type: baseType,
@@ -98,7 +101,7 @@ public class ArchiveTypeDetector {
             }
         }
         
-        if let type = catalog.allTypes().first(where: { $0.extensions.contains(lc) }) {
+        if let type = catalog.getType(where: { $0.extensions.contains(lc) }) {
             return DetectionResult(
                 type: type,
                 composition: nil,
@@ -110,8 +113,6 @@ public class ArchiveTypeDetector {
     }
     
     func detectByMagicNumber(for url: URL) -> DetectionResult? {
-        let catalog = ArchiveTypeCatalog.shared
-        
         // get a file handle to read the first bytes
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { handle.closeFile() }
@@ -123,11 +124,11 @@ public class ArchiveTypeDetector {
         let bytes = [UInt8](header)
         
         // now scan all types and see if any rule matches
-        for type in catalog.allTypes() {
-            for rule in type.magicRule {
+        for type in catalog.getAllTypes() {
+            for rule in type.rules {
                 switch rule.policy {
                 case .any:
-                    for signature in rule.signatures {
+                    for signature in rule.tests {
                         let start = signature.offset
                         let end = start + signature.bytes.count
                         
@@ -145,7 +146,7 @@ public class ArchiveTypeDetector {
                     }
                 case .all:
                     var result = true
-                    for signature in rule.signatures {
+                    for signature in rule.tests {
                         let start = signature.offset
                         let end = start + signature.bytes.count
                         

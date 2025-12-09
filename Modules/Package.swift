@@ -25,6 +25,9 @@ let package = Package(
                 "BitByteData",
                 "SWCompression",
                 .product(name: "TailBeatKit", package: "TailBeatKit")
+            ],
+            resources: [
+                .copy("Formats/Catalog.json")
             ]
         ),
         .testTarget(

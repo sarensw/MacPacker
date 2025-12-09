@@ -9,7 +9,7 @@ import Core
 import SwiftUI
 
 struct ArchiveFormatSettings: Identifiable {
-    let id: ArchiveTypeId
+    let id: String
     let name: String
     let extensions: String
     let engines: [ArchiveEngineType]
@@ -26,34 +26,45 @@ struct FormatSettingsView: View {
     @State private var showEngineInfo: Bool = false
 
     fileprivate func refreshFormatConfig() {
-        let catalog = ArchiveTypeCatalog.shared
-        
         var result: [ArchiveFormatSettings] = []
-        
-        let configs = appDelegate.archiveEngineConfigStore.configs
-        for archiveTypeId in configs.keys {
-            if let config = configs[archiveTypeId],
-               let type = catalog.getType(for: config.formatId) {
-                let defaultApp = NSWorkspace.shared.urlForApplication(toOpen: type.uti)
-                let containsAppName = defaultApp?.path.contains(Bundle.main.appName) ?? false
-                let isDefaultApp = defaultApp?.path == Bundle.main.bundleURL.path || containsAppName
-                
-                let afs = ArchiveFormatSettings(
-                    id: config.formatId,
-                    name: config.formatId.rawValue,
-                    extensions: type.extensions.joined(separator: ", "),
-                    engines: config.options.map(\.engineId),
-                    selectedEngine: config.selectedEngineId,
-                    defaultOpen: isDefaultApp
-                )
-                result.append(afs)
+
+        // Take all known formats from the catalog
+        for type in appDelegate.catalog.getAllTypes() {
+            let formatId = type.id
+
+            // Ask the store (via catalog) which engines exist for this format
+            let engineOptions = appDelegate.archiveEngineConfigStore.engineOptions(for: formatId)
+            guard !engineOptions.isEmpty else {
+                // No engines configured for this format – skip it
+                continue
             }
+
+            // Current engine = user override or catalog default
+            guard let selectedEngine =
+                    appDelegate.archiveEngineConfigStore.selectedEngine(for: formatId) else { continue }
+
+            let engines = engineOptions.compactMap { ArchiveEngineType(configId: $0.id) }
+            let extString = type.extensions.joined(separator: ", ")
+
+            // Default app detection: keep false for now (toggle is disabled anyway)
+            let isDefaultApp = false
+
+            let afs = ArchiveFormatSettings(
+                id: formatId,
+                name: type.name,
+                extensions: extString,
+                engines: engines,
+                selectedEngine: selectedEngine,
+                defaultOpen: isDefaultApp
+            )
+            result.append(afs)
         }
-        
-        result.sort(by: { $0.name < $1.name })
-        
+
+        result.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         rows = result
     }
+
+
     
     func showInfoToSetAsDefault() {
         let alert = NSAlert()
@@ -70,7 +81,7 @@ struct FormatSettingsView: View {
             
             Table(rows, selection: $selection) {
                 TableColumn("") {
-                    defaultToggle(identifier: $0.id, default: $0.defaultOpen)
+                    defaultToggle(identifier: $0.id, defaultOpen: $0.defaultOpen)
                 }
                 .width(20)
                 TableColumn("File Format", value: \.name)
@@ -132,43 +143,49 @@ struct FormatSettingsView: View {
     }
     
     @ViewBuilder
-    func defaultToggle(identifier: ArchiveTypeId, default: Bool) -> some View {
+    func defaultToggle(identifier: String, defaultOpen: Bool) -> some View {
         let binding = Binding<Bool>(
-            get: { `default` },
-            set: {
-                if let id = rows.firstIndex(where: { $0.id == identifier }) {
-                    self.rows[id].defaultOpen = $0
-                    
-                    let setToDefault = $0
+            get: { defaultOpen },
+            set: { newValue in
+                if let index = rows.firstIndex(where: { $0.id == identifier }) {
+                    rows[index].defaultOpen = newValue
+
+                    let setToDefault = newValue
                     if setToDefault {
                         // TODO: Enable this when we are able to set default app
-//                        showInfoToSetAsDefault()
+                        // showInfoToSetAsDefault()
                     } else {
-                        // TODO: Enable this when we are able to set default app
+                        // TODO: Handle "not default" case if needed
                     }
                 }
             }
         )
+
         Toggle(isOn: binding, label: { Text(verbatim: "") })
             .frame(alignment: .center)
-        // TODO: Remove this when we are able to set default app
+            // Currently just informational until default-app setting is implemented
             .disabled(true)
     }
     
     @ViewBuilder
-    func supportedPicker(identifier: ArchiveTypeId, selectedEngine: ArchiveEngineType, supportedEngines: [ArchiveEngineType]) -> some View {
+    func supportedPicker(
+        identifier: String,
+        selectedEngine: ArchiveEngineType,
+        supportedEngines: [ArchiveEngineType]
+    ) -> some View {
         let binding = Binding<ArchiveEngineType>(
             get: { selectedEngine },
-            set: {
-                if let id = rows.firstIndex(where: { $0.id == identifier }) {
-                    self.rows[id].selectedEngine = $0
-                    self.appDelegate.archiveEngineConfigStore.setSelectedEngine($0, for: identifier)
+            set: { newValue in
+                if let index = rows.firstIndex(where: { $0.id == identifier }) {
+                    rows[index].selectedEngine = newValue
+                    appDelegate.archiveEngineConfigStore.setSelectedEngine(newValue, for: identifier)
                 }
             }
         )
+
         Picker("", selection: binding) {
-            ForEach(supportedEngines) { supportedEngine in
-                Text(supportedEngine.rawValue).tag(supportedEngine)
+            ForEach(supportedEngines, id: \.self) { engine in
+                Text(engine.rawValue).tag(engine)
             }
         }
         .labelsHidden()

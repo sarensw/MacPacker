@@ -26,7 +26,7 @@ class ArchiveWindowManager {
     fileprivate func createAndShowArchiveWindow(_ url: URL?) {
         // every window has an archive state which defines both empty
         // (not yet loaded archives) or loaded archives
-        let archiveState = ArchiveState()
+        let archiveState = ArchiveState(catalog: appDelegate.catalog)
         if let url {
             archiveState.open(url: url)
         }
