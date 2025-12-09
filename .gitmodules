@@ -1,0 +1,3 @@
+[submodule "Modules/Tests/CoreTests/TestArchives"]
+	path = Modules/Tests/CoreTests/TestArchives
+	url = https://github.com/sarensw/MacPacker-TestArchives.git
