@@ -7,7 +7,8 @@ let defaultRoot = ArchiveItem(
     type: .root
 )
 
-@MainActor @Suite("Start Tests") struct StartTests {
+@MainActor struct StartTests {
+    
     @Test func createArchiveState() async throws {
         await MainActor.run {
             let state = ArchiveState(catalog: ArchiveTypeCatalog())
@@ -15,9 +16,17 @@ let defaultRoot = ArchiveItem(
         }
     }
     
+//    func loadFiles() {
+//        let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+//
+//        let files = try FileManager.default.contentsOfDirectory(at: folderURL, includingPropertiesForKeys: nil)
+//        print(files)
+//    }
+    
     @Test func loadArchiveStateAndArchive() async throws {
         let controller = ArchiveState(catalog: ArchiveTypeCatalog())
-        let url = Bundle.module.url(forResource: "defaultArchive", withExtension: "zip")!
+        let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+        let url = folderURL.appendingPathComponent("defaultArchive.zip")
         
         try await controller.openAsync(url: url)
         
@@ -29,7 +38,8 @@ let defaultRoot = ArchiveItem(
     
     @Test func compareDefaultZip() async throws {
         let controller = ArchiveState(catalog: ArchiveTypeCatalog())
-        let url = Bundle.module.url(forResource: "defaultArchive", withExtension: "zip")!
+        let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+        let url = folderURL.appendingPathComponent("defaultArchive.zip")
         
         try await controller.openAsync(url: url)
         
@@ -53,7 +63,9 @@ let defaultRoot = ArchiveItem(
         
         // level 1
         try await controller.openAsync(item: level0b[0])
-        let level1 = controller.selectedItem!.children!
+        let level1 = controller.selectedItem!.children!.sorted { item1, item2 in
+            item1.name < item2.name
+        }
         #expect(level1.count == 2)
         #expect(level1[0].name == "NestedArchive.zip")
         #expect(level1[0].type == .file)
@@ -62,7 +74,9 @@ let defaultRoot = ArchiveItem(
         
         // level 2
         try await controller.openAsync(item: level1[0])
-        let level2 = controller.selectedItem!.children!
+        let level2 = controller.selectedItem!.children!.sorted { item1, item2 in
+            item1.name < item2.name
+        }
         #expect(level2.count == 3)
         #expect(level2[0].name == "keynote.pdf")
         #expect(level2[0].type == .file)

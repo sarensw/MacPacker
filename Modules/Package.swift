@@ -38,7 +38,7 @@ let package = Package(
                 "TailBeatKit"
             ],
             resources: [
-                .copy("TestArchives/defaultArchive.zip")
+                .copy("TestArchives/defaultArchives")
             ]
         )
     ]
