@@ -11,7 +11,7 @@ import System
 
 final class Archive7ZipEngine: ArchiveEngine {
     func loadArchive(url: URL) async throws -> [ArchiveItem] {
-        guard let cmdUrl = Bundle.main.url(forResource: "7zz", withExtension: nil) else {
+        guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
             print("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
         }
@@ -38,7 +38,7 @@ final class Archive7ZipEngine: ArchiveEngine {
     }
     
     func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL? {
-        guard let cmdUrl = Bundle.main.url(forResource: "7zz", withExtension: nil) else {
+        guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
             Logger.error("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
         }
@@ -106,7 +106,7 @@ final class Archive7ZipEngine: ArchiveEngine {
     }
     
     private func getCommandFilePath() throws -> FilePath {
-        guard let cmdUrl = Bundle.main.url(forResource: "7zz", withExtension: nil) else {
+        guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
             Logger.error("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
         }

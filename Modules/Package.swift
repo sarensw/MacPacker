@@ -27,7 +27,8 @@ let package = Package(
                 .product(name: "TailBeatKit", package: "TailBeatKit")
             ],
             resources: [
-                .copy("Formats/Catalog.json")
+                .copy("Formats/Catalog.json"),
+                .copy("Tools/7zz")
             ]
         ),
         .testTarget(
