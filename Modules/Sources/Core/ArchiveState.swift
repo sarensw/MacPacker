@@ -51,13 +51,13 @@ public class ArchiveState: ObservableObject {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let archiveTypeDetector: ArchiveTypeDetector
     
-    public init(catalog: ArchiveTypeCatalog) {
-        self.catalog = catalog
-        self.archiveEngineSelector = ArchiveEngineSelector(catalog: catalog)
-        self.archiveTypeDetector = ArchiveTypeDetector(catalog: catalog)
-    }
+//    public init(catalog: ArchiveTypeCatalog) {
+//        self.catalog = catalog
+//        self.archiveEngineSelector = ArchiveEngineSelector(catalog: catalog)
+//        self.archiveTypeDetector = ArchiveTypeDetector(catalog: catalog)
+//    }
     
-    init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
+    public init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
         self.catalog = catalog
         self.archiveEngineSelector = engineSelector
         self.archiveTypeDetector = ArchiveTypeDetector(catalog: catalog)

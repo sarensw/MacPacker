@@ -9,9 +9,11 @@ import Core
 
 class AppUrlExtractHereHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
+    private let engineSelector: ArchiveEngineSelectorProtocol
     
-    init(catalog: ArchiveTypeCatalog) {
+    init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
         self.catalog = catalog
+        self.engineSelector = engineSelector
     }
     
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
@@ -24,7 +26,7 @@ class AppUrlExtractHereHandler: AppUrlHandler {
                     if let url {
                         Task {
                             await MainActor.run {
-                                let state = ArchiveState(catalog: self.catalog)
+                                let state = ArchiveState(catalog: self.catalog, engineSelector: self.engineSelector)
                                 state.open(url: fileUrl)
                                 Task { try! await state.extract(to: url) }
                             }

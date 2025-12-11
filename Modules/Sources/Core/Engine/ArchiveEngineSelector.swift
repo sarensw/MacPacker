@@ -35,23 +35,24 @@ extension ArchiveEngineType {
     }
 }
 
-protocol ArchiveEngineSelectorProtocol {
+public protocol ArchiveEngineSelectorProtocol {
     func engine(for id: String) -> ArchiveEngine?
 }
 
-struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
+public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
     private let archiveEngineConfigStore: ArchiveEngineConfigStore
     private var engines: [ArchiveEngineType: ArchiveEngine]
     
-    init(catalog: ArchiveTypeCatalog) {
-        archiveEngineConfigStore = ArchiveEngineConfigStore(catalog: catalog)
+    public init(catalog: ArchiveTypeCatalog, configStore: ArchiveEngineConfigStore) {
+        archiveEngineConfigStore = configStore
         engines = [:]
         engines[.xad] = ArchiveXadEngine()
         engines[.`7zip`] = Archive7ZipEngine()
     }
     
-    func engine(for id: String) -> ArchiveEngine? {
+    public func engine(for id: String) -> ArchiveEngine? {
         if let engineId = archiveEngineConfigStore.selectedEngine(for: id) {
+            Logger.debug("Using engine: \(engineId)")
             return engines[engineId]
         }
         

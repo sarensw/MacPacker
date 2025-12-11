@@ -17,10 +17,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var archiveWindowManager: ArchiveWindowManager? = nil
     
     let catalog: ArchiveTypeCatalog = ArchiveTypeCatalog()
+    let engineSelector: ArchiveEngineSelectorProtocol
     let archiveEngineConfigStore: ArchiveEngineConfigStore
     
     override init() {
         archiveEngineConfigStore = ArchiveEngineConfigStore(catalog: catalog)
+        engineSelector = ArchiveEngineSelector(catalog: catalog, configStore: archiveEngineConfigStore)
         super.init()
         archiveWindowManager = ArchiveWindowManager(appDelegate: self)
         TailBeat.start()
@@ -43,7 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 //                handler = AppUrlExtractFilesHandler()
                 break
             case .extractHere:
-                handler = AppUrlExtractHereHandler(catalog: catalog)
+                handler = AppUrlExtractHereHandler(catalog: catalog, engineSelector: engineSelector)
             case .extractToFolder:
                 handler = AppUrlExtractToFolderHandler(catalog: catalog)
             }
