@@ -95,6 +95,14 @@ final class ArchiveXadEngine: ArchiveEngine {
         let result = archive.extractEntry(Int32(index), to: destination.path)
 //        let lastErrorMessage = archive.describeLastError()
         
+        // In case this is a directory, we have to traverse down to extract all items
+        // as XAD doesn't do this automatically. In this case, we can ignore the result
+        // url as the top level url is the only thing that needs to be returned.
+        // TODO: NOTE: This will stop at nested archives and not extract their content.
+        for child in item.children ?? [] {
+            _ = try? await extract(item: child, from: url, to: destination)
+        }
+        
         if result == true {
             print("1: \(destination.startAccessingSecurityScopedResource())")
             let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: false)

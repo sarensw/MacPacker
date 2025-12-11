@@ -35,7 +35,11 @@ extension ArchiveEngineType {
     }
 }
 
-struct ArchiveEngineSelector {
+protocol ArchiveEngineSelectorProtocol {
+    func engine(for id: String) -> ArchiveEngine?
+}
+
+struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
     private let archiveEngineConfigStore: ArchiveEngineConfigStore
     private var engines: [ArchiveEngineType: ArchiveEngine]
     

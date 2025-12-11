@@ -1,3 +1,6 @@
+v0.13
+- fix: Extracting folders does not include files
+
 v0.12
 - feat: Added 'File' > 'Open...' menu to open archives when no window is open
 - feat: Improved TAR archive handling

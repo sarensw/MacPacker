@@ -48,12 +48,18 @@ public class ArchiveState: ObservableObject {
 //    private let extractor = ArchiveExtractor()
     
     private let catalog: ArchiveTypeCatalog
-    private let archiveEngineSelector: ArchiveEngineSelector
+    private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let archiveTypeDetector: ArchiveTypeDetector
     
     public init(catalog: ArchiveTypeCatalog) {
         self.catalog = catalog
         self.archiveEngineSelector = ArchiveEngineSelector(catalog: catalog)
+        self.archiveTypeDetector = ArchiveTypeDetector(catalog: catalog)
+    }
+    
+    init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
+        self.catalog = catalog
+        self.archiveEngineSelector = engineSelector
         self.archiveTypeDetector = ArchiveTypeDetector(catalog: catalog)
     }
 }
@@ -117,7 +123,6 @@ extension ArchiveState {
                 if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
                    let engine = archiveEngineSelector.engine(for: archiveTypeId),
                    let temp = createTempDirectory() {
-                    
                     // first extract to our own directory where we have full rights to write to
                     let tempUrl = try await engine.extract(
                         item: item,
