@@ -33,7 +33,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 Label {
                     Text("Preview", comment: "Button in the tooblar that allows the user to preview the selected file.")
                 } icon: {
-                    Image(systemName: "doc.text.magnifyingglass")
+                    Image("custom.document.badge.eye")
                 }
             }
             
