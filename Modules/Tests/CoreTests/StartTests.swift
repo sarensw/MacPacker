@@ -11,7 +11,7 @@ let defaultRoot = ArchiveItem(
     
     @Test func createArchiveState() async throws {
         await MainActor.run {
-            let state = ArchiveState(catalog: ArchiveTypeCatalog())
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             #expect(state.error == nil)
         }
     }
@@ -24,7 +24,7 @@ let defaultRoot = ArchiveItem(
 //    }
     
     @Test func loadArchiveStateAndArchive() async throws {
-        let controller = ArchiveState(catalog: ArchiveTypeCatalog())
+        let controller = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
         let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
         let url = folderURL.appendingPathComponent("defaultArchive.zip")
         
@@ -37,7 +37,7 @@ let defaultRoot = ArchiveItem(
     }
     
     @Test func compareDefaultZip() async throws {
-        let controller = ArchiveState(catalog: ArchiveTypeCatalog())
+        let controller = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
         let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
         let url = folderURL.appendingPathComponent("defaultArchive.zip")
         

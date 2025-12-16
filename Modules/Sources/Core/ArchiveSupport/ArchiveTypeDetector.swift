@@ -84,7 +84,7 @@ public class ArchiveTypeDetector {
         if considerComposition {
             for composition in catalog.allCompositions() {
                 for ext in composition.extensions {
-                    if url.lastPathComponent.hasSuffix(".\(ext)") {
+                    if url.lastPathComponent.lowercased().hasSuffix(".\(ext.lowercased())") {
                         // composition found
                         if let baseType = catalog.getType(for: composition.components.first!) {
                             

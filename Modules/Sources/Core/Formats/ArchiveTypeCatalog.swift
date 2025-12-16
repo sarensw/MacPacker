@@ -7,6 +7,7 @@
 // References:
 // - https://en.wikipedia.org/wiki/List_of_file_signatures
 // - https://gist.github.com/rmorey/b8d1b848086bdce026a9f57732a3b858
+// - https://www.digipres.org/formats/mime-types/
 
 import UniformTypeIdentifiers
 

@@ -48,6 +48,7 @@ public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
         engines = [:]
         engines[.xad] = ArchiveXadEngine()
         engines[.`7zip`] = Archive7ZipEngine()
+        engines[.swc] = ArchiveSwcEngine()
     }
     
     public func engine(for id: String) -> ArchiveEngine? {

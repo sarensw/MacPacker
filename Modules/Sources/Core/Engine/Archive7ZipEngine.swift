@@ -27,7 +27,7 @@ final class Archive7ZipEngine: ArchiveEngine {
                 if line.starts(with: "-------------------") {
                     inBlock.toggle()
                 } else if inBlock {
-                    if let item = parse7zListLineFast(line.trimmingCharacters(in: .whitespacesAndNewlines)) {
+                    if let item = parse7zListLineFast(line.trimmingCharacters(in: .newlines)) {
                         items.append(item)
                     }
                 }
@@ -114,17 +114,15 @@ final class Archive7ZipEngine: ArchiveEngine {
     }
     
     private func parse7zListLineFast(_ line: String) -> ArchiveItem? {
-        // Skip non-entry lines quickly (e.g. summary/footer)
-        guard let first = line.first, first.isNumber else { return nil }
-        
         // 7z `l` layout (approx):
         // date(10) space time(8) space attrs(5) space size space compressed space path
         //          012345678901234567890123456789012345678901234567890123456789
         //          0         1         2         3         4         5
         // Example:
         // 2025-11-04 12:46:30 ..HS.    309592064    309592064  [SYSTEM]/$MFT
+        //                     .....                            defaultArchive.tar
         
-        guard line.count > 53 else { return nil }
+//        guard line.count > 43 else { return nil }
         
         let s = line
         let start = s.startIndex

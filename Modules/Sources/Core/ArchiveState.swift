@@ -353,25 +353,61 @@ extension ArchiveState {
         self.progress = 0
         self.error = nil
         
-        if let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true),
-           let engine = archiveEngineSelector.engine(for: detectorResult.type.id) {
-            
-            // set the type
-            self.type = detectorResult.type
-            
-            // set the entries
-            let entries = try await engine.loadArchive(url: url)
-            self.entries = Dictionary(uniqueKeysWithValues: entries.map({ ($0.id, $0) }))
-            
-            // build the hierarchy
-            let rootItem = ArchiveItem(name: self.name ?? "/", type: .root)
-            rootItem.set(url: url, typeId: detectorResult.type.id)
-            buildTree(for: entries, at: rootItem)
-            
-            // set the root item
-            self.root = rootItem
-            self.selectedItem = rootItem
+        // in case this is a compount `archiveUrl` will hold the extracted url
+        var archiveUrl: URL? = url
+        
+        guard let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true) else {
+            throw ArchiveError.invalidArchive("Could not detect archive type")
         }
+        
+        if let compound = detectorResult.composition {
+            // this is a compound, in which case we decompress first,
+            // then check the actual archive later
+            
+            guard let engine = archiveEngineSelector.engine(for: compound.components.last!) else {
+                throw ArchiveError.extractionFailed("Could not find engine for detected archive type")
+            }
+            
+            guard let temp = createTempDirectory() else {
+                throw ArchiveError.extractionFailed("Could not create temporary directory")
+            }
+            
+            let entries = try await engine.loadArchive(url: url)
+            
+            guard entries.count > 0 else {
+                throw ArchiveError.extractionFailed("Extraction of \(url.lastPathComponent) resulted in no files")
+            }
+            
+            archiveUrl = try await engine.extract(item: entries[0], from: url, to: temp.url)
+        }
+        
+        // This is either the original archive, or the extracted archive from the
+        // compound
+        guard let engine = archiveEngineSelector.engine(for: detectorResult.type.id) else {
+            throw ArchiveError.invalidArchive("Could not find engine for detected archive type")
+        }
+        guard let archiveUrl else {
+            throw ArchiveError.invalidArchive("Somehow we lost the archiveUrl while decompressing")
+        }
+        
+        // set the type
+        self.type = detectorResult.type
+        
+        // treat the composition here > if this is a tar.bz2 (or any
+        // other composition, then decompress first
+        
+        // set the entries
+        let entries = try await engine.loadArchive(url: archiveUrl)
+        self.entries = Dictionary(uniqueKeysWithValues: entries.map({ ($0.id, $0) }))
+        
+        // build the hierarchy
+        let rootItem = ArchiveItem(name: self.name ?? "/", type: .root)
+        rootItem.set(url: archiveUrl, typeId: detectorResult.type.id)
+        buildTree(for: entries, at: rootItem)
+        
+        // set the root item
+        self.root = rootItem
+        self.selectedItem = rootItem
     }
     
     public func openAsync(item: ArchiveItem) async throws {
@@ -546,6 +582,18 @@ extension ArchiveState {
                         parent = n
                     }
                 }
+            }
+            
+            if let children = parent.children, children.contains(where: { $0.name == entry.name }) {
+                // In case an a folder is added to the parent due to a file in
+                // a sub folder, then adding this folder entry only would result in
+                // a duplicate folder. Ignore this entry as it exists already.
+                // Example:
+                // Entry 1: folder/test1.txt > folder added, test1.txt added as expected
+                // Entry 2: folder > folder added already because of entry 1, skip it here!
+                //
+                // This does not happen when Entry 2 comes before Entry 1. 
+                continue
             }
             
             entry.parent = parent

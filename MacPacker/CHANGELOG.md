@@ -1,4 +1,5 @@
 v0.13
+- feat: arj, dmg/apfs (Apple File System), chm, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk support
 - fix: Extracting folders does not include files
 
 v0.12
