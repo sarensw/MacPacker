@@ -107,6 +107,18 @@
       ]
     },
     {
+      "id": "fat",
+      "name": "FAT Disk Image",
+      "kind": "image",
+      "uti": ["public.disk-image"],
+      "extensions": ["fat"],
+      "mime": [],
+      "rules": [],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
       "id": "gzip",
       "name": "Gzip File",
       "kind": "compression",
@@ -390,6 +402,21 @@
         { "policy": "any", "tests": [{"type": "signature", "bytes": "76 68 64 78 66 69 6C 65", "offset": 0}] }
       ],
       "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "xar",
+      "name": "XAR Archive",
+      "kind": "archive",
+      "uti": ["com.apple.xar-archive"],
+      "extensions": ["xar"],
+      "mime": ["application/x-xar"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "78 61 72 21", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
         { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
       ]
     },
