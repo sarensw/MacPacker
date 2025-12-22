@@ -32,14 +32,36 @@ struct ContentView: View {
             ArchiveView()
             
             if breadcrumbPosition == .bottom {
-                Divider()
-                    .frame(height: 1)
-                    .background(.quinary)
-                
                 if let selectedItem = archiveState.selectedItem {
+                    Divider()
+                        .frame(height: 1)
+                        .background(.quinary)
+                    
                     BreadcrumbView(for: selectedItem)
                 }
             }
+            
+            Divider()
+                .frame(height: 1)
+                .background(.quinary)
+            
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                if archiveState.isBusy {
+                    ProgressView()
+                        .scaleEffect(0.4)
+                        .frame(height: 14)
+                        .progressViewStyle(.circular)
+                    
+                    Text(verbatim: "\(archiveState.status ?? "")")
+                        .fontWeight(.light)
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                }
+                
+                Spacer()
+            }
+            .padding(.horizontal, 4)
+            .frame(height: 24)
         }
         .if(!.macOS13) { view in
             view.toolbar {

@@ -33,6 +33,7 @@ public class ArchiveState: ObservableObject {
     
     // UI State
     @Published private(set) public var isBusy: Bool = false
+    @Published private(set) public var status: String? = nil
     @Published private(set) public var progress: Double = 0.0
     @Published private(set) public var error: String? = nil
     @Published public var isReloadNeeded: Bool = false
@@ -81,6 +82,7 @@ extension ArchiveState {
             do {
                 try await self.openAsync(url: url)
                 
+                self.isBusy = false
                 self.isReloadNeeded = true
                 self.selectedItems = []
             } catch {
@@ -99,6 +101,7 @@ extension ArchiveState {
             do {
                 try await self.openAsync(item: item)
                 
+                self.isBusy = false
                 self.isReloadNeeded = true
                 self.selectedItems = []
             } catch {
@@ -372,7 +375,9 @@ extension ArchiveState {
                 throw ArchiveError.extractionFailed("Could not create temporary directory")
             }
             
-            let entries = try await engine.loadArchive(url: url)
+            let entries = try await engine.loadArchive(url: url) { count in
+                status = "loading... (\(count) entries found)"
+            }
             
             guard entries.count > 0 else {
                 throw ArchiveError.extractionFailed("Extraction of \(url.lastPathComponent) resulted in no files")
@@ -397,13 +402,15 @@ extension ArchiveState {
         // other composition, then decompress first
         
         // set the entries
-        let entries = try await engine.loadArchive(url: archiveUrl)
-        self.entries = Dictionary(uniqueKeysWithValues: entries.map({ ($0.id, $0) }))
+        let enries = try await engine.loadArchive(url: archiveUrl) { count in
+            status = "loading... (\(count) entries found)"
+        }
+        self.entries = Dictionary(uniqueKeysWithValues: enries.map({ ($0.id, $0) }))
         
         // build the hierarchy
         let rootItem = ArchiveItem(name: self.name ?? "/", type: .root)
         rootItem.set(url: archiveUrl, typeId: detectorResult.type.id)
-        buildTree(for: entries, at: rootItem)
+        buildTree(for: enries, at: rootItem)
         
         // set the root item
         self.root = rootItem
@@ -518,7 +525,9 @@ extension ArchiveState {
     ///   - engine: engine to use
     private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine) async throws {
         if let url = archiveItem.url {
-            let entries = try await engine.loadArchive(url: url)
+            let entries = try await engine.loadArchive(url: url) { count in
+                status = "loading... (\(count) entries found)"
+            }
             buildTree(for: entries, at: archiveItem)
         }
     }
@@ -559,7 +568,11 @@ extension ArchiveState {
     }
     
     private func buildTree(for entries: [ArchiveItem], at root: ArchiveItem) {
+        var i = 1
         for entry in entries {
+            status = "building tree... \(i / entries.count)%"
+            i += 1
+            
             let virtualPath = entry.virtualPath ?? "/"
             var parent: ArchiveItem = root
             

@@ -15,7 +15,7 @@ public protocol ArchiveEngine: Sendable {
     /// Loads the given archive to retrieve all entries (in form of `ArchiveItem`)
     /// - Parameter url: url of the archive
     /// - Returns: list of all entries
-    func loadArchive(url: URL) async throws -> [ArchiveItem]
+    func loadArchive(url: URL, loadCountUpdated: @MainActor @Sendable (Int) -> Void) async throws -> [ArchiveItem]
     
     /// Extracts the given item from the given archive to a temporary location
     /// - Parameters:

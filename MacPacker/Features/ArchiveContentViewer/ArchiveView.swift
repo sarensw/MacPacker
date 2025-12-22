@@ -63,7 +63,7 @@ struct ArchiveView: View {
     // functions
     //
     
-    @MainActor
+//    @MainActor
     func drop(_ url: URL) async {
         state.clean()
         state.open(url: url)

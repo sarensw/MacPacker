@@ -10,7 +10,7 @@ import Subprocess
 import System
 
 final class Archive7ZipEngine: ArchiveEngine {
-    func loadArchive(url: URL) async throws -> [ArchiveItem] {
+    func loadArchive(url: URL, loadCountUpdated: @MainActor @Sendable (Int) -> Void) async throws -> [ArchiveItem] {
         guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
             print("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
@@ -29,6 +29,8 @@ final class Archive7ZipEngine: ArchiveEngine {
                 } else if inBlock {
                     if let item = parse7zListLineFast(line.trimmingCharacters(in: .newlines)) {
                         items.append(item)
+                        
+                        await loadCountUpdated(items.count)
                     }
                 }
             }
