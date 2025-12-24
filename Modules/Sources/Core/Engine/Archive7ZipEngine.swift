@@ -10,7 +10,57 @@ import Subprocess
 import System
 
 final class Archive7ZipEngine: ArchiveEngine {
-    func loadArchive(url: URL, loadCountUpdated: @MainActor @Sendable (Int) -> Void) async throws -> [ArchiveItem] {
+    func makeTempFileDescriptor() throws -> FileDescriptor {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+
+        FileManager.default.createFile(atPath: url.path, contents: nil)
+
+        return try FileDescriptor.open(
+            FilePath(url.path),
+            .readWrite,
+            options: [.truncate]
+        )
+    }
+    
+    func readLines(from fd: FileDescriptor) throws -> [String] {
+        // Rewind to start
+        _ = try fd.seek(offset: 0, from: .start)
+
+        var buffer = [UInt8](repeating: 0, count: 4096)
+        var remainder = Data()
+        var lines: [String] = []
+
+        while true {
+            let bytesRead = try buffer.withUnsafeMutableBytes { rawBuffer in
+                try fd.read(into: rawBuffer)
+            }
+
+            if bytesRead == 0 { break }
+
+            remainder.append(Data(buffer.prefix(bytesRead)))
+
+            while let newlineRange = remainder.firstRange(of: Data([0x0A])) {
+                let lineData = remainder[..<newlineRange.lowerBound]
+                remainder.removeSubrange(..<newlineRange.upperBound)
+
+                if let line = String(data: lineData, encoding: .utf8) {
+                    lines.append(line)
+                }
+            }
+        }
+
+        // last line (no trailing newline)
+        if !remainder.isEmpty,
+           let line = String(data: remainder, encoding: .utf8) {
+            lines.append(line)
+        }
+
+        return lines
+    }
+    
+    
+    func loadArchive(url: URL) async throws -> [ArchiveItem] {
         guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
             print("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
@@ -18,23 +68,45 @@ final class Archive7ZipEngine: ArchiveEngine {
         let path = FilePath(cmdUrl.path)
         var items: [ArchiveItem] = []
         
+        let tempFileDescriptor = try makeTempFileDescriptor()
         let _ = try await Subprocess.run(
             .path(path),
-            arguments: ["l", url.path]
-        ) { execution, standardOutput in
-            var inBlock: Bool = false
-            for try await line in standardOutput.lines() {
-                if line.starts(with: "-------------------") {
-                    inBlock.toggle()
-                } else if inBlock {
-                    if let item = parse7zListLineFast(line.trimmingCharacters(in: .newlines)) {
-                        items.append(item)
-                        
-                        await loadCountUpdated(items.count)
-                    }
+            arguments: ["l", url.path],
+            output: .fileDescriptor(tempFileDescriptor, closeAfterSpawningProcess: false)
+        )
+        
+        let lines = try readLines(from: tempFileDescriptor)
+
+        try tempFileDescriptor.close()
+        
+        var inBlock: Bool = false
+        for line in lines {
+            if line.starts(with: "-------------------") {
+                inBlock.toggle()
+            } else if inBlock {
+                if let item = parse7zListLineFast(line.trimmingCharacters(in: .newlines)) {
+                    items.append(item)
                 }
             }
         }
+        
+//        let _ = try await Subprocess.run(
+//            .path(path),
+//            arguments: ["l", url.path]
+//        ) { execution, standardOutput in
+//            var inBlock: Bool = false
+//            for try await line in standardOutput.lines() {
+//                if line.starts(with: "-------------------") {
+//                    inBlock.toggle()
+//                } else if inBlock {
+//                    if let item = parse7zListLineFast(line.trimmingCharacters(in: .newlines)) {
+//                        items.append(item)
+//                        
+//                        await loadCountUpdated(items.count)
+//                    }
+//                }
+//            }
+//        }
         
         return items
     }

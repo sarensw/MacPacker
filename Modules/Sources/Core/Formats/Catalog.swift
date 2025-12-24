@@ -12,7 +12,7 @@ public struct CatalogDto: Codable {
 
 // MARK: - Formats
 
-public struct ArchiveTypeDto: Codable {
+public struct ArchiveTypeDto: Codable, Sendable {
     public let id: String
     public let name: String
     public let kind: String
@@ -27,17 +27,17 @@ public struct ArchiveTypeDto: Codable {
 
 // MARK: - Magic Rules
 
-public struct RuleGroupDto: Codable {
+public struct RuleGroupDto: Codable, Sendable {
     public let policy: Policy
     public let tests: [RuleTestDto]
 
-    public enum Policy: String, Codable {
+    public enum Policy: String, Codable, Sendable {
         case any
         case all
     }
 }
 
-public struct RuleTestDto: Codable {
+public struct RuleTestDto: Codable, Sendable {
     public let type: String
     public let bytes: [UInt8]
     public let offset: Int
@@ -62,7 +62,7 @@ public struct RuleTestDto: Codable {
 
 // MARK: - Engine Definitions
 
-public struct EngineDto: Codable {
+public struct EngineDto: Codable, Sendable {
     public let id: String                // engine ID ("xad", "7zip", ...)
     public let capabilities: [String]    // ["listContents", "extractFiles"]
     public let `default`: Bool?          // optional, only present on one item
@@ -70,7 +70,7 @@ public struct EngineDto: Codable {
 
 // MARK: - Compounds
 
-public struct CompositionTypeDto: Codable {
+public struct CompositionTypeDto: Codable, Sendable {
     public let id: String
     public let name: String
 

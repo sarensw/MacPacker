@@ -16,7 +16,7 @@ final class ArchiveSwcEngine: ArchiveEngine {
         return components.joined(separator: ".")
     }
     
-    func loadArchive(url: URL, loadCountUpdated: @MainActor @Sendable (Int) -> Void) async throws -> [ArchiveItem] {
+    func loadArchive(url: URL) async throws -> [ArchiveItem] {
         let name = stripFileExtension(url.lastPathComponent)
         return [
             ArchiveItem(name: String(name), virtualPath: name, type: .file)

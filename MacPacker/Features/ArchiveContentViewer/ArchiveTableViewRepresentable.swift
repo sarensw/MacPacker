@@ -143,7 +143,19 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                     folderIcon.size = NSSize(width: 16, height: 16)
                     imageView = NSImageView(image: folderIcon)
                 } else {
-                    let image = item.icon
+                    let image: NSImage
+                    if let cached = item.icon {
+                        image = cached
+                    } else {
+                        let computed: NSImage
+                        if item.type == .directory {
+                            computed = NSWorkspace.shared.icon(for: .folder)
+                        } else {
+                            computed = NSWorkspace.shared.icon(forFileType: item.ext)
+                        }
+                        item.icon = computed
+                        image = computed
+                    }
                     image.size = NSSize(width: 16, height: 16)
                     imageView = NSImageView(image: image)
                 }

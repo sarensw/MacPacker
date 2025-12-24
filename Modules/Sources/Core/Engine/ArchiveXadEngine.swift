@@ -10,7 +10,7 @@ import XADMaster
 
 final class ArchiveXadEngine: ArchiveEngine {
     
-    func loadArchive(url: URL, loadCountUpdated: @MainActor @Sendable (Int) -> Void) async throws -> [ArchiveItem] {
+    func loadArchive(url: URL) async throws -> [ArchiveItem] {
         guard let archive = XADArchive(file: url.path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
@@ -64,7 +64,6 @@ final class ArchiveXadEngine: ArchiveEngine {
             )
             
             entries.append(entry)
-            await loadCountUpdated(entries.count)
         }
         return entries
     }

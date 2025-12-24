@@ -17,11 +17,13 @@ struct BreadcrumbItemView: View {
     
     var body: some View {
         HStack(spacing: 2) {
-            Image(nsImage: archiveItem.icon)
-                .resizable(resizingMode: .stretch)
-                .frame(
-                    width: 14,
-                    height: 14)
+            if let icon = archiveItem.icon {
+                Image(nsImage: icon)
+                    .resizable(resizingMode: .stretch)
+                    .frame(
+                        width: 14,
+                        height: 14)
+            }
             if showName {
                 Text(archiveItem.name)
                     .lineLimit(1)

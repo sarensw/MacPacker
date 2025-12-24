@@ -75,18 +75,49 @@ extension ArchiveState {
     // task handling within the Core library
     //
     
-    /// Opens the given url. Calls the async version in a Task to keep the heavy load
-    /// in the library
-    public func open(url: URL) {
-        Task {
-            do {
-                try await self.openAsync(url: url)
-                
-                self.isBusy = false
-                self.isReloadNeeded = true
-                self.selectedItems = []
-            } catch {
-                await MainActor.run {
+    /// This func is called with an item that is an archive (typed as .file, but detected as supported
+    /// archive) to be unfold in the sense that its hiearchy is loaded into the given hierarchy.
+    /// - Parameters:
+    ///   - archiveItem: item to load as archive
+    ///   - engine: engine to use
+    private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine) {
+        if let url = archiveItem.url {
+            self.isBusy = true
+            self.error = nil
+            self.name = url.lastPathComponent
+            self.ext = url.pathExtension
+            
+            let detector = self.archiveTypeDetector
+            let selector = self.archiveEngineSelector
+            
+            Task {
+                do {
+                    let archiveLoader = ArchiveLoader(
+                        archiveTypeDetector: detector,
+                        archiveEngineSelector: selector
+                    )
+                    
+                    self.status = "loading..."
+                    let loaderResult = try await archiveLoader.loadEntries(url: url)
+                    
+                    
+                    if loaderResult.error != nil {
+                        self.status = "failed to load"
+                        self.error = loaderResult.error
+                    }
+                    self.selectedItem = archiveItem
+                    
+                    self.status = "building tree..."
+                    
+                    let builderResult = await archiveLoader.buildTree(at: archiveItem)
+                    
+                    self.status = nil
+                    self.error = builderResult.error
+                    
+                    self.isBusy = false
+                    self.isReloadNeeded = true
+                    self.selectedItems = []
+                } catch {
                     self.error = error.localizedDescription
                     self.isBusy = false
                 }
@@ -94,16 +125,66 @@ extension ArchiveState {
         }
     }
     
-    /// Opens the given item which can be anything (e.g. file, folder, archive, root, ...)
-    /// - Parameter item: The item to open
-    public func open(item: ArchiveItem) {
+    /// Opens the given url. Calls the async version in a Task to keep the heavy load
+    /// in the library
+    public func open(url: URL) {
+        self.isBusy = true
+        self.error = nil
+        self.name = url.lastPathComponent
+        self.ext = url.pathExtension
+        
+        let detector = self.archiveTypeDetector
+        let selector = self.archiveEngineSelector
+        
         Task {
             do {
-                try await self.openAsync(item: item)
+                let archiveLoader = ArchiveLoader(
+                    archiveTypeDetector: detector,
+                    archiveEngineSelector: selector
+                )
+                
+                self.status = "loading..."
+                let loaderResult = try await archiveLoader.loadEntries(url: url)
+                
+                
+                if loaderResult.error != nil {
+                    self.status = "failed to load"
+                    self.error = loaderResult.error
+                }
+                self.root = loaderResult.root
+                self.selectedItem = loaderResult.root
+                self.type = loaderResult.type
+                self.entries = Dictionary(uniqueKeysWithValues: loaderResult.entries.map({ ($0.id, $0) }))
+                
+                self.status = "building tree..."
+                
+                let builderResult = await archiveLoader.buildTree(at: loaderResult.root)
+                
+                self.status = nil
+                self.error = builderResult.error
                 
                 self.isBusy = false
                 self.isReloadNeeded = true
                 self.selectedItems = []
+            } catch {
+                self.error = error.localizedDescription
+                self.isBusy = false
+            }
+        }
+    }
+    
+    /// Opens the given item which can be anything (e.g. file, folder, archive, root, ...)
+    /// - Parameter item: The item to open
+    public func open(item: ArchiveItem) {
+        Task.detached {
+            do {
+                try await self.openAsync(item: item)
+                
+                await MainActor.run {
+                    self.isBusy = false
+                    self.isReloadNeeded = true
+                    self.selectedItems = []
+                }
             } catch {
                 await MainActor.run {
                     self.error = error.localizedDescription
@@ -344,78 +425,7 @@ extension ArchiveState {
     // directly to ensure that the unit tests can run properly.
     //
     
-    /// Opens the given URL, assuming this is an archive. `openAsync(url:)` will figure out the
-    /// archive type, select the proper engine and then load all info like type info, entries, hierarchy ... .
-    /// - Parameter url: The url to open
-    public func openAsync(url: URL) async throws {
-        self.url = url
-        self.name = url.lastPathComponent
-        self.ext = url.pathExtension
-        
-        self.isBusy = true
-        self.progress = 0
-        self.error = nil
-        
-        // in case this is a compount `archiveUrl` will hold the extracted url
-        var archiveUrl: URL? = url
-        
-        guard let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true) else {
-            throw ArchiveError.invalidArchive("Could not detect archive type")
-        }
-        
-        if let compound = detectorResult.composition {
-            // this is a compound, in which case we decompress first,
-            // then check the actual archive later
-            
-            guard let engine = archiveEngineSelector.engine(for: compound.components.last!) else {
-                throw ArchiveError.extractionFailed("Could not find engine for detected archive type")
-            }
-            
-            guard let temp = createTempDirectory() else {
-                throw ArchiveError.extractionFailed("Could not create temporary directory")
-            }
-            
-            let entries = try await engine.loadArchive(url: url) { count in
-                status = "loading... (\(count) entries found)"
-            }
-            
-            guard entries.count > 0 else {
-                throw ArchiveError.extractionFailed("Extraction of \(url.lastPathComponent) resulted in no files")
-            }
-            
-            archiveUrl = try await engine.extract(item: entries[0], from: url, to: temp.url)
-        }
-        
-        // This is either the original archive, or the extracted archive from the
-        // compound
-        guard let engine = archiveEngineSelector.engine(for: detectorResult.type.id) else {
-            throw ArchiveError.invalidArchive("Could not find engine for detected archive type")
-        }
-        guard let archiveUrl else {
-            throw ArchiveError.invalidArchive("Somehow we lost the archiveUrl while decompressing")
-        }
-        
-        // set the type
-        self.type = detectorResult.type
-        
-        // treat the composition here > if this is a tar.bz2 (or any
-        // other composition, then decompress first
-        
-        // set the entries
-        let enries = try await engine.loadArchive(url: archiveUrl) { count in
-            status = "loading... (\(count) entries found)"
-        }
-        self.entries = Dictionary(uniqueKeysWithValues: enries.map({ ($0.id, $0) }))
-        
-        // build the hierarchy
-        let rootItem = ArchiveItem(name: self.name ?? "/", type: .root)
-        rootItem.set(url: archiveUrl, typeId: detectorResult.type.id)
-        buildTree(for: enries, at: rootItem)
-        
-        // set the root item
-        self.root = rootItem
-        self.selectedItem = rootItem
-    }
+    
     
     public func openAsync(item: ArchiveItem) async throws {
         switch item.type {
@@ -518,20 +528,6 @@ extension ArchiveState {
         return nil
     }
     
-    /// This func is called with an item that is an archive (typed as .file, but detected as supported
-    /// archive) to be unfold in the sense that its hiearchy is loaded into the given hierarchy.
-    /// - Parameters:
-    ///   - archiveItem: item to load as archive
-    ///   - engine: engine to use
-    private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine) async throws {
-        if let url = archiveItem.url {
-            let entries = try await engine.loadArchive(url: url) { count in
-                status = "loading... (\(count) entries found)"
-            }
-            buildTree(for: entries, at: archiveItem)
-        }
-    }
-    
     public func createTempDirectory() -> (id: String, url: URL)? {
         do {
             let applicationSupport = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
@@ -565,53 +561,6 @@ extension ArchiveState {
         guard let url, let typeId else { return nil }
     
         return (typeId, url)
-    }
-    
-    private func buildTree(for entries: [ArchiveItem], at root: ArchiveItem) {
-        var i = 1
-        for entry in entries {
-            status = "building tree... \(i / entries.count)%"
-            i += 1
-            
-            let virtualPath = entry.virtualPath ?? "/"
-            var parent: ArchiveItem = root
-            
-            let components = virtualPath.split(separator: "/")
-            
-            if components.count > 0 {
-                for i in 0..<components.count - 1 {
-                    let component = components[i]
-                    
-                    if let n = parent.children?.first(where: { $0.name == String(component) }) {
-                        parent = n
-                    } else {
-                        let n = ArchiveItem(
-                            name: String(component),
-                            virtualPath: virtualPath,
-                            type: .directory,
-                            parent: parent
-                        )
-                        parent.addChild(n)
-                        parent = n
-                    }
-                }
-            }
-            
-            if let children = parent.children, children.contains(where: { $0.name == entry.name }) {
-                // In case an a folder is added to the parent due to a file in
-                // a sub folder, then adding this folder entry only would result in
-                // a duplicate folder. Ignore this entry as it exists already.
-                // Example:
-                // Entry 1: folder/test1.txt > folder added, test1.txt added as expected
-                // Entry 2: folder > folder added already because of entry 1, skip it here!
-                //
-                // This does not happen when Entry 2 comes before Entry 1. 
-                continue
-            }
-            
-            entry.parent = parent
-            parent.addChild(entry)
-        }
     }
     
     /// Checks if the given archive extension is supported to be loaded in MacPacker
