@@ -281,6 +281,25 @@ extension ArchiveState {
         self.selectedItems = []
     }
     
+    /// Opens the parent of the current view
+    public func openParent() {
+        if selectedItem?.type == .root {
+            return
+        }
+        
+        let previousItem = selectedItem
+        
+        selectedItem = selectedItem?.parent
+        
+        self.isReloadNeeded = true
+        
+        if let previousItem {
+            self.selectedItems = [previousItem]
+        } else {
+            self.selectedItems = []
+        }
+    }
+    
     /// Opens the given item which can be anything (e.g. file, folder, archive, root, ...)
     /// - Parameter item: The item to open
     private func openExtractableItem(item: ArchiveItem) {
@@ -484,24 +503,6 @@ extension ArchiveState {
         
     }
     
-    public func openParent() {
-        if selectedItem?.type == .root {
-            return
-        }
-        
-        let previousItem = selectedItem
-        
-        selectedItem = selectedItem?.parent
-        
-        self.isReloadNeeded = true
-        
-        if let previousItem {
-            self.selectedItems = [previousItem]
-        } else {
-            self.selectedItems = []
-        }
-    }
-    
     /// Updates the quick look preview URL. The previewer we're using is the default systems
     /// preview that is called Quick Look and that can be reached via Space in Finder
     ///
@@ -560,6 +561,24 @@ extension ArchiveState {
                 updateSelectedItemForQuickLook()
             }
         }
+    }
+    
+    public func selectionOffset(selection: IndexSet) -> IndexSet {
+        guard let selectedItem else { return selection }
+        let hasParent = selectedItem.type != .root
+        
+        var adjustedSelection: IndexSet = selection
+        if hasParent {
+            let shifted = selection.compactMap { idx -> Int? in
+                let v = idx + 1
+                return v < 0 ? nil : v
+            }
+            adjustedSelection = IndexSet(shifted)
+        } else {
+            adjustedSelection = selection
+        }
+        
+        return adjustedSelection
     }
     
     //

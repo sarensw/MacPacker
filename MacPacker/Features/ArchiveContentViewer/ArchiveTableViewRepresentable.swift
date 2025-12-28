@@ -450,6 +450,19 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let tableView = (nsView.documentView as! NSTableView)
             DispatchQueue.main.async {
                 tableView.reloadData()
+                
+                if let selectedItem = archiveState.selectedItem,
+                   let children = selectedItem.children {
+                    let indexes = children.enumerated()
+                        .filter { filterItem in archiveState.selectedItems.contains(where: { item in filterItem.element.id == item.id })}
+                        .map { $0.offset }
+                    
+                    let indexSet = IndexSet(indexes)
+                    let correctedIndexSet = archiveState.selectionOffset(selection: indexSet)
+                    
+                    tableView.selectRowIndexes(correctedIndexSet, byExtendingSelection: false)
+                }
+                
                 isReloadNeeded = false
             }
         }
