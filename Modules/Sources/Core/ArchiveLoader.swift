@@ -23,6 +23,16 @@ final actor ArchiveLoader {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     
     private var entries: [ArchiveItem] = []
+    private var engine: (any ArchiveEngine)?
+    
+    // status passthrough from the engine to the UI
+    private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
+    private lazy var status: AsyncStream<EngineStatus> = {
+        AsyncStream { continuation in
+            self.statusContinuation = continuation
+            continuation.yield(.idle)
+        }
+    }()
     
     public init(
         archiveTypeDetector: ArchiveTypeDetector,
@@ -32,8 +42,35 @@ final actor ArchiveLoader {
         self.archiveEngineSelector = archiveEngineSelector
     }
     
-    /// Opens the given URL, assuming this is an archive. `openAsync(url:)` will figure out the
-    /// archive type, select the proper engine and then load all info like type info, entries, hierarchy ... .
+    /// Returns the status stream to the UI
+    /// - Returns: status stream from the underlying engine that is doing the actual extraction
+    public func statusStream() -> AsyncStream<EngineStatus> {
+        return status
+    }
+    
+    /// Forwards the status from the engine to the UI (this is just a bridge)
+    /// - Parameter s: the new engine status reported by the engine
+    public func yield(_ s: EngineStatus) {
+        statusContinuation?.yield(s)
+    }
+    
+    private func forwardStatus(from engine: any ArchiveEngine) -> Task<Void, Never> {
+        Task { [weak self] in
+            guard let self else { return }
+            for await s in await engine.statusStream() {
+                await self.yield(s)
+            }
+        }
+    }
+    
+    /// Cancels the loading progress
+    public func cancel() async {
+        guard let engine else { return }
+        await engine.cancel()
+    }
+    
+    /// Opens the given URL, assuming this is an archive. `loadEntries(url:)` will figure out the
+    /// archive type, select the proper engine and then load all info like type info, entries,  ... . The hiarchy is built in a separate step.
     /// - Parameter url: The url to open
     public func loadEntries(url: URL) async throws -> ArchiveLoaderLoadResult {
         // in case this is a compount `archiveUrl` will hold the extracted url
@@ -50,6 +87,11 @@ final actor ArchiveLoader {
             guard let engine = archiveEngineSelector.engine(for: compound.components.last!) else {
                 throw ArchiveError.extractionFailed("Could not find engine for detected archive type")
             }
+            self.engine = engine
+            
+            // build the status stream to forward the engine status to the UI
+            let forwardTaskCompound = forwardStatus(from: engine)
+            defer { forwardTaskCompound.cancel() }
             
             let archiveSupportUtilities = ArchiveSupportUtilities()
             guard let temp = archiveSupportUtilities.createTempDirectory() else {
@@ -65,25 +107,23 @@ final actor ArchiveLoader {
             archiveUrl = try await engine.extract(item: entries[0], from: url, to: temp.url)
         }
         
+        guard let archiveUrl else {
+            throw ArchiveError.invalidArchive("Somehow we lost the archiveUrl while decompressing")
+        }
+        
         // This is either the original archive, or the extracted archive from the
         // compound
         guard let engine = archiveEngineSelector.engine(for: detectorResult.type.id) else {
             throw ArchiveError.invalidArchive("Could not find engine for detected archive type")
         }
-        guard let archiveUrl else {
-            throw ArchiveError.invalidArchive("Somehow we lost the archiveUrl while decompressing")
-        }
+        self.engine = engine
         
-        // treat the composition here > if this is a tar.bz2 (or any
-        // other composition, then decompress first
+        // build the status stream to forward the engine status to the UI
+        let forwardTask = forwardStatus(from: engine)
+        defer { forwardTask.cancel() }
         
         // set the entries
-        print("1: \(Date.now)")
         self.entries = try await engine.loadArchive(url: archiveUrl)
-        
-        print("2: \(Date.now)")
-//        self.entries = Dictionary(uniqueKeysWithValues: enries.map({ ($0.id, $0) }))
-        print("3: \(Date.now)")
         
         // build the hierarchy
         let root = ArchiveItem(name: url.lastPathComponent, type: .root)
@@ -99,8 +139,11 @@ final actor ArchiveLoader {
         return result
     }
     
+    /// Builds the hierarchy from the list of entries for the given root. The root can be the entry of the opened
+    /// archive, or an item in the archive that is an archive itself
+    /// - Parameter root: root to attache the tree to
+    /// - Returns: tree of items
     func buildTree(at root: ArchiveItem) -> ArchiveLoaderBuildTreeResult {
-        print("4a: \(Date.now)")
         // #1: per-parent child lookup (already added)
         var childByParent: [ObjectIdentifier: [String: ArchiveItem]] = [:]
 
@@ -184,7 +227,10 @@ final actor ArchiveLoader {
             dirByPath[dirPath] = parent
             return parent
         }
+        
+        yield(.processing(progress: nil, message: "building tree..."))
 
+        var i = 0
         for entry in entries {
             let vp = entry.virtualPath ?? "/"
 
@@ -207,9 +253,12 @@ final actor ArchiveLoader {
                 root.addChild(entry)
                 setChild(entry, of: root)
             }
+            
+            if i % 1000 == 0 {
+                yield(.processing(progress: Double(i) / Double(entries.count) * 100, message: "building tree..."))
+            }
+            i += 1
         }
-        
-        print("4b: \(Date.now)")
         
         let result = ArchiveLoaderBuildTreeResult(
             error: nil

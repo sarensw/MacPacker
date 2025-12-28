@@ -8,7 +8,29 @@
 import Foundation
 import SWCompression
 
-final class ArchiveSwcEngine: ArchiveEngine {
+final actor ArchiveSwcEngine: ArchiveEngine {
+    private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
+    private lazy var status: AsyncStream<EngineStatus> = {
+        AsyncStream(bufferingPolicy: .bufferingNewest(50)) { continuation in
+            self.statusContinuation = continuation
+            continuation.yield(.idle)
+        }
+    }()
+    
+    func statusStream() -> AsyncStream<EngineStatus> {
+        AsyncStream { continuation in
+            self.statusContinuation = continuation
+            continuation.yield(.idle)
+        }
+    }
+    
+    private func emit(_ s: EngineStatus) {
+        statusContinuation?.yield(s)
+    }
+    
+    func cancel() async {
+    }
+    
     private func stripFileExtension( _ filename: String ) -> String {
         var components = filename.components(separatedBy: ".")
         guard components.count > 1 else { return filename }

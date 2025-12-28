@@ -8,7 +8,28 @@
 import Foundation
 import XADMaster
 
-final class ArchiveXadEngine: ArchiveEngine {
+final actor ArchiveXadEngine: ArchiveEngine {
+    private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
+    private lazy var status: AsyncStream<EngineStatus> = {
+        AsyncStream(bufferingPolicy: .bufferingNewest(50)) { continuation in
+            self.statusContinuation = continuation
+            continuation.yield(.idle)
+        }
+    }()
+    
+    func statusStream() -> AsyncStream<EngineStatus> {
+        AsyncStream { continuation in
+            self.statusContinuation = continuation
+            continuation.yield(.idle)
+        }
+    }
+    
+    private func emit(_ s: EngineStatus) {
+        statusContinuation?.yield(s)
+    }
+    
+    func cancel() async {
+    }
     
     func loadArchive(url: URL) async throws -> [ArchiveItem] {
         guard let archive = XADArchive(file: url.path) else {

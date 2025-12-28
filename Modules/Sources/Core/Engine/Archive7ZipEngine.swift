@@ -9,18 +9,31 @@ import Foundation
 import Subprocess
 import System
 
-final class Archive7ZipEngine: ArchiveEngine {
-    func makeTempFileDescriptor() throws -> FileDescriptor {
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-
-        FileManager.default.createFile(atPath: url.path, contents: nil)
-
-        return try FileDescriptor.open(
-            FilePath(url.path),
-            .readWrite,
-            options: [.truncate]
-        )
+final actor Archive7ZipEngine: ArchiveEngine {
+    private var isCancelled: Bool = false
+    
+    private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
+    private lazy var status: AsyncStream<EngineStatus> = {
+        AsyncStream(bufferingPolicy: .bufferingNewest(50)) { continuation in
+            self.statusContinuation = continuation
+            continuation.yield(.idle)
+        }
+    }()
+    
+    func statusStream() -> AsyncStream<EngineStatus> {
+        AsyncStream { continuation in
+            self.statusContinuation = continuation
+            continuation.yield(.idle)
+        }
+    }
+    
+    private func emit(_ s: EngineStatus) {
+        statusContinuation?.yield(s)
+    }
+    
+    func cancel() {
+        print("Archive7ZipEngine: Cancelling...")
+        isCancelled = true
     }
     
     func readLines(from fd: FileDescriptor) throws -> [String] {
@@ -59,6 +72,13 @@ final class Archive7ZipEngine: ArchiveEngine {
         return lines
     }
     
+    private func checkCancellation() throws {
+        if isCancelled || Task.isCancelled {
+            emit(.cancelled)
+            isCancelled = false
+            throw CancellationError()
+        }
+    }
     
     func loadArchive(url: URL) async throws -> [ArchiveItem] {
         guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
@@ -68,18 +88,34 @@ final class Archive7ZipEngine: ArchiveEngine {
         let path = FilePath(cmdUrl.path)
         var items: [ArchiveItem] = []
         
-        let tempFileDescriptor = try makeTempFileDescriptor()
+        emit(.processing(progress: nil, message: "running 7zz..."))
+        
+        let tempFileDescriptor = try ArchiveSupportUtilities().makeTempFileDescriptor()
+        defer {
+            do { try tempFileDescriptor.close() } catch {}
+        }
         let _ = try await Subprocess.run(
             .path(path),
             arguments: ["l", url.path],
             output: .fileDescriptor(tempFileDescriptor, closeAfterSpawningProcess: false)
-        )
+        ) { execution in
+            if isCancelled {
+                await execution.teardown(using: [
+                    .send(signal: .kill, allowedDurationToNextStep: .seconds(0.1))
+                ])
+            }
+        }
+        
+        try checkCancellation()
+        
+        emit(.processing(progress: nil, message: "7zz finished, start parsing..."))
         
         let lines = try readLines(from: tempFileDescriptor)
 
-        try tempFileDescriptor.close()
+        try checkCancellation()
         
         var inBlock: Bool = false
+        var i: Int = 0
         for line in lines {
             if line.starts(with: "-------------------") {
                 inBlock.toggle()
@@ -88,25 +124,16 @@ final class Archive7ZipEngine: ArchiveEngine {
                     items.append(item)
                 }
             }
+            
+            if i % 1000 == 0 {
+                try checkCancellation()
+                
+                emit(.processing(progress: Double(i) / Double(lines.count) * 100, message: "parsing..."))
+            }
+            i += 1
         }
         
-//        let _ = try await Subprocess.run(
-//            .path(path),
-//            arguments: ["l", url.path]
-//        ) { execution, standardOutput in
-//            var inBlock: Bool = false
-//            for try await line in standardOutput.lines() {
-//                if line.starts(with: "-------------------") {
-//                    inBlock.toggle()
-//                } else if inBlock {
-//                    if let item = parse7zListLineFast(line.trimmingCharacters(in: .newlines)) {
-//                        items.append(item)
-//                        
-//                        await loadCountUpdated(items.count)
-//                    }
-//                }
-//            }
-//        }
+        emit(.done)
         
         return items
     }
@@ -135,10 +162,16 @@ final class Archive7ZipEngine: ArchiveEngine {
                 \(args.reduce("", { $0 + $1 + "\n\t" }))
         """)
         
+        print()
+        print()
         let _ = try await Subprocess.run(
             .path(path),
             arguments: Arguments(args)
         ) { execution, standardOutput in
+            if isCancelled {
+                print("cancelled!!!")
+                await execution.teardown(using: [])
+            }
             var cnt = 0
             for try await line in standardOutput.lines() {
                 cnt += 1
@@ -146,6 +179,8 @@ final class Archive7ZipEngine: ArchiveEngine {
             }
             print("\(cnt) items found")
         }
+        print()
+        print()
         
         let resultUrl = destination.appendingPathComponent(virtualPath)
         return resultUrl

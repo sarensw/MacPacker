@@ -66,17 +66,12 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
         self.posixPermissions = posixPermissions
         self.index = index
         self.ext = ""
-//        self.icon = NSWorkspace.shared.icon(forFileType: ext)
-        
-//        self.icon = NSImage(size: .init(width: 16, height: 16))
         
         if type != .directory {
             self.ext = getExtension(name: name)
-//            self.icon = NSWorkspace.shared.icon(forFileType: ext)
         }
         if type == .directory {
             self.children = []
-//            self.icon = NSWorkspace.shared.icon(for: .folder)
         }
     }
     

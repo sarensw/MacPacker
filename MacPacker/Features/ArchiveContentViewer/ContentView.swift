@@ -9,6 +9,27 @@ import AppKit
 import Core
 import SwiftUI
 
+struct CancelEngineActionButton: View {
+    @State var hovered: Bool = false
+    
+    let pressed: () -> Void
+    
+    var body: some View {
+        Button {
+            pressed()
+        } label: {
+            Image(systemName: "x.circle.fill")
+                .foregroundStyle(hovered ? .primary : .secondary)
+                .onHover { hovered in
+                    self.hovered = hovered
+                }
+        }
+        .buttonStyle(.plain)
+        .padding(.leading, 8)
+        .padding(.trailing, 4)
+    }
+}
+
 struct ContentView: View {
     // settings
     @AppStorage(Keys.settingBreadcrumbPosition) var breadcrumbPosition: BreadcrumbPosition = .bottom
@@ -47,6 +68,10 @@ struct ContentView: View {
             
             HStack(alignment: .firstTextBaseline, spacing: 0) {
                 if archiveState.isBusy {
+                    CancelEngineActionButton() {
+                        archiveState.cancelCurrentOperation()
+                    }
+                    
                     ProgressView()
                         .scaleEffect(0.4)
                         .frame(height: 14)
@@ -56,6 +81,14 @@ struct ContentView: View {
                         .fontWeight(.light)
                         .font(.subheadline)
                         .foregroundStyle(.primary)
+                    
+                    if let progress = archiveState.progress {
+                        Text(verbatim: "\(progress)%")
+                            .fontWeight(.light)
+                            .font(.subheadline)
+                            .foregroundStyle(.primary)
+                            .padding(.leading, 4)
+                    }
                 }
                 
                 Spacer()

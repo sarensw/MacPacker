@@ -34,7 +34,7 @@ public class ArchiveState: ObservableObject {
     // UI State
     @Published private(set) public var isBusy: Bool = false
     @Published private(set) public var status: String? = nil
-    @Published private(set) public var progress: Double = 0.0
+    @Published private(set) public var progress: Int? = nil
     @Published private(set) public var error: String? = nil
     @Published public var isReloadNeeded: Bool = false
     
@@ -42,21 +42,12 @@ public class ArchiveState: ObservableObject {
     @Published public var openWithUrls: [URL] = []
     @Published public var previewItemUrl: URL?
     
-    // MARK: Logic
-//    private let handlerRegistry: HandlerRegistry
-//    private let formatCatalog: ArchiveTypeCatalog
-    
-//    private let extractor = ArchiveExtractor()
-    
     private let catalog: ArchiveTypeCatalog
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let archiveTypeDetector: ArchiveTypeDetector
     
-//    public init(catalog: ArchiveTypeCatalog) {
-//        self.catalog = catalog
-//        self.archiveEngineSelector = ArchiveEngineSelector(catalog: catalog)
-//        self.archiveTypeDetector = ArchiveTypeDetector(catalog: catalog)
-//    }
+    private var openTask: Task<Void, any Error>?
+    private var archiveLoader: ArchiveLoader?
     
     public init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
         self.catalog = catalog
@@ -67,13 +58,37 @@ public class ArchiveState: ObservableObject {
 
 extension ArchiveState {
     
-    //
-    // MARK: General Sync
-    //
-    // The list of function s down here is the synchrounous pendant
-    // that shall be used by the UI. This keeps the async handling and
-    // task handling within the Core library
-    //
+    /// Resets the state of the archive
+    private func reset() {
+        self.url = nil
+        self.name = nil
+        self.type = nil
+        self.ext = nil
+        
+        self.root = nil
+        
+        self.status = nil
+        
+        self.isBusy = false
+        self.isReloadNeeded = true
+        
+        self.selectedItem = nil
+        self.selectedItems = []
+        
+        self.archiveLoader = nil
+    }
+    
+    /// Cancels the current operation which can be either loading the archive or extracting
+    /// anything from the archive
+    public func cancelCurrentOperation() {
+        openTask?.cancel()
+        Task {
+            await archiveLoader?.cancel()
+            archiveLoader = nil
+            
+            reset()
+        }
+    }
     
     /// This func is called with an item that is an archive (typed as .file, but detected as supported
     /// archive) to be unfold in the sense that its hiearchy is loaded into the given hierarchy.
@@ -96,6 +111,10 @@ extension ArchiveState {
                         archiveTypeDetector: detector,
                         archiveEngineSelector: selector
                     )
+                    
+                    let stream = await archiveLoader.statusStream()
+                    let statusTask = receiveStatusUpdates(from: stream)
+                    defer { statusTask.cancel() }
                     
                     self.status = "loading..."
                     let loaderResult = try await archiveLoader.loadEntries(url: url)
@@ -125,9 +144,45 @@ extension ArchiveState {
         }
     }
     
-    /// Opens the given url. Calls the async version in a Task to keep the heavy load
-    /// in the library
+    /// This stream is the only way to get status from any engine in a concurrency safe way
+    /// - Parameter stream: the stream from the engine
+    /// - Returns: handler task that can be used for different actions like loading, extracting, ...
+    private func receiveStatusUpdates(from stream: AsyncStream<EngineStatus>) -> Task<Void, Never> {
+        let statusTask = Task {
+            for await status in stream {
+                switch status {
+                case .cancelled:
+                    self.status = nil
+                    self.progress = nil
+                    print("cancelled")
+                case .idle:
+                    self.status = nil
+                    self.progress = nil
+                    print("idle")
+                case .processing(let progress, let message):
+                    self.status = message
+                    if progress != nil {
+                        self.progress = Int(progress!)
+                    }
+                case .done:
+                    self.status = "done"
+                    self.progress = nil
+                    print("done")
+                case .error(let error):
+                    self.status = "error: \(error.localizedDescription)"
+                    self.progress = nil
+                    print("error: \(error.localizedDescription)")
+                }
+            }
+        }
+        return statusTask
+    }
+    
+    /// Opens the given url.
+    /// - Parameter url: url of the archiver to open
     public func open(url: URL) {
+        reset()
+        
         self.isBusy = true
         self.error = nil
         self.name = url.lastPathComponent
@@ -136,16 +191,22 @@ extension ArchiveState {
         let detector = self.archiveTypeDetector
         let selector = self.archiveEngineSelector
         
-        Task {
+        openTask = Task {
             do {
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: detector,
                     archiveEngineSelector: selector
                 )
+                self.archiveLoader = archiveLoader
+                
+                let stream = await archiveLoader.statusStream()
+                let statusTask = receiveStatusUpdates(from: stream)
+                defer { statusTask.cancel() }
                 
                 self.status = "loading..."
                 let loaderResult = try await archiveLoader.loadEntries(url: url)
                 
+                try Task.checkCancellation()
                 
                 if loaderResult.error != nil {
                     self.status = "failed to load"
@@ -158,39 +219,123 @@ extension ArchiveState {
                 
                 self.status = "building tree..."
                 
+                try Task.checkCancellation()
+                
                 let builderResult = await archiveLoader.buildTree(at: loaderResult.root)
                 
                 self.status = nil
                 self.error = builderResult.error
                 
+                self.selectedItems = []
+                
                 self.isBusy = false
                 self.isReloadNeeded = true
-                self.selectedItems = []
+                self.archiveLoader = nil
+                
+                try Task.checkCancellation()
+            } catch is CancellationError {
+                reset()
             } catch {
+                reset()
                 self.error = error.localizedDescription
-                self.isBusy = false
             }
         }
     }
     
+    public func open(item: ArchiveItem) {
+        switch item.type {
+        case .file:
+            // If it is a file, check first if it has children > this can
+            // only happen if the file is an archive and if the archive
+            // was temporarily extracted before
+            if item.children == nil {
+                // If the children is nil, then we need to figure out if this
+                // is an archive that we actually support, or whether it is
+                // a regular file.
+                //
+                // 1. Regular File: Open the file using the system default editor
+                // 2. Archive File: Extract the archive to a temporary internal
+                //                  location, and extend the hiearchy accordingly.
+                //                  Then set the item.
+                openExtractableItem(item: item)
+            } else {
+                // Do nothing here. It is an archive. It is extracted already.
+                // We have updated the hierarchy already. Just select the item
+                self.selectedItem = item
+            }
+        case .archive:
+            // TODO: This can never happen as each archive is also of type .file > Remove .archive as a type
+            break
+        case .directory:
+            self.selectedItem = item
+            break
+        case .root:
+            // Cannot happen as this never shows up
+            break
+        case .unknown:
+            Logger.error("Unhandled ArchiveItem.Type: \(item.name)")
+            break
+        }
+        
+        self.isReloadNeeded = true
+        self.selectedItems = []
+    }
+    
     /// Opens the given item which can be anything (e.g. file, folder, archive, root, ...)
     /// - Parameter item: The item to open
-    public func open(item: ArchiveItem) {
-        Task.detached {
+    private func openExtractableItem(item: ArchiveItem) {
+        self.isBusy = true
+        self.error = nil
+        self.status = "extracting..."
+        
+        let selector = self.archiveEngineSelector
+        
+        Task {
             do {
-                try await self.openAsync(item: item)
-                
-                await MainActor.run {
-                    self.isBusy = false
-                    self.isReloadNeeded = true
-                    self.selectedItems = []
+                // Extract the item first as we have to either open it in the system
+                // default preview or treat it as an archive
+                let archiveExtractor = ArchiveExtractor(
+                    archiveEngineSelector: selector
+                )
+                if let tempUrl = try await archiveExtractor.extractAsync(item: item) {
+
+                    // We check by extension here because we don't want to end up
+                    // opening files like .xlsx as an archive. An Excel file (or any
+                    // other archived file that is basically a .zip file) should be
+                    // extracted and treated like an Excel file instead of an archive
+                    //
+                    // TODO: Add the possibility via right click menu in MacPacker
+                    //       to open the file as archive instead.
+                    // TODO: considerComposition result should be true here
+                    if let detectionResult = archiveTypeDetector.detectByExtension(for: tempUrl, considerComposition: true),
+                       let engine = archiveEngineSelector.engine(for: detectionResult.type.id) {
+                        
+                        // set the services required for this nested archive
+                        item.set(
+                            url: tempUrl,
+                            typeId: detectionResult.type.id
+                        )
+
+                        // nested archive is extracted > time to parse its hierarchy
+                        unfold(item, using: engine)
+//                        let entries = try await engine.loadArchive(url: tempUrl)
+//                        buildTree(for: entries, at: archiveItem)
+//                        ArchiveHierarchyPrinter().printHierarchy(item: archive.rootNode)
+
+                        // set the nested archive as item
+                        selectedItem = item
+                    } else {
+                        // Could not detect any archive, just open the file
+                        NSWorkspace.shared.open(tempUrl)
+                    }
                 }
             } catch {
-                await MainActor.run {
-                    self.error = error.localizedDescription
-                    self.isBusy = false
-                }
+                self.error = error.localizedDescription
             }
+            
+            self.isBusy = false
+            self.isReloadNeeded = true
+            self.status = nil
         }
     }
     

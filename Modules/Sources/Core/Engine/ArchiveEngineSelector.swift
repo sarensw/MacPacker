@@ -41,20 +41,19 @@ public protocol ArchiveEngineSelectorProtocol {
 
 public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
     private let archiveEngineConfigStore: ArchiveEngineConfigStore
-    private var engines: [ArchiveEngineType: ArchiveEngine]
     
     public init(catalog: ArchiveTypeCatalog, configStore: ArchiveEngineConfigStore) {
         archiveEngineConfigStore = configStore
-        engines = [:]
-        engines[.xad] = ArchiveXadEngine()
-        engines[.`7zip`] = Archive7ZipEngine()
-        engines[.swc] = ArchiveSwcEngine()
     }
     
     public func engine(for id: String) -> ArchiveEngine? {
         if let engineId = archiveEngineConfigStore.selectedEngine(for: id) {
             Logger.debug("Using engine: \(engineId)")
-            return engines[engineId]
+            switch engineId {
+            case .`7zip`:   return Archive7ZipEngine()
+            case .swc:      return ArchiveSwcEngine()
+            case .xad:      return ArchiveXadEngine()
+            }
         }
         
         return nil
