@@ -38,9 +38,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
             
             Button {
-                if archiveState.url != nil {
-                    isExportingItem.toggle()
-                }
+                isExportingItem.toggle()
             } label: {
                 Label {
                     Text("Extract selected", comment: "Button in the tooblar that allows the user to extract the selected files.")
@@ -62,9 +60,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
             
             Button {
-                if archiveState.url != nil {
-                    isExportingAll.toggle()
-                }
+                isExportingAll.toggle()
             } label: {
                 Label {
                     Text("Extract archive", comment: "Button in the toolbar that allows the user to extract the full archive to a target directory.")
