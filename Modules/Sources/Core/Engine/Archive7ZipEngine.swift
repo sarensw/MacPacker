@@ -222,12 +222,15 @@ final actor Archive7ZipEngine: ArchiveEngine {
         return FilePath(cmdUrl.path)
     }
     
+    let dateParseStrategy = Date.ParseStrategy(format: "\(year: .defaultDigits)-\(month: .twoDigits)-\(day: .twoDigits) \(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased)):\(minute: .twoDigits):\(second: .twoDigits)", timeZone: .current)
+    
     private func parse7zListLineFast(_ line: String) -> ArchiveItem? {
         // 7z `l` layout (approx):
         // date(10) space time(8) space attrs(5) space size space compressed space path
         //          012345678901234567890123456789012345678901234567890123456789
         //          0         1         2         3         4         5
         // Example:
+        // 0         1         2         3         4         5         6         7
         // 2025-11-04 12:46:30 ..HS.    309592064    309592064  [SYSTEM]/$MFT
         //                     .....                            defaultArchive.tar
         
@@ -236,11 +239,31 @@ final actor Archive7ZipEngine: ArchiveEngine {
         let s = line
         let start = s.startIndex
         
+        // date
+        var modificationDate: Date?
+        do {
+            let dateStart = s.index(start, offsetBy: 0)
+            let dateEnd = s.index(dateStart, offsetBy: 19)
+            let dateString = String(s[dateStart..<dateEnd])
+            
+            modificationDate = try Date(dateString, strategy: dateParseStrategy)
+        } catch {
+            Logger.warning("Could not parse date from 7z list line: \(line)")
+        }
+        
         // attrs at ~20–25
         let attrStart = s.index(start, offsetBy: 20)
         let attrEnd   = s.index(attrStart, offsetBy: 5, limitedBy: s.endIndex) ?? s.endIndex
         let attrs     = s[attrStart..<attrEnd]
         let isDir = attrs.contains("D")
+        
+        // sizes
+        let compressedStart = s.index(start, offsetBy: 26)
+        let compressedEnd   = s.index(compressedStart, offsetBy: 12, limitedBy: s.endIndex) ?? s.endIndex
+        let compressedSize = Int(s[compressedStart..<compressedEnd].trimmingCharacters(in: .whitespaces)) ?? -1
+        let uncompressedStart = s.index(start, offsetBy: 39)
+        let uncompressedEnd   = s.index(uncompressedStart, offsetBy: 12, limitedBy: s.endIndex) ?? s.endIndex
+        let uncompressedSize = Int(s[uncompressedStart..<uncompressedEnd].trimmingCharacters(in: .whitespaces)) ?? -1
         
         // path at ~53+, skip leading spaces
         let pathStart = s.index(start, offsetBy: 53, limitedBy: s.endIndex) ?? s.endIndex
@@ -257,10 +280,20 @@ final actor Archive7ZipEngine: ArchiveEngine {
             name = path
         }
         
-        return ArchiveItem(
+        /**return ArchiveItem(
             name: name,
             virtualPath: path,
             type: isDir ? .directory : .file
+        )*/
+        
+        return ArchiveItem(
+            name: name,
+            virtualPath: path,
+            type: isDir ? .directory : .file,
+            compressedSize: compressedSize,
+            uncompressedSize: uncompressedSize,
+            modificationDate: modificationDate,
+            posixPermissions: 0
         )
     }
 }

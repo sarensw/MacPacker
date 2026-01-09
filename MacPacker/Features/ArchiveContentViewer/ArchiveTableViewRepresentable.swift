@@ -12,6 +12,13 @@ import Core
 import SwiftUI
 import UniformTypeIdentifiers
 
+enum SortOrder: String {
+    case name
+    case compressedSize
+    case uncompressedSize
+    case modificationDate
+}
+
 enum ArchiveViewerColumn: String, CaseIterable {
     case name
     case compressedSize
@@ -58,7 +65,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         
         func numberOfRows(in tableView: NSTableView) -> Int {
             guard let selectedItem = parent.archiveState.selectedItem else { return 0 }
-            guard let children = selectedItem.children else { return 0 }
+            guard let children = parent.archiveState.childItems else { return 0 }
             
             var childrenCount = children.count
             if selectedItem.parent != nil && selectedItem.type != .root {
@@ -121,6 +128,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         ) -> NSView? {
             guard let columnIdentifier = tableColumn?.identifier else { return nil }
             guard let selectedItem = parent.archiveState.selectedItem else { return nil }
+            guard let childItems = parent.archiveState.childItems else { return nil }
             
             // The root of an archive does not allow to go up.
             // All other levels allow to go up with the first item
@@ -128,8 +136,8 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let isParent = selectedItem.type != .root && row == 0
             let hasParent = selectedItem.type != .root
             let item = hasParent
-            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : selectedItem.children![row - 1])
-            : selectedItem.children![row]
+            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
+            : childItems[row]
             
             let cellView = NSTableCellView()
             cellView.identifier = columnIdentifier
@@ -242,6 +250,23 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             return cellView
         }
         
+        //
+        // MARK: Sorting
+        // The following methods are used to order the file list
+        //
+        
+        @MainActor func tableView(
+            _ tableView: NSTableView,
+            sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]
+        ) {
+            guard let sortDescriptors = tableView.sortDescriptors.first else { return }
+            
+            if let order = SortOrder(rawValue: sortDescriptors.key!) {
+                parent.archiveState.loadChildren(sortedBy: sortDescriptors)
+                parent.archiveState.isReloadNeeded = true
+            }
+        }
+        
         // ---
         // Drag function to external application using a promise
         //
@@ -258,12 +283,13 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             Logger.debug("Starting to drag item in row \(row)")
             
             guard let selectedItem = parent.archiveState.selectedItem else { return nil }
+            guard let childItems = parent.archiveState.childItems else { return nil }
             
             let isParent = selectedItem.type != .root && row == 0
             let hasParent = selectedItem.type != .root
             let item = hasParent
-            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : selectedItem.children![row - 1])
-            : selectedItem.children![row]
+            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
+            : childItems[row]
             
             // ignore the parent item
             if item.type == .unknown { return nil }
@@ -303,11 +329,11 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                     if isParent {
                         parent.archiveState.openParent()
                     } else {
-                        let item = selectedItem.children![clickedRow - 1]
+                        let item = parent.archiveState.childItems![clickedRow - 1]
                         parent.archiveState.open(item: item)
                     }
                 } else {
-                    let item = selectedItem.children![clickedRow]
+                    let item = parent.archiveState.childItems![clickedRow]
                     parent.archiveState.open(item: item)
                 }
             }
@@ -451,8 +477,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             DispatchQueue.main.async {
                 tableView.reloadData()
                 
-                if let selectedItem = archiveState.selectedItem,
-                   let children = selectedItem.children {
+                if let children = archiveState.childItems {
                     let indexes = children.enumerated()
                         .filter { filterItem in archiveState.selectedItems.contains(where: { item in filterItem.element.id == item.id })}
                         .map { $0.offset }
@@ -483,6 +508,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         colName.title = NSLocalizedString("Name", comment: "Column that shows the name of the archive files")
         colName.width = 300
         colName.resizingMask = .userResizingMask
+        colName.sortDescriptorPrototype = NSSortDescriptor(key: SortOrder.name.rawValue, ascending: true)
         tableView.addTableColumn(colName)
         
         let colSizeCompressed = NSTableColumn(identifier: ArchiveViewerColumn.compressedSize.identifier)

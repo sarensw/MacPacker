@@ -27,6 +27,8 @@ public class ArchiveState: ObservableObject {
     // Currently selected item (i.e. its children are shown in the
     // table of the archive view
     @Published private(set) public var selectedItem: ArchiveItem?
+    @Published private(set) public var childItems: [ArchiveItem]?
+    private var currentSortOrder: NSSortDescriptor? = nil
     
     // Items currently selected by the user in the tree / table
     @Published public var selectedItems: [ArchiveItem] = []
@@ -75,6 +77,9 @@ extension ArchiveState {
         self.selectedItem = nil
         self.selectedItems = []
         
+        self.childItems = nil
+        self.currentSortOrder = nil
+        
         self.archiveLoader = nil
     }
     
@@ -87,6 +92,29 @@ extension ArchiveState {
             archiveLoader = nil
             
             reset()
+        }
+    }
+    
+    public func loadChildren(sortedBy: NSSortDescriptor? = nil) {
+        guard let selectedItem else { return }
+        guard let sortedBy else {
+            childItems = selectedItem.children
+            currentSortOrder = nil
+            return
+        }
+        
+        guard let children = selectedItem.children else { return }
+        currentSortOrder = sortedBy
+
+        childItems = children.sorted { a, b in
+            if a.type != b.type { return a.type == .directory }
+
+            let cmp = a.name.localizedStandardCompare(b.name)
+            if sortedBy.ascending {
+                return cmp == .orderedAscending
+            } else {
+                return cmp == .orderedDescending
+            }
         }
     }
     
@@ -129,6 +157,8 @@ extension ArchiveState {
                     self.status = "building tree..."
                     
                     let builderResult = await archiveLoader.buildTree(at: archiveItem)
+                    
+                    loadChildren(sortedBy: currentSortOrder)
                     
                     self.status = nil
                     self.error = builderResult.error
@@ -214,6 +244,7 @@ extension ArchiveState {
                 }
                 self.root = loaderResult.root
                 self.selectedItem = loaderResult.root
+                
                 self.type = loaderResult.type
                 self.entries = Dictionary(uniqueKeysWithValues: loaderResult.entries.map({ ($0.id, $0) }))
                 
@@ -222,6 +253,8 @@ extension ArchiveState {
                 try Task.checkCancellation()
                 
                 let builderResult = await archiveLoader.buildTree(at: loaderResult.root)
+                
+                loadChildren(sortedBy: currentSortOrder)
                 
                 self.status = nil
                 self.error = builderResult.error
@@ -262,12 +295,14 @@ extension ArchiveState {
                 // Do nothing here. It is an archive. It is extracted already.
                 // We have updated the hierarchy already. Just select the item
                 self.selectedItem = item
+                loadChildren(sortedBy: currentSortOrder)
             }
         case .archive:
             // TODO: This can never happen as each archive is also of type .file > Remove .archive as a type
             break
         case .directory:
             self.selectedItem = item
+            loadChildren(sortedBy: currentSortOrder)
             break
         case .root:
             // Cannot happen as this never shows up
@@ -290,6 +325,7 @@ extension ArchiveState {
         let previousItem = selectedItem
         
         selectedItem = selectedItem?.parent
+        loadChildren(sortedBy: currentSortOrder)
         
         self.isReloadNeeded = true
         
@@ -343,6 +379,7 @@ extension ArchiveState {
 
                         // set the nested archive as item
                         selectedItem = item
+                        loadChildren(sortedBy: currentSortOrder)
                     } else {
                         // Could not detect any archive, just open the file
                         NSWorkspace.shared.open(tempUrl)
@@ -547,7 +584,7 @@ extension ArchiveState {
         }
         
         if let indexes = adjustedSelection,
-           let children = selectedItem.children {
+           let children = childItems {
             
             selectedItems.removeAll()
             for index in indexes {
@@ -601,6 +638,7 @@ extension ArchiveState {
                 // Do nothing here. It is an archive. It is extracted already.
                 // We have updated the hierarchy already. Just select the item
                 selectedItem = item
+                loadChildren(sortedBy: currentSortOrder)
             }
 
             // If the children is nil, then we need to figure out if this
@@ -643,6 +681,7 @@ extension ArchiveState {
 
                         // set the nested archive as item
                         selectedItem = item
+                        loadChildren(sortedBy: currentSortOrder)
                     } else {
                         // Could not detect any archive, just open the file
                         NSWorkspace.shared.open(tempUrl)
@@ -657,6 +696,7 @@ extension ArchiveState {
             break
         case .directory:
             selectedItem = item
+            loadChildren(sortedBy: currentSortOrder)
             break
         case .unknown:
             Logger.error("Unhandled ArchiveItem.Type: \(item.name)")
