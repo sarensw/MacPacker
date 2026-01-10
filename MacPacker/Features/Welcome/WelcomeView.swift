@@ -69,6 +69,8 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
+            WhatsNewPill(key: LocalizedStringResource("v0.13_new_formats", defaultValue: "arj, dmg/apfs (Apple File System), chm, fat, ntfs, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk, xar support", table: "LocalizableWhatsNew"), type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.13_feat_finder_extension_settings", defaultValue: "Added settings for easier access to managing the Finder file provider extension", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.13_fix_extract_folders", defaultValue: "Extracting folders does not include files", table: "LocalizableWhatsNew"), type: .bug)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

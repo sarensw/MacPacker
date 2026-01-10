@@ -96,7 +96,7 @@ struct FormatSettingsView: View {
                 Button {
                     refreshFormatConfig()
                 } label: {
-                    Label("Refresh", systemImage: "arrow.counterclockwise")
+                    Label("Refresh", systemImage: "arrow.clockwise")
                 }
                 
                 Button {

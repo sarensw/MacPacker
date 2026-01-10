@@ -33,6 +33,12 @@ struct SettingsView: View {
                     }
                     .tag(2)
                 
+                IntegrationSettingsView()
+                    .tabItem {
+                        Image(systemName: "puzzlepiece.extension")
+                        Text("settings.extensions", comment: "macOS extensions such as Finder / Quick Look.")
+                    }
+                
                 #if DEBUG
                 DebugSettingsView()
                     .tabItem {

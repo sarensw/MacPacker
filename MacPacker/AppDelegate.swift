@@ -7,6 +7,7 @@
 
 import AppKit
 import Core
+import FinderSync
 import Foundation
 import SwiftUI
 import TailBeatKit
@@ -84,11 +85,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
         
-        #if !DEBUG
         if FIFinderSyncController.isExtensionEnabled == false {
             FIFinderSyncController.showExtensionManagementInterface()
         }
-        #endif
     }
     
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
