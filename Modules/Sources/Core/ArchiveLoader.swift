@@ -88,6 +88,7 @@ final actor ArchiveLoader {
                 throw ArchiveError.extractionFailed("Could not find engine for detected archive type")
             }
             self.engine = engine
+            yield(.processing(progress: nil, message: "engine loaded: \(String(describing: type(of: engine)))"))
             
             // build the status stream to forward the engine status to the UI
             let forwardTaskCompound = forwardStatus(from: engine)
@@ -97,26 +98,33 @@ final actor ArchiveLoader {
             guard let temp = archiveSupportUtilities.createTempDirectory() else {
                 throw ArchiveError.extractionFailed("Could not create temporary directory")
             }
+            yield(.processing(progress: nil, message: "temp dir created: \(temp.url)"))
             
             let entries = try await engine.loadArchive(url: url)
+            yield(.processing(progress: nil, message: "entries found: \(entries.count)"))
             
             guard entries.count > 0 else {
                 throw ArchiveError.extractionFailed("Extraction of \(url.lastPathComponent) resulted in no files")
             }
             
             archiveUrl = try await engine.extract(item: entries[0], from: url, to: temp.url)
+            yield(.processing(progress: nil, message: "entry extracted: \(String(describing: archiveUrl))"))
         }
         
         guard let archiveUrl else {
+            yield(.processing(progress: nil, message: "archiveUrl lost: \(detectorResult.type.id)"))
             throw ArchiveError.invalidArchive("Somehow we lost the archiveUrl while decompressing")
         }
         
         // This is either the original archive, or the extracted archive from the
         // compound
+        yield(.processing(progress: nil, message: "loading engine for: \(detectorResult.type.id)"))
         guard let engine = archiveEngineSelector.engine(for: detectorResult.type.id) else {
+            yield(.processing(progress: nil, message: "invalid archive type: \(detectorResult.type.id)"))
             throw ArchiveError.invalidArchive("Could not find engine for detected archive type")
         }
         self.engine = engine
+        yield(.processing(progress: nil, message: "engine loaded: \(String(describing: type(of: engine))), for: \(detectorResult.type.id)"))
         
         // build the status stream to forward the engine status to the UI
         let forwardTask = forwardStatus(from: engine)
@@ -124,6 +132,7 @@ final actor ArchiveLoader {
         
         // set the entries
         self.entries = try await engine.loadArchive(url: archiveUrl)
+        yield(.processing(progress: nil, message: "entries found: \(self.entries.count)"))
         
         // build the hierarchy
         let root = ArchiveItem(name: url.lastPathComponent, type: .root)

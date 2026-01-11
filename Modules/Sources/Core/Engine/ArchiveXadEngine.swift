@@ -86,6 +86,9 @@ final actor ArchiveXadEngine: ArchiveEngine {
             
             entries.append(entry)
         }
+        
+        emit(.done)
+        
         return entries
     }
     

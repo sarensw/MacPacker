@@ -40,6 +40,9 @@ final actor ArchiveSwcEngine: ArchiveEngine {
     
     func loadArchive(url: URL) async throws -> [ArchiveItem] {
         let name = stripFileExtension(url.lastPathComponent)
+        
+        emit(.done)
+        
         return [
             ArchiveItem(name: String(name), virtualPath: name, type: .file)
         ]
@@ -48,7 +51,7 @@ final actor ArchiveSwcEngine: ArchiveEngine {
     func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL? {
         let sourceFileName = url.lastPathComponent
         let extractedFileName = stripFileExtension(sourceFileName)
-        let extractedFilePathName = url.appendingPathComponent(extractedFileName, isDirectory: false)
+        let extractedFilePathName = destination.appendingPathComponent(extractedFileName, isDirectory: false)
         
         do {
             if let data = try? Data(contentsOf: url, options: .mappedIfSafe) {

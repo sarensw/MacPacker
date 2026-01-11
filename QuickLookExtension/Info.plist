@@ -10,24 +10,37 @@
 			<false/>
 			<key>QLSupportedContentTypes</key>
 			<array>
-				<string>public.archive</string>
-				<string>org.7-zip.7-zip-archive</string>
-				<string>org.7-zip.lha-archive</string>
-				<string>public.bzip2-archive</string>
-				<string>com.microsoft.cab</string>
-				<string>public.cpio-archive</string>
-				<string>public.zip-archive</string>
-				<string>com.rarlab.rar-archive</string>
-				<string>org.gnu.gnu-zip-archive</string>
-				<string>public.iso-image</string>
-				<string>org.tukaani.lzma-archive</string>
 				<string>cx.c3.lzx-archive</string>
-				<string>com.stuffit.archive.sit</string>
-				<string>com.stuffit.archive.sitx</string>
-				<string>public.tar-archive</string>
-				<string>org.tukaani.xz-archive</string>
-				<string>public.z-archive</string>
-				<string>com.winzip.zipx-archive</string>
+                <string>com.apple.self-extracting-archive</string>
+                <string>com.apple.xar-archive</string>
+				<string>com.microsoft.cab</string>
+                <string>com.microsoft.lzx-archive</string>
+                <string>com.pkware.zip-archive</string>
+                <string>com.rarlab.rar-archive</string>
+                <string>com.redhat.rpm-archive</string>
+                <string>com.stuffit.archive.sit</string>
+                <string>com.stuffit.archive.sitx</string>
+                <string>com.winzip.zipx-archive</string>
+                <string>org.7-zip.7-zip-archive</string>
+                <string>org.7-zip.lha-archive</string>
+                <string>org.bzip.bzip2-tar-archive</string>
+                <string>org.gnu.gnu-zip-archive</string>
+                <string>org.gnu.gnu-zip-tar-archive</string>
+                <string>org.tukaani.lzma-archive</string>
+                <string>org.tukaani.tar-xz-archive</string>
+                <string>org.tukaani.xz-archive</string>
+                <string>public.archive</string>
+                <string>public.bzip2-archive</string>
+                <string>public.cpio-archive</string>
+                <string>public.gz-archive</string>
+                <string>public.iso-image</string>
+                <string>public.lz4-archive</string>
+                <string>public.lz4-tar-archive</string>
+                <string>public.rpm-archive</string>
+                <string>public.tar-archive</string>
+                <string>public.xz-archive</string>
+                <string>public.z-archive</string>
+                <string>public.zip-archive</string>
 			</array>
 			<key>QLSupportsSearchableItems</key>
 			<false/>

@@ -6,11 +6,12 @@
 //
 
 import AppKit
+import Core
 import os
 import UniformTypeIdentifiers
 
 class ArchiveViewController: NSViewController {
-    var archive: Archive? {
+    var state: ArchiveState? {
         didSet {
             outlineView.reloadData()
         }
@@ -98,22 +99,26 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
 //    private var rootNode: ArchiveItem { hierarchy?.root ?? .root }
     
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        guard let archive = archive else { return 0 }
+        guard let state else { return 0 }
+        guard let node = (item as? ArchiveItem) ?? state.root else { return 0 }
+        guard let children = node.children else { return 0 }
         
-        let node = (item as? ArchiveItem) ?? archive.rootNode
-        return node.children.count
+        return children.count
     }
     
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        guard let archive = archive else { return 0 }
+        guard let state else { return 0 }
+        guard let node = (item as? ArchiveItem) ?? state.root else { return 0 }
+        guard let children = node.children else { return 0 }
         
-        let node = (item as? ArchiveItem) ?? archive.rootNode
-        return node.children[index]
+        return children[index]
     }
     
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
         guard let node = item as? ArchiveItem else { return false }
-        return !node.children.isEmpty
+        guard let children = node.children else { return false }
+        
+        return !children.isEmpty
     }
     
     func outlineView(
@@ -129,33 +134,64 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
         
         switch columnIdentifier {
         case ArchiveViewerColumn.name.identifier:
-            let textField = NSTextField(labelWithString: archiveItem.name)
-            cellView.addSubview(textField)
-            textField.translatesAutoresizingMaskIntoConstraints = false
-            textField.usesSingleLineMode = true
-            textField.lineBreakMode = .byTruncatingTail
-            
+            // Image
+            let iconView = NSImageView()
+            iconView.translatesAutoresizingMaskIntoConstraints = false
+            iconView.imageScaling = .scaleProportionallyDown
+            iconView.setContentHuggingPriority(.required, for: .horizontal)
+            iconView.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+            let icon: NSImage? = {
+                if archiveItem.type == .directory {
+                    return SystemHelper.shared.getNSImageForFolder()
+                } else {
+                    return SystemHelper.shared.getNSImageByExtension(fileName: archiveItem.name)
+                }
+            }()
+            iconView.image = icon
+            iconView.image?.size = NSSize(width: 16, height: 16)
+
+            // Text
+            let label = NSTextField(labelWithString: archiveItem.name)
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.usesSingleLineMode = true
+            label.lineBreakMode = .byTruncatingTail
+
+            // Wire up standard properties (handy for accessibility/reuse expectations)
+            cellView.imageView = iconView
+            cellView.textField = label
+
+            cellView.addSubview(iconView)
+            cellView.addSubview(label)
+
             NSLayoutConstraint.activate([
-                textField.trailingAnchor.constraint(equalTo: cellView.trailingAnchor),
-                textField.leadingAnchor.constraint(equalTo: cellView.leadingAnchor),
-                textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
+                iconView.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: 2),
+                iconView.centerYAnchor.constraint(equalTo: cellView.centerYAnchor),
+                iconView.widthAnchor.constraint(equalToConstant: 16),
+                iconView.heightAnchor.constraint(equalToConstant: 16),
+
+                label.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 6),
+                label.trailingAnchor.constraint(equalTo: cellView.trailingAnchor),
+                label.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
             ])
         case ArchiveViewerColumn.compressedSize.identifier, ArchiveViewerColumn.uncompressedSize.identifier:
-            let sizeAsString = (columnIdentifier == ArchiveViewerColumn.compressedSize.identifier)
-            ? SystemHelper.shared.format(bytes: archiveItem.compressedSize)
-            : SystemHelper.shared.format(bytes: archiveItem.uncompressedSize)
-            
-            let textField = NSTextField(labelWithString: sizeAsString)
-            cellView.addSubview(textField)
-            textField.alignment = .right
-            textField.translatesAutoresizingMaskIntoConstraints = false
-            textField.textColor = .secondaryLabelColor
-            
-            NSLayoutConstraint.activate([
-                textField.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -8),
-                textField.leadingAnchor.constraint(greaterThanOrEqualTo: cellView.leadingAnchor, constant: 8),
-                textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
-            ])
+            if archiveItem.type != .directory {
+                let sizeAsString = (columnIdentifier == ArchiveViewerColumn.compressedSize.identifier)
+                ? SystemHelper.shared.format(bytes: archiveItem.compressedSize)
+                : SystemHelper.shared.format(bytes: archiveItem.uncompressedSize)
+                
+                let textField = NSTextField(labelWithString: sizeAsString)
+                cellView.addSubview(textField)
+                textField.alignment = .right
+                textField.translatesAutoresizingMaskIntoConstraints = false
+                textField.textColor = .secondaryLabelColor
+                
+                NSLayoutConstraint.activate([
+                    textField.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -8),
+                    textField.leadingAnchor.constraint(greaterThanOrEqualTo: cellView.leadingAnchor, constant: 8),
+                    textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
+                ])
+            }
         case ArchiveViewerColumn.modificationDate.identifier:
             if let date = archiveItem.modificationDate {
                 let dateAsString = SystemHelper.shared.formatDate(date)

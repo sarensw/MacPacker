@@ -6,12 +6,13 @@
 //
 
 import AppKit
+import Core
 import os
 
 final class ContentViewController: NSViewController, ButtonBarDelegate {
-    var archive: Archive? {
+    var state: ArchiveState? {
         didSet {
-            archiveViewController.archive = archive
+            archiveViewController.state = state
         }
     }
     
@@ -64,7 +65,7 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
     }
     
     func didRequestExtractSelected() {
-        guard let archive else { return }
+        guard let state else { return }
         guard let selectedItems = archiveViewController.selectedItems else { return }
         guard let window = view.window ?? NSApp.keyWindow ?? NSApp.mainWindow else { return }
         
@@ -74,19 +75,9 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
         panel.allowsMultipleSelection = false
         panel.canCreateDirectories = true
         
-        let handler = XadMasterHandler()
-        
         let completion: (NSApplication.ModalResponse) -> Void = { response in
             if response == .OK, let url = panel.url {
-                do {
-                    try handler.extract(
-                        archive: archive,
-                        items: selectedItems,
-                        to: url.path
-                    )
-                } catch {
-                    
-                }
+                state.extract(items: selectedItems, to: url)
             }
         }
         
@@ -94,7 +85,7 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
     }
     
     func didRequestExtractAll() {
-        guard let archive else { return }
+        guard let state else { return }
         guard let window = view.window ?? NSApp.keyWindow ?? NSApp.mainWindow else { return }
         
         let panel = NSOpenPanel()
@@ -103,18 +94,9 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
         panel.allowsMultipleSelection = false
         panel.canCreateDirectories = true
         
-        let handler = XadMasterHandler()
-        
         let completion: (NSApplication.ModalResponse) -> Void = { response in
             if response == .OK, let url = panel.url {
-                do {
-                    try handler.extractAll(
-                        archive: archive,
-                        to: url.path
-                    )
-                } catch {
-                    
-                }
+                state.extract(to: url)
             }
         }
         

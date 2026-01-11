@@ -9,6 +9,12 @@ import Combine
 import Foundation
 import SwiftUI
 
+public enum ArchiveStateStatus: String {
+    case idle
+    case processing
+    case done
+}
+
 @MainActor
 public class ArchiveState: ObservableObject {
     // MARK: UI
@@ -35,10 +41,15 @@ public class ArchiveState: ObservableObject {
     
     // UI State
     @Published private(set) public var isBusy: Bool = false
-    @Published private(set) public var status: String? = nil
+    @Published private(set) public var statusText: String? = nil
     @Published private(set) public var progress: Int? = nil
     @Published private(set) public var error: String? = nil
     @Published public var isReloadNeeded: Bool = false
+    
+    // Listeners for non-ui
+    @Published private(set) public var status: ArchiveStateStatus = .idle
+    public var onStatusChange: ((ArchiveStateStatus) -> Void)?
+    public var onStatusTextChange: ((String?) -> Void)?
     
     // TODO: Still needed?
     @Published public var openWithUrls: [URL] = []
@@ -60,6 +71,21 @@ public class ArchiveState: ObservableObject {
 
 extension ArchiveState {
     
+    private func updateStatus(_ status: ArchiveStateStatus) {
+        if status == .done {
+            onStatusChange?(.done)
+            updateStatus(.idle)
+            return
+        }
+        self.status = status
+        onStatusChange?(status)
+    }
+    
+    private func updateStatusText(_ text: String?) {
+        self.statusText = text
+        onStatusTextChange?(text)
+    }
+    
     /// Resets the state of the archive
     private func reset() {
         self.url = nil
@@ -69,7 +95,7 @@ extension ArchiveState {
         
         self.root = nil
         
-        self.status = nil
+        updateStatusText(nil)
         
         self.isBusy = false
         self.isReloadNeeded = true
@@ -81,6 +107,8 @@ extension ArchiveState {
         self.currentSortOrder = nil
         
         self.archiveLoader = nil
+        
+        updateStatus(.idle)
     }
     
     /// Cancels the current operation which can be either loading the archive or extracting
@@ -124,6 +152,8 @@ extension ArchiveState {
     ///   - archiveItem: item to load as archive
     ///   - engine: engine to use
     private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine) {
+        updateStatus(.processing)
+        
         if let url = archiveItem.url {
             self.isBusy = true
             self.error = nil
@@ -144,23 +174,22 @@ extension ArchiveState {
                     let statusTask = receiveStatusUpdates(from: stream)
                     defer { statusTask.cancel() }
                     
-                    self.status = "loading..."
+                    updateStatusText("loading...")
                     let loaderResult = try await archiveLoader.loadEntries(url: url)
                     
-                    
                     if loaderResult.error != nil {
-                        self.status = "failed to load"
+                        updateStatusText("failed to load")
                         self.error = loaderResult.error
                     }
                     self.selectedItem = archiveItem
                     
-                    self.status = "building tree..."
+                    updateStatusText("building tree...")
                     
                     let builderResult = await archiveLoader.buildTree(at: archiveItem)
                     
                     loadChildren(sortedBy: currentSortOrder)
                     
-                    self.status = nil
+                    updateStatusText(nil)
                     self.error = builderResult.error
                     
                     self.isBusy = false
@@ -170,6 +199,8 @@ extension ArchiveState {
                     self.error = error.localizedDescription
                     self.isBusy = false
                 }
+                
+                updateStatus(.done)
             }
         }
     }
@@ -182,24 +213,24 @@ extension ArchiveState {
             for await status in stream {
                 switch status {
                 case .cancelled:
-                    self.status = nil
+                    updateStatusText(nil)
                     self.progress = nil
                     print("cancelled")
                 case .idle:
-                    self.status = nil
+                    updateStatusText(nil)
                     self.progress = nil
                     print("idle")
                 case .processing(let progress, let message):
-                    self.status = message
+                    updateStatusText(message)
                     if progress != nil {
                         self.progress = Int(progress!)
                     }
                 case .done:
-                    self.status = "done"
+                    updateStatusText("done")
                     self.progress = nil
                     print("done")
                 case .error(let error):
-                    self.status = "error: \(error.localizedDescription)"
+                    updateStatusText("error: \(error.localizedDescription)")
                     self.progress = nil
                     print("error: \(error.localizedDescription)")
                 }
@@ -212,6 +243,7 @@ extension ArchiveState {
     /// - Parameter url: url of the archiver to open
     public func open(url: URL) {
         reset()
+        updateStatus(.processing)
         
         self.isBusy = true
         self.error = nil
@@ -233,13 +265,13 @@ extension ArchiveState {
                 let statusTask = receiveStatusUpdates(from: stream)
                 defer { statusTask.cancel() }
                 
-                self.status = "loading..."
+                updateStatusText("loading...")
                 let loaderResult = try await archiveLoader.loadEntries(url: url)
                 
                 try Task.checkCancellation()
                 
                 if loaderResult.error != nil {
-                    self.status = "failed to load"
+                    updateStatusText("failed to load")
                     self.error = loaderResult.error
                 }
                 self.root = loaderResult.root
@@ -248,7 +280,7 @@ extension ArchiveState {
                 self.type = loaderResult.type
                 self.entries = Dictionary(uniqueKeysWithValues: loaderResult.entries.map({ ($0.id, $0) }))
                 
-                self.status = "building tree..."
+                updateStatusText("building tree...")
                 
                 try Task.checkCancellation()
                 
@@ -256,7 +288,7 @@ extension ArchiveState {
                 
                 loadChildren(sortedBy: currentSortOrder)
                 
-                self.status = nil
+                updateStatusText(nil)
                 self.error = builderResult.error
                 
                 self.selectedItems = []
@@ -272,10 +304,14 @@ extension ArchiveState {
                 reset()
                 self.error = error.localizedDescription
             }
+            
+            updateStatus(.done)
         }
     }
     
     public func open(item: ArchiveItem) {
+        updateStatus(.processing)
+        
         switch item.type {
         case .file:
             // If it is a file, check first if it has children > this can
@@ -314,10 +350,14 @@ extension ArchiveState {
         
         self.isReloadNeeded = true
         self.selectedItems = []
+        
+        updateStatus(.done)
     }
     
     /// Opens the parent of the current view
     public func openParent() {
+        updateStatus(.processing)
+        
         if selectedItem?.type == .root {
             return
         }
@@ -334,6 +374,8 @@ extension ArchiveState {
         } else {
             self.selectedItems = []
         }
+        
+        updateStatus(.done)
     }
     
     /// Opens the given item which can be anything (e.g. file, folder, archive, root, ...)
@@ -341,7 +383,7 @@ extension ArchiveState {
     private func openExtractableItem(item: ArchiveItem) {
         self.isBusy = true
         self.error = nil
-        self.status = "extracting..."
+        updateStatusText("extracting...")
         
         let selector = self.archiveEngineSelector
         
@@ -391,7 +433,7 @@ extension ArchiveState {
             
             self.isBusy = false
             self.isReloadNeeded = true
-            self.status = nil
+            updateStatusText(nil)
         }
     }
     
@@ -403,6 +445,8 @@ extension ArchiveState {
         item: ArchiveItem,
         to destination: URL
     ) {
+        updateStatus(.processing)
+        
         Task {
             do {
                 if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
@@ -446,6 +490,8 @@ extension ArchiveState {
                     self.isBusy = false
                 }
             }
+            
+            updateStatus(.done)
         }
     }
     
@@ -458,6 +504,7 @@ extension ArchiveState {
         items: [ArchiveItem],
         to destination: URL
     ) {
+        updateStatus(.processing)
         
         Task {
             do {
@@ -503,6 +550,8 @@ extension ArchiveState {
                     self.isBusy = false
                 }
             }
+            
+            updateStatus(.done)
         }
     }
     

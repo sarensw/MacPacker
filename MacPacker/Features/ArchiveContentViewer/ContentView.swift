@@ -77,7 +77,7 @@ struct ContentView: View {
                         .frame(height: 14)
                         .progressViewStyle(.circular)
                     
-                    Text(verbatim: "\(archiveState.status ?? "")")
+                    Text(verbatim: "\(archiveState.statusText ?? "")")
                         .fontWeight(.light)
                         .font(.subheadline)
                         .foregroundStyle(.primary)
