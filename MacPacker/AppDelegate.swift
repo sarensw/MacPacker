@@ -105,7 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     func openAboutWindow() {
         
         let window = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 420),
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 480),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: true

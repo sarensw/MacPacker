@@ -241,11 +241,6 @@ struct WelcomeView: View {
             #else
             Spacer()
             #endif
-            
-            Text(verbatim: "AI-generated translations. Reach out for corrections or suggestions.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.top, 12)
         }
         .padding()
     }

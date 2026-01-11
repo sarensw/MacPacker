@@ -3,6 +3,7 @@ v0.13
 - feat: Special handling for Apple Installer Packages (pkg)
 - feat: Added settings for easier access to managing the Finder file provider extension
 - fix: Extracting folders does not include files
+- core: added attributions for 3rd party libraries/code
 
 v0.12
 - feat: Added 'File' > 'Open...' menu to open archives when no window is open
