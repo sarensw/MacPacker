@@ -395,7 +395,6 @@ extension ArchiveState {
                     archiveEngineSelector: selector
                 )
                 if let tempUrl = try await archiveExtractor.extractAsync(item: item) {
-
                     // We check by extension here because we don't want to end up
                     // opening files like .xlsx as an archive. An Excel file (or any
                     // other archived file that is basically a .zip file) should be
@@ -403,8 +402,14 @@ extension ArchiveState {
                     //
                     // TODO: Add the possibility via right click menu in MacPacker
                     //       to open the file as archive instead.
-                    // TODO: considerComposition result should be true here
-                    if let detectionResult = archiveTypeDetector.detectByExtension(for: tempUrl, considerComposition: true),
+                    var detectUsingExtensionOnly = true
+                    if self.type?.id == "pkg" {
+                        detectUsingExtensionOnly = false
+                    }
+                    
+                    if let detectionResult = (detectUsingExtensionOnly
+                        ? archiveTypeDetector.detectByExtension(for: tempUrl, considerComposition: true)
+                        : archiveTypeDetector.detect(for: tempUrl, considerComposition: true)),
                        let engine = archiveEngineSelector.engine(for: detectionResult.type.id) {
                         
                         // set the services required for this nested archive

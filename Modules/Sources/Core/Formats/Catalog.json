@@ -226,6 +226,21 @@
       ]
     },
     {
+      "id": "pkg",
+      "name": "Apple Software Package",
+      "kind": "archive",
+      "uti": ["com.apple.installer-package-archive"],
+      "extensions": ["pkg"],
+      "mime": ["application/octet-stream"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "78 61 72 21", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
       "id": "qcow2",
       "name": "QCOW2 Disk Image",
       "kind": "image",

@@ -1,5 +1,6 @@
 v0.13
 - feat: arj, dmg/apfs (Apple File System), chm, fat, ntfs, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk, xar support
+- feat: Special handling for Apple Installer Packages (pkg)
 - feat: Added settings for easier access to managing the Finder file provider extension
 - fix: Extracting folders does not include files
 
