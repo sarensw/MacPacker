@@ -20,7 +20,7 @@ struct AcknowledgementsEntryView: View {
                 Text(lib)
                 
                 HStack(spacing: 0) {
-                    Text("Copyright @ \(author) (")
+                    Text(verbatim: "Copyright @ \(author) (")
                         .foregroundStyle(.secondary)
                         .font(.caption)
                     
@@ -29,7 +29,7 @@ struct AcknowledgementsEntryView: View {
                             .font(.caption)
                     })
                     
-                    Text(") (\(license))")
+                    Text(verbatim: ") (\(license))")
                         .foregroundStyle(.secondary)
                         .font(.caption)
                 }

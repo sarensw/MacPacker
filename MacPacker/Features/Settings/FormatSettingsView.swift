@@ -80,7 +80,7 @@ struct FormatSettingsView: View {
             Text("Default status & engine settings:")
             
             Table(rows, selection: $selection) {
-                TableColumn("") {
+                TableColumn(String("")) {
                     defaultToggle(identifier: $0.id, defaultOpen: $0.defaultOpen)
                 }
                 .width(20)
@@ -125,7 +125,7 @@ struct FormatSettingsView: View {
                 .buttonStyle(.borderless)
                 .popover(isPresented: $showEngineInfo) {
                     // "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format."
-                    Text("settings_engines_info", comment: "Info text about archive engines in MacPacker")
+                    Text("Info on Engines")
                         .frame(width: 160)
                         .padding()
                 }
@@ -183,7 +183,7 @@ struct FormatSettingsView: View {
             }
         )
 
-        Picker("", selection: binding) {
+        Picker(String(""), selection: binding) {
             ForEach(supportedEngines, id: \.self) { engine in
                 Text(engine.rawValue).tag(engine)
             }

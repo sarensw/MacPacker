@@ -17,14 +17,14 @@ struct IntegrationSettingsView: View {
     var body: some View {
         VStack {
             HStack(alignment: .top) {
-                Text("settings.extensions.findersync.label", comment: "Label for the MacPacker Finder extension settings access and status.")
+                Text("File provider extension")
                     .frame(width: 160, alignment: .trailing)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Button {
                         FIFinderSyncController.showExtensionManagementInterface()
                     } label: {
-                        Text("settings.extensions.findersync.manage", comment: "Opens the File Provider system settings to enable or disable the MacPacker Finder extension. The name of this label should represent how 'File provider extesions' is spelled in the user's local language. To check the correct translation open System Settings > General > Login Items & Extensions > Extensions > By Category > 'File Providers' (or 'File Providers' in the user's local language > open that and the first sentence in the dialog will tell you what to use)")
+                        Text("Manage in System Settings")
                     }
                     .disabled(applicationSupportDirectory == nil)
                     
@@ -33,7 +33,7 @@ struct IntegrationSettingsView: View {
                             .frame(width: 6, height: 6)
                             .foregroundStyle(isFinderSyncEnabled ? Color.green : Color.red)
                         
-                        Text(isFinderSyncEnabled ? "enabled" : "disabled")
+                        Text(isFinderSyncEnabled ? LocalizedStringResource("disabled") : LocalizedStringResource("enabled"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         

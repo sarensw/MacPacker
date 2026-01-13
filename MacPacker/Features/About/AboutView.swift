@@ -26,7 +26,7 @@ struct AboutView: View {
                 TabView(selection: $defaultTab) {
                     WelcomeOtherProjects()
                         .tabItem {
-                            Text("More apps", comment: "Title of the tab in the welcome screen that links to other projects.")
+                            Text("More apps")
                         }
                         .tag(1)
                 }
@@ -36,7 +36,7 @@ struct AboutView: View {
                 TabView(selection: $defaultTab) {
                     WelcomeOtherProjects()
                         .tabItem {
-                            Text("More apps", comment: "Title of the tab in the welcome screen that links to other projects.")
+                            Text("More apps")
                         }
                         .tag(1)
                 }
@@ -71,7 +71,7 @@ struct AboutView: View {
             Button {
                 AckWindowController().show()
             } label: {
-                Text("Acknowledgements", comment: "Button text to open the window with the list of attributions for other open-source libraries used for the app")
+                Text("Acknowledgements")
             }
             .buttonStyle(.plain)
             .foregroundStyle(.tertiary)

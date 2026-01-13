@@ -190,7 +190,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     }
                 } label: {
                     Label {
-                        Text("More Apps", comment: "Hint to the user that the submenu contains links for more apps that they might like.")
+                        Text("More Apps")
                     } icon: {
                         Image(systemName: "plus.square.dashed")
                     }

@@ -115,7 +115,7 @@ extension ArchiveWindowController: NSToolbarDelegate {
         
         // More apps menu
         let moreAppsMenu = NSMenuItem(
-            title: NSLocalizedString("More Apps", comment: "Hint to the user that the submenu contains links for more apps that they might like."),
+            title: NSLocalizedString("More Apps", comment: ""),
             action: nil,
             keyEquivalent: "")
         moreAppsMenu.image = NSImage(systemSymbolName: "plus.square.dashed", accessibilityDescription: nil)

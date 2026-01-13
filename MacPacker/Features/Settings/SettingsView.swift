@@ -22,7 +22,7 @@ struct SettingsView: View {
                 FormatSettingsView()
                     .tabItem {
                         Image(systemName: "doc.badge.gearshape")
-                        Text("Archive Formats", comment: "Archive formats title in settings")
+                        Text("Archive Formats")
                     }
                     .tag(1)
                 
@@ -36,7 +36,7 @@ struct SettingsView: View {
                 IntegrationSettingsView()
                     .tabItem {
                         Image(systemName: "puzzlepiece.extension")
-                        Text("settings.extensions", comment: "macOS extensions such as Finder / Quick Look.")
+                        Text("Extensions")
                     }
                 
                 #if DEBUG

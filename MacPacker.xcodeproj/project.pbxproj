@@ -84,7 +84,7 @@
 		2506FEBE2EE8537600C2F03F /* CoreTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = CoreTests.xctestplan; path = Modules/Tests/CoreTests/CoreTests.xctestplan; sourceTree = "<group>"; };
 		252F12022E7ABDD9004CCEBE /* FinderExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FinderExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		254045152ECB4EBE004A4380 /* Modules */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Modules; sourceTree = "<group>"; };
-		254BB5592ABBE8430059A1D5 /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		254BB5592ABBE8430059A1D5 /* MacPackerStore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPackerStore.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickLookExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2567C8302E8FB75F008E1BD8 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		25C0A8A42A78DE5F002C1C2A /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -193,7 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				25C0A8A42A78DE5F002C1C2A /* MacPacker.app */,
-				254BB5592ABBE8430059A1D5 /* MacPacker.app */,
+				254BB5592ABBE8430059A1D5 /* MacPackerStore.app */,
 				252F12022E7ABDD9004CCEBE /* FinderExtension.appex */,
 				2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */,
 			);
@@ -259,7 +259,7 @@
 				2540451A2ECB50D5004A4380 /* Core */,
 			);
 			productName = MacPacker;
-			productReference = 254BB5592ABBE8430059A1D5 /* MacPacker.app */;
+			productReference = 254BB5592ABBE8430059A1D5 /* MacPackerStore.app */;
 			productType = "com.apple.product-type.application";
 		};
 		2567C82E2E8FB75F008E1BD8 /* QuickLookExtension */ = {
@@ -349,6 +349,7 @@
 				it,
 				ru,
 				uk,
+				fa,
 			);
 			mainGroup = 25C0A89B2A78DE5F002C1C2A;
 			packageReferences = (
@@ -599,7 +600,8 @@
 				MARKETING_VERSION = 0.12;
 				OTHER_SWIFT_FLAGS = "-DSTORE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
-				PRODUCT_NAME = MacPacker;
+				PRODUCT_NAME = MacPackerStore;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -644,7 +646,8 @@
 				MARKETING_VERSION = 0.12;
 				OTHER_SWIFT_FLAGS = "-DSTORE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
-				PRODUCT_NAME = MacPacker;
+				PRODUCT_NAME = MacPackerStore;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -900,6 +903,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -947,6 +951,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;

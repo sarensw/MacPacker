@@ -73,6 +73,7 @@ struct WelcomeWhatsNewView: View {
             WhatsNewPill(key: LocalizedStringResource("v0.13_pkg_support", defaultValue: "Special handling for Apple Installer Packages (pkg)", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.13_feat_finder_extension_settings", defaultValue: "Added settings for easier access to managing the Finder file provider extension", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.13_fix_extract_folders", defaultValue: "Extracting folders does not include files", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.13_lang_fa", defaultValue: "Language support for Persian", table: "LocalizableWhatsNew"), type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
@@ -185,7 +186,7 @@ struct WelcomeView: View {
                         .tag(1)
                     WelcomeOtherProjects()
                         .tabItem {
-                            Text("More apps", comment: "Title of the tab in the welcome screen that links to other projects.")
+                            Text("More apps")
                         }
                         .tag(2)
                     WelcomeFeedbackView()
@@ -205,7 +206,7 @@ struct WelcomeView: View {
                         .tag(1)
                     WelcomeOtherProjects()
                         .tabItem {
-                            Text("More apps", comment: "Title of the tab in the welcome screen that links to other projects.")
+                            Text("More apps")
                         }
                         .tag(2)
                     WelcomeFeedbackView()
