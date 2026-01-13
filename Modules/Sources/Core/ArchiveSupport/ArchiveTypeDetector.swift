@@ -29,7 +29,7 @@ public struct DetectionResult: CustomStringConvertible {
     }
 }
 
-public class ArchiveTypeDetector {
+final public class ArchiveTypeDetector: Sendable {
     private let catalog: ArchiveTypeCatalog
     
     public init(catalog: ArchiveTypeCatalog) {

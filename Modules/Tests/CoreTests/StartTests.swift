@@ -24,29 +24,31 @@ let defaultRoot = ArchiveItem(
 //    }
     
     @Test func loadArchiveStateAndArchive() async throws {
-        let controller = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+        let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
         let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
         let url = folderURL.appendingPathComponent("defaultArchive.zip")
         
-        try await controller.openAsync(url: url)
+        state.open(url: url)
+        try await state.openTask?.value
         
-        #expect(controller.type?.id == "zip")
-        #expect(controller.entries.count == 4)
-        #expect(controller.root?.children?.count == 2)
-        #expect(controller.root === controller.selectedItem)
+        #expect(state.type?.id == "zip")
+        #expect(state.entries.count == 4)
+        #expect(state.root?.children?.count == 2)
+        #expect(state.root === state.selectedItem)
     }
     
     @Test func compareDefaultZip() async throws {
-        let controller = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+        let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
         let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
         let url = folderURL.appendingPathComponent("defaultArchive.zip")
         
-        try await controller.openAsync(url: url)
+        state.open(url: url)
+        try await state.openTask?.value
         
-        #expect(controller.entries.count == 4)
+        #expect(state.entries.count == 4)
         
         // level 0: root
-        let level0a = controller.root!.children!
+        let level0a = state.root!.children!
         #expect(level0a.count == 2)
         #expect(level0a[0].name == "folder")
         #expect(level0a[0].type == .directory)
@@ -54,7 +56,7 @@ let defaultRoot = ArchiveItem(
         #expect(level0a[1].type == .file)
         
         // level 0: selectedItem
-        let level0b = controller.selectedItem!.children!
+        let level0b = state.selectedItem!.children!
         #expect(level0b.count == 2)
         #expect(level0b[0].name == "folder")
         #expect(level0b[0].type == .directory)
@@ -62,8 +64,8 @@ let defaultRoot = ArchiveItem(
         #expect(level0b[1].type == .file)
         
         // level 1
-        try await controller.openAsync(item: level0b[0])
-        let level1 = controller.selectedItem!.children!.sorted { item1, item2 in
+        try await state.openAsync(item: level0b[0])
+        let level1 = state.selectedItem!.children!.sorted { item1, item2 in
             item1.name < item2.name
         }
         #expect(level1.count == 2)
@@ -73,8 +75,8 @@ let defaultRoot = ArchiveItem(
         #expect(level1[1].type == .file)
         
         // level 2
-        try await controller.openAsync(item: level1[0])
-        let level2 = controller.selectedItem!.children!.sorted { item1, item2 in
+        try await state.openAsync(item: level1[0])
+        let level2 = state.selectedItem!.children!.sorted { item1, item2 in
             item1.name < item2.name
         }
         #expect(level2.count == 3)

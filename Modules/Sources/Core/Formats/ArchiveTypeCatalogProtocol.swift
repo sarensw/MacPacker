@@ -6,7 +6,7 @@
 //
 
 
-public protocol ArchiveTypeCatalogProtocol: AnyObject {
+public protocol ArchiveTypeCatalogProtocol: AnyObject, Sendable {
     /// All known format IDs (JSON `formats[].id`)
     func allFormatIds() -> [String]
 

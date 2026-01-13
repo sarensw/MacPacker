@@ -20,17 +20,17 @@ import Testing
         let ext = arg.0
         let id = arg.1
         let folderEntries = arg.2
-        let controller = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorSwc())
+        let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorSwc())
         let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
         
         let url = folderURL.appendingPathComponent("defaultArchive.\(ext)")
         
-        try await controller.openAsync(url: url)
-        print("")
+        state.open(url: url)
+        try await state.openTask?.value
         
-        #expect(controller.type?.id == id)
-        #expect(controller.entries.count == 1)
-        #expect(controller.root === controller.selectedItem)
+        #expect(state.type?.id == id)
+        #expect(state.entries.count == 1)
+        #expect(state.root === state.selectedItem)
     }
     
     @Test("Test all defaultArchives on 7zip", arguments: [
@@ -73,18 +73,18 @@ import Testing
         let id = arg.1
         let entries = arg.2
         let rootChildren = arg.3
-        let controller = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+        let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
         let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
         
         let url = folderURL.appendingPathComponent("defaultArchive.\(ext)")
         
-        try await controller.openAsync(url: url)
-        print("")
+        state.open(url: url)
+        try await state.openTask?.value
         
-        #expect(controller.type?.id == id)
-        #expect(controller.entries.count == entries)
-        #expect(controller.root?.children?.count == rootChildren)
-        #expect(controller.root === controller.selectedItem)
+        #expect(state.type?.id == id)
+        #expect(state.entries.count == entries)
+        #expect(state.root?.children?.count == rootChildren)
+        #expect(state.root === state.selectedItem)
     }
     
     @Test("Test all defaultArchives on xad", arguments: [
@@ -99,17 +99,17 @@ import Testing
         let ext = arg.0
         let id = arg.1
         let folderEntries = arg.2
-        let controller = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorXad())
+        let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorXad())
         let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
         
         let url = folderURL.appendingPathComponent("defaultArchive.\(ext)")
         
-        try await controller.openAsync(url: url)
-        print("")
+        state.open(url: url)
+        try await state.openTask?.value
         
-        #expect(controller.type?.id == id)
-        #expect(controller.entries.count == (folderEntries ? 4 : 3))
-        #expect(controller.root?.children?.count == 2)
-        #expect(controller.root === controller.selectedItem)
+        #expect(state.type?.id == id)
+        #expect(state.entries.count == (folderEntries ? 4 : 3))
+        #expect(state.root?.children?.count == 2)
+        #expect(state.root === state.selectedItem)
     }
 }

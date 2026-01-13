@@ -5,7 +5,7 @@
 //  Created by Stephan Arenswald on 08.12.25.
 //
 
-public struct CatalogDto: Codable {
+public struct CatalogDto: Codable, Sendable {
     public let formats: [ArchiveTypeDto]
     public let compounds: [CompositionTypeDto]
 }

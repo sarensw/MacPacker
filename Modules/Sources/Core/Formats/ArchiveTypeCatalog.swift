@@ -31,23 +31,23 @@ private extension String {
     }
 }
 
-public final class ArchiveTypeCatalog: ArchiveTypeCatalogProtocol {
-    private var formatById: [String: ArchiveTypeDto] = [:]
-    private var engineOptionsByFormat: [String: [EngineDto]] = [:]
-    private var defaultEngineByFormat: [String: ArchiveEngineType] = [:]
+public final class ArchiveTypeCatalog: ArchiveTypeCatalogProtocol, Sendable {
+    private let formatById: [String: ArchiveTypeDto]
+    private let engineOptionsByFormat: [String: [EngineDto]]
+    private let defaultEngineByFormat: [String: ArchiveEngineType]
     
-    var catalog: CatalogDto? = nil
+    private let catalog: CatalogDto?
     
     public init() {
-        loadFromJsonCatalog()
-    }
-    
-    private func loadFromJsonCatalog() {
         let json = Bundle.module.url(forResource: "Catalog", withExtension: "json")
         do {
             let data = try Data(contentsOf: json!)
-            catalog = try JSONDecoder().decode(CatalogDto.self, from: data)
-            guard let catalog else { return }
+            let catalog = try JSONDecoder().decode(CatalogDto.self, from: data)
+            self.catalog = catalog
+            
+            var formatById: [String: ArchiveTypeDto] = [:]
+            var engineOptionsByFormat: [String: [EngineDto]] = [:]
+            var defaultEngineByFormat: [String: ArchiveEngineType] = [:]
             
             for format in catalog.formats {
                 formatById[format.id] = format
@@ -61,8 +61,15 @@ public final class ArchiveTypeCatalog: ArchiveTypeCatalogProtocol {
                 }
             }
 
+            self.formatById = formatById
+            self.engineOptionsByFormat = engineOptionsByFormat
+            self.defaultEngineByFormat = defaultEngineByFormat
         } catch {
             Logger.error(error)
+            self.catalog = nil
+            self.formatById = [:]
+            self.engineOptionsByFormat = [:]
+            self.defaultEngineByFormat = [:]
         }
     }
     

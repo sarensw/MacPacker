@@ -14,15 +14,16 @@ import Foundation
 @MainActor struct ZipTests {
     
     @Test func nestedFolders7Zip() async throws {
-        let controller = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+        let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
         let folderURL = Bundle.module.url(forResource: "zip", withExtension: nil)!
         let url = folderURL.appendingPathComponent("nestedFolders.zip")
         
-        try await controller.openAsync(url: url)
+        state.open(url: url)
+        try await state.openTask?.value
         
-        #expect(controller.root != nil)
+        #expect(state.root != nil)
         
-        let extractedUrl = try await controller.extractAsync(item: controller.root!.children!.first!)
+        let extractedUrl = try await state.extractAsync(item: state.root!.children!.first!)
         print(String(describing: extractedUrl))
         
         #expect(extractedUrl != nil)
@@ -45,15 +46,16 @@ import Foundation
     }
     
     @Test func nestedFoldersXad() async throws {
-        let controller = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorXad())
+        let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorXad())
         let folderURL = Bundle.module.url(forResource: "zip", withExtension: nil)!
         let url = folderURL.appendingPathComponent("nestedFolders.zip")
         
-        try await controller.openAsync(url: url)
+        state.open(url: url)
+        try await state.openTask?.value
         
-        #expect(controller.root != nil)
+        #expect(state.root != nil)
         
-        let extractedUrl = try await controller.extractAsync(item: controller.root!.children!.first!)
+        let extractedUrl = try await state.extractAsync(item: state.root!.children!.first!)
         print(String(describing: extractedUrl))
         
         #expect(extractedUrl != nil)

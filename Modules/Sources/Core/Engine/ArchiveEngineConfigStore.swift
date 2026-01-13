@@ -19,7 +19,7 @@ private struct PersistedEngineConfig: Codable {
 
 /// Stores *only* user-selected engines per format.
 /// Options + defaults come from ArchiveTypeCatalogProtocol (JSON-backed).
-public final class ArchiveEngineConfigStore {
+public final class ArchiveEngineConfigStore: @unchecked Sendable {
     private let catalog: ArchiveTypeCatalogProtocol
     /// formatId -> selected engine override
     private var overrides: [String: ArchiveEngineType] = [:]

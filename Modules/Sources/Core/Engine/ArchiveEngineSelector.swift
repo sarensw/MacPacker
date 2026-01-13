@@ -35,7 +35,7 @@ extension ArchiveEngineType {
     }
 }
 
-public protocol ArchiveEngineSelectorProtocol {
+public protocol ArchiveEngineSelectorProtocol: Sendable {
     func engine(for id: String) -> ArchiveEngine?
 }
 

@@ -59,7 +59,7 @@ public class ArchiveState: ObservableObject {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let archiveTypeDetector: ArchiveTypeDetector
     
-    private var openTask: Task<Void, any Error>?
+    public private(set) var openTask: Task<Void, any Error>?
     private var archiveLoader: ArchiveLoader?
     
     public init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
@@ -151,56 +151,47 @@ extension ArchiveState {
     /// - Parameters:
     ///   - archiveItem: item to load as archive
     ///   - engine: engine to use
-    private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine) {
-        updateStatus(.processing)
-        
+    private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine) async throws {
         if let url = archiveItem.url {
             self.isBusy = true
             self.error = nil
             self.name = url.lastPathComponent
             self.ext = url.pathExtension
             
-            let detector = self.archiveTypeDetector
-            let selector = self.archiveEngineSelector
-            
-            Task {
-                do {
-                    let archiveLoader = ArchiveLoader(
-                        archiveTypeDetector: detector,
-                        archiveEngineSelector: selector
-                    )
-                    
-                    let stream = await archiveLoader.statusStream()
-                    let statusTask = receiveStatusUpdates(from: stream)
-                    defer { statusTask.cancel() }
-                    
-                    updateStatusText("loading...")
-                    let loaderResult = try await archiveLoader.loadEntries(url: url)
-                    
-                    if loaderResult.error != nil {
-                        updateStatusText("failed to load")
-                        self.error = loaderResult.error
-                    }
-                    self.selectedItem = archiveItem
-                    
-                    updateStatusText("building tree...")
-                    
-                    let builderResult = await archiveLoader.buildTree(at: archiveItem)
-                    
-                    loadChildren(sortedBy: currentSortOrder)
-                    
-                    updateStatusText(nil)
-                    self.error = builderResult.error
-                    
-                    self.isBusy = false
-                    self.isReloadNeeded = true
-                    self.selectedItems = []
-                } catch {
-                    self.error = error.localizedDescription
-                    self.isBusy = false
-                }
+            do {
+                let archiveLoader = ArchiveLoader(
+                    archiveTypeDetector: self.archiveTypeDetector,
+                    archiveEngineSelector: self.archiveEngineSelector
+                )
                 
-                updateStatus(.done)
+                let stream = await archiveLoader.statusStream()
+                let statusTask = receiveStatusUpdates(from: stream)
+                defer { statusTask.cancel() }
+                
+                updateStatusText("loading...")
+                let loaderResult = try await archiveLoader.loadEntries(url: url)
+                
+                if loaderResult.error != nil {
+                    updateStatusText("failed to load")
+                    self.error = loaderResult.error
+                }
+                self.selectedItem = archiveItem
+                
+                updateStatusText("building tree...")
+                
+                let builderResult = await archiveLoader.buildTree(at: archiveItem)
+                
+                loadChildren(sortedBy: currentSortOrder)
+                
+                updateStatusText(nil)
+                self.error = builderResult.error
+                
+                self.isBusy = false
+                self.isReloadNeeded = true
+                self.selectedItems = []
+            } catch {
+                self.error = error.localizedDescription
+                self.isBusy = false
             }
         }
     }
@@ -250,14 +241,11 @@ extension ArchiveState {
         self.name = url.lastPathComponent
         self.ext = url.pathExtension
         
-        let detector = self.archiveTypeDetector
-        let selector = self.archiveEngineSelector
-        
         openTask = Task {
             do {
                 let archiveLoader = ArchiveLoader(
-                    archiveTypeDetector: detector,
-                    archiveEngineSelector: selector
+                    archiveTypeDetector: self.archiveTypeDetector,
+                    archiveEngineSelector: self.archiveEngineSelector
                 )
                 self.archiveLoader = archiveLoader
                 
@@ -419,7 +407,7 @@ extension ArchiveState {
                         )
 
                         // nested archive is extracted > time to parse its hierarchy
-                        unfold(item, using: engine)
+                        try await unfold(item, using: engine)
 //                        let entries = try await engine.loadArchive(url: tempUrl)
 //                        buildTree(for: entries, at: archiveItem)
 //                        ArchiveHierarchyPrinter().printHierarchy(item: archive.rootNode)
