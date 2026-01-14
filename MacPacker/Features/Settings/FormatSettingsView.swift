@@ -24,6 +24,16 @@ struct FormatSettingsView: View {
     @State private var selection: ArchiveFormatSettings.ID?
     
     @State private var showEngineInfo: Bool = false
+    
+    private func isDefaultHandler(forUTI uti: String, bundleID: String) -> Bool {
+        guard let handler = LSCopyDefaultRoleHandlerForContentType(
+            uti as CFString,
+            .all
+        )?.takeRetainedValue() as String? else {
+            return false
+        }
+        return handler == bundleID
+    }
 
     fileprivate func refreshFormatConfig() {
         var result: [ArchiveFormatSettings] = []
@@ -47,8 +57,11 @@ struct FormatSettingsView: View {
             let extString = type.extensions.joined(separator: ", ")
 
             // Default app detection: keep false for now (toggle is disabled anyway)
-            let isDefaultApp = false
-
+            var isDefaultApp = false
+            if let uti = type.uti.first, isDefaultHandler(forUTI: uti, bundleID: Bundle.main.bundleIdentifier ?? "") {
+                isDefaultApp = true
+            }
+            
             let afs = ArchiveFormatSettings(
                 id: formatId,
                 name: type.name,

@@ -470,7 +470,7 @@
       "id": "zip",
       "name": "ZIP Archive",
       "kind": "archive",
-      "uti": ["com.pkware.zip-archive", "public.zip-archive"],
+      "uti": ["public.zip-archive", "com.pkware.zip-archive"],
       "extensions": ["zip"],
       "mime": ["application/zip", "application/x-zip-compressed", "application/zip-compressed", "multipart/x-zip"],
       "rules": [
