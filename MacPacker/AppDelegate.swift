@@ -7,7 +7,6 @@
 
 import AppKit
 import Core
-import FinderSync
 import Foundation
 import SwiftUI
 import TailBeatKit
@@ -83,10 +82,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 WelcomeWindowController().show()
                 welcomeScreenShownInVersion = Bundle.main.appVersionLong
             }
-        }
-        
-        if FIFinderSyncController.isExtensionEnabled == false {
-            FIFinderSyncController.showExtensionManagementInterface()
         }
     }
     
