@@ -33,7 +33,7 @@ struct IntegrationSettingsView: View {
                             .frame(width: 6, height: 6)
                             .foregroundStyle(isFinderSyncEnabled ? Color.green : Color.red)
                         
-                        Text(isFinderSyncEnabled ? LocalizedStringResource("disabled") : LocalizedStringResource("enabled"))
+                        Text(isFinderSyncEnabled ? LocalizedStringResource("enabled") : LocalizedStringResource("disabled"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         
