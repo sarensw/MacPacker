@@ -417,7 +417,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\n\n# Only for Release (optional but recommended)\nif [ \"$CONFIGURATION\" != \"Release\" ]; then\n  exit 0\nfi\n\nAPP_RESOURCES=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\n\nHELPERS=(\n  \"$APP_RESOURCES/7zz\"\n)\n\nfor helper in \"${HELPERS[@]}\"; do\n  if [ -f \"$helper\" ]; then\n    echo \"Codesigning helper with hardened runtime: $helper\"\n    /usr/bin/codesign \\\n      --force \\\n      --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n      --options runtime \\\n      --entitlements \"${CODE_SIGN_ENTITLEMENTS}\" \\\n      \"$helper\"\n  else\n    echo \"Helper not found (skipping): $helper\"\n  fi\ndone\n";
+			shellScript = "#!/bin/sh\nset -eu\n\n# Keep for Release/Archive\nif [ \"${CONFIGURATION:-}\" != \"Release\" ]; then\n  exit 0\nfi\n\nAPP=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\necho \"APP=$APP\"\n\n# Sign every 7zz inside THIS app bundle\n/usr/bin/find \"$APP\" -type f -name \"7zz\" -print | while IFS= read -r helper; do\n  echo \"Signing helper: $helper\"\n  /bin/chmod +x \"$helper\" 2>/dev/null || true\n\n  ENT=\"$(dirname \"$helper\")/7zz.entitlements\"\n  if [ ! -f \"$ENT\" ]; then\n    echo \"Entitlements not found next to helper: $ENT\"\n    exit 1\n  fi\n\n  /usr/bin/codesign --force \\\n    --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n    --entitlements \"$ENT\" \\\n    \"$helper\"\ndone\n";
 		};
 		25951DF52EC62EB000890351 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -435,7 +435,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\n\n# Only for Release (optional but recommended)\nif [ \"$CONFIGURATION\" != \"Release\" ]; then\n  exit 0\nfi\n\nAPP_RESOURCES=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\n\nHELPERS=(\n  \"$APP_RESOURCES/7zz\"\n)\n\nfor helper in \"${HELPERS[@]}\"; do\n  if [ -f \"$helper\" ]; then\n    echo \"Codesigning helper with hardened runtime: $helper\"\n    /usr/bin/codesign \\\n      --force \\\n      --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n      --options runtime \\\n      --entitlements \"${CODE_SIGN_ENTITLEMENTS}\" \\\n      \"$helper\"\n  else\n    echo \"Helper not found (skipping): $helper\"\n  fi\ndone\n";
+			shellScript = "#!/bin/sh\nset -euo pipefail\n\n# Only for Release (Archive is Release anyway)\nif [ \"$CONFIGURATION\" != \"Release\" ]; then\n  exit 0\nfi\n\nAPP=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\n\nHELPERS=\"\n$APP/Contents/Resources/Modules_Core.bundle/Contents/Resources/7zz\n$APP/Contents/PlugIns/QuickLookExtension.appex/Contents/Resources/Modules_Core.bundle/Contents/Resources/7zz\n\"\n\nfor helper in $HELPERS; do\n  if [ -f \"$helper\" ]; then\n    echo \"Signing: $helper\"\n    /bin/chmod +x \"$helper\" 2>/dev/null || true\n    /usr/bin/codesign --force \\\n      --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n      --options runtime \\\n      --timestamp \\\n      \"$helper\"\n  else\n    echo \"Missing (skipping): $helper\"\n  fi\ndone\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -501,7 +501,7 @@
 				CODE_SIGN_ENTITLEMENTS = FinderExtension/FinderExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -517,7 +517,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 0.12;
+				MARKETING_VERSION = 0.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.FinderExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -535,7 +535,7 @@
 				CODE_SIGN_ENTITLEMENTS = FinderExtension/FinderExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -551,7 +551,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 0.12;
+				MARKETING_VERSION = 0.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.FinderExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -570,7 +570,7 @@
 				CODE_SIGN_ENTITLEMENTS = MacPacker/MacPacker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"MacPacker/Preview Content\"";
 				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
 				ENABLE_APP_SANDBOX = YES;
@@ -597,7 +597,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 0.12;
+				MARKETING_VERSION = 0.13;
 				OTHER_SWIFT_FLAGS = "-DSTORE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
 				PRODUCT_NAME = MacPackerStore;
@@ -616,7 +616,7 @@
 				CODE_SIGN_ENTITLEMENTS = MacPacker/MacPacker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"MacPacker/Preview Content\"";
 				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
 				ENABLE_APP_SANDBOX = YES;
@@ -643,7 +643,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 0.12;
+				MARKETING_VERSION = 0.13;
 				OTHER_SWIFT_FLAGS = "-DSTORE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
 				PRODUCT_NAME = MacPackerStore;
@@ -659,7 +659,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = QuickLookExtension/QuickLookExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -687,7 +687,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 0.12;
+				MARKETING_VERSION = 0.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.QuickLookExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -707,7 +707,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = QuickLookExtension/QuickLookExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -735,7 +735,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 0.12;
+				MARKETING_VERSION = 0.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.QuickLookExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -872,7 +872,7 @@
 				CODE_SIGN_ENTITLEMENTS = MacPacker/MacPacker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"MacPacker/Preview Content\"";
 				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
 				ENABLE_APP_SANDBOX = YES;
@@ -899,7 +899,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 0.12;
+				MARKETING_VERSION = 0.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -920,7 +920,7 @@
 				CODE_SIGN_ENTITLEMENTS = MacPacker/MacPacker.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_ASSET_PATHS = "\"MacPacker/Preview Content\"";
 				DEVELOPMENT_TEAM = ZJ2TSMMJWF;
 				ENABLE_APP_SANDBOX = YES;
@@ -947,7 +947,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
-				MARKETING_VERSION = 0.12;
+				MARKETING_VERSION = 0.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

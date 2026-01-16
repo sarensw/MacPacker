@@ -28,7 +28,8 @@ let package = Package(
             ],
             resources: [
                 .copy("Formats/Catalog.json"),
-                .copy("Tools/7zz")
+                .copy("Tools/7zz"),
+                .copy("Tools/7zz.entitlements")
             ]
         ),
         .testTarget(
