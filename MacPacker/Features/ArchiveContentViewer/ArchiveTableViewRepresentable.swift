@@ -403,8 +403,15 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         tableView.deselectAll(nil)
     }
     
+    /// Called when the user hits `Space`. If quick look is open already, close it. Otherwise,
+    /// call `updateSelectedItemForQuickLook()` in the archive state which will handle
+    /// showing the correct item in quick look, and open quick look in case it is not open yet.
     func openPreview() {
-        archiveState.updateSelectedItemForQuickLook()
+        if archiveState.previewItemUrl != nil {
+            archiveState.previewItemUrl = nil
+        } else {
+            archiveState.updateSelectedItemForQuickLook()
+        }
     }
     
     //

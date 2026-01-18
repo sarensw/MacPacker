@@ -69,11 +69,8 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            WhatsNewPill(key: LocalizedStringResource("v0.13_new_formats", defaultValue: "arj, dmg/apfs (Apple File System), chm, fat, ntfs, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk, xar support", table: "LocalizableWhatsNew"), type: .feature)
-            WhatsNewPill(key: LocalizedStringResource("v0.13_pkg_support", defaultValue: "Special handling for Apple Installer Packages (pkg)", table: "LocalizableWhatsNew"), type: .feature)
-            WhatsNewPill(key: LocalizedStringResource("v0.13_feat_finder_extension_settings", defaultValue: "Added settings for easier access to managing the Finder file provider extension", table: "LocalizableWhatsNew"), type: .feature)
-            WhatsNewPill(key: LocalizedStringResource("v0.13_fix_extract_folders", defaultValue: "Extracting folders does not include files", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.13_lang_fa", defaultValue: "Language support for Persian", table: "LocalizableWhatsNew"), type: .core)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_54", defaultValue: "tar.gz and tgz not working", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_55", defaultValue: "Can't close QuickLook with Space", table: "LocalizableWhatsNew"), type: .bug)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
