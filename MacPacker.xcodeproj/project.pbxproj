@@ -678,7 +678,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QuickLookExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = QuickLookExtension;
+				INFOPLIST_KEY_CFBundleDisplayName = "MacPacker Preview";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -726,7 +726,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = QuickLookExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = QuickLookExtension;
+				INFOPLIST_KEY_CFBundleDisplayName = "MacPacker Preview";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

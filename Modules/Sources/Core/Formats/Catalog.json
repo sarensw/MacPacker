@@ -518,7 +518,7 @@
       "name": "Gzip Tar Archive",
       "uti": ["org.gnu.gnu-zip-tar-archive"],
       "extensions": ["tgz","tgzip","tar.gz"],
-      "components": ["tar","gz"]
+      "components": ["tar","gzip"]
     },
     {
       "id": "tar.lz4",
