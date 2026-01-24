@@ -374,13 +374,18 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 Logger.error("Could not fulfill file promise")
                 return completionHandler(NSError(domain: "Drag", code: 1))
             }
-            
-            parent.archiveState.extract(
-                item: item,
-                to: url
-            )
-            
-            completionHandler(nil)
+            Task {
+                do {
+                    guard let tempUrl = try await parent.archiveState.extractAsync(item: item) else {
+                        throw NSError(domain: "Drag", code: 2)
+                    }
+                    try FileManager.default.moveItem(at: tempUrl, to: url)
+                    completionHandler(nil)
+                } catch {
+                    Logger.error("File promise extraction failed: \(error)")
+                    completionHandler(error)
+                }
+            }
         }
         
         func operationQueue(for filePromiseProvider: NSFilePromiseProvider) -> OperationQueue {
