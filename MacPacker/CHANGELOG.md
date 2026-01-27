@@ -1,6 +1,7 @@
 v0.14
 - fix: tar.gz and tgz not working (#54)
 - fix: Can't close QuickLook with Space (#55)
+- fix: MacOS not recognizing MacPacker as a viable VHDX reader (#56)
 
 v0.13
 - feat: arj, dmg/apfs (Apple File System), chm, fat, ntfs, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk, xar support

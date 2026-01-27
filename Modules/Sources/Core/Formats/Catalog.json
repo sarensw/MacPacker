@@ -64,7 +64,7 @@
       "id": "cab",
       "name": "CAB Archive",
       "kind": "archive",
-      "uti": ["com.microsoft.cab", "public.archive.cab", "com.microsoft.cab-archive"],
+      "uti": ["com.microsoft.cab", "com.microsoft.cab-archive"],
       "extensions": ["cab"],
       "mime": ["application/vnd.ms-cab-compressed"],
       "rules": [
@@ -510,7 +510,7 @@
       "id": "tar.bz2",
       "name": "Bzip2 Tar Archive",
       "uti": ["org.bzip.bzip2-tar-archive"],
-      "extensions": ["tbz2","tbz","tbzip2","tb","tar.bz2"],
+      "extensions": ["tbz2","tbz","tbzip2","tb","tb2","tar.bz2"],
       "components": ["tar","bzip2"]
     },
     {

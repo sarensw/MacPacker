@@ -71,6 +71,7 @@ struct WelcomeWhatsNewView: View {
         VStack(alignment: .leading, spacing: 4) {
             WhatsNewPill(key: LocalizedStringResource("v0.14_fix_54", defaultValue: "tar.gz and tgz not working", table: "LocalizableWhatsNew"), type: .bug)
             WhatsNewPill(key: LocalizedStringResource("v0.14_fix_55", defaultValue: "Can't close QuickLook with Space", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_56", defaultValue: "Some formats are not mapped to MacPacker in Finder", table: "LocalizableWhatsNew"), type: .bug)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
