@@ -214,6 +214,34 @@
       ]
     },
     {
+      "id": "msapp",
+      "name": "Microsoft Windows application",
+      "kind": "archive",
+      "uti": ["com.microsoft.windows-executable"],
+      "extensions": ["exe"],
+      "mime": ["application/x-msdownload"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "4D 5A", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "msi",
+      "name": "Microsoft MSI Installer",
+      "kind": "archive",
+      "uti": ["com.microsoft.windows-installer-package"],
+      "extensions": ["msi"],
+      "mime": ["application/x-ole-storage"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "D0 CF 11 E0 A1 B1 1A E1", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
       "id": "ntfs",
       "name": "NTFS Disk Image",
       "kind": "image",

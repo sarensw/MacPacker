@@ -673,6 +673,42 @@
 			<key>LSTypeIsPackage</key>
 			<false/>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>exe</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Microsoft Windows application</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.microsoft.windows-executable</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>msi</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Microsoft MSI Installer</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.microsoft.windows-installer-package</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
