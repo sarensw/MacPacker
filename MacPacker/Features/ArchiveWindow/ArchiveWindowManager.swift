@@ -67,6 +67,11 @@ class ArchiveWindowManager {
         }
     }
     
+    /// Opens a new empty window, regardless of whether there is any other window open right now
+    func openNewArchiveWindow() {
+        createAndShowArchiveWindow(nil)
+    }
+    
     /// Opens the given url into an archive window with three options.
     ///
     /// 1. archive loaded already: Open that existing window (don't reload the archive again)

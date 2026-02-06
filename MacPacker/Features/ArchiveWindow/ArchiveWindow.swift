@@ -55,6 +55,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     }
     
     func windowWillClose(_ notification: Notification) {
+        archiveState.clean()
         willCloseHandler?()
     }
 }

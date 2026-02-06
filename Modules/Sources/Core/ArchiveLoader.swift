@@ -12,6 +12,7 @@ struct ArchiveLoaderLoadResult: Sendable {
     let root: ArchiveItem
     let entries: [ArchiveItem]
     let error: String?
+    let tempDirectory: URL?
 }
 
 struct ArchiveLoaderBuildTreeResult {
@@ -75,6 +76,7 @@ final actor ArchiveLoader {
     public func loadEntries(url: URL) async throws -> ArchiveLoaderLoadResult {
         // in case this is a compount `archiveUrl` will hold the extracted url
         var archiveUrl: URL? = url
+        var compoundTempUrl: URL? = nil
         
         guard let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true) else {
             throw ArchiveError.invalidArchive("Could not detect archive type")
@@ -98,6 +100,7 @@ final actor ArchiveLoader {
             guard let temp = archiveSupportUtilities.createTempDirectory() else {
                 throw ArchiveError.extractionFailed("Could not create temporary directory")
             }
+            compoundTempUrl = temp.url
             yield(.processing(progress: nil, message: "temp dir created: \(temp.url)"))
             
             let entries = try await engine.loadArchive(url: url)
@@ -143,7 +146,8 @@ final actor ArchiveLoader {
             type: detectorResult.type,
             root: root,
             entries: self.entries,
-            error: nil
+            error: nil,
+            tempDirectory: compoundTempUrl
         )
         return result
     }

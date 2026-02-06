@@ -1,7 +1,9 @@
 v0.14
+- feat: New menu to open a new empty window (#60)
 - fix: tar.gz and tgz not working (#54)
 - fix: Can't close QuickLook with Space (#55)
 - fix: MacOS not recognizing MacPacker as a viable VHDX reader (#56)
+- fix: Cache cleanup not happening when just closing a window or loading a new archive (#58)
 - fix: App crashes when unpacking exe / msi files (#59)
 
 v0.13

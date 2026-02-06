@@ -132,4 +132,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
     }
+    
+    func openNewArchiveWindow() {
+        self.archiveWindowManager?.openNewArchiveWindow()
+    }
 }

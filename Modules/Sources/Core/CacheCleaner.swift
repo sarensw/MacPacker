@@ -5,7 +5,6 @@
 //  Created by Stephan Arenswald on 22.11.23.
 //
 
-import Core
 import Foundation
 
 class CacheCleaner {

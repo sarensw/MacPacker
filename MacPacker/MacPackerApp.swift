@@ -52,12 +52,22 @@ struct MacPackerApp: App {
             
             CommandGroup(replacing: .newItem) {
                 Button {
+                    appDelegate.openNewArchiveWindow()
+                } label: {
+                    Label {
+                        Text("New \(Bundle.main.appName) Window", comment: "A label for a button that opens a new window of the app. The placeholder will add the name MacPacker to it.")
+                    } icon: {
+                        Image(systemName: "plus.rectangle")
+                    }
+                }
+                
+                Button {
                     appDelegate.openArchiveUsingOpenPanel()
                 } label: {
                     Label {
-                        Text(verbatim: "Open...")
+                        Text("Open...", comment: "A label for a button that allows the user to open an archive from disk. The order depends on the language.")
                     } icon: {
-                        Image(systemName: "arrow.up.right")
+                        Image(systemName: "arrow.up.right.square")
                     }
                 }
             }

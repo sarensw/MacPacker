@@ -59,6 +59,8 @@ public class ArchiveState: ObservableObject {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let archiveTypeDetector: ArchiveTypeDetector
     
+    private var tempDirectories: [URL] = []
+    
     public private(set) var openTask: Task<Void, any Error>?
     private var archiveLoader: ArchiveLoader?
     
@@ -109,6 +111,8 @@ extension ArchiveState {
         self.archiveLoader = nil
         
         updateStatus(.idle)
+        
+        CacheCleaner().clean(tempDirectories: tempDirectories)
     }
     
     /// Cancels the current operation which can be either loading the archive or extracting
@@ -170,6 +174,10 @@ extension ArchiveState {
                 
                 updateStatusText("loading...")
                 let loaderResult = try await archiveLoader.loadEntries(url: url)
+                
+                if let tempDirectory = loaderResult.tempDirectory {
+                    tempDirectories.append(tempDirectory)
+                }
                 
                 if loaderResult.error != nil {
                     updateStatusText("failed to load")
@@ -238,6 +246,7 @@ extension ArchiveState {
         
         self.isBusy = true
         self.error = nil
+        self.url = url
         self.name = url.lastPathComponent
         self.ext = url.pathExtension
         
@@ -255,6 +264,10 @@ extension ArchiveState {
                 
                 updateStatusText("loading...")
                 let loaderResult = try await archiveLoader.loadEntries(url: url)
+                
+                if let tempDirectory = loaderResult.tempDirectory {
+                    tempDirectories.append(tempDirectory)
+                }
                 
                 try Task.checkCancellation()
                 
@@ -382,7 +395,9 @@ extension ArchiveState {
                 let archiveExtractor = ArchiveExtractor(
                     archiveEngineSelector: selector
                 )
-                if let tempUrl = try await archiveExtractor.extractAsync(item: item) {
+                if let archiveExtractorResult = try await archiveExtractor.extractAsync(item: item) {
+                    let tempUrl = archiveExtractorResult.url
+                    tempDirectories.append(archiveExtractorResult.tempDirectory)
                     // We check by extension here because we don't want to end up
                     // opening files like .xlsx as an archive. An Excel file (or any
                     // other archived file that is basically a .zip file) should be
@@ -444,7 +459,11 @@ extension ArchiveState {
             do {
                 if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
                    let engine = archiveEngineSelector.engine(for: archiveTypeId),
-                   let temp = createTempDirectory() {
+                   let temp = ArchiveSupportUtilities().createTempDirectory() {
+                    
+                    // make sure we know the temp directories to be cleaned up when the state resets
+                    tempDirectories.append(temp.url)
+                    
                     // first extract to our own directory where we have full rights to write to
                     let tempUrl = try await engine.extract(
                         item: item,
@@ -504,7 +523,10 @@ extension ArchiveState {
                 for item in items {
                     if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
                        let engine = archiveEngineSelector.engine(for: archiveTypeId),
-                       let temp = createTempDirectory() {
+                       let temp = ArchiveSupportUtilities().createTempDirectory() {
+                        
+                        // make sure we know the temp directories to be cleaned up when the state resets
+                        tempDirectories.append(temp.url)
                         
                         // first extract to our own directory where we have full rights to write to
                         let tempUrl = try await engine.extract(
@@ -579,7 +601,7 @@ extension ArchiveState {
     }
     
     public func clean() {
-        
+        reset()
     }
     
     /// Updates the quick look preview URL. The previewer we're using is the default systems
@@ -594,8 +616,12 @@ extension ArchiveState {
         Task {
             if let selectedItem = self.selectedItems.first,
                let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: selectedItem),
-               let temp = createTempDirectory(),
+               let temp = ArchiveSupportUtilities().createTempDirectory(),
                let engine = archiveEngineSelector.engine(for: archiveTypeId) {
+                
+                // make sure we know the temp directories to be cleaned up when the state resets
+                tempDirectories.append(temp.url)
+                
                 let url = try await engine.extract(
                     item: selectedItem,
                     from: archiveUrl,
@@ -754,10 +780,12 @@ extension ArchiveState {
         // the currently selected file. Is it the root archive, or is
         // it a nested archive?
         
-        guard let temp = createTempDirectory() else {
+        guard let temp = ArchiveSupportUtilities().createTempDirectory() else {
             Logger.error("Could not create temp directory for extraction")
             return nil
         }
+        // make sure we know the temp directories to be cleaned up when the state resets
+        tempDirectories.append(temp.url)
         
         if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
            let engine = archiveEngineSelector.engine(for: archiveTypeId) {
@@ -771,22 +799,6 @@ extension ArchiveState {
             return url
         }
         
-        return nil
-    }
-    
-    public func createTempDirectory() -> (id: String, url: URL)? {
-        do {
-            let applicationSupport = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-            let id = UUID().uuidString
-            let appSupportSubDirectory = applicationSupport
-                .appendingPathComponent("ta", isDirectory: true)
-                .appendingPathComponent(id, isDirectory: true)
-            try FileManager.default.createDirectory(at: appSupportSubDirectory, withIntermediateDirectories: true, attributes: nil)
-            print(appSupportSubDirectory.path) // /Users/.../Library/Application Support/YourBundleIdentifier
-            return (id, appSupportSubDirectory)
-        } catch {
-            print(error)
-        }
         return nil
     }
     

@@ -1,2656 +1,2662 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "... raise a Bug": {
-      "comment": "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "… einen Fehler zu melden"
+  "sourceLanguage" : "en",
+  "strings" : {
+    "... raise a Bug" : {
+      "comment" : "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… einen Fehler zu melden"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... raise a Bug"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... raise a Bug"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... گزارش باگ یا مشکل"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... گزارش باگ یا مشکل"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "… signaler un problème"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… signaler un problème"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... solleva un bug"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... solleva un bug"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... сообщить об ошибке"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... сообщить об ошибке"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... повідомити про помилку"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... повідомити про помилку"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "… 报告错误"
-          }
-        }
-      }
-    },
-    "... request a Feature": {
-      "comment": "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "… eine Funktion vorzuschlagen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... request a Feature"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... درخواست یک ویژگی"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "… suggérer une fonctionnalité"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... richiedi una funzionalità"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... запросить функцию"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... запросити функцію"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "… 请求新功能"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… 报告错误"
           }
         }
       }
     },
-    "... send a mail to %@": {
-      "comment": "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "… eine E-Mail an %@ senden"
+    "... request a Feature" : {
+      "comment" : "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… eine Funktion vorzuschlagen"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... send a mail to %@"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... request a Feature"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... ایمیل بفرستید به ٪ @"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... درخواست یک ویژگی"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "… envoyer un e‑mail à %@"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… suggérer une fonctionnalité"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... invia una mail a %@"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... richiedi una funzionalità"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... отправить письмо по адресу %@"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... запросить функцию"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "... надіслати листа на адресу %@"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... запросити функцію"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "… 发送邮件给 %@"
-          }
-        }
-      }
-    },
-    "About %@": {
-      "comment": "Link to the About page of the app. The order depends on the language. For example: English: About MacPacker, Japanese: MacPackerについて",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Über %@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "About %@"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "حدود ٪@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "À propos de %@"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Di %@"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Про %@"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Про %@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "关于 %@"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… 请求新功能"
           }
         }
       }
     },
-    "Acknowledgements": {
-      "comment": "Button text to open the window with the list of attributions for other open-source libraries used for the app",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Anmerkungen"
+    "... send a mail to %@" : {
+      "comment" : "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… eine E-Mail an %@ senden"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acknowledgements"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... send a mail to %@"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Благодарности"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... ایمیل بفرستید به ٪ @"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Подяки"
-          }
-        }
-      }
-    },
-    "Advanced": {
-      "comment": "Advanced settings",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Erweitert"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… envoyer un e‑mail à %@"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Advanced"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... invia una mail a %@"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "پیشرفته"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... отправить письмо по адресу %@"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avancé"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... надіслати листа на адресу %@"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Avanzato"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Дополнительные"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Додаткові"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "高级"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… 发送邮件给 %@"
           }
         }
       }
     },
-    "Archive Formats": {
-      "comment": "Archive formats title in settings",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Archivformate"
+    "About %@" : {
+      "comment" : "Link to the About page of the app. The order depends on the language. For example: English: About MacPacker, Japanese: MacPackerについて",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über %@"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Archive Formats"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About %@"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Форматы архивов"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حدود ٪@"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Формати архівів"
-          }
-        }
-      }
-    },
-    "Archive info": {
-      "comment": "Used to open Quick Look feature for the current archive file",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Archivinformationen"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À propos de %@"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Archive info"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di %@"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اطلاعات آرشیو"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Про %@"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Informations de l’archive"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Про %@"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Informazioni dell'archivio"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Информация об архиве"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Інформація про архів"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "存档信息"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关于 %@"
           }
         }
       }
     },
-    "Breadcrumb position:": {
-      "comment": "Allows the user to change the breadcrumb position to either top or bottom of the archive window",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Breadcrumb-Position:"
+    "Acknowledgements" : {
+      "comment" : "Button text to open the window with the list of attributions for other open-source libraries used for the app",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmerkungen"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Breadcrumb position:"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acknowledgements"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "موقعیت بردکرامب:"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Благодарности"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Position du fil d’Ariane:"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Posizione del breadcrumb:"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Позиция строки навигации:"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Позиція рядка навігації:"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "路径栏位置："
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подяки"
           }
         }
       }
     },
-    "Cache:": {
-      "comment": "Cache related settings",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cache:"
+    "Advanced" : {
+      "comment" : "Advanced settings",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erweitert"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cache:"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "کش:"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "پیشرفته"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cache:"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avancé"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cache:"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanzato"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Кэш:"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дополнительные"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Кеш:"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додаткові"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "缓存："
-          }
-        }
-      }
-    },
-    "Check for Updates…": {
-      "comment": "Allow the user to check for updates",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nach Updates suchen…"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check for Updates…"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rechercher des mises à jour…"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Controlla gli aggiornamenti…"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Проверить наличие обновлений…"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Перевірити наявність оновлень…"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "检查更新…"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高级"
           }
         }
       }
     },
-    "Clear cache": {
-      "comment": "Allows the user to clear the cache",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cache leeren"
+    "Archive Formats" : {
+      "comment" : "Archive formats title in settings",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivformate"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear cache"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archive Formats"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "پاک کردن کش"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Форматы архивов"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vider le cache"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancella cache"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Очистить кэш"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Очистити кеш"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "清除缓存"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Формати архівів"
           }
         }
       }
     },
-    "Clears all content from the cache": {
-      "comment": "Help text shown in a tool tip when hovering the \"Clear cache\" button",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Löscht den gesamten Inhalt des Caches"
+    "Archive info" : {
+      "comment" : "Used to open Quick Look feature for the current archive file",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivinformationen"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clears all content from the cache"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archive info"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تمام محتوا را از کش پاک می کند"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اطلاعات آرشیو"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Efface tout le contenu du cache."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informations de l’archive"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cancella tutto il contenuto dalla cache"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informazioni dell'archivio"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Очистить все содержимое кэша"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Информация об архиве"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Очистити весь вміст кешу"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Інформація про архів"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "清除缓存中的所有内容。"
-          }
-        }
-      }
-    },
-    "Columns:": {
-      "comment": "Let's the user choose to show or hide columns in the archive window",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Spalten:"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Columns:"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ستون ها:"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Colonnes:"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Colonne:"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Столбцы:"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Стовпці:"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "列："
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "存档信息"
           }
         }
       }
     },
-    "Date Modified": {
-      "comment": "Column that shows the date the file was modified",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Änderungsdatum"
+    "Breadcrumb position:" : {
+      "comment" : "Allows the user to change the breadcrumb position to either top or bottom of the archive window",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breadcrumb-Position:"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Date Modified"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Breadcrumb position:"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تاریخ اصلاح"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "موقعیت بردکرامب:"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Date de modification"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position du fil d’Ariane:"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Data di modifica"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posizione del breadcrumb:"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Дата модификации"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позиция строки навигации:"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Дата модифікації"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Позиція рядка навігації:"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "修改日期"
-          }
-        }
-      }
-    },
-    "Default status & engine settings:": {
-      "comment": "A heading for the section that lets users configure the default status and engine settings for MacPacker.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Standard-App-Status und Engine-Einstellungen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Default status & engine settings"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Состояние по умолчанию и настройки движка:"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Стан за замовчуванням та налаштування рушія:"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路径栏位置："
           }
         }
       }
     },
-    "disabled": {
-      "comment": "A text describing that the feature is currently disabled.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "deaktiviert"
+    "Cache:" : {
+      "comment" : "Cache related settings",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache:"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "disabled"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache:"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "выключено"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "کش:"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "вимкнено"
-          }
-        }
-      }
-    },
-    "enabled": {
-      "comment": "The text that appears next to the toggle switch in the \"File provider extension\" section, indicating that the feature is currently enabled.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "aktiviert"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache:"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "enabled"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache:"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "включено"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кэш:"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "увімкнено"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кеш:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "缓存："
           }
         }
       }
     },
-    "Engine": {
-      "comment": "The header for the \"Engine\" column in the format settings view.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Engine"
+    "Check for Updates…" : {
+      "comment" : "Allow the user to check for updates",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach Updates suchen…"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Engine"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates…"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Движок"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher des mises à jour…"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Рушій"
-          }
-        }
-      }
-    },
-    "Extensions": {
-      "comment": "A label describing the file extensions supported by a particular archive format.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Erweiterungen"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla gli aggiornamenti…"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extensions"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить наличие обновлений…"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Расширения"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевірити наявність оновлень…"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Розширення"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查更新…"
           }
         }
       }
     },
-    "Extract archive": {
-      "comment": "Button in the toolbar that allows the user to extract the full archive to a target directory.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Archive entpacken"
+    "Clear cache" : {
+      "comment" : "Allows the user to clear the cache",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache leeren"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extract archive"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear cache"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "استخراج کردن کل آرشیو"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "پاک کردن کش"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extraire l’archive"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vider le cache"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estrai archivio"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancella cache"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Распаковать архив"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить кэш"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Розпакувати архів"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистити кеш"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "解压存档"
-          }
-        }
-      }
-    },
-    "Extract selected": {
-      "comment": "Button in the tooblar that allows the user to extract the selected files.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Auswahl entpacken"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extract selected"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "استخراج کردن موارد انتخاب شده"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extraire la sélection"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Estrai elementi selezionati"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Распаковать выбранное"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Розпакувати вибране"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "解压所选"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除缓存"
           }
         }
       }
     },
-    "Feedback": {
-      "comment": "Title of the tab in the welcome screen that lets the user give feedback",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Feedback"
+    "Clears all content from the cache" : {
+      "comment" : "Help text shown in a tool tip when hovering the \"Clear cache\" button",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löscht den gesamten Inhalt des Caches"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Feedback"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clears all content from the cache"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "بارخورد"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تمام محتوا را از کش پاک می کند"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Commentaires"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efface tout le contenu du cache."
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Feedback"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancella tutto il contenuto dalla cache"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отзыв"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить все содержимое кэша"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Відгук"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистити весь вміст кешу"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "反馈"
-          }
-        }
-      }
-    },
-    "File Format": {
-      "comment": "A column header in the format settings view.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dateiformat"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "File Format"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Формат файла"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Формат файлу"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除缓存中的所有内容。"
           }
         }
       }
     },
-    "File provider extension": {
-      "comment": "The title of a section in the settings view related to the file provider extension.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dateianbieter-Erweiterungen"
+    "Columns:" : {
+      "comment" : "Let's the user choose to show or hide columns in the archive window",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spalten:"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "File provider extension"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Columns:"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Расширение менеджера файлов"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ستون ها:"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Розширення менеджера файлів"
-          }
-        }
-      }
-    },
-    "General": {
-      "comment": "General settings",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Allgemein"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colonnes:"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "General"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colonne:"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "عمومی"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Столбцы:"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Général"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стовпці:"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Generale"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Общие"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Загальні"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "通用"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "列："
           }
         }
       }
     },
-    "Go here to ...": {
-      "comment": "This is the menu in the 'More' menu of the archive window to give customers a hint what they can do to reach the dev. A submenu will open with links to GitHub, a bug report form, and a mail to the developer.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gehe hierhin, um …"
+    "Date Modified" : {
+      "comment" : "Column that shows the date the file was modified",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderungsdatum"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Go here to ..."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date Modified"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "از اینجا برو به ..."
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تاریخ اصلاح"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Allez ici pour …"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date de modification"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vai qui per ..."
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data di modifica"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Перейти сюда, чтобы ..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дата модификации"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Перейти сюди, щоб ..."
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дата модифікації"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "前往此处以…"
-          }
-        }
-      }
-    },
-    "How to set %@ as default?": {
-      "comment": "A button that shows a popover explaining how to set MacPacker as the default file opener.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wie lege ich %@ als Standard-App fest?"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "How to set %@ as default?"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Как установить %@ по умолчанию?"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Як встановити %@ за замовчуванням?"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改日期"
           }
         }
       }
     },
-    "I found the following bug ...": {
-      "comment": "Hint on what to ask for in the feedback form",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ich habe folgenden Fehler gefunden …"
+    "Default status & engine settings:" : {
+      "comment" : "A heading for the section that lets users configure the default status and engine settings for MacPacker.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard-App-Status und Engine-Einstellungen"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I found the following bug ..."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default status & engine settings"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "من این باگ (مشکل) رو پیدا کردم ..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Состояние по умолчанию и настройки движка:"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "J’ai trouvé le bug suivant …"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ho trovato il seguente bug ..."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Я нашел следующую ошибку..."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Я знайшов наступну помилку ..."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "我发现了如下错误…"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стан за замовчуванням та налаштування рушія:"
           }
         }
       }
     },
-    "Info on Engines": {
-      "comment": "A label displayed below a button that shows more information about the different archive engines.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Info über Engines"
+    "disabled" : {
+      "comment" : "A text describing that the feature is currently disabled.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "deaktiviert"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Info on Engines"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "disabled"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Информация о движках"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "выключено"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Інформація про рушії"
-          }
-        }
-      }
-    },
-    "Leave a review in the App Store": {
-      "comment": "Opens the App Store review page for the MacPacker app for the user to write a review.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bewerte die App im App Store"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Leave a review in the App Store"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "در اپ استور نظر بگذارید"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Laisser un avis sur l’App Store"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lascia una recensione nell'App Store"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Оставить отзыв в App Store"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Залишити відгук в App Store"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 App Store 上留下评价"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "вимкнено"
           }
         }
       }
     },
-    "Manage in System Settings": {
-      "comment": "A button label that, when tapped, shows the user how to manage the file provider extension in System Settings.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Verwalten in den System­einstellungen"
+    "enabled" : {
+      "comment" : "The text that appears next to the toggle switch in the \"File provider extension\" section, indicating that the feature is currently enabled.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aktiviert"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Manage in System Settings"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "enabled"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Управлять в Системных настройках"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "включено"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Керувати в Налаштуваннях системи"
-          }
-        }
-      }
-    },
-    "More": {
-      "comment": "The 'More' menu in the archive window",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mehr"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "More"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "بیشتر"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Di più"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Больше"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Більше"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更多"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "увімкнено"
           }
         }
       }
     },
-    "More apps": {
-      "comment": "Title of the tab in the welcome screen that links to other projects.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Weitere Apps"
+    "Engine" : {
+      "comment" : "The header for the \"Engine\" column in the format settings view.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Engine"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "More apps"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Engine"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "برنامه های بیشتر"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Движок"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus d’apps"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Altre app"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Больше программ"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Більше програм"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更多应用"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рушій"
           }
         }
       }
     },
-    "More Apps": {
-      "comment": "Hint to the user that the submenu contains links for more apps that they might like.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Weitere Apps"
+    "Extensions" : {
+      "comment" : "A label describing the file extensions supported by a particular archive format.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erweiterungen"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "More Apps"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extensions"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "برنامه های بیشتر"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Расширения"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Plus d’apps"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Altre app"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Больше программ"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Більше програм"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更多应用"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розширення"
           }
         }
       }
     },
-    "Name": {
-      "comment": "Column that shows the name of the archive files",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Name"
+    "Extract archive" : {
+      "comment" : "Button in the toolbar that allows the user to extract the full archive to a target directory.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archive entpacken"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Name"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extract archive"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "نام"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخراج کردن کل آرشیو"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nom"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraire l’archive"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nome"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrai archivio"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Название"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковать архив"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Назва"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розпакувати архів"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "名称"
-          }
-        }
-      }
-    },
-    "Open cache directory": {
-      "comment": "Allows the user to open the application support folder that holds the cache for temporarly extracted archive files",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cache-Ordner öffnen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open cache directory"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "پوشه کش باز"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ouvrir le dossier du cache"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apri la directory della cache"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Открыть каталог кэша"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Відкрити каталог кешу"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "打开缓存目录"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解压存档"
           }
         }
       }
     },
-    "Or reach out via...": {
-      "comment": "Hint on how to contact the developer",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oder kontaktiere uns über"
+    "Extract selected" : {
+      "comment" : "Button in the tooblar that allows the user to extract the selected files.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auswahl entpacken"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Or reach out via..."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extract selected"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "یا از طریق..."
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخراج کردن موارد انتخاب شده"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ou contactez‑nous via…"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraire la sélection"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oppure contattaci tramite..."
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrai elementi selezionati"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Или связаться через..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковать выбранное"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Або зв'язатися через..."
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розпакувати вибране"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "或通过… 联系"
-          }
-        }
-      }
-    },
-    "Organize files without tons of Finder windows.": {
-      "comment": "Short description of the app FileFillet which is referenced in the 'Other projects' section of the 'Welcome' view",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dateien organisieren - ohne unzählige Finder-Fenster"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Organize files without tons of Finder windows."
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "فایل ها را بدون تعداد زیاد پنجره های Finder سازماندهی کنید."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Organisez vos fichiers sans multiplier les fenêtres du Finder."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Organizza i file senza dover aprire tonnellate di finestre del Finder."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Организуйте файлы без множества окон Finder."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Організовуйте файли без безлічі вікон Finder."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "组织文件，无需打开大量 Finder 窗口。"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解压所选"
           }
         }
       }
     },
-    "Packed Size": {
-      "comment": "Column that shows the packed size of the archive files",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Komprimierte Größe"
+    "Feedback" : {
+      "comment" : "Title of the tab in the welcome screen that lets the user give feedback",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feedback"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Packed Size"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feedback"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اندازه بسته بندی شده"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بارخورد"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Taille compressée"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commentaires"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dimensioni imballate"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feedback"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Упакованный размер"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отзыв"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Запакований розмір"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відгук"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "压缩后大小"
-          }
-        }
-      }
-    },
-    "Permissions": {
-      "comment": "Column that shows the file permissions",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Berechtigungen"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Permissions"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "مجوزهای"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Autorisations"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Permessi"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Разрешения"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Дозволи"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "权限"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "反馈"
           }
         }
       }
     },
-    "Please add feature ...": {
-      "comment": "Hint on what to ask for in the feedback form",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bitte folgende Funktion hinzufügen …"
+    "File Format" : {
+      "comment" : "A column header in the format settings view.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateiformat"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Please add feature ..."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File Format"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "لطفا ویژگی را اضافه کنید ..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Формат файла"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Veuillez ajouter la fonctionnalité suivante …"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Si prega di aggiungere la funzionalità ..."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Пожалуйста, добавьте функцию ..."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Будь ласка, додайте функцію ..."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请添加以下功能…"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Формат файлу"
           }
         }
       }
     },
-    "Please support the archive type ...": {
-      "comment": "Hint on what to ask for in the feedback form",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bitte folgenden Archivtyp unterstützen …"
+    "File provider extension" : {
+      "comment" : "The title of a section in the settings view related to the file provider extension.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateianbieter-Erweiterungen"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Please support the archive type ..."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File provider extension"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "لطفا از این آرشیوها پشتیبانی کنید ..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Расширение менеджера файлов"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Veuillez prendre en charge le type d’archive suivant …"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Si prega di supportare il tipo di archivio ..."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Пожалуйста, добавьте поддержку архивов ..."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Будь ласка, додайте підтримку архівів ..."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请支持以下归档类型…"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розширення менеджера файлів"
           }
         }
       }
     },
-    "Preview": {
-      "comment": "Button in the tooblar that allows the user to preview the selected file.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vorschau"
+    "General" : {
+      "comment" : "General settings",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allgemein"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preview"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "پیش‌نمایش"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عمومی"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aperçu"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Général"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Anteprima"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generale"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Предварительный просмотр"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Общие"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Попередній перегляд"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загальні"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "预览"
-          }
-        }
-      }
-    },
-    "Refresh": {
-      "comment": "A button to refresh the list of supported file formats.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktualisieren"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Refresh"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Обновить"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Оновити"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通用"
           }
         }
       }
     },
-    "Send": {
-      "comment": "Button label to send feedback",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Senden"
+    "Go here to ..." : {
+      "comment" : "This is the menu in the 'More' menu of the archive window to give customers a hint what they can do to reach the dev. A submenu will open with links to GitHub, a bug report form, and a mail to the developer.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gehe hierhin, um …"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Send"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go here to ..."
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ارسال"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "از اینجا برو به ..."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Envoyer"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allez ici pour …"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inviare"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vai qui per ..."
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отправить"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перейти сюда, чтобы ..."
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Надіслати"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перейти сюди, щоб ..."
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "发送"
-          }
-        }
-      }
-    },
-    "Send a smile": {
-      "comment": "This is the menu in the 'More' menu of the archive window to give customers a hint on how to support the developer. The user has the option to open the MacPacker repository on GitHub or leave a review in the App Store.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schenke ein Lächeln"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Send a smile"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "لبخند بفرستید"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Envoyer un sourire"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invia un sorriso"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отправить улыбку"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Надіслати посмішку"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "发送微笑"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往此处以…"
           }
         }
       }
     },
-    "Settings...": {
-      "comment": "Used to open the settings/preferences window",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Einstellungen…"
+    "How to set %@ as default?" : {
+      "comment" : "A button that shows a popover explaining how to set MacPacker as the default file opener.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie lege ich %@ als Standard-App fest?"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Settings..."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to set %@ as default?"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تنظیمات..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как установить %@ по умолчанию?"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Réglages…"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Impostazioni..."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Настройка..."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Налаштування..."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "设置…"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Як встановити %@ за замовчуванням?"
           }
         }
       }
     },
-    "Show application support folder": {
-      "comment": "Help text shown in a tooltip when hovering the \"Open cache directory\" button",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ordner “Application Support” anzeigen"
+    "I found the following bug ..." : {
+      "comment" : "Hint on what to ask for in the feedback form",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ich habe folgenden Fehler gefunden …"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show application support folder"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I found the following bug ..."
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "نمایش پوشه پشتیبانی برنامه"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "من این باگ (مشکل) رو پیدا کردم ..."
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Afficher le dossier «Application Support»"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "J’ai trouvé le bug suivant …"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostra la cartella di supporto dell'applicazione"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ho trovato il seguente bug ..."
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Показать папку настроек программы"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Я нашел следующую ошибку..."
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Показати папку налаштувань програми"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Я знайшов наступну помилку ..."
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "显示 Application Support 文件夹"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我发现了如下错误…"
           }
         }
       }
     },
-    "Size": {
-      "comment": "Column that shows the unpacked size of the archive files",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Größe"
+    "Info on Engines" : {
+      "comment" : "A label displayed below a button that shows more information about the different archive engines.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Info über Engines"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Size"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Info on Engines"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "اندازه"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Информация о движках"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Taille"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dimensioni"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Размер"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Розмір"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "大小"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Інформація про рушії"
           }
         }
       }
     },
-    "Star the repository on GitHub": {
-      "comment": "Opens the GitHub page of the MacPacker repository for the user to star it.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repository auf GitHub mit einem Stern markieren"
+    "Leave a review in the App Store" : {
+      "comment" : "Opens the App Store review page for the MacPacker app for the user to write a review.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewerte die App im App Store"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Star the repository on GitHub"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave a review in the App Store"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "مخزن را در گیت هاب ستاره دار کنید"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "در اپ استور نظر بگذارید"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mettre une étoile au dépôt sur GitHub"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laisser un avis sur l’App Store"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aggiungi una stella al repository su GitHub"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lascia una recensione nell'App Store"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отметить репозиторий на GitHub"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оставить отзыв в App Store"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Відмітити репозиторій на GitHub"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Залишити відгук в App Store"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在 GitHub 上为仓库加星标"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 App Store 上留下评价"
           }
         }
       }
     },
-    "Support the development...": {
-      "comment": "Hint to the user to support the app's development via some donation",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Entwicklung unterstützen…"
+    "Manage in System Settings" : {
+      "comment" : "A button label that, when tapped, shows the user how to manage the file provider extension in System Settings.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwalten in den System­einstellungen"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Support the development..."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage in System Settings"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "از توسعه حمایت کنید..."
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Управлять в Системных настройках"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Soutenir le développement…"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sostieni lo sviluppo..."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Поддержать разработку..."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Підтримати розробку..."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "支持开发…"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Керувати в Налаштуваннях системи"
           }
         }
       }
     },
-    "Version v%@": {
-      "comment": "This text shows the current version of the app in Welcome and About window",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Version v%@"
+    "More" : {
+      "comment" : "The 'More' menu in the archive window",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mehr"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Version v%@"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "نسخه v٪ @"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بیشتر"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Version v%@"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Versione v%@"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di più"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Версия v%@"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Версія v%@"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Більше"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "版本 v%@"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多"
           }
         }
       }
     },
-    "Website": {
-      "comment": "Hint to the user that the button links to the app's website.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Webseite"
+    "More apps" : {
+      "comment" : "Title of the tab in the welcome screen that links to other projects.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere Apps"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Website"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More apps"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "وب سایت"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "برنامه های بیشتر"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Site web"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus d’apps"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sito web"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altre app"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Веб-сайт"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше программ"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Веб-сайт"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Більше програм"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "网站"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多应用"
           }
         }
       }
     },
-    "Welcome to %@": {
-      "comment": "'Welcome to <app name>'. The order of the greeting might be different in different languages. For example: English: Welcome to MacPacker, Japanese: MacPackerへようこそ. This is up to the translator to decide.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Willkommen bei %@"
+    "More Apps" : {
+      "comment" : "Hint to the user that the submenu contains links for more apps that they might like.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere Apps"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Welcome to %@"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More Apps"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "به ٪ خوش آمدید @"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "برنامه های بیشتر"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bienvenue sur %@"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus d’apps"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Benvenuti a %@"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altre app"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Добро пожаловать на %@"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше программ"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ласкаво просимо до %@"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Більше програм"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "欢迎使用 %@"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多应用"
           }
         }
       }
     },
-    "What's new": {
-      "comment": "Title of the tab in the welcome screen that shows the user what's new in this version.",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neuigkeiten"
+    "Name" : {
+      "comment" : "Column that shows the name of the archive files",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "What's new"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
           }
         },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "چه خبر"
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نام"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nouveautés"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cosa c'è di nuovo"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome"
           }
         },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Что нового"
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название"
           }
         },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Що нового"
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назва"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "新功能"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名称"
+          }
+        }
+      }
+    },
+    "New %@ Window" : {
+      "comment" : "A label for a button that opens a new window of the app. The placeholder will add the name MacPacker to it."
+    },
+    "Open cache directory" : {
+      "comment" : "Allows the user to open the application support folder that holds the cache for temporarly extracted archive files",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cache-Ordner öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open cache directory"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "پوشه کش باز"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le dossier du cache"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri la directory della cache"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть каталог кэша"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити каталог кешу"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开缓存目录"
+          }
+        }
+      }
+    },
+    "Open..." : {
+      "comment" : "A label for a button that allows the user to open an archive from disk. The order depends on the language."
+    },
+    "Or reach out via..." : {
+      "comment" : "Hint on how to contact the developer",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oder kontaktiere uns über"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Or reach out via..."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "یا از طریق..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ou contactez‑nous via…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oppure contattaci tramite..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Или связаться через..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Або зв'язатися через..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "或通过… 联系"
+          }
+        }
+      }
+    },
+    "Organize files without tons of Finder windows." : {
+      "comment" : "Short description of the app FileFillet which is referenced in the 'Other projects' section of the 'Welcome' view",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateien organisieren - ohne unzählige Finder-Fenster"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organize files without tons of Finder windows."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فایل ها را بدون تعداد زیاد پنجره های Finder سازماندهی کنید."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organisez vos fichiers sans multiplier les fenêtres du Finder."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organizza i file senza dover aprire tonnellate di finestre del Finder."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Организуйте файлы без множества окон Finder."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Організовуйте файли без безлічі вікон Finder."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "组织文件，无需打开大量 Finder 窗口。"
+          }
+        }
+      }
+    },
+    "Packed Size" : {
+      "comment" : "Column that shows the packed size of the archive files",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Komprimierte Größe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Packed Size"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اندازه بسته بندی شده"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taille compressée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensioni imballate"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Упакованный размер"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запакований розмір"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "压缩后大小"
+          }
+        }
+      }
+    },
+    "Permissions" : {
+      "comment" : "Column that shows the file permissions",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berechtigungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissions"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مجوزهای"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisations"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permessi"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешения"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дозволи"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "权限"
+          }
+        }
+      }
+    },
+    "Please add feature ..." : {
+      "comment" : "Hint on what to ask for in the feedback form",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte folgende Funktion hinzufügen …"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please add feature ..."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لطفا ویژگی را اضافه کنید ..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veuillez ajouter la fonctionnalité suivante …"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si prega di aggiungere la funzionalità ..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пожалуйста, добавьте функцию ..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Будь ласка, додайте функцію ..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请添加以下功能…"
+          }
+        }
+      }
+    },
+    "Please support the archive type ..." : {
+      "comment" : "Hint on what to ask for in the feedback form",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte folgenden Archivtyp unterstützen …"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please support the archive type ..."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لطفا از این آرشیوها پشتیبانی کنید ..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veuillez prendre en charge le type d’archive suivant …"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si prega di supportare il tipo di archivio ..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пожалуйста, добавьте поддержку архивов ..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Будь ласка, додайте підтримку архівів ..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请支持以下归档类型…"
+          }
+        }
+      }
+    },
+    "Preview" : {
+      "comment" : "Button in the tooblar that allows the user to preview the selected file.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschau"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "پیش‌نمایش"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aperçu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anteprima"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Предварительный просмотр"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попередній перегляд"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预览"
+          }
+        }
+      }
+    },
+    "Refresh" : {
+      "comment" : "A button to refresh the list of supported file formats.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оновити"
+          }
+        }
+      }
+    },
+    "Send" : {
+      "comment" : "Button label to send feedback",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ارسال"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inviare"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отправить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Надіслати"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送"
+          }
+        }
+      }
+    },
+    "Send a smile" : {
+      "comment" : "This is the menu in the 'More' menu of the archive window to give customers a hint on how to support the developer. The user has the option to open the MacPacker repository on GitHub or leave a review in the App Store.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schenke ein Lächeln"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send a smile"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لبخند بفرستید"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyer un sourire"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invia un sorriso"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отправить улыбку"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Надіслати посмішку"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送微笑"
+          }
+        }
+      }
+    },
+    "Settings..." : {
+      "comment" : "Used to open the settings/preferences window",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings..."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تنظیمات..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройка..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Налаштування..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置…"
+          }
+        }
+      }
+    },
+    "Show application support folder" : {
+      "comment" : "Help text shown in a tooltip when hovering the \"Open cache directory\" button",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordner “Application Support” anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show application support folder"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نمایش پوشه پشتیبانی برنامه"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher le dossier «Application Support»"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra la cartella di supporto dell'applicazione"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать папку настроек программы"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати папку налаштувань програми"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示 Application Support 文件夹"
+          }
+        }
+      }
+    },
+    "Size" : {
+      "comment" : "Column that shows the unpacked size of the archive files",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Größe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اندازه"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taille"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensioni"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Размер"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розмір"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大小"
+          }
+        }
+      }
+    },
+    "Star the repository on GitHub" : {
+      "comment" : "Opens the GitHub page of the MacPacker repository for the user to star it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repository auf GitHub mit einem Stern markieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star the repository on GitHub"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مخزن را در گیت هاب ستاره دار کنید"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre une étoile au dépôt sur GitHub"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi una stella al repository su GitHub"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отметить репозиторий на GitHub"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відмітити репозиторій на GitHub"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 GitHub 上为仓库加星标"
+          }
+        }
+      }
+    },
+    "Support the development..." : {
+      "comment" : "Hint to the user to support the app's development via some donation",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entwicklung unterstützen…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support the development..."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "از توسعه حمایت کنید..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soutenir le développement…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostieni lo sviluppo..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поддержать разработку..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Підтримати розробку..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支持开发…"
+          }
+        }
+      }
+    },
+    "Version v%@" : {
+      "comment" : "This text shows the current version of the app in Welcome and About window",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version v%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version v%@"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نسخه v٪ @"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version v%@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versione v%@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версия v%@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Версія v%@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本 v%@"
+          }
+        }
+      }
+    },
+    "Website" : {
+      "comment" : "Hint to the user that the button links to the app's website.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Webseite"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "وب سایت"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Site web"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sito web"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Веб-сайт"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Веб-сайт"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网站"
+          }
+        }
+      }
+    },
+    "Welcome to %@" : {
+      "comment" : "'Welcome to <app name>'. The order of the greeting might be different in different languages. For example: English: Welcome to MacPacker, Japanese: MacPackerへようこそ. This is up to the translator to decide.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Willkommen bei %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to %@"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "به ٪ خوش آمدید @"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bienvenue sur %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benvenuti a %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добро пожаловать на %@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ласкаво просимо до %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "欢迎使用 %@"
+          }
+        }
+      }
+    },
+    "What's new" : {
+      "comment" : "Title of the tab in the welcome screen that shows the user what's new in this version.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuigkeiten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's new"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "چه خبر"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveautés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cosa c'è di nuovo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Что нового"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Що нового"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新功能"
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.1"
 }
