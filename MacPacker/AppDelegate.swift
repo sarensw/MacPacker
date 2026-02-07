@@ -47,7 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             case .extractHere:
                 handler = AppUrlExtractHereHandler(catalog: catalog, engineSelector: engineSelector)
             case .extractToFolder:
-                handler = AppUrlExtractToFolderHandler(catalog: catalog)
+                handler = AppUrlExtractToFolderHandler(catalog: catalog, engineSelector: engineSelector)
             }
             
             // we have all the url info, start the handlers now

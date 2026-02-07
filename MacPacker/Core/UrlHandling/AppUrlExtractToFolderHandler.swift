@@ -10,9 +10,11 @@ import Core
 
 class AppUrlExtractToFolderHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
+    private let engineSelector: ArchiveEngineSelectorProtocol
     
-    init(catalog: ArchiveTypeCatalog) {
+    init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
         self.catalog = catalog
+        self.engineSelector = engineSelector
     }
     
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
@@ -32,11 +34,12 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
                             
                             Logger.log("Found archive handler for \(fileUrl.lastPathComponent)")
                             
-                            // TODO: Reenable
-                            fatalError("Reenable")
-//                            let state = ArchiveState()
-//                            state.open(url: fileUrl)
-//                            state.extract(to: folderUrl)
+                            Task {
+                                let state = ArchiveState(catalog: self.catalog, engineSelector: self.engineSelector)
+                                state.open(url: fileUrl)
+                                try await state.openTask?.value
+                                state.extract(to: folderUrl)
+                            }
                         } catch {
                             Logger.error(error.localizedDescription)
                         }

@@ -25,11 +25,10 @@ class AppUrlExtractHereHandler: AppUrlHandler {
                     Logger.log("Found archive handler for \(fileUrl.lastPathComponent)")
                     if let url {
                         Task {
-                            await MainActor.run {
-                                let state = ArchiveState(catalog: self.catalog, engineSelector: self.engineSelector)
-                                state.open(url: fileUrl)
-                                Task { try! await state.extract(to: url) }
-                            }
+                            let state = ArchiveState(catalog: self.catalog, engineSelector: self.engineSelector)
+                            state.open(url: fileUrl)
+                            try await state.openTask?.value
+                            state.extract(to: url)
                         }
                     }
                 }

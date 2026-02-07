@@ -6,6 +6,7 @@ v0.14
 - fix: MacOS not recognizing MacPacker as a viable VHDX reader (#56)
 - fix: Cache cleanup not happening when just closing a window or loading a new archive (#58)
 - fix: App crashes when unpacking exe / msi files (#59)
+- fix: Extract here and Extract to folder via Finder don't work (#62)
 
 v0.13
 - feat: arj, dmg/apfs (Apple File System), chm, fat, ntfs, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk, xar support

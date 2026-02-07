@@ -76,6 +76,7 @@ struct WelcomeWhatsNewView: View {
             WhatsNewPill(key: LocalizedStringResource("v0.14_fix_56", defaultValue: "Some formats are not mapped to MacPacker in Finder", table: "LocalizableWhatsNew"), type: .bug)
             WhatsNewPill(key: LocalizedStringResource("v0.14_fix_58", defaultValue: "Cache cleanup not happening when just closing a window or loading a new archive", table: "LocalizableWhatsNew"), type: .bug)
             WhatsNewPill(key: LocalizedStringResource("v0.14_fix_59", defaultValue: "App crashes when unpacking exe / msi files", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_62", defaultValue: "Extract here and Extract to folder via Finder don't work", table: "LocalizableWhatsNew"), type: .bug)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
