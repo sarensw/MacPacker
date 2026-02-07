@@ -14,16 +14,18 @@ struct SendSmileView: View {
     var body: some View {
         Menu {
             Button {
-                openURL(URL(string: "https://github.com/sarensw/MacPacker")!)
+                guard let gitHubURL = URL(string: Constants.gitHubLink) else {
+                    fatalError("Expected a valid URL")
+                }
+                
+                openURL(gitHubURL)
             } label: {
                 Text("Star the repository on GitHub", comment: "Opens the GitHub page of the MacPacker repository for the user to star it.")
             }
             
             #if STORE
             Button {
-                let url = "https://apps.apple.com/app/id6473273874?action=write-review"
-
-                guard let writeReviewURL = URL(string: url) else {
+                guard let writeReviewURL = URL(string: Constants.appStoreReviewLink) else {
                     fatalError("Expected a valid URL")
                 }
 

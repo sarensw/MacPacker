@@ -1,5 +1,6 @@
 v0.14
-- feat: New menu to open a new empty window (#60)
+- feat: New menu to open a new empty window
+- feat: Extended info on archive in status bar (#61)
 - fix: tar.gz and tgz not working (#54)
 - fix: Can't close QuickLook with Space (#55)
 - fix: MacOS not recognizing MacPacker as a viable VHDX reader (#56)

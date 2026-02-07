@@ -9,10 +9,12 @@ import Foundation
 
 struct ArchiveLoaderLoadResult: Sendable {
     let type: ArchiveTypeDto
+    let compositionType: CompositionTypeDto?
     let root: ArchiveItem
     let entries: [ArchiveItem]
     let error: String?
     let tempDirectory: URL?
+    let uncompressedSize: Int64?
 }
 
 struct ArchiveLoaderBuildTreeResult {
@@ -103,7 +105,8 @@ final actor ArchiveLoader {
             compoundTempUrl = temp.url
             yield(.processing(progress: nil, message: "temp dir created: \(temp.url)"))
             
-            let entries = try await engine.loadArchive(url: url)
+            let loaderResult = try await engine.loadArchive(url: url)
+            let entries = loaderResult.items
             yield(.processing(progress: nil, message: "entries found: \(entries.count)"))
             
             guard entries.count > 0 else {
@@ -134,7 +137,8 @@ final actor ArchiveLoader {
         defer { forwardTask.cancel() }
         
         // set the entries
-        self.entries = try await engine.loadArchive(url: archiveUrl)
+        let engineLoadResult = try await engine.loadArchive(url: archiveUrl)
+        self.entries = engineLoadResult.items
         yield(.processing(progress: nil, message: "entries found: \(self.entries.count)"))
         
         // build the hierarchy
@@ -144,10 +148,12 @@ final actor ArchiveLoader {
         // create the loader results
         let result = ArchiveLoaderLoadResult(
             type: detectorResult.type,
+            compositionType: detectorResult.composition,
             root: root,
             entries: self.entries,
             error: nil,
-            tempDirectory: compoundTempUrl
+            tempDirectory: compoundTempUrl,
+            uncompressedSize: engineLoadResult.uncompressedSize
         )
         return result
     }

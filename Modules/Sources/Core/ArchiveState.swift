@@ -22,7 +22,10 @@ public class ArchiveState: ObservableObject {
     @Published private(set) public var url: URL?
     @Published private(set) public var name: String?
     @Published private(set) public var type: ArchiveTypeDto?
+    @Published private(set) public var compositionType: CompositionTypeDto?
     @Published private(set) public var ext: String?
+    @Published private(set) public var uncompressedSize: Int64?
+    @Published private(set) public var isEncrypted: Bool? = false
     
     // Full list of entries
     @Published private(set) public var entries: [ArchiveItemId: ArchiveItem] = [:]
@@ -93,7 +96,10 @@ extension ArchiveState {
         self.url = nil
         self.name = nil
         self.type = nil
+        self.compositionType = nil
         self.ext = nil
+        self.uncompressedSize = nil
+        self.isEncrypted = nil
         
         self.root = nil
         
@@ -279,7 +285,9 @@ extension ArchiveState {
                 self.selectedItem = loaderResult.root
                 
                 self.type = loaderResult.type
+                self.compositionType = loaderResult.compositionType
                 self.entries = Dictionary(uniqueKeysWithValues: loaderResult.entries.map({ ($0.id, $0) }))
+                self.uncompressedSize = loaderResult.uncompressedSize
                 
                 updateStatusText("building tree...")
                 

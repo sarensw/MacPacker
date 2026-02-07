@@ -80,13 +80,14 @@ final actor Archive7ZipEngine: ArchiveEngine {
         }
     }
     
-    func loadArchive(url: URL) async throws -> [ArchiveItem] {
+    func loadArchive(url: URL) async throws -> ArchiveEngineLoadResult {
         guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
             print("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
         }
         let path = FilePath(cmdUrl.path)
         var items: [ArchiveItem] = []
+        var uncompressedSize: Int64 = 0
         
         emit(.processing(progress: nil, message: "running 7zz..."))
         
@@ -122,6 +123,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
             } else if inBlock {
                 if let item = parse7zListLineFast(line.trimmingCharacters(in: .newlines)) {
                     items.append(item)
+                    uncompressedSize += Int64(item.uncompressedSize)
                 }
             }
             
@@ -135,7 +137,10 @@ final actor Archive7ZipEngine: ArchiveEngine {
         
         emit(.done)
         
-        return items
+        return ArchiveEngineLoadResult(
+            items: items,
+            uncompressedSize: uncompressedSize
+        )
     }
     
     func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL? {

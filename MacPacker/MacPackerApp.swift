@@ -55,7 +55,7 @@ struct MacPackerApp: App {
                     appDelegate.openNewArchiveWindow()
                 } label: {
                     Label {
-                        Text("New \(Bundle.main.appName) Window", comment: "A label for a button that opens a new window of the app. The placeholder will add the name MacPacker to it.")
+                        Text(.newWindow(Bundle.main.appName))
                     } icon: {
                         Image(systemName: "plus.rectangle")
                     }
@@ -65,7 +65,7 @@ struct MacPackerApp: App {
                     appDelegate.openArchiveUsingOpenPanel()
                 } label: {
                     Label {
-                        Text("Open...", comment: "A label for a button that allows the user to open an archive from disk. The order depends on the language.")
+                        Text(.`open`)
                     } icon: {
                         Image(systemName: "arrow.up.right.square")
                     }

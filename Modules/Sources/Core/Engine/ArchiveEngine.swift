@@ -17,6 +17,11 @@ public enum EngineStatus: Sendable {
     case error(Error)
 }
 
+public struct ArchiveEngineLoadResult: Sendable {
+    let items: [ArchiveItem]
+    let uncompressedSize: Int64
+}
+
 /// An engine has the knowledge on how a library, CLI tool, or anything else
 /// can extract certain formats. Examples would be the `XADMaster` library
 /// that is included as an SPM package. Or the `7zip` CLI tool. An engine
@@ -33,7 +38,7 @@ public protocol ArchiveEngine: Sendable {
     /// Loads the given archive to retrieve all entries (in form of `ArchiveItem`)
     /// - Parameter url: url of the archive
     /// - Returns: list of all entries
-    func loadArchive(url: URL) async throws -> [ArchiveItem]
+    func loadArchive(url: URL) async throws -> ArchiveEngineLoadResult
     
     /// Extracts the given item from the given archive to a temporary location
     /// - Parameters:

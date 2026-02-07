@@ -38,14 +38,15 @@ final actor ArchiveSwcEngine: ArchiveEngine {
         return components.joined(separator: ".")
     }
     
-    func loadArchive(url: URL) async throws -> [ArchiveItem] {
+    func loadArchive(url: URL) async throws -> ArchiveEngineLoadResult {
         let name = stripFileExtension(url.lastPathComponent)
         
         emit(.done)
         
-        return [
-            ArchiveItem(name: String(name), virtualPath: name, type: .file)
-        ]
+        return ArchiveEngineLoadResult(
+            items: [ArchiveItem(name: String(name), virtualPath: name, type: .file)],
+            uncompressedSize: 0
+        )
     }
     
     func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL? {

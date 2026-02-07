@@ -19,6 +19,8 @@ Localization (translation of all strings to specific languages) is done using [P
 - Open the [English import](https://poeditor.com/projects/import_translations?id_language=43&id=807352) in POEditor
 - Import the `Localizable.xcstrings` again (this will add new translations for the English reference language)
 
+(Alternatively, one could also import all languages when importing the terms. There is a setting for that.)
+
 ## Note
 
 POEditor only supports standard string catalog key value pairs. Symbols are not supported yet!

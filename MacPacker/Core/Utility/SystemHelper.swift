@@ -12,12 +12,16 @@ final class SystemHelper {
     
     private init() {}
     
+    func format(bytes: Int) -> String {
+        return format(bytes: Int64(bytes))
+    }
+    
     /// Takes in bytes and formats it to a human readible string (e.g. 512000 > 512 KB). It returns
     /// an empty string in case the number of bytes is less than 0. This can happen for folder
     /// or special entries (e.g. parent entry "..")
     /// - Parameter bytes: Number of bytes
     /// - Returns: Human readable string
-    func format(bytes: Int) -> String {
+    func format(bytes: Int64) -> String {
         guard bytes >= 0 else {
             return ""
         }

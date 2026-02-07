@@ -31,7 +31,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
     func cancel() async {
     }
     
-    func loadArchive(url: URL) async throws -> [ArchiveItem] {
+    func loadArchive(url: URL) async throws -> ArchiveEngineLoadResult {
         guard let archive = XADArchive(file: url.path) else {
             throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
         }
@@ -42,6 +42,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
         }
 
         var entries: [ArchiveItem] = []
+        var uncompressedSizeOverall: Int64 = 0
         for index in 0..<archive.numberOfEntries() {
             // name
             guard let path = archive.name(ofEntry: index) else { continue }
@@ -85,11 +86,12 @@ final actor ArchiveXadEngine: ArchiveEngine {
             )
             
             entries.append(entry)
+            uncompressedSizeOverall += Int64(entry.uncompressedSize)
         }
         
         emit(.done)
         
-        return entries
+        return ArchiveEngineLoadResult(items: entries, uncompressedSize: uncompressedSizeOverall)
     }
     
     func extract(

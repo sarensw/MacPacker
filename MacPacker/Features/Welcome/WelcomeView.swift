@@ -70,6 +70,7 @@ struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             WhatsNewPill(key: LocalizedStringResource("v0.14_feat_60", defaultValue: "New menu to open a new empty window", table: "LocalizableWhatsNew"), type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_feat_61", defaultValue: "Extended info on archive in status bar", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.14_fix_54", defaultValue: "tar.gz and tgz not working", table: "LocalizableWhatsNew"), type: .bug)
             WhatsNewPill(key: LocalizedStringResource("v0.14_fix_55", defaultValue: "Can't close QuickLook with Space", table: "LocalizableWhatsNew"), type: .bug)
             WhatsNewPill(key: LocalizedStringResource("v0.14_fix_56", defaultValue: "Some formats are not mapped to MacPacker in Finder", table: "LocalizableWhatsNew"), type: .bug)
