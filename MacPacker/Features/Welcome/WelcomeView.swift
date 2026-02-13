@@ -69,14 +69,14 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            WhatsNewPill(key: LocalizedStringResource("v0.14_feat_60", defaultValue: "New menu to open a new empty window", table: "LocalizableWhatsNew"), type: .feature)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_feat_61", defaultValue: "Extended info on archive in status bar", table: "LocalizableWhatsNew"), type: .feature)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_54", defaultValue: "tar.gz and tgz not working", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_55", defaultValue: "Can't close QuickLook with Space", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_56", defaultValue: "Some formats are not mapped to MacPacker in Finder", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_58", defaultValue: "Cache cleanup not happening when just closing a window or loading a new archive", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_59", defaultValue: "App crashes when unpacking exe / msi files", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_62", defaultValue: "Extract here and Extract to folder via Finder don't work", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_feat_60", defaultValue: "Added menu item to open an empty window", table: "LocalizableWhatsNew"), type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_feat_61", defaultValue: "Added detailed archive info to status bar", table: "LocalizableWhatsNew"), type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_54", defaultValue: "Fixed opening tar.gz and tgz archives", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_55", defaultValue: "Fixed Quick Look close with Space", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_56", defaultValue: "Added missing Finder file associations", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_58", defaultValue: "Fixed cache cleanup issues", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_59", defaultValue: "Fixed crash when unpacking exe and msi", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_62", defaultValue: "Fixed Finder extract actions", table: "LocalizableWhatsNew"), type: .bug)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
@@ -155,13 +155,13 @@ struct WelcomeView: View {
     
     var styledString: AttributedString {
         var string = AttributedString(
-            localized: "Welcome to \(Bundle.main.appName)",
+            localized: "Welcome to \(Bundle.main.displayName)",
             comment: "'Welcome to <app name>'. The order of the greeting might be different in different languages. For example: English: Welcome to MacPacker, Japanese: MacPackerへようこそ. This is up to the translator to decide."
         )
         string.foregroundColor = .secondary
         string.font = .system(size: 42, weight: .medium)
         
-        if let range = string.range(of: Bundle.main.appName) {
+        if let range = string.range(of: Bundle.main.displayName) {
             string[range].foregroundColor = .primary
         }
         

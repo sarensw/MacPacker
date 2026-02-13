@@ -17,7 +17,7 @@ struct AboutView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 80, alignment: .center)
-            Text(Bundle.main.appName)
+            Text(verbatim: Bundle.main.displayName)
                 .font(.system(size: 42, weight: .medium, design: .default))
             Text("Version v\(Bundle.main.appVersionLong)", comment: "This text shows the current version of the app in Welcome and About window")
                 .foregroundColor(.secondary)

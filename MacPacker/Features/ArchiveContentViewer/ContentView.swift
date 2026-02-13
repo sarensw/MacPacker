@@ -54,7 +54,7 @@ struct ContentView: View {
                 )
             }
         }
-        .navigationTitle(archiveState.url == nil ? Bundle.main.appName : archiveState.name!)
+        .navigationTitle(archiveState.url == nil ? Bundle.main.displayName : archiveState.name!)
         .environmentObject(archiveState)
     }
 }

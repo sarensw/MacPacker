@@ -36,7 +36,7 @@ struct SettingsView: View {
                 IntegrationSettingsView()
                     .tabItem {
                         Image(systemName: "puzzlepiece.extension")
-                        Text("Extensions")
+                        Text("Translate")
                     }
                 
                 #if DEBUG

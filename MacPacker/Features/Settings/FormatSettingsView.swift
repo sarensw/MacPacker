@@ -116,7 +116,7 @@ struct FormatSettingsView: View {
                     showInfoToSetAsDefault()
                 } label: {
                     Label {
-                        Text("How to set \(Bundle.main.appName) as default?")
+                        Text("How to set \(Bundle.main.displayName) as default?")
                     } icon: {
                         Image(systemName: "info.circle")
                     }

@@ -37,7 +37,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
             toolbar.displayMode = .iconOnly
             window.toolbar = toolbar
             
-            window.title = Bundle.main.appName
+            window.title = Bundle.main.displayName
         }
         
         window.toolbarStyle = .unified

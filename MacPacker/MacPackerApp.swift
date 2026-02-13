@@ -41,7 +41,7 @@ struct MacPackerApp: App {
                 Button {
                     appDelegate.openAboutWindow()
                 } label: {
-                    Text("About \(Bundle.main.appName)", comment: "Link to the About page of the app. The order depends on the language. For example: English: About MacPacker, Japanese: MacPackerについて")
+                    Text("About \(Bundle.main.displayName)", comment: "Link to the About page of the app. The order depends on the language. For example: English: About MacPacker, Japanese: MacPackerについて")
                 }
             }
 #if !STORE
@@ -55,7 +55,7 @@ struct MacPackerApp: App {
                     appDelegate.openNewArchiveWindow()
                 } label: {
                     Label {
-                        Text(.newWindow(Bundle.main.appName))
+                        Text("New \(Bundle.main.displayName) Window")
                     } icon: {
                         Image(systemName: "plus.rectangle")
                     }
@@ -65,7 +65,7 @@ struct MacPackerApp: App {
                     appDelegate.openArchiveUsingOpenPanel()
                 } label: {
                     Label {
-                        Text(.`open`)
+                        Text("Open…")
                     } icon: {
                         Image(systemName: "arrow.up.right.square")
                     }

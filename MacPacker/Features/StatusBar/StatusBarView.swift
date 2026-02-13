@@ -34,12 +34,11 @@ struct StatusBarView: View {
                         openURL(gitHubURL)
                     } label: {
                         Image("github.fill")
-                        Text(.feedbackStar)
-//                        Text("Star on GitHub")
+                        Text("Star")
                     }
                     .controlSize(.small)
                     
-                    #if !STORE
+                    #if STORE
                     Button {
                         guard let writeReviewURL = URL(string: Constants.appStoreReviewLink) else {
                             fatalError("Expected a valid URL")
@@ -47,17 +46,33 @@ struct StatusBarView: View {
 
                         openURL(writeReviewURL)
                     } label: {
-                        Image(systemName: "star.fill")
-                        Text(.feedbackAppStoreReview)
+                        Image(systemName: "star")
+                        Text("Review")
                     }
                     .controlSize(.small)
                     #endif
                     
                     Button {
+                        guard let twitterURL = URL(string: Constants.twitterLink) else {
+                            fatalError("Expected a valid URL")
+                        }
                         
+                        openURL(twitterURL)
                     } label: {
                         Image("x-twitter")
-                        Text(.follow)
+                        Text("Follow")
+                    }
+                    .controlSize(.small)
+                    
+                    Button {
+                        guard let translateURL = URL(string: Constants.translateLink) else {
+                            fatalError("Expected a valid URL")
+                        }
+                        
+                        openURL(translateURL)
+                    } label: {
+                        Image(systemName: "flag")
+                        Text("Translate")
                     }
                     .controlSize(.small)
                 }
@@ -82,7 +97,7 @@ struct StatusBarView: View {
                         
                         Spacer()
                     } else {
-                        Text(.items(archiveState.entries.count))
+                        Text("\(archiveState.entries.count) items")
                         if let uncompressedSize = archiveState.uncompressedSize {
                             Text(verbatim: " • \(SystemHelper.shared.format(bytes: uncompressedSize))")
                         }
@@ -96,7 +111,7 @@ struct StatusBarView: View {
                                 Image(systemName: "lock.fill")
                             }
                         } else {
-                            Text(.selected(archiveState.selectedItems.count))
+                            Text("\(archiveState.selectedItems.count) selected")
                             Text(verbatim: " • ")
                             Text(verbatim: "\(SystemHelper.shared.format(bytes: archiveState.selectedItems.reduce(into: 0) { $0 += $1.uncompressedSize }))")
                         }

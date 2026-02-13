@@ -12,4 +12,6 @@ class Constants {
     
     static let appStoreReviewLink: String = "https://apps.apple.com/app/id6473273874?action=write-review"
     static let gitHubLink: String = "https://github.com/sarensw/MacPacker"
+    static let translateLink: String = "https://poeditor.com/join/project/J2Qq2SUzYr"
+    static let twitterLink: String = "https://x.com/macpackerapp"
 }

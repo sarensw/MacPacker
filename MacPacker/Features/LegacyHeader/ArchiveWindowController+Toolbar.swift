@@ -140,7 +140,7 @@ extension ArchiveWindowController: NSToolbarDelegate {
         
         // about MacPacker window
         let aboutItem = NSMenuItem(
-            title: NSLocalizedString("About \(Bundle.main.appName)", comment: ""),
+            title: NSLocalizedString("About \(Bundle.main.displayName)", comment: ""),
             action: #selector(showAboutPanel),
             keyEquivalent: "")
         aboutItem.image = NSImage(systemSymbolName: "info.square", accessibilityDescription: nil)

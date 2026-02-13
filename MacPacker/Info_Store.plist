@@ -44,6 +44,7 @@
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>tlz4</string>
+				<string>tar.lz4</string>
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>LZ4 Tarball Archive</string>
@@ -119,6 +120,7 @@
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>txz</string>
+				<string>tar.xz</string>
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>XZ Tarball Archive</string>
@@ -158,7 +160,6 @@
 			<array>
 				<string>sit</string>
 				<string>sitx</string>
-				<string>1</string>
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>StuffIt Archive</string>
@@ -214,6 +215,7 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>bz</string>
 				<string>bz2</string>
 				<string>bzip2</string>
 			</array>
@@ -235,8 +237,11 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>tb</string>
+				<string>tbz</string>
 				<string>tbz2</string>
 				<string>tbzip2</string>
+				<string>tar.bz2</string>
 				<string>tb2</string>
 			</array>
 			<key>CFBundleTypeName</key>
@@ -277,7 +282,7 @@
 			<array>
 				<string>tgz</string>
 				<string>tgzip</string>
-				<string>tar-gz</string>
+				<string>tar.gz</string>
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>GZIP Tarball Archive</string>
@@ -361,7 +366,7 @@
 			<string>Default</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>public.archive.lha</string>
+				<string>org.7-zip.lha-archive</string>
 			</array>
 			<key>LSTypeIsPackage</key>
 			<false/>
@@ -380,6 +385,7 @@
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.microsoft.cab-archive</string>
+				<string>com.microsoft.cab</string>
 			</array>
 			<key>LSTypeIsPackage</key>
 			<false/>
@@ -390,7 +396,101 @@
 				<string>z</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>InstallShield 3 Archive</string>
+			<string>Unix Compress File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.z-archive</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>taz</string>
+				<string>tar.z</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Z Tarball Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.z-archive</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>ar</string>
+				<string>deb</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Archiver Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>arj</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>ARJ Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>dmg</string>
+				<string>smi</string>
+				<string>img</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Apple Disk Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.apple.disk-image</string>
+				<string>com.apple.disk-image-smi</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>fat</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>FAT Disk Image</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -398,108 +498,246 @@
 			<key>LSTypeIsPackage</key>
 			<false/>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>chm</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Microsoft Compiled HTML Help</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.microsoft.chm</string>
+				<string>com.microsoft.chm-archive</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>ntfs</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>NTFS Disk Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>pkg</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Apple Software Package</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.apple.installer-package-archive</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>qcow2</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>QCOW2 Disk Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>rpm</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Linux RPM archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.redhat.rpm-archive</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>squashfs</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>SquashFS Disk Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.plougher.squashfs-archive</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>vdi</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>VDI Disk Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>vmdk</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>VMDK Disk Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>vhd</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>VHD Disk Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>vhdx</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>VHDX Disk Image</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>xar</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>XAR Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.apple.xar-archive</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>exe</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Microsoft Windows application</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.microsoft.windows-executable</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>msi</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Microsoft MSI Installer</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.microsoft.windows-installer-package</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app.macpacker</string>
+			</array>
+		</dict>
 	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
 			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.file-url</string>
-			</array>
+			<array/>
 			<key>UTTypeDescription</key>
-			<string>MacPacker File</string>
+			<string></string>
 			<key>UTTypeIcons</key>
 			<dict/>
 			<key>UTTypeIdentifier</key>
-			<string>com.sarensx.MacPacker.file</string>
+			<string></string>
 			<key>UTTypeTagSpecification</key>
 			<dict/>
 		</dict>
 	</array>
 	<key>UTImportedTypeDeclarations</key>
 	<array>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>7-Zip Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>org.7-zip.7-zip-archive</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>7z</string>
-				</array>
-				<key>public.mime-type</key>
-				<array/>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>CAB Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>com.microsoft.cab</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>cab</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>CPIO Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>public.cpio-archive</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>cpio</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>ISO Disk Image</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>public.iso-image</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>iso</string>
-				</array>
-			</dict>
-		</dict>
 		<dict>
 			<key>UTTypeConformsTo</key>
 			<array>
@@ -518,26 +756,6 @@
 				<array>
 					<string>lha</string>
 					<string>lzh</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>Lz4 File</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>public.lz4-archive</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>lz4</string>
 				</array>
 			</dict>
 		</dict>
@@ -588,126 +806,6 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Self-extracting Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>com.apple.self-extracting-archive</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>sea</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>StuffIt Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>com.stuffit.archive.sit</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>sit</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>StuffIt X Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>com.stuffit.archive.sitx</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>sitx</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>Tar Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>public.tar-archive</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>tar</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>Gzip Tar Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>org.gnu.gnu-zip-tar-archive</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>tgz</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>XZ Tar Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>org.tukaani.tar-xz-archive</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>txz</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
 			<string>Bzip2 Tar Archive</string>
 			<key>UTTypeIcons</key>
 			<dict/>
@@ -719,46 +817,6 @@
 				<array>
 					<string>tbz2</string>
 					<string>tbz</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>XZ File</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>org.tukaani.xz-archive</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>xz</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>Unix Compress File</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>public.z-archive</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>z</string>
 				</array>
 			</dict>
 		</dict>

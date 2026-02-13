@@ -219,7 +219,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     appDelegate.openAboutWindow()
                 } label: {
                     Label {
-                        Text("About \(Bundle.main.appName)")
+                        Text("About \(Bundle.main.displayName)")
                     } icon: {
                         Image(systemName: "info.square")
                     }
