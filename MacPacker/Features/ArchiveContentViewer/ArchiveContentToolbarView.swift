@@ -36,6 +36,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     Image("custom.document.badge.eye")
                 }
             }
+            .help("Quick Look")
             
             Button {
                 isExportingItem.toggle()
@@ -46,6 +47,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     Image("custom.document.badge.arrow.down")
                 }
             }
+            .help("Extract selected")
             .fileImporter(
                 isPresented: $isExportingItem,
                 allowedContentTypes: [.folder],
@@ -68,6 +70,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     Image("custom.shippingbox.badge.arrow.down")
                 }
             }
+            .help("Extract archive")
             .fileImporter(
                 isPresented: $isExportingAll,
                 allowedContentTypes: [.folder],
