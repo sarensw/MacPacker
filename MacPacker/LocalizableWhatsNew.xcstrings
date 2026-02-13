@@ -311,6 +311,12 @@
             "value" : "Aggiunta voce di menu per aprire una finestra vuota"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空のウインドウを開くメニュー項目を追加"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -370,6 +376,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aggiunte informazioni dettagliate sull’archivio nella barra di stato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ステータスバーに詳細なアーカイブ情報を追加"
           }
         },
         "pt-BR" : {
@@ -433,6 +445,12 @@
             "value" : "Correzione apertura archivi tar.gz e tgz"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tar.gzおよびtgzアーカイブの読み込みを修正"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -492,6 +510,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Correzione chiusura di Quick Look con barra spaziatrice"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スペースキーでQuick Lookを閉じられない問題を修正"
           }
         },
         "pt-BR" : {
@@ -555,6 +579,12 @@
             "value" : "Aggiunte associazioni file mancanti nel Finder"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finderで不足していたファイル関連付けを追加"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -614,6 +644,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Correzione problemi di pulizia della cache"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャッシュのクリーンアップ問題を修正"
           }
         },
         "pt-BR" : {
@@ -677,6 +713,12 @@
             "value" : "Correzione arresto anomalo durante estrazione di exe e msi"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "exeおよびmsiの展開時に発生するクラッシュを修正"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -736,6 +778,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Correzione azioni di estrazione nel Finder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finderの「ここに展開」操作を修正"
           }
         },
         "pt-BR" : {
