@@ -1,3 +1,7 @@
+v0.14.1
+- fix: Wrong translations in settings
+- lang: Language update for several languages
+
 v0.14
 - feat: New menu to open a new empty window
 - feat: Extended info on archive in status bar (#61)
