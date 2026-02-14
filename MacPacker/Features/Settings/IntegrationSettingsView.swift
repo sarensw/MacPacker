@@ -33,7 +33,7 @@ struct IntegrationSettingsView: View {
                             .frame(width: 6, height: 6)
                             .foregroundStyle(isFinderSyncEnabled ? Color.green : Color.red)
                         
-                        Text("Feedback")
+                        Text(FIFinderSyncController.isExtensionEnabled ? "Enabled" : "Disabled")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         
