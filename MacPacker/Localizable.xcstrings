@@ -1917,13 +1917,13 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Подписаться"
+            "value": "Отслеживать"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Підписатись"
+            "value": "Відслідкувати"
           }
         }
       }
@@ -2302,6 +2302,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在 App Store 上留下评价"
+          }
+        }
+      }
+    },
+    "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format." : {
+      "comment" : "Help text to let users understand what the engine selection for each archive format is about",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker enthält mehrere Archivierungs-Engines. Die Standard-Engine wird empfohlen; alternative Engines können bei formatspezifischen Problemen helfen. Beachte dass die Engine-Unterstützung je nach Format variiert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format."
           }
         }
       }

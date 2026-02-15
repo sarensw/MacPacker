@@ -137,8 +137,7 @@ struct FormatSettingsView: View {
                 }
                 .buttonStyle(.borderless)
                 .popover(isPresented: $showEngineInfo) {
-                    // "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format."
-                    Text("Info on Engines")
+                    Text("MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format.", comment: "Help text to let users understand what the engine selection for each archive format is about")
                         .frame(width: 160)
                         .padding()
                 }
