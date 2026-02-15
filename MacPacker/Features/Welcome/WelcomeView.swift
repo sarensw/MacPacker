@@ -69,14 +69,8 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            WhatsNewPill(key: LocalizedStringResource("v0.14_feat_60", defaultValue: "Added menu item to open an empty window", table: "LocalizableWhatsNew"), type: .feature)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_feat_61", defaultValue: "Added detailed archive info to status bar", table: "LocalizableWhatsNew"), type: .feature)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_54", defaultValue: "Fixed opening tar.gz and tgz archives", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_55", defaultValue: "Fixed Quick Look close with Space", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_56", defaultValue: "Added missing Finder file associations", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_58", defaultValue: "Fixed cache cleanup issues", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_59", defaultValue: "Fixed crash when unpacking exe and msi", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14_fix_62", defaultValue: "Fixed Finder extract actions", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14.1_pr_65", defaultValue: "Wrong translations in settings", table: "LocalizableWhatsNew"), type: .bug)
+            WhatsNewPill(key: LocalizedStringResource("v0.14.1_core", defaultValue: "Language update for several languages", table: "LocalizableWhatsNew"), type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
