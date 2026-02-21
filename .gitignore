@@ -139,3 +139,6 @@ iOSInjectionProject/
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # End of https://www.toptal.com/developers/gitignore/api/swift,xcode,macos,carthage
+
+# Local signing override (see Config/SigningOverride.xcconfig.template)
+Config/SigningOverride.xcconfig

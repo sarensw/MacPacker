@@ -88,3 +88,11 @@ More info on how to contribute and on the architecture of MacPacker will be adde
 3. **Build and Run**:
     - Click the "Run" button or press `Cmd + R`. Watch the magic unfold!
 
+4. **Building with a different signing team** (optional):
+
+   If you have a different Apple Developer account, create a local signing override:
+   ```bash
+   cp Config/SigningOverride.xcconfig.template Config/SigningOverride.xcconfig
+   ```
+   Then edit `Config/SigningOverride.xcconfig` and set your Team ID. Find your Team ID in Xcode under Settings > Accounts, then select your team. This file is gitignored and will not be committed.
+
