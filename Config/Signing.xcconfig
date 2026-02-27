@@ -1,0 +1,11 @@
+// Signing configuration for MacPacker
+//
+// To build with your own Apple Development Team:
+//   cp Config/SigningOverride.xcconfig.template Config/SigningOverride.xcconfig
+// Then edit SigningOverride.xcconfig and set your Team ID.
+
+DEVELOPMENT_TEAM = ZJ2TSMMJWF
+
+// Override file included last — xcconfig uses "last definition wins",
+// so the override takes precedence over the default above.
+#include? "SigningOverride.xcconfig"
