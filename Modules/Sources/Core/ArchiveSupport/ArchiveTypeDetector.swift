@@ -112,6 +112,16 @@ final public class ArchiveTypeDetector: Sendable {
         return nil
     }
     
+    func getFileSize(for url: URL) -> UInt64? {
+        do {
+            let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
+            return UInt64(resourceValues.fileSize ?? 0)
+        } catch {
+            print("Error getting file size: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
     func detectByMagicNumber(for url: URL) -> DetectionResult? {
         // get a file handle to read the first bytes
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
@@ -119,9 +129,18 @@ final public class ArchiveTypeDetector: Sendable {
         
         // read the first 65.536 bytes (we're reading that much
         // because iso files are detected at 0x8000, 0x8080 and 0x9000)
-        let data = try? handle.read(upToCount: 65536)
-        guard let header = data, !header.isEmpty else { return nil }
-        let bytes = [UInt8](header)
+        let headerData = try? handle.read(upToCount: 65536)
+        guard let header = headerData, !header.isEmpty else { return nil }
+        let headerBytes = [UInt8](header)
+
+        // read the last 512 bytes (big enough to get the magic for a dmg)
+        guard let fileSize = getFileSize(for: url) else { return nil }
+        let trailerSize = min(fileSize, 512)
+        let trailerOffset = fileSize - trailerSize
+        do { try handle.seek(toOffset: trailerOffset) } catch { return nil }
+        let trailerData = try? handle.read(upToCount: Int(trailerSize))
+        guard let trailer = trailerData, !trailer.isEmpty else { return nil }
+        let trailerBytes = [UInt8](trailer)
         
         // now scan all types and see if any rule matches
         for type in catalog.getAllTypes() {
@@ -129,36 +148,68 @@ final public class ArchiveTypeDetector: Sendable {
                 switch rule.policy {
                 case .any:
                     for signature in rule.tests {
-                        let start = signature.offset
-                        let end = start + signature.bytes.count
-                        
-                        if end <= bytes.count {
-                            // check if the given slice matches the known signature
-                            let slice = Array(bytes[start..<end])
-                            if slice == signature.bytes {
-                                return DetectionResult(
-                                    type: type,
-                                    composition: nil,
-                                    source: .magic
-                                )
+                        if signature.type == "end_signature" {
+                            let start = trailerBytes.count - signature.offset
+                            let end = start + signature.bytes.count
+
+                            if start >= 0 {
+                                let slice = Array(trailerBytes[start..<end])
+                                if slice == signature.bytes {
+                                    return DetectionResult(
+                                        type: type,
+                                        composition: nil,
+                                        source: .magic
+                                    )
+                                }
+                            }
+                        } else {
+                            let start = signature.offset
+                            let end = start + signature.bytes.count
+
+                            if end <= headerBytes.count {
+                                // check if the given slice matches the known signature
+                                let slice = Array(headerBytes[start..<end])
+                                if slice == signature.bytes {
+                                    return DetectionResult(
+                                        type: type,
+                                        composition: nil,
+                                        source: .magic
+                                    )
+                                }
                             }
                         }
                     }
                 case .all:
                     var result = true
                     for signature in rule.tests {
-                        let start = signature.offset
-                        let end = start + signature.bytes.count
-                        
-                        if end <= bytes.count {
-                            let slice = Array(bytes[start..<end])
-                            if slice == signature.bytes {
-                                result = result && true
+                        if signature.type == "end_signature" {
+                            let start = trailerBytes.count - signature.offset
+                            let end = start + signature.bytes.count
+
+                            if start >= 0 {
+                                let slice = Array(trailerBytes[start..<end])
+                                if slice == signature.bytes {
+                                    result = result && true
+                                } else {
+                                    result = false
+                                }
                             } else {
                                 result = false
                             }
                         } else {
-                            result = false
+                            let start = signature.offset
+                            let end = start + signature.bytes.count
+
+                            if end <= headerBytes.count {
+                                let slice = Array(headerBytes[start..<end])
+                                if slice == signature.bytes {
+                                    result = result && true
+                                } else {
+                                    result = false
+                                }
+                            } else {
+                                result = false
+                            }
                         }
                     }
                     
