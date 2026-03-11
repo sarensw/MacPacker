@@ -69,8 +69,7 @@ struct WhatsNewPill: View {
 struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            WhatsNewPill(key: LocalizedStringResource("v0.14.1_pr_65", defaultValue: "Wrong translations in settings", table: "LocalizableWhatsNew"), type: .bug)
-            WhatsNewPill(key: LocalizedStringResource("v0.14.1_core", defaultValue: "Language update for several languages", table: "LocalizableWhatsNew"), type: .core)
+            WhatsNewPill(key: LocalizedStringResource("v0.15_pr_69", defaultValue: "Support for magic numbers at the end of archive files", table: "LocalizableWhatsNew"), type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()

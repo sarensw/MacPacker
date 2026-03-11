@@ -1,3 +1,6 @@
+v0.15
+- core: Support for magic numbers at the end of archive files
+
 v0.14.1
 - fix: Wrong translations in settings
 - lang: Language update for several languages

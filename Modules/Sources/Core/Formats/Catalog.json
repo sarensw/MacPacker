@@ -402,7 +402,7 @@
       "extensions": ["vdi"],
       "mime": [" application/x-vdi-disk", "application/x-virtualbox-vdi"],
       "rules": [
-        { "policy": "any", "tests": [{"type": "signature", "bytes": "3C 3C 3C 20 4F 72 61 63 6C 65 20 56 4D 20 56 69 72 74 75 61 6C 42 6F 78 20 44 69 73 6B 20 49 6D 61 67 65 20 3E 3E 3E", "offset": 0}] }
+          { "policy": "any", "tests": [{"type": "signature", "bytes": "7F 10 DA BE", "offset": 64}] }
       ],
       "engines": [
         { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
