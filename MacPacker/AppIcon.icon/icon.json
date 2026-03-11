@@ -1,0 +1,45 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.96863,0.96471,0.94118,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name-specializations" : [
+            {
+              "value" : "Asset 7 2.svg"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "Asset 8.svg"
+            }
+          ],
+          "name" : "Asset 8",
+          "position" : {
+            "scale" : 2.6,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "name" : "Group",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
