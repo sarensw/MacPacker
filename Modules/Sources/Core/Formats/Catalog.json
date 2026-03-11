@@ -101,7 +101,9 @@
       "uti": ["com.apple.disk-image", "com.apple.disk-image-smi"],
       "extensions": ["dmg", "smi", "img"],
       "mime": ["application/x-apple-diskimage"],
-      "rules": [],
+      "rules": [
+          { "policy": "any", "tests": [{"type": "end_signature", "bytes": "6B 6F 6C 79", "offset":  512}] }
+      ],
       "engines": [
         { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
       ]
