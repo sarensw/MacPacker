@@ -1,4 +1,5 @@
 v0.15
+- feat: wim support (#70)
 - core: Support for magic numbers at the end of archive files
 
 v0.14.1
