@@ -451,6 +451,20 @@
       ]
     },
     {
+      "id": "wim",
+      "name": "WIM Disk Image",
+      "kind": "image",
+      "uti": ["com.microsoft.wim-archive"],
+      "extensions": ["wim"],
+      "mime": ["application/x-ms-wim"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "4D 53 57 49 4D 00 00 00", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
       "id": "xar",
       "name": "XAR Archive",
       "kind": "archive",
