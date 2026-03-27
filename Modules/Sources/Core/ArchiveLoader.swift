@@ -24,6 +24,7 @@ struct ArchiveLoaderBuildTreeResult {
 final actor ArchiveLoader {
     private let archiveTypeDetector: ArchiveTypeDetector
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
+    private let passwordResolver: ArchivePasswordResolver
     
     private var entries: [ArchiveItem] = []
     private var engine: (any ArchiveEngine)?
@@ -39,10 +40,12 @@ final actor ArchiveLoader {
     
     public init(
         archiveTypeDetector: ArchiveTypeDetector,
-        archiveEngineSelector: ArchiveEngineSelectorProtocol
+        archiveEngineSelector: ArchiveEngineSelectorProtocol,
+        passwordResolver: @escaping ArchivePasswordResolver
     ) {
         self.archiveTypeDetector = archiveTypeDetector
         self.archiveEngineSelector = archiveEngineSelector
+        self.passwordResolver = passwordResolver
     }
     
     /// Returns the status stream to the UI
@@ -105,7 +108,10 @@ final actor ArchiveLoader {
             compoundTempUrl = temp.url
             yield(.processing(progress: nil, message: "temp dir created: \(temp.url)"))
             
-            let loaderResult = try await engine.loadArchive(url: url)
+            let loaderResult = try await engine.loadArchive(
+                url: url,
+                passwordResolver: passwordResolver
+            )
             let entries = loaderResult.items
             yield(.processing(progress: nil, message: "entries found: \(entries.count)"))
             
@@ -113,7 +119,12 @@ final actor ArchiveLoader {
                 throw ArchiveError.extractionFailed("Extraction of \(url.lastPathComponent) resulted in no files")
             }
             
-            archiveUrl = try await engine.extract(item: entries[0], from: url, to: temp.url)
+            archiveUrl = try await engine.extract(
+                item: entries[0],
+                from: url,
+                to: temp.url,
+                passwordResolver: passwordResolver
+            )
             yield(.processing(progress: nil, message: "entry extracted: \(String(describing: archiveUrl))"))
         }
         
@@ -137,7 +148,10 @@ final actor ArchiveLoader {
         defer { forwardTask.cancel() }
         
         // set the entries
-        let engineLoadResult = try await engine.loadArchive(url: archiveUrl)
+        let engineLoadResult = try await engine.loadArchive(
+            url: archiveUrl,
+            passwordResolver: passwordResolver
+        )
         self.entries = engineLoadResult.items
         yield(.processing(progress: nil, message: "entries found: \(self.entries.count)"))
         

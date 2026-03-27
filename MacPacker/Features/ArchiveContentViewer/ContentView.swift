@@ -17,6 +17,9 @@ struct ContentView: View {
     @Environment(\.openWindow) var openWindow
     @EnvironmentObject var archiveState: ArchiveState
     
+    @State private var showPasswordSheet: Bool = false
+    @State private var passwordContinuation: CheckedContinuation<String?, Never>?
+    
     var body: some View {
         VStack(spacing: 0) {
             if breadcrumbPosition == .top {
@@ -53,6 +56,36 @@ struct ContentView: View {
                     archiveState: archiveState
                 )
             }
+        }
+        .onAppear {
+            if self.archiveState.passwordProvider == nil {
+                let passwordProvider: ArchivePasswordUserProvider = { request in
+                    
+                    await withCheckedContinuation { continuation in
+                        Task { @MainActor in
+                            self.passwordContinuation = continuation
+                            self.showPasswordSheet = true
+                        }
+                    }
+                }
+                
+                self.archiveState.passwordProvider = passwordProvider
+            }
+        }
+        .sheet(isPresented: $showPasswordSheet) {
+            PasswordView(
+                onSubmit: { password in
+                    passwordContinuation?.resume(returning: password)
+                    passwordContinuation = nil
+                    showPasswordSheet = false
+                },
+                onCancel: {
+                    passwordContinuation?.resume(returning: nil)
+                    passwordContinuation = nil
+                    showPasswordSheet = false
+                }
+            )
+            .frame(width: 366)
         }
         .navigationTitle(archiveState.url == nil ? Bundle.main.displayName : archiveState.name!)
         .environmentObject(archiveState)

@@ -37,20 +37,35 @@ public protocol ArchiveEngine: Sendable {
     
     /// Loads the given archive to retrieve all entries (in form of `ArchiveItem`)
     /// - Parameter url: url of the archive
+    /// - Parameter passwordProvider: give the engine the possibility to request a password from the user
     /// - Returns: list of all entries
-    func loadArchive(url: URL) async throws -> ArchiveEngineLoadResult
+    func loadArchive(
+        url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> ArchiveEngineLoadResult
     
     /// Extracts the given item from the given archive to a temporary location
     /// - Parameters:
     ///   - item: item to extract
     ///   - from: archive url to extract the item from
     ///   - to: destination folder
+    ///   - passwordProvider: give the engine the possibility to request a password from the user
     /// - Returns: the URL of the extracted item
-    func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL?
+    func extract(
+        item: ArchiveItem,
+        from url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> URL
     
     /// Extracts the full archive to the given destination
     /// - Parameters:
     ///   - url: url of the archive to be extracted
     ///   - destination: destination folder
-    func extract(_ url: URL, to destination: URL) async throws
+    ///   - passwordProvider: give the engine the possibility to request a password from the user
+    func extract(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws
 }

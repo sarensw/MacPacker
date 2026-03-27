@@ -70,6 +70,7 @@ struct WelcomeWhatsNewView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             WhatsNewPill(key: LocalizedStringResource("v0.15_pr_70", defaultValue: "Support for wim disk images", table: "LocalizableWhatsNew"), type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.15_issue_6", defaultValue: "Open password protected / ecrypted archives", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.15_pr_69", defaultValue: "Support for magic numbers at the end of archive files", table: "LocalizableWhatsNew"), type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

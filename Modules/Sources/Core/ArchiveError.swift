@@ -11,4 +11,6 @@ enum ArchiveError: Error {
     case invalidArchive(_ message: String)
     case loadFailed(_ message: String)
     case extractionFailed(_ message: String)
+    case passwordCancelled
+    case xadError(_ code: Int32, _ message: String)
 }

@@ -87,6 +87,12 @@
             "value" : "... request a Feature"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solicitar característica"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -296,7 +302,7 @@
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld plik"
+                  "value" : "%lld pliki"
                 }
               }
             }
@@ -464,13 +470,13 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : ""
+                  "value" : "%lld выбрано"
                 }
               },
               "many" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : ""
+                  "value" : "%lld выбрано"
                 }
               },
               "one" : {
@@ -494,13 +500,13 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : ""
+                  "value" : "%lld вибрано"
                 }
               },
               "many" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : ""
+                  "value" : "%lld вибрано"
                 }
               },
               "one" : {
@@ -647,6 +653,12 @@
             "value" : "Advanced"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avanzado"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -763,6 +775,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archive info"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Información"
           }
         },
         "fa" : {
@@ -901,6 +919,12 @@
             "value" : "Cache:"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caché"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -972,6 +996,12 @@
             "value" : "Check for Updates…"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar actualizaciones"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1035,6 +1065,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear cache"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar caché"
           }
         },
         "fa" : {
@@ -1108,6 +1144,12 @@
             "value" : "Clears all content from the cache"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar todo el contenido del caché"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1179,6 +1221,12 @@
             "value" : "Columns:"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Columnas"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1248,6 +1296,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date Modified"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha de modificación"
           }
         },
         "fa" : {
@@ -1369,6 +1423,12 @@
             "value" : "Disabled"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deshabilitar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1433,6 +1493,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "enabled"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habilitado"
           }
         },
         "fr" : {
@@ -1547,6 +1613,12 @@
             "value" : "Extensions"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extensiones"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1592,6 +1664,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Extract archive"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraer archivo"
           }
         },
         "fa" : {
@@ -1665,6 +1743,12 @@
             "value" : "Extract selected"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraer selección"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1736,6 +1820,12 @@
             "value" : "Feedback"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retroalimentación"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1805,6 +1895,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "File Format"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato de archivo"
           }
         },
         "fr" : {
@@ -1902,6 +1998,12 @@
             "value" : "Follow"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1917,13 +2019,13 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value": "Отслеживать"
+            "value" : "Отслеживать"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value": "Відслідкувати"
+            "value" : "Відслідкувати"
           }
         }
       }
@@ -1938,6 +2040,12 @@
           }
         },
         "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        },
+        "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "General"
@@ -2132,6 +2240,12 @@
             "value" : "I found the following bug ..."
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "He encontrado el siguiente bug..."
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2250,6 +2364,12 @@
             "value" : "Leave a review in the App Store"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribir un comentario en la App Store"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2320,6 +2440,24 @@
             "state" : "translated",
             "value" : "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format."
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker zawiera w sobie kilka różnych silników archiwizujących. Rekomendowany jest domyślny; inne silniki mogą pomóc z problemami dla konkretnych formatów. Miej na uwadze, że wsparcie silnika różni się w zależności od formatu."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker включает несколько архивных движков. Рекомендуется использовать движок по умолчанию; альтернативные движки могут помочь в решении проблем, связанных с конкретными форматами. Имейте в виду, что поддержка движков зависит от формата."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker включає кілька архівних рушіїв. Рекомендується використовувати рушій за замовчуванням; альтернативні рушії можуть допомогти у вирішенні проблем, пов'язаних із конкретними форматами. Майте на увазі, що підтримка движків залежить від формату."
+          }
         }
       }
     },
@@ -2383,6 +2521,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "More"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más"
           }
         },
         "fa" : {
@@ -2450,6 +2594,12 @@
             "value" : "More apps"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más aplicaciones"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2515,6 +2665,12 @@
             "value" : "More Apps"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más Aplicaciones"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2578,6 +2734,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre"
           }
         },
         "fa" : {
@@ -2687,6 +2849,12 @@
             "value" : "Open cache directory"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir directorio del caché"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2751,6 +2919,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open…"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir..."
           }
         },
         "fr" : {
@@ -3001,6 +3175,12 @@
             "value" : "Packed Size"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño del paquete"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3051,6 +3231,72 @@
         }
       }
     },
+    "Password:" : {
+      "comment" : "A text field for entering a password.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwort:"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contraseña:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mot de passe:"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パスワード:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hasło:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senha:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пароль:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пароль:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "密码："
+          }
+        }
+      }
+    },
     "Permissions" : {
       "comment" : "Column that shows the file permissions",
       "localizations" : {
@@ -3064,6 +3310,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Permissions"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permisos"
           }
         },
         "fa" : {
@@ -3261,6 +3513,12 @@
             "value" : "Preview"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista previa"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3323,6 +3581,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quick Look"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista rápida"
           }
         },
         "fr" : {
@@ -3388,6 +3652,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Refresh"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar"
           }
         },
         "fr" : {
@@ -3477,6 +3747,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar"
           }
         },
         "fa" : {
@@ -3609,6 +3885,12 @@
             "value" : "Settings..."
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3737,6 +4019,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Size"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño"
           }
         },
         "fa" : {
@@ -3910,6 +4198,12 @@
             "value" : "Support the development..."
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apoya el desarrollo..."
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3974,6 +4268,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Translate"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traducir"
           }
         },
         "fa" : {
@@ -4106,6 +4406,12 @@
             "value" : "Website"
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sitio web"
+          }
+        },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4234,6 +4540,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What's new"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué hay de nuevo?"
           }
         },
         "fa" : {

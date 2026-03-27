@@ -1,5 +1,6 @@
 v0.15
 - feat: wim support (#70)
+- feat: Open password protected / encrypted archives (#6)
 - core: Support for magic numbers at the end of archive files
 
 v0.14.1

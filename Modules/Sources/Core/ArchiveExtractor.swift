@@ -18,9 +18,14 @@ struct ArchiveExtractorResult {
 
 final actor ArchiveExtractor {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
+    private let passwordResolver: ArchivePasswordResolver
     
-    init(archiveEngineSelector: ArchiveEngineSelectorProtocol) {
+    init(
+        archiveEngineSelector: ArchiveEngineSelectorProtocol,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) {
         self.archiveEngineSelector = archiveEngineSelector
+        self.passwordResolver = passwordResolver
     }
     
     /// This will extract the given item from the archive to a temporary destination
@@ -41,15 +46,17 @@ final actor ArchiveExtractor {
         if let (archiveTypeId, archiveUrl) = archiveSupportUtilities.findHandlerAndUrl(for: item),
            let engine = archiveEngineSelector.engine(for: archiveTypeId) {
             
-            guard let url = try await engine.extract(
-                item: item,
-                from: archiveUrl,
-                to: temp.url
-            ) else {
-                return nil
+            do {
+                let url = try await engine.extract(
+                    item: item,
+                    from: archiveUrl,
+                    to: temp.url,
+                    passwordResolver: passwordResolver)
+                
+                return ArchiveExtractorResult(url: url, tempDirectory: temp.url)
+            } catch {
+                Logger.error("Failed to extract item: \(error)")
             }
-            
-            return ArchiveExtractorResult(url: url, tempDirectory: temp.url)
         }
         
         return nil
