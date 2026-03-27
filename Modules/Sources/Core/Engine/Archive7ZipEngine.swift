@@ -80,7 +80,10 @@ final actor Archive7ZipEngine: ArchiveEngine {
         }
     }
     
-    func loadArchive(url: URL) async throws -> ArchiveEngineLoadResult {
+    func loadArchive(
+        url: URL,
+        passwordResolver: ArchivePasswordResolver
+    ) async throws -> ArchiveEngineLoadResult {
         guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
             print("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
@@ -143,14 +146,17 @@ final actor Archive7ZipEngine: ArchiveEngine {
         )
     }
     
-    func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL? {
+    func extract(
+        item: ArchiveItem,
+        from url: URL,
+        to destination: URL,
+        passwordResolver: ArchivePasswordResolver
+    ) async throws -> URL {
         guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
-            Logger.error("Failed to load 7zz exec")
             throw ArchiveError.loadFailed("Failed to load 7zz exec")
         }
         guard let virtualPath = item.virtualPath else {
-            Logger.error("No virtual path for item")
-            return nil
+            throw ArchiveError.extractionFailed("No virtual path for item")
         }
         let path = FilePath(cmdUrl.path)
         
@@ -191,7 +197,11 @@ final actor Archive7ZipEngine: ArchiveEngine {
         return resultUrl
     }
     
-    func extract(_ url: URL, to destination: URL) async throws {
+    func extract(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: ArchivePasswordResolver
+    ) async throws {
         let cmdPath = try getCommandFilePath()
         
         let args = [

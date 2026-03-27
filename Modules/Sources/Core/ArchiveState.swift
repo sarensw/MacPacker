@@ -64,6 +64,9 @@ public class ArchiveState: ObservableObject {
     
     private var tempDirectories: [URL] = []
     
+    public var passwordProvider: ArchivePasswordUserProvider?
+    private var passwords: [URL: String] = [:]
+    
     public private(set) var openTask: Task<Void, any Error>?
     private var archiveLoader: ArchiveLoader?
     
@@ -75,6 +78,25 @@ public class ArchiveState: ObservableObject {
 }
 
 extension ArchiveState {
+    
+    private func makePasswordResolver() -> ArchivePasswordResolver {
+        return { @MainActor [weak self] request in
+            guard let self else { return nil }
+            
+            // see if we have the password cached already
+            if let password = passwords[request.url] {
+                return password
+            }
+            
+            // if not cached, ask the user to provide the password
+            let password = await self.passwordProvider?(request)
+            if let password {
+                self.passwords[request.url] = password
+            }
+            
+            return password
+        }
+    }
     
     private func updateStatus(_ status: ArchiveStateStatus) {
         if status == .done {
@@ -115,6 +137,8 @@ extension ArchiveState {
         self.currentSortOrder = nil
         
         self.archiveLoader = nil
+        
+        self.passwords = [:]
         
         updateStatus(.idle)
         
@@ -169,9 +193,11 @@ extension ArchiveState {
             self.ext = url.pathExtension
             
             do {
+                let passwordResolver = makePasswordResolver()
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: self.archiveTypeDetector,
-                    archiveEngineSelector: self.archiveEngineSelector
+                    archiveEngineSelector: self.archiveEngineSelector,
+                    passwordResolver: passwordResolver
                 )
                 
                 let stream = await archiveLoader.statusStream()
@@ -258,9 +284,11 @@ extension ArchiveState {
         
         openTask = Task {
             do {
+                let passwordResolver = makePasswordResolver()
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: self.archiveTypeDetector,
-                    archiveEngineSelector: self.archiveEngineSelector
+                    archiveEngineSelector: self.archiveEngineSelector,
+                    passwordResolver: passwordResolver
                 )
                 self.archiveLoader = archiveLoader
                 
@@ -400,8 +428,10 @@ extension ArchiveState {
             do {
                 // Extract the item first as we have to either open it in the system
                 // default preview or treat it as an archive
+                let passwordResolver = makePasswordResolver()
                 let archiveExtractor = ArchiveExtractor(
-                    archiveEngineSelector: selector
+                    archiveEngineSelector: selector,
+                    passwordResolver: passwordResolver
                 )
                 if let archiveExtractorResult = try await archiveExtractor.extractAsync(item: item) {
                     let tempUrl = archiveExtractorResult.url
@@ -472,18 +502,15 @@ extension ArchiveState {
                     // make sure we know the temp directories to be cleaned up when the state resets
                     tempDirectories.append(temp.url)
                     
+                    let passwordResolver = makePasswordResolver()
+                    
                     // first extract to our own directory where we have full rights to write to
                     let tempUrl = try await engine.extract(
                         item: item,
                         from: archiveUrl,
-                        to: temp.url
+                        to: temp.url,
+                        passwordResolver: passwordResolver
                     )
-                    
-                    // guard the extracted url
-                    guard let tempUrl else {
-                        Logger.error("Could not get url for extracted file")
-                        return
-                    }
                     
                     // then move the file to the actual target... This is required
                     // because in case of a file promise we only get access to write
@@ -536,18 +563,15 @@ extension ArchiveState {
                         // make sure we know the temp directories to be cleaned up when the state resets
                         tempDirectories.append(temp.url)
                         
+                        let passwordResolver = makePasswordResolver()
+                        
                         // first extract to our own directory where we have full rights to write to
                         let tempUrl = try await engine.extract(
                             item: item,
                             from: archiveUrl,
-                            to: temp.url
+                            to: temp.url,
+                            passwordResolver: passwordResolver
                         )
-                        
-                        // guard the extracted url
-                        guard let tempUrl else {
-                            Logger.error("Could not get url for extracted file")
-                            return
-                        }
                         
                         // then move the file to the actual target... This is required
                         // because in case of a file promise we only get access to write
@@ -592,10 +616,13 @@ extension ArchiveState {
                     let _ = destination.startAccessingSecurityScopedResource()
                     defer { destination.stopAccessingSecurityScopedResource() }
                     
+                    let passwordResolver = makePasswordResolver()
+                    
                     // first extract to our own directory where we have full rights to write to
                     try await engine.extract(
                         archiveUrl,
-                        to: destination
+                        to: destination,
+                        passwordResolver: passwordResolver
                     )
                 }
             } catch {
@@ -630,10 +657,13 @@ extension ArchiveState {
                 // make sure we know the temp directories to be cleaned up when the state resets
                 tempDirectories.append(temp.url)
                 
+                let passwordResolver = makePasswordResolver()
+                
                 let url = try await engine.extract(
                     item: selectedItem,
                     from: archiveUrl,
-                    to: temp.url
+                    to: temp.url,
+                    passwordResolver: passwordResolver
                 )
                 self.previewItemUrl = url
             } else if self.selectedItems.isEmpty {
@@ -797,11 +827,13 @@ extension ArchiveState {
         
         if let (archiveTypeId, archiveUrl) = findHandlerAndUrl(for: item),
            let engine = archiveEngineSelector.engine(for: archiveTypeId) {
+            let passwordResolver = makePasswordResolver()
             
             let url = try await engine.extract(
                 item: item,
                 from: archiveUrl,
-                to: temp.url
+                to: temp.url,
+                passwordResolver: passwordResolver
             )
             
             return url

@@ -38,7 +38,10 @@ final actor ArchiveSwcEngine: ArchiveEngine {
         return components.joined(separator: ".")
     }
     
-    func loadArchive(url: URL) async throws -> ArchiveEngineLoadResult {
+    func loadArchive(
+        url: URL,
+        passwordResolver: ArchivePasswordResolver
+    ) async throws -> ArchiveEngineLoadResult {
         let name = stripFileExtension(url.lastPathComponent)
         
         emit(.done)
@@ -49,29 +52,32 @@ final actor ArchiveSwcEngine: ArchiveEngine {
         )
     }
     
-    func extract(item: ArchiveItem, from url: URL, to destination: URL) async throws -> URL? {
+    func extract(
+        item: ArchiveItem,
+        from url: URL,
+        to destination: URL,
+        passwordResolver: ArchivePasswordResolver
+    ) async throws -> URL {
         let sourceFileName = url.lastPathComponent
         let extractedFileName = stripFileExtension(sourceFileName)
         let extractedFilePathName = destination.appendingPathComponent(extractedFileName, isDirectory: false)
         
-        do {
-            if let data = try? Data(contentsOf: url, options: .mappedIfSafe) {
-                let decompressedData = try LZ4.decompress(data: data)
-                
-                FileManager.default.createFile(atPath: extractedFilePathName.path, contents: decompressedData)
-                
-                return extractedFilePathName
-            } else {
-                Logger.error("Could not decompress archive")
-            }
-        } catch {
-            Logger.error(error.localizedDescription)
+        if let data = try? Data(contentsOf: url, options: .mappedIfSafe) {
+            let decompressedData = try LZ4.decompress(data: data)
+            
+            FileManager.default.createFile(atPath: extractedFilePathName.path, contents: decompressedData)
+            
+            return extractedFilePathName
         }
         
-        return nil
+        throw ArchiveError.extractionFailed("Swc engine: Could not decompress archive")
     }
     
-    func extract(_ url: URL, to destination: URL) async throws {
+    func extract(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: ArchivePasswordResolver
+    ) async throws {
         let sourceFileName = url.lastPathComponent
         let extractedFileName = stripFileExtension(sourceFileName)
         let extractedFilePathName = url.appendingPathComponent(extractedFileName, isDirectory: false)
