@@ -136,7 +136,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let isParent = selectedItem.type != .root && row == 0
             let hasParent = selectedItem.type != .root
             let item = hasParent
-            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
+            ? (isParent ? ArchiveItem(index: Int.min, name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
             : childItems[row]
             
             let cellView = NSTableCellView()
@@ -288,7 +288,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let isParent = selectedItem.type != .root && row == 0
             let hasParent = selectedItem.type != .root
             let item = hasParent
-            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
+            ? (isParent ? ArchiveItem(index: Int.min, name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
             : childItems[row]
             
             // ignore the parent item

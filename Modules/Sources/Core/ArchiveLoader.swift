@@ -156,7 +156,7 @@ final actor ArchiveLoader {
         yield(.processing(progress: nil, message: "entries found: \(self.entries.count)"))
         
         // build the hierarchy
-        let root = ArchiveItem(name: url.lastPathComponent, type: .root)
+        let root = ArchiveItem(index: Int.min, name: url.lastPathComponent, type: .root)
         root.set(url: archiveUrl, typeId: detectorResult.type.id)
         
         // create the loader results
@@ -237,7 +237,7 @@ final actor ArchiveLoader {
                             dirByPath[nextPath] = existingChild
                             parent = existingChild
                         } else {
-                            let n = ArchiveItem(name: name, virtualPath: nil, type: .directory, parent: parent)
+                            let n = ArchiveItem(index: -2, name: name, virtualPath: nil, type: .directory, parent: parent)
                             parent.addChild(n)
                             setChild(n, of: parent)
                             dirByPath[nextPath] = n

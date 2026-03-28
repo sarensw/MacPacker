@@ -124,7 +124,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
             if line.starts(with: "-------------------") {
                 inBlock.toggle()
             } else if inBlock {
-                if let item = parse7zListLineFast(line.trimmingCharacters(in: .newlines)) {
+                if let item = parse7zListLineFast(i, line.trimmingCharacters(in: .newlines)) {
                     items.append(item)
                     uncompressedSize += Int64(item.uncompressedSize)
                 }
@@ -239,7 +239,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
     
     let dateParseStrategy = Date.ParseStrategy(format: "\(year: .defaultDigits)-\(month: .twoDigits)-\(day: .twoDigits) \(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased)):\(minute: .twoDigits):\(second: .twoDigits)", timeZone: .current)
     
-    private func parse7zListLineFast(_ line: String) -> ArchiveItem? {
+    private func parse7zListLineFast(_ i: Int, _ line: String) -> ArchiveItem? {
         // 7z `l` layout (approx):
         // date(10) space time(8) space attrs(5) space size space compressed space path
         //          012345678901234567890123456789012345678901234567890123456789
@@ -302,6 +302,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
         )*/
         
         return ArchiveItem(
+            index: i,
             name: name,
             virtualPath: path,
             type: isDir ? .directory : .file,

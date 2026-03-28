@@ -20,7 +20,7 @@ public enum ArchiveItemType: Comparable, Codable {
 public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     public let id: ArchiveItemId = ArchiveItemId(rawValue: UUID())
     
-    public let index: Int?
+    public let index: Int
     public var name: String // "file1"
     public let virtualPath: String? // "folder/file1"
     public let type: ArchiveItemType
@@ -46,7 +46,7 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     public private(set) var archiveTypeId: String? = nil
     
     public init(
-        index: Int? = nil,
+        index: Int,
         name: String,
         virtualPath: String? = nil,
         type: ArchiveItemType,

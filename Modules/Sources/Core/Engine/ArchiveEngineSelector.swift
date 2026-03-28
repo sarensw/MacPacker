@@ -50,7 +50,7 @@ public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
         if let engineId = archiveEngineConfigStore.selectedEngine(for: id) {
             Logger.debug("Using engine: \(engineId)")
             switch engineId {
-            case .`7zip`:   return Archive7ZipEngine()
+            case .`7zip`:   return Archive7ZipEngineNew()
             case .swc:      return ArchiveSwcEngine()
             case .xad:      return ArchiveXadEngine()
             }

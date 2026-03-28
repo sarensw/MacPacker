@@ -47,7 +47,7 @@ final actor ArchiveSwcEngine: ArchiveEngine {
         emit(.done)
         
         return ArchiveEngineLoadResult(
-            items: [ArchiveItem(name: String(name), virtualPath: name, type: .file)],
+            items: [ArchiveItem(index: 0, name: String(name), virtualPath: name, type: .file)],
             uncompressedSize: 0
         )
     }

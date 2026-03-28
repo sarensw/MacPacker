@@ -246,10 +246,6 @@ final actor ArchiveXadEngine: ArchiveEngine {
         to destination: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws -> URL {
-        guard let index = item.index else {
-            throw ArchiveError.extractionFailed("Could not extract file: missing index")
-        }
-        
         guard let virtualPath = item.virtualPath else {
             throw ArchiveError.extractionFailed("Could not extract file: missing virtual path")
         }
@@ -260,7 +256,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
         )
         try await archive.setNameEncoding(NSUTF8StringEncoding)
 
-        try await archive.extractEntry(Int32(index), to: destination.path)
+        try await archive.extractEntry(Int32(item.index), to: destination.path)
         
         // In case this is a directory, we have to traverse down to extract all items
         // as XAD doesn't do this automatically. In this case, we can ignore the result
