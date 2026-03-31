@@ -5,17 +5,23 @@
 //  Created by Stephan Arenswald on 23.11.25.
 //
 
+import Foundation
+
 class ArchiveHierarchyPrinter {
     
-    public func printHierarchy(item: ArchiveItem, level: Int = 0) {
-        if level == 0 {
-            print(item.name)
-        } else {
-            print(String(repeating: " ", count: level * 2) + item.name)
+    public func printHierarchy(entries: [UUID: ArchiveItem], id: UUID, level: Int = 0) {
+        guard let entry = entries[id] else {
+            return
         }
-        if let children = item.children {
+        
+        if level == 0 {
+            print(entry.name)
+        } else {
+            print(String(repeating: " ", count: level * 2) + entry.name)
+        }
+        if let children = entry.children {
             for child in children {
-                printHierarchy(item: child, level: level + 1)
+                printHierarchy(entries: entries, id: child, level: level + 1)
             }
         }
     }

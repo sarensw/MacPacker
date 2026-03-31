@@ -38,18 +38,22 @@ final class ArchiveSupportUtilities {
         )
     }
     
-    func findHandlerAndUrl(for archiveItem: ArchiveItem) -> (String, URL)? {
+    func findHandlerAndUrl(for archiveItem: ArchiveItem, in entries: [UUID: ArchiveItem]) -> (String, URL)? {
         var item: ArchiveItem? = archiveItem
         var url: URL?
         var typeId: String?
+        var visited: Set<UUID> = []
     
-        while item != nil {
-            if item?.archiveTypeId != nil && item?.url != nil {
-                url = item?.url
-                typeId = item?.archiveTypeId
+        while let current = item {
+            guard visited.insert(current.id).inserted else { break }
+            
+            if current.archiveTypeId != nil && current.url != nil {
+                url = current.url
+                typeId = current.archiveTypeId
                 break
             }
-            item = item?.parent
+            
+            item = current.parent.flatMap { entries[$0] }
         }
         
         guard let url, let typeId else { return nil }

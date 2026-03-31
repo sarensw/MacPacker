@@ -133,6 +133,17 @@ private final class XADArchiveWithPasswordSupport {
         }
     }
     
+    public func extractEntries(_ entryset: IndexSet!, to: String) async throws {
+        let result = try await performXADOperationWithPasswordRetry {
+            let r = archive.extractEntries(entryset, to: to)
+            return r
+        }
+        
+        if result == false {
+            throw ArchiveError.extractionFailed("Extraction failed for an unknown reason")
+        }
+    }
+    
     public func extract(to: String) async throws {
         let result = try await performXADOperationWithPasswordRetry {
             let r = archive.extract(to: to)
@@ -186,7 +197,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
         )
         try await archive.setNameEncoding(NSUTF8StringEncoding)
 
-        var entries: [ArchiveItem] = []
+        var entries: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0
         let numberOfEntries = try await archive.numberOfEntries()
         for index in 0..<numberOfEntries {
@@ -221,7 +232,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
             }
 
             let entry = ArchiveItem(
-                index: Int(index),
+                index: UInt32(index),
                 name: name,
                 virtualPath: path, // the name in the archive dictionary is usually the full path
                 type: isDir ? .directory : .file,
@@ -231,45 +242,58 @@ final actor ArchiveXadEngine: ArchiveEngine {
                 posixPermissions: posixPermissions
             )
             
-            entries.append(entry)
+            entries[entry.id] = entry
+            
             uncompressedSizeOverall += Int64(entry.uncompressedSize)
         }
         
         emit(.done)
         
-        return ArchiveEngineLoadResult(items: entries, uncompressedSize: uncompressedSizeOverall)
+        return ArchiveEngineLoadResult(
+            items: entries,
+            hasTree: false,
+            uncompressedSize: uncompressedSizeOverall
+        )
     }
     
     func extract(
-        item: ArchiveItem,
+        items: [ArchiveItem],
         from url: URL,
         to destination: URL,
         passwordResolver: @escaping ArchivePasswordResolver
-    ) async throws -> URL {
-        guard let virtualPath = item.virtualPath else {
-            throw ArchiveError.extractionFailed("Could not extract file: missing virtual path")
-        }
-        
+    ) async throws -> ArchiveExtractionResult {
         let archive = try XADArchiveWithPasswordSupport(
             url: url,
             passwordResolver: passwordResolver
         )
         try await archive.setNameEncoding(NSUTF8StringEncoding)
-
-        try await archive.extractEntry(Int32(item.index), to: destination.path)
         
-        // In case this is a directory, we have to traverse down to extract all items
-        // as XAD doesn't do this automatically. In this case, we can ignore the result
-        // url as the top level url is the only thing that needs to be returned.
-        // TODO: NOTE: This will stop at nested archives and not extract their content.
-        for child in item.children ?? [] {
-            _ = try? await extract(item: child, from: url, to: destination, passwordResolver: passwordResolver)
+        for item in items {
+            guard let virtualPath = item.virtualPath else {
+                throw ArchiveError.extractionFailed("Could not extract file: missing virtual path")
+            }
+            guard let itemIndex  = item.index else {
+                throw ArchiveError.extractionFailed("Could not extract file: missing index")
+            }
+            
+            try await archive.extractEntry(Int32(itemIndex), to: destination.path)
+            
+            // In case this is a directory, we have to traverse down to extract all items
+            // as XAD doesn't do this automatically. In this case, we can ignore the result
+            // url as the top level url is the only thing that needs to be returned.
+            // TODO: NOTE: This will stop at nested archives and not extract their content.
+//            for child in item.children ?? [] {
+//                _ = try? await extract(item: child, from: url, to: destination, passwordResolver: passwordResolver)
+//            }
+            // TODO: Add that back in
         }
         
-        print("1: \(destination.startAccessingSecurityScopedResource())")
-        let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: false)
-        print("2: \(resultUrl.startAccessingSecurityScopedResource())")
-        return resultUrl
+//        print("1: \(destination.startAccessingSecurityScopedResource())")
+//        let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: false)
+//        print("2: \(resultUrl.startAccessingSecurityScopedResource())")
+//        return resultUrl
+        
+        return ArchiveExtractionResult(urlsByItemID: [:])
     }
     
     func extract(

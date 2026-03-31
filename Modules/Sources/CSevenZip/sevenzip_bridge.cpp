@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <deque>
 #include <vector>
 #include <sys/stat.h>
 
@@ -45,6 +46,12 @@ static const GUID IID_IInArchiveGetStream_Local = {
 static const GUID IID_IInStream_Local = {
   0x23170F69, 0x40C1, 0x278A,
   {0x00, 0x00, 0x00, 0x03, 0x00, 0x03, 0x00, 0x00}
+};
+
+// IArchiveGetRawProps: archive group (6), sub 0x70
+static const GUID IID_IArchiveGetRawProps_Local = {
+  0x23170F69, 0x40C1, 0x278A,
+  {0x00, 0x00, 0x00, 0x06, 0x00, 0x70, 0x00, 0x00}
 };
 
 // --- External functions from ArchiveExports.cpp / CodecExports.cpp ---
@@ -87,7 +94,9 @@ struct SZArchiveLevel {
 struct SZArchiveHandle {
     CMyComPtr<IInStream> fileStream;           // original file stream
     std::vector<SZArchiveLevel> levels;        // [0]=outermost, back()=innermost
-    std::vector<std::string> storedStrings;
+    CMyComPtr<IArchiveGetRawProps> rawProps;    // cached; non-null if archive implements it
+    bool isTree = false;                       // true only if kpidIsTree is set
+    std::deque<std::string> storedStrings;     // deque: stable pointers on push_back
     UInt32 numItems;
     std::string password;
     bool hasPassword = false;
@@ -340,6 +349,19 @@ SZArchiveRef sz_open(const char *path, char **error_out) {
         handle->activeArchive()->GetNumberOfItems(&numItems);
         handle->numItems = numItems;
 
+        // Cache IArchiveGetRawProps if the archive supports it
+        handle->activeArchive()->QueryInterface(
+            IID_IArchiveGetRawProps_Local,
+            (void **)&handle->rawProps);
+
+        // Check if this is a tree-based archive (disk images etc.)
+        if (handle->rawProps) {
+            NWindows::NCOM::CPropVariant propIsTree;
+            handle->activeArchive()->GetArchiveProperty(kpidIsTree, &propIsTree);
+            handle->isTree = (propIsTree.vt == VT_BOOL
+                && propIsTree.boolVal != VARIANT_FALSE);
+        }
+
         return static_cast<SZArchiveRef>(handle);
     } catch (...) {
         if (error_out)
@@ -392,17 +414,66 @@ bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
         auto *handle = static_cast<SZArchiveHandle *>(archive);
         if (index >= handle->numItems) return false;
 
+        // Skip alternate streams (macOS xattr, NTFS ADS)
+        IInArchive *arc = handle->activeArchive();
+        NWindows::NCOM::CPropVariant propAltStream;
+        arc->GetProperty(index, kpidIsAltStream, &propAltStream);
+        if (propAltStream.vt == VT_BOOL
+            && propAltStream.boolVal != VARIANT_FALSE)
+            return false;
+
         memset(entry_out, 0, sizeof(SZEntry));
         entry_out->index = index;
         entry_out->mtime = -1;
-
-        IInArchive *arc = handle->activeArchive();
+        entry_out->is_alt_stream = false;
 
         // Path
         NWindows::NCOM::CPropVariant propPath;
         arc->GetProperty(index, kpidPath, &propPath);
         std::string pathStr = PropVariantToUTF8(propPath);
+        if (pathStr.empty()) pathStr = "unknown";  // match CExtractCallback fallback
         entry_out->path = handle->storeString(pathStr);
+
+        // Parent index and name (tree-aware)
+        if (handle->rawProps && handle->isTree) {
+            // Tree-based format: get parent from IArchiveGetRawProps
+            UInt32 parent = (UInt32)(Int32)-1;
+            UInt32 parentType = 0;
+            handle->rawProps->GetParent(index, &parent, &parentType);
+            entry_out->parent_index = (parent == (UInt32)(Int32)-1)
+                ? -1 : (int32_t)parent;
+
+            // Get name via GetRawProp (faster than GetProperty)
+            const void *nameData = nullptr;
+            UInt32 nameSize = 0;
+            UInt32 namePropType = 0;
+            handle->rawProps->GetRawProp(index, kpidName,
+                &nameData, &nameSize, &namePropType);
+            if (nameData && nameSize > 0) {
+                // Raw prop returns wchar_t* (LE) or UTF-8
+                if (namePropType == NPropDataType::kUtf8z) {
+                    entry_out->name = handle->storeString(
+                        std::string((const char *)nameData));
+                } else {
+                    // wchar_t* zero-terminated little-endian
+                    UString us((const wchar_t *)nameData);
+                    entry_out->name = handle->storeString(UStringToUTF8(us));
+                }
+            } else {
+                // Fallback: extract from path
+                auto pos = pathStr.rfind('/');
+                if (pos == std::string::npos) pos = pathStr.rfind('\\');
+                entry_out->name = handle->storeString(
+                    pos != std::string::npos ? pathStr.substr(pos + 1) : pathStr);
+            }
+        } else {
+            // Non-tree format: derive name from path
+            entry_out->parent_index = -1;
+            auto pos = pathStr.rfind('/');
+            if (pos == std::string::npos) pos = pathStr.rfind('\\');
+            entry_out->name = handle->storeString(
+                pos != std::string::npos ? pathStr.substr(pos + 1) : pathStr);
+        }
 
         // Size
         NWindows::NCOM::CPropVariant propSize;
@@ -493,6 +564,44 @@ int sz_extract_entry(SZArchiveRef archive, uint32_t index,
     }
 }
 
+int sz_extract_entries(SZArchiveRef archive, const uint32_t *indices,
+                       uint32_t count, const char *dest_dir,
+                       char **error_out) {
+    if (!archive || !dest_dir || (!indices && count > 0)) {
+        if (error_out) *error_out = strdup("Invalid arguments");
+        return -1;
+    }
+    if (count == 0) return 0;
+    try {
+        auto *handle = static_cast<SZArchiveHandle *>(archive);
+
+        AString aDest(dest_dir);
+        UString uDest;
+        ConvertUTF8ToUnicode(aDest, uDest);
+        FString fDest = us2fs(uDest);
+
+        auto *callback = new CExtractCallback(handle->activeArchive(), fDest,
+                                                handle->password, handle->hasPassword);
+        CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
+
+        HRESULT hr = handle->activeArchive()->Extract(
+            indices, count, 0, callback);
+
+        if (hr != S_OK || !callback->errorMessage.empty()) {
+            if (error_out) {
+                std::string msg = callback->errorMessage.empty()
+                    ? "Extraction failed" : callback->errorMessage;
+                *error_out = strdup(msg.c_str());
+            }
+            return -1;
+        }
+        return 0;
+    } catch (...) {
+        if (error_out) *error_out = strdup("Internal error during extraction");
+        return -1;
+    }
+}
+
 int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
                    char **error_out) {
     if (!archive || !dest_dir) {
@@ -529,8 +638,19 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
     }
 }
 
+bool sz_is_tree(SZArchiveRef archive) {
+    if (!archive) return false;
+    try {
+        auto *handle = static_cast<SZArchiveHandle *>(archive);
+        return handle->isTree;
+    } catch (...) {
+        return false;
+    }
+}
+
 const char* sz_version(void) {
     return "Swift7zip bridge";
 }
 
 } // extern "C"
+

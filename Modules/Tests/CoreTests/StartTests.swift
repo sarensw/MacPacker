@@ -32,7 +32,7 @@ let defaultRoot = ArchiveItem(
         try await state.openTask?.value
         
         #expect(state.type?.id == "zip")
-        #expect(state.entries.count == 4)
+        #expect(state.entries.count == 5)
         #expect(state.root?.children?.count == 2)
         #expect(state.root === state.selectedItem)
     }
@@ -45,10 +45,10 @@ let defaultRoot = ArchiveItem(
         state.open(url: url)
         try await state.openTask?.value
         
-        #expect(state.entries.count == 4)
+        #expect(state.entries.count == 5)
         
         // level 0: root
-        let level0a = state.root!.children!
+        let level0a = state.selectedItem!.children!.map { state.entries[$0]! }.sorted { $0.name < $1.name }
         #expect(level0a.count == 2)
         #expect(level0a[0].name == "folder")
         #expect(level0a[0].type == .directory)
@@ -56,7 +56,7 @@ let defaultRoot = ArchiveItem(
         #expect(level0a[1].type == .file)
         
         // level 0: selectedItem
-        let level0b = state.selectedItem!.children!
+        let level0b = state.selectedItem!.children!.map { state.entries[$0]! }.sorted { $0.name < $1.name }
         #expect(level0b.count == 2)
         #expect(level0b[0].name == "folder")
         #expect(level0b[0].type == .directory)
@@ -65,9 +65,7 @@ let defaultRoot = ArchiveItem(
         
         // level 1
         try await state.openAsync(item: level0b[0])
-        let level1 = state.selectedItem!.children!.sorted { item1, item2 in
-            item1.name < item2.name
-        }
+        let level1 = state.selectedItem!.children!.map { state.entries[$0]! }.sorted { $0.name < $1.name }
         #expect(level1.count == 2)
         #expect(level1[0].name == "NestedArchive.zip")
         #expect(level1[0].type == .file)
@@ -76,9 +74,15 @@ let defaultRoot = ArchiveItem(
         
         // level 2
         try await state.openAsync(item: level1[0])
-        let level2 = state.selectedItem!.children!.sorted { item1, item2 in
-            item1.name < item2.name
-        }
+        print("entries count: \(state.entries.count)")
+        print("selectedItem children: \(state.selectedItem!.children!.count)")
+        print("level2 names: \(state.selectedItem!.children!.compactMap { state.entries[$0]?.name })")
+        
+        let level2 = state.selectedItem!.children!.map { state.entries[$0]! }.sorted { $0.name < $1.name }
+        print("sorted level2: \(level2.map { $0.name })")
+        print("level2[2].name = '\(level2[2].name)' == taxes.xlsx: \(level2[2].name == "taxes.xlsx")")
+
+        print(level2.map { $0.name })
         #expect(level2.count == 3)
         #expect(level2[0].name == "keynote.pdf")
         #expect(level2[0].type == .file)

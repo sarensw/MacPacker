@@ -1,24 +1,15 @@
 //
-//  Archive7ZipEngine.swift
+//  Archive7ZipEngineNew.swift
 //  Modules
 //
-//  Created by Stephan Arenswald on 30.11.25.
+//  Created by Stephan Arenswald on 27.03.26.
 //
 
 import Foundation
-import Subprocess
-import System
+import Swift7zip
 
 final actor Archive7ZipEngine: ArchiveEngine {
-    private var isCancelled: Bool = false
-    
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
-    private lazy var status: AsyncStream<EngineStatus> = {
-        AsyncStream(bufferingPolicy: .bufferingNewest(50)) { continuation in
-            self.statusContinuation = continuation
-            continuation.yield(.idle)
-        }
-    }()
     
     func statusStream() -> AsyncStream<EngineStatus> {
         AsyncStream { continuation in
@@ -31,285 +22,132 @@ final actor Archive7ZipEngine: ArchiveEngine {
         statusContinuation?.yield(s)
     }
     
-    func cancel() {
-        print("Archive7ZipEngine: Cancelling...")
-        isCancelled = true
-    }
-    
-    func readLines(from fd: FileDescriptor) throws -> [String] {
-        // Rewind to start
-        _ = try fd.seek(offset: 0, from: .start)
-
-        var buffer = [UInt8](repeating: 0, count: 4096)
-        var remainder = Data()
-        var lines: [String] = []
-
-        while true {
-            let bytesRead = try buffer.withUnsafeMutableBytes { rawBuffer in
-                try fd.read(into: rawBuffer)
-            }
-
-            if bytesRead == 0 { break }
-
-            remainder.append(Data(buffer.prefix(bytesRead)))
-
-            while let newlineRange = remainder.firstRange(of: Data([0x0A])) {
-                let lineData = remainder[..<newlineRange.lowerBound]
-                remainder.removeSubrange(..<newlineRange.upperBound)
-
-                if let line = String(data: lineData, encoding: .utf8) {
-                    lines.append(line)
-                }
-            }
-        }
-
-        // last line (no trailing newline)
-        if !remainder.isEmpty,
-           let line = String(data: remainder, encoding: .utf8) {
-            lines.append(line)
-        }
-
-        return lines
-    }
-    
-    private func checkCancellation() throws {
-        if isCancelled || Task.isCancelled {
-            emit(.cancelled)
-            isCancelled = false
-            throw CancellationError()
-        }
+    func cancel() async {
     }
     
     func loadArchive(
         url: URL,
-        passwordResolver: ArchivePasswordResolver
+        passwordResolver: @escaping ArchivePasswordResolver
     ) async throws -> ArchiveEngineLoadResult {
-        guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
-            print("Failed to load 7zz exec")
-            throw ArchiveError.loadFailed("Failed to load 7zz exec")
-        }
-        let path = FilePath(cmdUrl.path)
-        var items: [ArchiveItem] = []
-        var uncompressedSize: Int64 = 0
+        let szip = try SevenZipArchive(url: url)
         
-        emit(.processing(progress: nil, message: "running 7zz..."))
+        var items: [UUID: ArchiveItem] = [:]
+        var uncompressedSizeOverall: Int64 = 0
+        var idToUUIDMap: [UInt32: UUID] = [:]
         
-        let tempFileDescriptor = try ArchiveSupportUtilities().makeTempFileDescriptor()
-        defer {
-            do { try tempFileDescriptor.close() } catch {}
-        }
-        let _ = try await Subprocess.run(
-            .path(path),
-            arguments: ["l", url.path],
-            output: .fileDescriptor(tempFileDescriptor, closeAfterSpawningProcess: false)
-        ) { execution in
-            if isCancelled {
-                await execution.teardown(using: [
-                    .send(signal: .kill, allowedDurationToNextStep: .seconds(0.1))
-                ])
-            }
-        }
-        
-        try checkCancellation()
-        
-        emit(.processing(progress: nil, message: "7zz finished, start parsing..."))
-        
-        let lines = try readLines(from: tempFileDescriptor)
-
-        try checkCancellation()
-        
-        var inBlock: Bool = false
-        var i: Int = 0
-        for line in lines {
-            if line.starts(with: "-------------------") {
-                inBlock.toggle()
-            } else if inBlock {
-                if let item = parse7zListLineFast(i, line.trimmingCharacters(in: .newlines)) {
-                    items.append(item)
-                    uncompressedSize += Int64(item.uncompressedSize)
-                }
+        try szip.entries.forEach { entry in
+            var name = entry.path
+            let parts = entry.path.split(separator: "/")
+            if let last = parts.last {
+                name = String(last)
             }
             
-            if i % 1000 == 0 {
-                try checkCancellation()
-                
-                emit(.processing(progress: Double(i) / Double(lines.count) * 100, message: "parsing..."))
-            }
-            i += 1
+            let item: ArchiveItem = .init(
+                index: entry.index,
+                name: name,
+                virtualPath: entry.path,
+                type: entry.isDirectory ? .directory : .file,
+                parent: nil,
+                compressedSize: Int(entry.packedSize),
+                uncompressedSize: Int(entry.size),
+                modificationDate: entry.modificationDate,
+                posixPermissions: entry.posixPermissions.map { Int($0) })
+            items[item.id] = item
+            idToUUIDMap[entry.index] = item.id
+            
+            uncompressedSizeOverall += Int64(entry.size)
         }
         
-        emit(.done)
+        if szip.isTree {
+            // The file type (usually disk images) already provide the hierarchy.
+            // So there is no need to recalculate this later. Just one pass here.
+            try szip.entries.forEach { entry in
+                let index = entry.index
+                if
+                    // the item itself
+                    let uuid = idToUUIDMap[index],
+                    let item = items[uuid],
+                    // the parent item to make sure the parent knows its children
+                    let parentIndex = entry.parentIndex,
+                    let parentUUID = idToUUIDMap[parentIndex],
+                    let parentItem = items[parentUUID]
+                {
+                    item.parent = idToUUIDMap[parentIndex]
+                    parentItem.addChild(uuid)
+                }
+            }
+        }
         
         return ArchiveEngineLoadResult(
             items: items,
-            uncompressedSize: uncompressedSize
+            hasTree: szip.isTree,
+            uncompressedSize: uncompressedSizeOverall
         )
     }
     
     func extract(
-        item: ArchiveItem,
+        items: [ArchiveItem],
         from url: URL,
         to destination: URL,
-        passwordResolver: ArchivePasswordResolver
-    ) async throws -> URL {
-        guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
-            throw ArchiveError.loadFailed("Failed to load 7zz exec")
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> ArchiveExtractionResult {
+        guard items.isEmpty == false else {
+            throw ArchiveError.extractionFailed("No items to extract")
         }
-        guard let virtualPath = item.virtualPath else {
-            throw ArchiveError.extractionFailed("No virtual path for item")
-        }
-        let path = FilePath(cmdUrl.path)
         
-        let args = [
-            "e",
-            url.path,
-            "\(virtualPath)",
-            "-o\(destination.path)",
-            "-spf"
-        ]
-        
-        Logger.log("""
-            \(cmdUrl.path)
-                \(args.reduce("", { $0 + $1 + "\n\t" }))
-        """)
-        
-        print()
-        print()
-        let _ = try await Subprocess.run(
-            .path(path),
-            arguments: Arguments(args)
-        ) { execution, standardOutput in
-            if isCancelled {
-                print("cancelled!!!")
-                await execution.teardown(using: [])
+        // get the list of indices first
+        var indices: [UInt32: UUID] = [:]
+        for item in items {
+            if let index = item.index {
+                indices[index] = item.id
             }
-            var cnt = 0
-            for try await line in standardOutput.lines() {
-                cnt += 1
-                print(line.trimmingCharacters(in: .whitespacesAndNewlines))
-            }
-            print("\(cnt) items found")
         }
-        print()
-        print()
+        let sorted = indices.keys.sorted { $0 < $1 }
         
-        let resultUrl = destination.appendingPathComponent(virtualPath)
-        return resultUrl
+        let szip = try SevenZipArchive(url: url)
+        
+        var attempt = 0
+        // The loop is used to allow multiple tries when there is no password
+        // give or the password is wrong
+        // TODO: Change from while true loop to a loop with a real end condition
+        while true {
+            do {
+                let extractedEntries: [UInt32: URL] = try szip.extract(indices: sorted, to: destination)
+                
+                let urlsByItemID: [UUID: URL] = Dictionary(
+                    uniqueKeysWithValues: extractedEntries.compactMap { (index, url) in
+                        guard let uuid = indices[index] else { return nil }
+                        return (uuid, url)
+                    }
+                )
+                
+                let result = ArchiveExtractionResult(urlsByItemID: urlsByItemID)
+                
+                return result
+                
+            } catch SevenZipError.passwordMissing {
+                attempt += 1
+                
+                let request = ArchivePasswordRequest(
+                    url: url,
+                    attempt: attempt
+                )
+                
+                guard let password = await passwordResolver(request) else {
+                    throw ArchiveError.passwordCancelled
+                }
+                
+                szip.setPassword(password)
+                continue
+            }
+        }
     }
     
     func extract(
         _ url: URL,
         to destination: URL,
-        passwordResolver: ArchivePasswordResolver
+        passwordResolver: @escaping ArchivePasswordResolver
     ) async throws {
-        let cmdPath = try getCommandFilePath()
         
-        let args = [
-            "e",
-            url.path,
-            "-o\(destination.path)",
-            "-spf"
-        ]
-        
-        Logger.log("""
-            \(cmdPath)
-                \(args.reduce("", { $0 + $1 + "\n\t" }))
-        """)
-        
-        let _ = try await Subprocess.run(
-            .path(cmdPath),
-            arguments: Arguments(args)
-        ) { execution, standardOutput in
-            var cnt = 0
-            for try await line in standardOutput.lines() {
-                cnt += 1
-                print(line.trimmingCharacters(in: .whitespacesAndNewlines))
-            }
-            print("\(cnt) items found")
-        }
-    }
-    
-    private func getCommandFilePath() throws -> FilePath {
-        guard let cmdUrl = Bundle.module.url(forResource: "7zz", withExtension: nil) else {
-            Logger.error("Failed to load 7zz exec")
-            throw ArchiveError.loadFailed("Failed to load 7zz exec")
-        }
-        return FilePath(cmdUrl.path)
-    }
-    
-    let dateParseStrategy = Date.ParseStrategy(format: "\(year: .defaultDigits)-\(month: .twoDigits)-\(day: .twoDigits) \(hour: .twoDigits(clock: .twentyFourHour, hourCycle: .zeroBased)):\(minute: .twoDigits):\(second: .twoDigits)", timeZone: .current)
-    
-    private func parse7zListLineFast(_ i: Int, _ line: String) -> ArchiveItem? {
-        // 7z `l` layout (approx):
-        // date(10) space time(8) space attrs(5) space size space compressed space path
-        //          012345678901234567890123456789012345678901234567890123456789
-        //          0         1         2         3         4         5
-        // Example:
-        // 0         1         2         3         4         5         6         7
-        // 2025-11-04 12:46:30 ..HS.    309592064    309592064  [SYSTEM]/$MFT
-        //                     .....                            defaultArchive.tar
-        
-//        guard line.count > 43 else { return nil }
-        
-        let s = line
-        let start = s.startIndex
-        
-        // date
-        var modificationDate: Date?
-        do {
-            let dateStart = s.index(start, offsetBy: 0)
-            let dateEnd = s.index(dateStart, offsetBy: 19)
-            let dateString = String(s[dateStart..<dateEnd])
-            
-            modificationDate = try Date(dateString, strategy: dateParseStrategy)
-        } catch {
-            Logger.warning("Could not parse date from 7z list line: \(line)")
-        }
-        
-        // attrs at ~20–25
-        let attrStart = s.index(start, offsetBy: 20)
-        let attrEnd   = s.index(attrStart, offsetBy: 5, limitedBy: s.endIndex) ?? s.endIndex
-        let attrs     = s[attrStart..<attrEnd]
-        let isDir = attrs.contains("D")
-        
-        // sizes
-        let compressedStart = s.index(start, offsetBy: 26)
-        let compressedEnd   = s.index(compressedStart, offsetBy: 12, limitedBy: s.endIndex) ?? s.endIndex
-        let compressedSize = Int(s[compressedStart..<compressedEnd].trimmingCharacters(in: .whitespaces)) ?? -1
-        let uncompressedStart = s.index(start, offsetBy: 39)
-        let uncompressedEnd   = s.index(uncompressedStart, offsetBy: 12, limitedBy: s.endIndex) ?? s.endIndex
-        let uncompressedSize = Int(s[uncompressedStart..<uncompressedEnd].trimmingCharacters(in: .whitespaces)) ?? -1
-        
-        // path at ~53+, skip leading spaces
-        let pathStart = s.index(start, offsetBy: 53, limitedBy: s.endIndex) ?? s.endIndex
-        let pathSub = s[pathStart...].drop(while: { $0 == " " })
-        
-        guard !pathSub.isEmpty else { return nil }
-        let path = String(pathSub)
-        
-        // name = last path component
-        let name: String
-        if let idx = path.lastIndex(of: "/") {
-            name = String(path[path.index(after: idx)...])
-        } else {
-            name = path
-        }
-        
-        /**return ArchiveItem(
-            name: name,
-            virtualPath: path,
-            type: isDir ? .directory : .file
-        )*/
-        
-        return ArchiveItem(
-            index: i,
-            name: name,
-            virtualPath: path,
-            type: isDir ? .directory : .file,
-            compressedSize: compressedSize,
-            uncompressedSize: uncompressedSize,
-            modificationDate: modificationDate,
-            posixPermissions: 0
-        )
     }
 }

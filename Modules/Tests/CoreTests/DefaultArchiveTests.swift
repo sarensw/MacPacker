@@ -35,38 +35,38 @@ import Testing
     
     @Test("Test all defaultArchives on 7zip", arguments: [
         // ext, id, folder entries
-        ("7z", "7zip", 4, 2),
-        ("arj", "arj", 3, 2),
-        ("ar", "ar", 3, 3), // `ar` archives do not store folders, only folder paths
-        ("cab", "cab", 3, 2),
-        ("cpio", "cpio", 4, 2),
-        ("lzh", "lha", 3, 2),
-        ("rar", "rar", 4, 2),
-        ("tar", "tar", 4, 2),
-        ("xar", "xar", 5, 3), // additional `[TOC].xml`
-        ("zip", "zip", 4, 2),
+        ("7z", "7zip", 5, 2),
+        ("arj", "arj", 4, 2),
+        ("ar", "ar", 4, 3), // `ar` archives do not store folders, only folder paths
+        ("cab", "cab", 4, 2),
+        ("cpio", "cpio", 5, 2),
+        ("lzh", "lha", 4, 2),
+        ("rar", "rar", 5, 2),
+        ("tar", "tar", 5, 2),
+        ("xar", "xar", 6, 3), // additional `[TOC].xml`
+        ("zip", "zip", 5, 2),
         // installers
-        ("rpm", "rpm", 1, 1),
+        ("rpm", "rpm", 2, 1),
         // disk images
-        ("dmg", "dmg", 4, 2),
-        ("fat", "fat", 4, 2),
-        ("iso", "iso", 4, 2),
-        ("qcow2", "qcow2", 4, 2),
-        ("squashfs", "squashfs", 4, 2),
-        ("vdi", "vdi", 4, 2),
-        ("vhd", "vhd", 4, 2),
-        ("vhdx", "vhdx", 4, 2),
-        ("vmdk", "vmdk", 4, 2),
+        ("dmg", "dmg", 5, 2),
+        ("fat", "fat", 5, 2),
+        ("iso", "iso", 5, 2),
+        ("qcow2", "qcow2", 5, 2),
+        ("squashfs", "squashfs", 5, 2),
+        ("vdi", "vdi", 5, 2),
+        ("vhd", "vhd", 5, 2),
+        ("vhdx", "vhdx", 5, 2),
+        ("vmdk", "vmdk", 5, 2),
         // compounds
-        ("tar.bz2", "tar", 4, 2),
-        ("tar.gz", "tar", 4, 2),
-        ("tar.xz", "tar", 4, 2),
-        ("tar.Z", "tar", 4, 2),
+        ("tar.bz2", "tar", 5, 2),
+        ("tar.gz", "tar", 5, 2),
+        ("tar.xz", "tar", 5, 2),
+        ("tar.Z", "tar", 5, 2),
         // comounds with one ending
-        ("tbz2", "tar", 4, 2),
-        ("tgz", "tar", 4, 2),
-        ("txz", "tar", 4, 2),
-        ("taz", "tar", 4, 2)
+        ("tbz2", "tar", 5, 2),
+        ("tgz", "tar", 5, 2),
+        ("txz", "tar", 5, 2),
+        ("taz", "tar", 5, 2)
     ])
     func testAll7zipEngine(arg: (String, String, Int, Int)) async throws {
         let ext = arg.0
@@ -80,6 +80,8 @@ import Testing
         
         state.open(url: url)
         try await state.openTask?.value
+        
+        print("debug break point")
         
         #expect(state.type?.id == id)
         #expect(state.entries.count == entries)

@@ -23,26 +23,26 @@ import Foundation
         
         #expect(state.root != nil)
         
-        let extractedUrl = try await state.extractAsync(item: state.root!.children!.first!)
+        let first = state.entries[state.root!.children!.first!]!
+        let extractedUrl = try await state.extractToTemp(item: first)
         print(String(describing: extractedUrl))
         
-        #expect(extractedUrl != nil)
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.path))
         
         // level 1
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level1").path))
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level1").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").path))
         
         // level 2
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level2").path))
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level3").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level2").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level3").path))
         
         // level 3
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level3").path))
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level4").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level3").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level4").path))
         
         // level 4
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level4").appendingPathComponent("level4").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level4").appendingPathComponent("level4").path))
     }
     
     @Test func nestedFoldersXad() async throws {
@@ -55,25 +55,25 @@ import Foundation
         
         #expect(state.root != nil)
         
-        let extractedUrl = try await state.extractAsync(item: state.root!.children!.first!)
+        let first = state.entries[state.root!.children!.first!]!
+        let extractedUrl = try await state.extractToTemp(item: first)
         print(String(describing: extractedUrl))
         
-        #expect(extractedUrl != nil)
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.path))
         
         // level 1
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level1").path))
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level1").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").path))
         
         // level 2
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level2").path))
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level3").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level2").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level3").path))
         
         // level 3
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level3").path))
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level4").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level3").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level4").path))
         
         // level 4
-        #expect(FileManager.default.fileExists(atPath: extractedUrl!.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level4").appendingPathComponent("level4").path))
+        #expect(FileManager.default.fileExists(atPath: extractedUrl.appendingPathComponent("level2").appendingPathComponent("level3").appendingPathComponent("level4").appendingPathComponent("level4").path))
     }
 }

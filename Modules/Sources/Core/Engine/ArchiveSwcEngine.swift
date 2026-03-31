@@ -46,18 +46,23 @@ final actor ArchiveSwcEngine: ArchiveEngine {
         
         emit(.done)
         
+        let item = ArchiveItem(name: String(name), virtualPath: name, type: .file)
+        var items: [UUID: ArchiveItem] = [:]
+        items[item.id] = item
+        
         return ArchiveEngineLoadResult(
-            items: [ArchiveItem(index: 0, name: String(name), virtualPath: name, type: .file)],
+            items: items,
+            hasTree: false,
             uncompressedSize: 0
         )
     }
     
     func extract(
-        item: ArchiveItem,
+        items: [ArchiveItem],
         from url: URL,
         to destination: URL,
-        passwordResolver: ArchivePasswordResolver
-    ) async throws -> URL {
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> ArchiveExtractionResult {
         let sourceFileName = url.lastPathComponent
         let extractedFileName = stripFileExtension(sourceFileName)
         let extractedFilePathName = destination.appendingPathComponent(extractedFileName, isDirectory: false)
@@ -67,7 +72,10 @@ final actor ArchiveSwcEngine: ArchiveEngine {
             
             FileManager.default.createFile(atPath: extractedFilePathName.path, contents: decompressedData)
             
-            return extractedFilePathName
+            let urlsByItemID: [UUID: URL] = [UUID(): extractedFilePathName]
+            let result = ArchiveExtractionResult(urlsByItemID: urlsByItemID)
+            
+            return result
         }
         
         throw ArchiveError.extractionFailed("Swc engine: Could not decompress archive")
