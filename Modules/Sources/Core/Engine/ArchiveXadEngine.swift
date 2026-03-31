@@ -210,10 +210,12 @@ final actor ArchiveXadEngine: ArchiveEngine {
             var compressedSize: Int = -1
             var uncompressedSize: Int = -1
             compressedSize = try await archive.compressedSize(ofEntry: index)
-            if try await archive.entryHasSize(index) {
-                uncompressedSize = try await archive.uncompressedSize(ofEntry: index)
-            } else {
-                uncompressedSize = try await archive.compressedSize(ofEntry: index)
+            if !isDir {
+                if try await archive.entryHasSize(index) {
+                    uncompressedSize = try await archive.uncompressedSize(ofEntry: index)
+                } else {
+                    uncompressedSize = try await archive.compressedSize(ofEntry: index)
+                }
             }
             
             // get more attributes
