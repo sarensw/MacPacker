@@ -30,7 +30,7 @@ extension AllCoreTests {
             try await state.openTask?.value
             
             #expect(state.type?.id == id)
-            #expect(state.entries.count == 1)
+            #expect(state.entries.count == 2) // 1 item + root
             #expect(state.root === state.selectedItem)
         }
         

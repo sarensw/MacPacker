@@ -12,26 +12,6 @@
 
 import UniformTypeIdentifiers
 
-private extension String {
-    func hexBytes() -> [UInt8]? {
-        // keep only hex digits, drop whitespace
-        let filtered = self.filter { $0.isHexDigit }
-        guard filtered.count % 2 == 0 else { return nil }
-
-        var bytes: [UInt8] = []
-        bytes.reserveCapacity(filtered.count / 2)
-
-        var i = filtered.startIndex
-        while i < filtered.endIndex {
-            let j = filtered.index(i, offsetBy: 2)
-            guard let b = UInt8(filtered[i..<j], radix: 16) else { return nil }
-            bytes.append(b)
-            i = j
-        }
-        return bytes
-    }
-}
-
 public final class ArchiveTypeCatalog: ArchiveTypeCatalogProtocol, Sendable {
     private let formatById: [String: ArchiveTypeDto]
     private let engineOptionsByFormat: [String: [EngineDto]]

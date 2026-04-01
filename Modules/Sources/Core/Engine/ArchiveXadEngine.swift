@@ -166,13 +166,7 @@ private final class XADArchiveWithPasswordSupport {
 
 final actor ArchiveXadEngine: ArchiveEngine {
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
-    private lazy var status: AsyncStream<EngineStatus> = {
-        AsyncStream(bufferingPolicy: .bufferingNewest(50)) { continuation in
-            self.statusContinuation = continuation
-            continuation.yield(.idle)
-        }
-    }()
-    
+
     func statusStream() -> AsyncStream<EngineStatus> {
         AsyncStream { continuation in
             self.statusContinuation = continuation
@@ -270,32 +264,23 @@ final actor ArchiveXadEngine: ArchiveEngine {
         )
         try await archive.setNameEncoding(NSUTF8StringEncoding)
         
+        var urlsByItemID: [UUID: URL] = [:]
+
         for item in items {
             guard let virtualPath = item.virtualPath else {
                 throw ArchiveError.extractionFailed("Could not extract file: missing virtual path")
             }
-            guard let itemIndex  = item.index else {
+            guard let itemIndex = item.index else {
                 throw ArchiveError.extractionFailed("Could not extract file: missing index")
             }
-            
+
             try await archive.extractEntry(Int32(itemIndex), to: destination.path)
-            
-            // In case this is a directory, we have to traverse down to extract all items
-            // as XAD doesn't do this automatically. In this case, we can ignore the result
-            // url as the top level url is the only thing that needs to be returned.
-            // TODO: NOTE: This will stop at nested archives and not extract their content.
-//            for child in item.children ?? [] {
-//                _ = try? await extract(item: child, from: url, to: destination, passwordResolver: passwordResolver)
-//            }
-            // TODO: Add that back in
+
+            let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: item.type == .directory)
+            urlsByItemID[item.id] = resultUrl
         }
-        
-//        print("1: \(destination.startAccessingSecurityScopedResource())")
-//        let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: false)
-//        print("2: \(resultUrl.startAccessingSecurityScopedResource())")
-//        return resultUrl
-        
-        return ArchiveExtractionResult(urlsByItemID: [:])
+
+        return ArchiveExtractionResult(urlsByItemID: urlsByItemID)
     }
     
     func extract(

@@ -10,13 +10,7 @@ import SWCompression
 
 final actor ArchiveSwcEngine: ArchiveEngine {
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
-    private lazy var status: AsyncStream<EngineStatus> = {
-        AsyncStream(bufferingPolicy: .bufferingNewest(50)) { continuation in
-            self.statusContinuation = continuation
-            continuation.yield(.idle)
-        }
-    }()
-    
+
     func statusStream() -> AsyncStream<EngineStatus> {
         AsyncStream { continuation in
             self.statusContinuation = continuation
@@ -88,7 +82,7 @@ final actor ArchiveSwcEngine: ArchiveEngine {
     ) async throws {
         let sourceFileName = url.lastPathComponent
         let extractedFileName = stripFileExtension(sourceFileName)
-        let extractedFilePathName = url.appendingPathComponent(extractedFileName, isDirectory: false)
+        let extractedFilePathName = destination.appendingPathComponent(extractedFileName, isDirectory: false)
         
         do {
             if let data = try? Data(contentsOf: url, options: .mappedIfSafe) {

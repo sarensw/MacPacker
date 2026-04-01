@@ -56,7 +56,7 @@ final public class ArchiveTypeDetector: Sendable {
             }
         }
         
-        return url.lastPathComponent
+        return name
     }
     
     public func detect(for url: URL, considerComposition: Bool = true) -> DetectionResult? {

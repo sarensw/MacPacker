@@ -26,22 +26,24 @@ final class ArchiveBatchResolver {
         in entries: [UUID: ArchiveItem],
         using selector: ArchiveEngineSelectorProtocol
     ) throws -> [ResolvedBatch] {
+        let expanded = expandDirectories(items: items, entries: entries)
+
         let utilities = ArchiveSupportUtilities()
         var resultEngine: [URL: ArchiveEngineType] = [:]
         var resultItems: [URL: [ArchiveItem]] = [:]
-        
-        for item in items {
+
+        for item in expanded {
             guard
                 let (archiveTypeID, archiveURL) = utilities.findHandlerAndUrl(for: item, in: entries),
                 let engineType = selector.engineType(for: archiveTypeID)
             else {
                 throw ArchiveError.extractionFailed("Could not determine engine for extraction")
             }
-            
+
             resultEngine[archiveURL] = engineType
             resultItems[archiveURL, default: []].append(item)
         }
-        
+
         return resultItems.map({
             ResolvedBatch(
                 archiveURL: $0.key,
@@ -49,5 +51,32 @@ final class ArchiveBatchResolver {
                 items: $0.value
             )
         })
+    }
+
+    /// Expands directory items to include all their descendants so that
+    /// engines that extract by index get the full subtree.
+    private func expandDirectories(
+        items: [ArchiveItem],
+        entries: [UUID: ArchiveItem]
+    ) -> [ArchiveItem] {
+        var result: [ArchiveItem] = []
+        var seen: Set<UUID> = []
+
+        func collect(_ item: ArchiveItem) {
+            guard seen.insert(item.id).inserted else { return }
+            result.append(item)
+            if let childIDs = item.children {
+                for childID in childIDs {
+                    if let child = entries[childID] {
+                        collect(child)
+                    }
+                }
+            }
+        }
+
+        for item in items {
+            collect(item)
+        }
+        return result
     }
 }
