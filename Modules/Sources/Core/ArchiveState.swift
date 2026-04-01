@@ -359,7 +359,8 @@ extension ArchiveState {
             loadChildren(sortedBy: currentSortOrder)
             break
         case .root:
-            // Cannot happen as this never shows up
+            self.selectedItem = item
+            loadChildren(sortedBy: currentSortOrder)
             break
         case .unknown:
             Logger.error("Unhandled ArchiveItem.Type: \(item.name)")
