@@ -362,9 +362,7 @@ let package = Package(
                 "Swift7zip"
             ],
             resources: [
-                .copy("Formats/Catalog.json"),
-                .copy("Tools/7zz"),
-                .copy("Tools/7zz.entitlements")
+                .copy("Formats/Catalog.json")
             ]
         ),
         .target(
