@@ -37,6 +37,8 @@ extension ArchiveEngineType {
 
 public protocol ArchiveEngineSelectorProtocol: Sendable {
     func engine(for id: String) -> ArchiveEngine?
+    func engine(for type: ArchiveEngineType) -> ArchiveEngine
+    func engineType(for id: String) -> ArchiveEngineType?
 }
 
 public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
@@ -54,6 +56,23 @@ public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
             case .swc:      return ArchiveSwcEngine()
             case .xad:      return ArchiveXadEngine()
             }
+        }
+        
+        return nil
+    }
+    
+    public func engine(for type: ArchiveEngineType) -> ArchiveEngine {
+        switch type {
+        case .xad:      return ArchiveXadEngine()
+        case .swc:      return ArchiveSwcEngine()
+        case .`7zip`:     return Archive7ZipEngine()
+        }
+    }
+    
+    public func engineType(for id: String) -> ArchiveEngineType? {
+        if let engineId = archiveEngineConfigStore.selectedEngine(for: id) {
+            Logger.debug("Using engine: \(engineId)")
+            return engineId
         }
         
         return nil

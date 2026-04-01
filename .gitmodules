@@ -1,3 +1,6 @@
 [submodule "Modules/Tests/CoreTests/TestArchives"]
 	path = Modules/Tests/CoreTests/TestArchives
 	url = https://github.com/sarensw/MacPacker-TestArchives.git
+[submodule "Modules/Sources/CSevenZip/vendor/7zip"]
+	path = Modules/Sources/CSevenZip/vendor/7zip
+	url = https://github.com/ip7z/7zip

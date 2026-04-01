@@ -11,10 +11,11 @@ struct ArchiveLoaderLoadResult: Sendable {
     let type: ArchiveTypeDto
     let compositionType: CompositionTypeDto?
     let root: ArchiveItem
-    let entries: [ArchiveItem]
+    let entries: [UUID: ArchiveItem]
     let error: String?
     let tempDirectory: URL?
     let uncompressedSize: Int64?
+    let hasTree: Bool
 }
 
 struct ArchiveLoaderBuildTreeResult {
@@ -26,7 +27,7 @@ final actor ArchiveLoader {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let passwordResolver: ArchivePasswordResolver
     
-    private var entries: [ArchiveItem] = []
+    private var entries: [UUID: ArchiveItem] = [:]
     private var engine: (any ArchiveEngine)?
     
     // status passthrough from the engine to the UI
@@ -120,7 +121,7 @@ final actor ArchiveLoader {
             }
             
             archiveUrl = try await engine.extract(
-                item: entries[0],
+                item: entries.first!.value,
                 from: url,
                 to: temp.url,
                 passwordResolver: passwordResolver
@@ -159,6 +160,15 @@ final actor ArchiveLoader {
         let root = ArchiveItem(name: url.lastPathComponent, type: .root)
         root.set(url: archiveUrl, typeId: detectorResult.type.id)
         
+        // Make sure top level entries are linked to the virtual root so they
+        // are not orphaned
+        if engineLoadResult.hasTree {
+            for item in self.entries.values where item.parent == nil {
+                item.parent = root.id
+                root.addChild(item.id)
+            }
+        }
+        
         // create the loader results
         let result = ArchiveLoaderLoadResult(
             type: detectorResult.type,
@@ -167,7 +177,8 @@ final actor ArchiveLoader {
             entries: self.entries,
             error: nil,
             tempDirectory: compoundTempUrl,
-            uncompressedSize: engineLoadResult.uncompressedSize
+            uncompressedSize: engineLoadResult.uncompressedSize,
+            hasTree: engineLoadResult.hasTree
         )
         return result
     }
@@ -177,125 +188,97 @@ final actor ArchiveLoader {
     /// - Parameter root: root to attache the tree to
     /// - Returns: tree of items
     func buildTree(at root: ArchiveItem) -> ArchiveLoaderBuildTreeResult {
-        // #1: per-parent child lookup (already added)
-        var childByParent: [ObjectIdentifier: [String: ArchiveItem]] = [:]
 
-        @inline(__always)
-        func getChild(_ name: String, of parent: ArchiveItem) -> ArchiveItem? {
-            childByParent[ObjectIdentifier(parent)]?[name]
+        func normalizePath(_ vp: String) -> String {
+            var p = vp
+            if p.hasSuffix("/") { p = String(p.dropLast()) }
+            if p.isEmpty { return "/" }
+            if !p.hasPrefix("/") { p = "/" + p }
+            return p
         }
 
-        @inline(__always)
-        func setChild(_ child: ArchiveItem, of parent: ArchiveItem) {
-            let key = ObjectIdentifier(parent)
-            var dict = childByParent[key] ?? [:]
-            dict[child.name] = child
-            childByParent[key] = dict
+        func parentPath(of vp: String) -> String {
+            let normalized = normalizePath(vp)
+            if let lastSlash = normalized.lastIndex(of: "/"),
+               lastSlash != normalized.startIndex {
+                return String(normalized[..<lastSlash])
+            }
+            return "/"
         }
 
-        // #2: directory path -> node cache
         var dirByPath: [String: ArchiveItem] = ["/": root]
-        dirByPath.reserveCapacity(4096) // rough; grows as needed
 
-        @inline(__always)
-        func normalizeDirPath(_ path: Substring) -> String {
-            // path is like "/a/b" or "a/b" depending on your input.
-            // We’ll normalize to leading "/" and no trailing "/".
-            if path.isEmpty { return "/" }
-            if path.first == "/" { return String(path) }
-            return "/" + path
+        // ── Pass 1: pre-register every real directory by its path ──
+        // This guarantees ensureDirectory never creates a virtual for a real dir.
+        for item in entries.values where item.type == .directory {
+            guard let vp = item.virtualPath else { continue }
+            dirByPath[normalizePath(vp)] = item
         }
 
-        @inline(__always)
+        // ── ensureDirectory: find or create the directory at `dirPath` ──
         func ensureDirectory(path dirPath: String) -> ArchiveItem {
             if let existing = dirByPath[dirPath] { return existing }
 
-            // Create missing directories along the path.
-            // We walk from root and create only the missing segments.
             var currentPath = "/"
             var parent = root
 
-            // Strip leading "/"
-            let startIdx = dirPath.index(after: dirPath.startIndex)
-            let remainder = dirPath[startIdx...]
+            for segment in dirPath.dropFirst().split(separator: "/") {
+                let name = String(segment)
+                let nextPath = currentPath == "/"
+                    ? "/\(name)"
+                    : "\(currentPath)/\(name)"
 
-            var segmentStart = remainder.startIndex
-            var i = remainder.startIndex
-
-            while i <= remainder.endIndex {
-                let isEnd = (i == remainder.endIndex)
-                if isEnd || remainder[i] == "/" {
-                    let segment = remainder[segmentStart..<i]
-                    if !segment.isEmpty {
-                        let name = String(segment)
-                        let nextPath = (currentPath == "/") ? "/\(name)" : "\(currentPath)/\(name)"
-
-                        if let cached = dirByPath[nextPath] {
-                            parent = cached
-                        } else if let existingChild = getChild(name, of: parent) {
-                            // Directory already exists as a child (e.g. created earlier)
-                            dirByPath[nextPath] = existingChild
-                            parent = existingChild
-                        } else {
-                            let n = ArchiveItem(name: name, virtualPath: nil, type: .directory, parent: parent)
-                            parent.addChild(n)
-                            setChild(n, of: parent)
-                            dirByPath[nextPath] = n
-                            parent = n
-                        }
-
-                        currentPath = nextPath
+                if let cached = dirByPath[nextPath] {
+                    // Link to parent if not yet linked
+                    if cached.parent == nil && cached !== root {
+                        cached.parent = parent.id
+                        parent.addChild(cached.id)
                     }
-                    if isEnd {
-                        break
-                    } else {
-                        segmentStart = remainder.index(after: i)
-                    }
-
+                    parent = cached
+                } else {
+                    // Create virtual intermediate
+                    let n = ArchiveItem(
+                        name: name, virtualPath: nil,
+                        type: .virtual, parent: parent.id
+                    )
+                    parent.addChild(n.id)
+                    dirByPath[nextPath] = n
+                    entries[n.id] = n   // visible to loadChildren
+                    parent = n
                 }
-                if isEnd { break }
-                i = remainder.index(after: i)
+                currentPath = nextPath
             }
-
-            dirByPath[dirPath] = parent
             return parent
         }
-        
+
+        // ── Pass 2: link every entry to its parent ──
         yield(.processing(progress: nil, message: "building tree..."))
 
         var i = 0
-        for entry in entries {
-            let vp = entry.virtualPath ?? "/"
+        let total = entries.count
+        for item in entries.values {
+            if item === root { continue }
+            if item.parent != nil { continue }   // already linked by ensureDirectory
 
-            // parentDir = everything before last "/" ("/a/b/c.txt" -> "/a/b")
-            if let lastSlash = vp.lastIndex(of: "/") {
-                let parentSub = vp[..<lastSlash]
-                let parentDir = normalizeDirPath(parentSub)
-                let parent = ensureDirectory(path: parentDir)
-
-                // avoid duplicates (folder already created due to deeper files)
-                if getChild(entry.name, of: parent) != nil { continue }
-
-                entry.parent = parent
-                parent.addChild(entry)
-                setChild(entry, of: parent)
-            } else {
-                // no slash -> treat as direct child of root
-                if getChild(entry.name, of: root) != nil { continue }
-                entry.parent = root
-                root.addChild(entry)
-                setChild(entry, of: root)
+            guard let vp = item.virtualPath else {
+                item.parent = root.id
+                root.addChild(item.id)
+                continue
             }
-            
+
+            let parent = ensureDirectory(path: parentPath(of: vp))
+            item.parent = parent.id
+            parent.addChild(item.id)
+
             if i % 1000 == 0 {
-                yield(.processing(progress: Double(i) / Double(entries.count) * 100, message: "building tree..."))
+                yield(.processing(
+                    progress: Double(i) / Double(total) * 100,
+                    message: "building tree..."
+                ))
             }
             i += 1
         }
-        
-        let result = ArchiveLoaderBuildTreeResult(
-            error: nil
-        )
-        return result
+
+        return ArchiveLoaderBuildTreeResult(error: nil)
     }
 }

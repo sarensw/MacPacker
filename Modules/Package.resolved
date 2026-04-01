@@ -1,0 +1,60 @@
+{
+  "originHash" : "e7f65293c694e3b8fb6de9f21d3010455342d53c99dec05d42bf618bc99cb1b4",
+  "pins" : [
+    {
+      "identity" : "bitbytedata",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tsolomko/BitByteData.git",
+      "state" : {
+        "revision" : "cdcdc5177ad536cfb11b95c620f926a81014b7fe",
+        "version" : "2.0.4"
+      }
+    },
+    {
+      "identity" : "swcompression",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tsolomko/SWCompression.git",
+      "state" : {
+        "revision" : "390e0b0af8dd19a600005a242a89e570ff482e09",
+        "version" : "4.8.6"
+      }
+    },
+    {
+      "identity" : "swift-subprocess",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-subprocess.git",
+      "state" : {
+        "revision" : "13d087685b95d64d6aac9b94500d347bbe84c39b",
+        "version" : "0.4.0"
+      }
+    },
+    {
+      "identity" : "swift-system",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-system",
+      "state" : {
+        "revision" : "7c6ad0fc39d0763e0b699210e4124afd5041c5df",
+        "version" : "1.6.4"
+      }
+    },
+    {
+      "identity" : "tailbeatkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tailbeat/TailBeatKit.git",
+      "state" : {
+        "revision" : "caf2eb04a26c72ee79eb9531fcb13f43cbb1a7f5",
+        "version" : "0.12.0"
+      }
+    },
+    {
+      "identity" : "xadmasterswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kumamotone/XADMasterSwift.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "5838ad256846dcd9f489108916424db697593f5a"
+      }
+    }
+  ],
+  "version" : 3
+}

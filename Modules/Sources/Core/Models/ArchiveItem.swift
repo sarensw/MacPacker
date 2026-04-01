@@ -14,13 +14,14 @@ public enum ArchiveItemType: Comparable, Codable {
     case directory
     case root
     case archive
+    case virtual
     case unknown
 }
 
 public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
-    public let id: ArchiveItemId = ArchiveItemId(rawValue: UUID())
+    public let id: UUID = UUID()
     
-    public let index: Int?
+    public let index: UInt32?
     public var name: String // "file1"
     public let virtualPath: String? // "folder/file1"
     public let type: ArchiveItemType
@@ -34,11 +35,11 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     public let posixPermissions: Int?
     
     // hierarchy
-    public var parent: ArchiveItem?
+    public var parent: UUID?
     /// `children` is null iin case the item is a file. If the item is an archive, then
     /// it is null unless it was unfolded and added to the hierarchy already. This way
     /// we can easily distinguish if a nested archive still needs to be extracted or not.
-    public private(set) var children: [ArchiveItem]? = nil
+    public private(set) var children: [UUID]? = nil
     
     // The following are only relevant if this is a nested archive
     // that can be opened
@@ -46,11 +47,11 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     public private(set) var archiveTypeId: String? = nil
     
     public init(
-        index: Int? = nil,
+        index: UInt32? = nil,
         name: String,
         virtualPath: String? = nil,
         type: ArchiveItemType,
-        parent: ArchiveItem? = nil,
+        parent: UUID? = nil,
         compressedSize: Int? = nil,
         uncompressedSize: Int? = nil,
         modificationDate: Date? = nil,
@@ -88,11 +89,11 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
         return String(name[extensionStartIndex...])
     }
     
-    func addChild(_ child: ArchiveItem) {
+    func addChild(_ id: UUID) {
         if children == nil {
             children = []
         }
-        children!.append(child)
+        children!.append(id)
     }
     
     public static func == (lhs: ArchiveItem, rhs: ArchiveItem) -> Bool {

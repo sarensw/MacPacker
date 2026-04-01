@@ -18,8 +18,44 @@ public enum EngineStatus: Sendable {
 }
 
 public struct ArchiveEngineLoadResult: Sendable {
-    let items: [ArchiveItem]
+    let items: [UUID: ArchiveItem]
+    let hasTree: Bool
     let uncompressedSize: Int64
+}
+
+public struct ArchiveExtractionResult: Sendable {
+    /// Extracted URLs by original item ID.
+    public let urlsByItemID: [UUID: URL]
+
+    public init(urlsByItemID: [UUID: URL]) {
+        self.urlsByItemID = urlsByItemID
+    }
+
+    /// All extracted URLs.
+    public var urls: [URL] {
+        Array(urlsByItemID.values)
+    }
+
+    /// The single extracted URL.
+    /// Fails if the result does not contain exactly one entry.
+    public var singleURL: URL {
+        get throws {
+            guard urlsByItemID.count == 1, let url = urlsByItemID.values.first else {
+                throw ArchiveError.extractionFailed(
+                    "Expected exactly one extracted item, got \(urlsByItemID.count)"
+                )
+            }
+            return url
+        }
+    }
+
+    public subscript(item: ArchiveItem) -> URL? {
+        urlsByItemID[item.id]
+    }
+
+    public subscript(id id: UUID) -> URL? {
+        urlsByItemID[id]
+    }
 }
 
 /// An engine has the knowledge on how a library, CLI tool, or anything else
@@ -52,6 +88,13 @@ public protocol ArchiveEngine: Sendable {
     ///   - passwordProvider: give the engine the possibility to request a password from the user
     /// - Returns: the URL of the extracted item
     func extract(
+        items: [ArchiveItem],
+        from url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> ArchiveExtractionResult
+    
+    func extract(
         item: ArchiveItem,
         from url: URL,
         to destination: URL,
@@ -68,4 +111,22 @@ public protocol ArchiveEngine: Sendable {
         to destination: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws
+}
+
+public extension ArchiveEngine {
+    func extract(
+        item: ArchiveItem,
+        from url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> URL {
+        let result = try await extract(
+            items: [item],
+            from: url,
+            to: destination,
+            passwordResolver: passwordResolver
+        )
+
+        return try result.singleURL
+    }
 }

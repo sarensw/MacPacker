@@ -376,9 +376,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             }
             Task {
                 do {
-                    guard let tempUrl = try await parent.archiveState.extractAsync(item: item) else {
-                        throw NSError(domain: "Drag", code: 2)
-                    }
+                    let tempUrl = try await parent.archiveState.extractToTemp(item: item)
                     try FileManager.default.moveItem(at: tempUrl, to: url)
                     completionHandler(nil)
                 } catch {

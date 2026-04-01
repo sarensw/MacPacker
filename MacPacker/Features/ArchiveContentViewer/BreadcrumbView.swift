@@ -48,30 +48,38 @@ struct BreadcrumbItemView: View {
 }
 
 struct BreadcrumbView: View {
-    // environment
-    @EnvironmentObject var archiveState: ArchiveState
-    
-    // variables
-    private var items: [ArchiveItem] = []
-    
+    @EnvironmentObject private var archiveState: ArchiveState
+
+    private let selectedItem: ArchiveItem
+
     init(for selectedItem: ArchiveItem) {
-        var parent: ArchiveItem? = selectedItem
-        while parent != nil {
-            guard let p = parent else { break }
-            items.insert(p, at: 0)
-            parent = parent?.parent
-        }
+        self.selectedItem = selectedItem
     }
-    
+
+    private var items: [ArchiveItem] {
+        var result: [ArchiveItem] = []
+        var current: ArchiveItem? = selectedItem
+
+        while let item = current {
+            result.append(item)
+            current = item.parent.flatMap { archiveState.entries[$0] }
+        }
+
+        return result.reversed()
+    }
+
     var body: some View {
         HStack(alignment: .center) {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .firstTextBaseline,spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
                     ForEach(items.indices, id: \.self) { index in
-                        BreadcrumbItemView(archiveItem: items[index], onTap: {
-                            self.archiveState.open(item: items[index])
-                        })
-                        
+                        BreadcrumbItemView(
+                            archiveItem: items[index],
+                            onTap: {
+                                archiveState.open(item: items[index])
+                            }
+                        )
+
                         if index != items.indices.last {
                             Image(systemName: "chevron.right")
                                 .resizable()
@@ -80,7 +88,7 @@ struct BreadcrumbView: View {
                                 .foregroundColor(.primary.opacity(0.6))
                         }
                     }
-                    
+
                     Spacer()
                 }
                 .padding(.horizontal, 4)
