@@ -60,7 +60,7 @@ class ArchiveWindowManager {
     
     /// Creates a new empty window, or shows an existing empty window where no archive is loaded or created yet
     func openArchiveWindow() {
-        if let ewc = windowControllers.first(where: { $0.archiveState.url == nil }) {
+        if let ewc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {
             ewc.showWindow(nil)
         } else {
             createAndShowArchiveWindow(nil)
@@ -81,10 +81,10 @@ class ArchiveWindowManager {
     func openArchiveWindow(for url: URL) {
         Logger.log("creating new window for \(String(describing: url))")
         
-        if let wc = windowControllers.first(where: { $0.archiveState.url == url }) {
+        if let wc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {
             // Case 1: archive already loaded > bring window to front
             wc.showWindow(nil)
-        } else if let ewc = windowControllers.first(where: { $0.archiveState.url == nil }) {
+        } else if let ewc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {
             // Case 2: archive not loaded yet, but empty window available > load archive in empty
             // and bring window to front
             ewc.archiveState.open(url: url)

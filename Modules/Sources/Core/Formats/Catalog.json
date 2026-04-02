@@ -526,7 +526,7 @@
       ],
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "edit"], "default": true },
         { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
       ]
     },

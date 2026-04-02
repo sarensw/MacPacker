@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import Swift7zip
 import SwiftUI
 
 public enum ArchiveStateStatus: String {
@@ -17,6 +18,8 @@ public enum ArchiveStateStatus: String {
 
 @MainActor
 public class ArchiveState: ObservableObject {
+    @Published private(set) public var hasArchive: Bool = false
+    @Published private(set) public var canBeEdited: Bool = false
     // MARK: UI
     // Basic archive metadata
     @Published private(set) public var url: URL?
@@ -29,6 +32,7 @@ public class ArchiveState: ObservableObject {
     
     // Full list of entries
     @Published private(set) public var entries: [UUID: ArchiveItem] = [:]
+    @Published private(set) public var diff: [ArchiveUpdateItem] = []
     
     // Root item
     @Published private(set) public var root: ArchiveItem?
@@ -115,6 +119,8 @@ extension ArchiveState {
     
     /// Resets the state of the archive
     private func reset() {
+        self.hasArchive = false
+        
         self.url = nil
         self.name = nil
         self.type = nil
@@ -122,6 +128,7 @@ extension ArchiveState {
         self.ext = nil
         self.uncompressedSize = nil
         self.isEncrypted = nil
+        self.diff = []
         
         self.root = nil
         
@@ -219,6 +226,80 @@ extension ArchiveState {
         return statusTask
     }
     
+    /// Checks if the given URL is an archive that we support
+    /// - Parameter url: url to check
+    /// - Returns: true in case it is a supported archive, false otherwise
+    public func isSupportedArchive(url: URL) -> Bool {
+        return archiveTypeDetector.detect(for: url) != nil
+    }
+    
+    //
+    // MARK: Create / Edit
+    //
+    
+    public func create() {
+        reset()
+        
+        self.canBeEdited = true
+        self.hasArchive = true
+        // self.url = nil
+        self.name = "New Archive"
+        self.type = self.catalog.getType(for: "zip")
+        self.ext = ".zip"
+        
+        self.root = ArchiveItem(name: "<root>", virtualPath: "/", type: .root)
+        
+        self.isReloadNeeded = true
+        
+        self.selectedItem = root
+        loadChildren(sortedBy: currentSortOrder)
+    }
+    
+    public func add(url: URL) {
+        guard let selectedItem else { return }
+        let archivePath = selectedItem.virtualPath == nil ? url.lastPathComponent : "\(selectedItem.virtualPath!)/\(url.lastPathComponent)"
+        
+        diff.append(ArchiveUpdateItem.addFile(
+            archivePath: archivePath,
+            diskPath: url)
+        )
+        
+        let item = ArchiveItem(url: url)
+        item.parent = selectedItem.id
+        selectedItem.addChild(item.id)
+        entries[item.id] = item
+        
+        self.isReloadNeeded = true
+        loadChildren(sortedBy: currentSortOrder)
+    }
+    
+    /// Saves the current changes to the file
+    public func save() {
+        guard let url else { return }
+        guard diff.count > 0 else { return }
+        
+        Task {
+            do {
+                _ = url.startAccessingSecurityScopedResource()
+                defer { url.stopAccessingSecurityScopedResource() }
+                
+                for case let .addFile(file) in diff {
+                    _ = file.diskPath.startAccessingSecurityScopedResource()
+                }
+                
+                try SevenZipArchive.writeArchive(
+                    source: url,
+                    destination: url,
+                    items: diff
+                )
+                
+                diff.removeAll()
+            } catch {
+                print(error)
+            }
+        }
+    }
+    
     //
     // MARK: Open
     //
@@ -229,6 +310,7 @@ extension ArchiveState {
         reset()
         updateStatus(.processing)
         
+        self.hasArchive = true
         self.isBusy = true
         self.error = nil
         self.url = url
@@ -267,6 +349,11 @@ extension ArchiveState {
                 
                 self.type = loaderResult.type
                 self.compositionType = loaderResult.compositionType
+                if let type,
+                    type.engines.contains(where: {$0.capabilities.contains(where: {$0 == "edit"})}) {
+                    canBeEdited = true
+                }
+                
                 self.uncompressedSize = loaderResult.uncompressedSize
                 
                 updateStatusText("building tree...")
@@ -292,6 +379,9 @@ extension ArchiveState {
                 
                 try Task.checkCancellation()
             } catch is CancellationError {
+                reset()
+            } catch ArchiveError.invalidArchive {
+                // happens when the loaded archive is an unknown archive
                 reset()
             } catch {
                 reset()

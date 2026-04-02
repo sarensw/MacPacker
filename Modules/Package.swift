@@ -370,6 +370,7 @@ let package = Package(
             path: ".",
             sources: cSevenZipSources + [
                 "Sources/CSevenZip/sevenzip_bridge.cpp",
+                "Sources/CSevenZip/sevenzip_bridge_write.cpp",
                 "Sources/CSevenZip/hw_stubs.c",
             ],
             publicHeadersPath: "Sources/CSevenZip/include",

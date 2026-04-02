@@ -82,6 +82,74 @@ bool sz_is_tree(SZArchiveRef archive);
 /// Statically allocated version string -- do not free.
 const char* sz_version(void);
 
+// --- Archive Creation/Update ---
+
+/// Operation type for each item in an update.
+typedef enum {
+    SZ_UPDATE_KEEP     = 0,  ///< Keep entry unchanged from source archive.
+    SZ_UPDATE_MOVE     = 1,  ///< Keep data from source, change archive path.
+    SZ_UPDATE_ADD_FILE = 2,  ///< Add new entry from a file on disk.
+    SZ_UPDATE_ADD_DATA = 3,  ///< Add new entry from an in-memory buffer.
+    SZ_UPDATE_ADD_DIR  = 4,  ///< Add an empty directory entry.
+} SZUpdateOp;
+
+/// Describes a single item in the output archive.
+typedef struct {
+    SZUpdateOp op;
+
+    /// Index in the source archive (for KEEP, MOVE).
+    uint32_t source_index;
+
+    /// Path inside the output archive (for MOVE, ADD_FILE, ADD_DATA, ADD_DIR).
+    /// UTF-8. Pointer must remain valid until sz_update_archive returns.
+    const char *archive_path;
+
+    /// Filesystem path to read data from (for ADD_FILE only). UTF-8.
+    const char *disk_path;
+
+    /// Pointer to in-memory data (for ADD_DATA only).
+    const void *data;
+    /// Size of in-memory data in bytes (for ADD_DATA only).
+    uint64_t data_size;
+
+    /// Whether the entry is a directory.
+    bool is_directory;
+    /// Modification time as Unix epoch seconds; -1 if unset.
+    int64_t mtime;
+    /// POSIX permission bits; 0 if unset.
+    uint32_t posix_permissions;
+} SZUpdateItem;
+
+/// Compression options for archive creation/update.
+typedef struct {
+    /// Format name: "7z" or "zip". UTF-8.
+    const char *format;
+    /// Compression level 0 (store) through 9 (ultra).
+    uint32_t level;
+    /// Compression method name (e.g. "lzma2", "deflate"). NULL for format default.
+    const char *method;
+    /// Solid mode: 1=on, 0=off, -1=format default.
+    int8_t solid_mode;
+} SZCompressionOptions;
+
+/// Create or update an archive from a list of update items.
+///
+/// @param source_path  Path to the source archive (NULL to create a new archive).
+/// @param dest_path    Path for the output archive file.
+/// @param items        Array of update item descriptors.
+/// @param item_count   Number of items in the array.
+/// @param options      Compression options.
+/// @param error_out    On failure, receives a malloc'd UTF-8 error string (caller must free).
+/// @return 0 on success, non-zero on failure.
+int sz_update_archive(
+    const char *source_path,
+    const char *dest_path,
+    const SZUpdateItem *items,
+    uint32_t item_count,
+    const SZCompressionOptions *options,
+    char **error_out
+);
+
 #ifdef __cplusplus
 }
 #endif

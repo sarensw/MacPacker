@@ -24,7 +24,7 @@ struct StatusBarView: View {
     
     var body: some View {
         HStack(alignment: .center) {
-            if archiveState.url == nil {
+            if archiveState.hasArchive == false {
                 HStack(spacing: 4) {
                     Button {
                         guard let gitHubURL = URL(string: Constants.gitHubLink) else {
