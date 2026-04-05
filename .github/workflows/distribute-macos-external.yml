@@ -115,28 +115,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-
-          PROFILE_UUID=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-devid.provisionprofile" \
-            | plutil -extract UUID raw -)
-          PROFILE_UUID_FINDER=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-devid-finder.provisionprofile" \
-            | plutil -extract UUID raw -)
-          PROFILE_UUID_QUICKLOOK=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-devid-quicklook.provisionprofile" \
-            | plutil -extract UUID raw -)
-
           xcodebuild archive \
             -scheme "$PROJECT_NAME" \
             -configuration Release \
             -archivePath /tmp/build/app.xcarchive \
-            -destination "generic/platform=macOS" \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Developer ID Application" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
-            PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]:com.sarensx.MacPacker.FinderExtension="$PROFILE_UUID_FINDER" \
-            PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]:com.sarensx.MacPacker.QuickLookExtension="$PROFILE_UUID_QUICKLOOK"
+            -destination "generic/platform=macOS"
 
       - name: Export for direct distribution
         shell: bash
