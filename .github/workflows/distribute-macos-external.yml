@@ -18,7 +18,7 @@ env:
 
 jobs:
   distribute-external:
-    runs-on: [macos-latest]
+    runs-on: [macos-26]
     timeout-minutes: 60
 
     steps:
