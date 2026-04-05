@@ -17,8 +17,8 @@ env:
 # ────────────────────────────────────────────────────────────────────────────
 
 jobs:
-  distribute:
-    runs-on: [self-hosted]
+  distribute-external:
+    runs-on: [macos-latest]
     timeout-minutes: 60
 
     steps:
