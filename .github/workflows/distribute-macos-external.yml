@@ -46,6 +46,7 @@ jobs:
 
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Version: $VERSION (ci branch)"
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
           echo "Build number: $BUILD_NUMBER"
 
           agvtool new-marketing-version "$VERSION"
