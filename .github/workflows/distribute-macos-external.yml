@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       # ── Resolve Swift package dependencies ─────────────────────────────────
       - name: Resolve Swift package dependencies
