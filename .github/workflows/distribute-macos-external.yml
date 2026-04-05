@@ -137,6 +137,8 @@ jobs:
             -archivePath /tmp/build/app.xcarchive \
             -destination "generic/platform=macOS" \
             ARCHS=arm64 \
+            MARKETING_VERSION=${VERSION} \
+            CURRENT_PROJECT_VERSION=${BUILD_NUMBER} \
             -allowProvisioningUpdates \
             -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
             -authenticationKeyID "$ASC_KEY_ID" \
