@@ -1,0 +1,278 @@
+name: Distribute (macOS External)
+
+on:
+  push:
+    branches:
+      - 'ci/distribution'
+
+permissions:
+  contents: read
+
+# ── Project identity ────────────────────────────────────────────────────────
+env:
+  BUNDLE_ID: "com.sarensx.MacPacker"
+  BUNDLE_ID_FINDER: "com.sarensx.MacPacker.FinderExtension"
+  BUNDLE_ID_QUICKLOOK: "com.sarensx.MacPacker.QuickLookExtension"
+  PROJECT_NAME: "MacPacker"
+# ────────────────────────────────────────────────────────────────────────────
+
+jobs:
+  distribute:
+    runs-on: [self-hosted]
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Resolve Swift package dependencies ─────────────────────────────────
+      - name: Resolve Swift package dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -resolvePackageDependencies \
+            -scheme "$PROJECT_NAME" \
+            -configuration Release
+
+      - name: Set build number
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="0.0.0-ci"
+          BUILD_NUMBER=$(date +%y%m%d%H%M%S)
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Version: $VERSION (ci branch)"
+          echo "Build number: $BUILD_NUMBER"
+
+          agvtool new-marketing-version "$VERSION"
+          agvtool new-version -all "$BUILD_NUMBER"
+
+      - name: Set up keychain
+        shell: bash
+        env:
+          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+          DEVELOPER_ID_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          echo "$DEVELOPER_ID_P12_BASE64" | base64 --decode > /tmp/certificate.p12
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security import /tmp/certificate.p12 \
+            -k build.keychain \
+            -P "$DEVELOPER_ID_PASSWORD" \
+            -T /usr/bin/codesign
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s -k "$KEYCHAIN_PASSWORD" \
+            build.keychain
+          security list-keychains -d user -s build.keychain login.keychain
+
+          rm /tmp/certificate.p12
+
+      - name: Install provisioning profiles
+        shell: bash
+        env:
+          DEVID_PROFILE_BASE64: ${{ secrets.PROV_PROF_DEVID_BASE64 }}
+          DEVID_PROFILE_FINDER_BASE64: ${{ secrets.PROV_PROF_DEVID_FINDER_BASE64 }}
+          DEVID_PROFILE_QUICKLOOK_BASE64: ${{ secrets.PROV_PROF_DEVID_QL_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILE_DIR"
+
+          echo "$DEVID_PROFILE_BASE64" | base64 --decode \
+            > "$PROFILE_DIR/macpacker-devid.provisionprofile"
+          echo "$DEVID_PROFILE_FINDER_BASE64" | base64 --decode \
+            > "$PROFILE_DIR/macpacker-devid-finder.provisionprofile"
+          echo "$DEVID_PROFILE_QUICKLOOK_BASE64" | base64 --decode \
+            > "$PROFILE_DIR/macpacker-devid-quicklook.provisionprofile"
+
+          PROFILE_NAME=$(security cms -D \
+            -i "$PROFILE_DIR/macpacker-devid.provisionprofile" \
+            | plutil -extract Name raw -)
+          PROFILE_NAME_FINDER=$(security cms -D \
+            -i "$PROFILE_DIR/macpacker-devid-finder.provisionprofile" \
+            | plutil -extract Name raw -)
+          PROFILE_NAME_QUICKLOOK=$(security cms -D \
+            -i "$PROFILE_DIR/macpacker-devid-quicklook.provisionprofile" \
+            | plutil -extract Name raw -)
+
+          echo "PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
+          echo "PROFILE_NAME_FINDER=$PROFILE_NAME_FINDER" >> $GITHUB_ENV
+          echo "PROFILE_NAME_QUICKLOOK=$PROFILE_NAME_QUICKLOOK" >> $GITHUB_ENV
+
+          echo "Main profile: $PROFILE_NAME"
+          echo "Finder Extension profile: $PROFILE_NAME_FINDER"
+          echo "Quick Look Extension profile: $PROFILE_NAME_QUICKLOOK"
+
+      - name: Archive
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          PROFILE_UUID=$(security cms -D \
+            -i "$PROFILE_DIR/macpacker-devid.provisionprofile" \
+            | plutil -extract UUID raw -)
+          PROFILE_UUID_FINDER=$(security cms -D \
+            -i "$PROFILE_DIR/macpacker-devid-finder.provisionprofile" \
+            | plutil -extract UUID raw -)
+          PROFILE_UUID_QUICKLOOK=$(security cms -D \
+            -i "$PROFILE_DIR/macpacker-devid-quicklook.provisionprofile" \
+            | plutil -extract UUID raw -)
+
+          xcodebuild archive \
+            -scheme "$PROJECT_NAME" \
+            -configuration Release \
+            -archivePath /tmp/build/app.xcarchive \
+            -destination "generic/platform=macOS" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
+            PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]:com.sarensx.MacPacker.FinderExtension="$PROFILE_UUID_FINDER" \
+            PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]:com.sarensx.MacPacker.QuickLookExtension="$PROFILE_UUID_QUICKLOOK"
+
+      - name: Export for direct distribution
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cat > /tmp/ExportOptions.plist << PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>developer-id</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>${BUNDLE_ID}</key>
+              <string>${PROFILE_NAME}</string>
+              <key>${BUNDLE_ID_FINDER}</key>
+              <string>${PROFILE_NAME_FINDER}</string>
+              <key>${BUNDLE_ID_QUICKLOOK}</key>
+              <string>${PROFILE_NAME_QUICKLOOK}</string>
+            </dict>
+          </dict>
+          </plist>
+          PLIST
+
+          xcodebuild -exportArchive \
+            -archivePath /tmp/build/app.xcarchive \
+            -exportPath /tmp/build/export \
+            -exportOptionsPlist /tmp/ExportOptions.plist
+
+      - name: Notarize
+        shell: bash
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_BASE64: ${{ secrets.ASC_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$ASC_KEY_BASE64" | base64 --decode \
+            > ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
+
+          # Create a ZIP for notarization submission
+          ditto -c -k --keepParent \
+            "/tmp/build/export/${PROJECT_NAME}.app" \
+            /tmp/build/notarize.zip
+
+          xcrun notarytool submit /tmp/build/notarize.zip \
+            --key ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
+            --key-id "$ASC_KEY_ID" \
+            --issuer "$ASC_ISSUER_ID" \
+            --wait
+
+          rm /tmp/build/notarize.zip
+
+      - name: Staple notarization ticket
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcrun stapler staple "/tmp/build/export/${PROJECT_NAME}.app"
+
+      - name: Create DMG and ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DMG_NAME="${PROJECT_NAME}-${VERSION}.dmg"
+          ZIP_NAME="${PROJECT_NAME}-${VERSION}.zip"
+
+          # Create DMG with app and Applications symlink
+          mkdir -p /tmp/build/dmg
+          cp -R "/tmp/build/export/${PROJECT_NAME}.app" /tmp/build/dmg/
+          ln -s /Applications /tmp/build/dmg/Applications
+
+          hdiutil create \
+            -volname "$PROJECT_NAME" \
+            -srcfolder /tmp/build/dmg \
+            -ov \
+            -format UDZO \
+            "/tmp/build/${DMG_NAME}"
+
+          rm -rf /tmp/build/dmg
+
+          # Create ZIP containing the app bundle
+          ditto -c -k --keepParent \
+            "/tmp/build/export/${PROJECT_NAME}.app" \
+            "/tmp/build/${ZIP_NAME}"
+
+          echo "DMG_PATH=/tmp/build/${DMG_NAME}" >> $GITHUB_ENV
+          echo "DMG_NAME=${DMG_NAME}" >> $GITHUB_ENV
+          echo "ZIP_PATH=/tmp/build/${ZIP_NAME}" >> $GITHUB_ENV
+          echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
+
+      - name: Install AWS CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v aws &>/dev/null; then
+            echo "AWS CLI not found — installing"
+            curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o /tmp/AWSCLIV2.pkg
+            sudo installer -pkg /tmp/AWSCLIV2.pkg -target /
+            rm -f /tmp/AWSCLIV2.pkg
+          fi
+          aws --version
+
+      - name: Upload to S3
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "eu-central-1"
+          S3_DISTRIBUTION_PATH: ${{ secrets.S3_DISTRIBUTION_PATH }}
+        run: |
+          set -euo pipefail
+
+          aws s3 cp "$DMG_PATH" "${S3_DISTRIBUTION_PATH}/${DMG_NAME}"
+          aws s3 cp "$ZIP_PATH" "${S3_DISTRIBUTION_PATH}/${ZIP_NAME}"
+
+          echo "Uploaded ${DMG_NAME} to ${S3_DISTRIBUTION_PATH}/"
+          echo "Uploaded ${ZIP_NAME} to ${S3_DISTRIBUTION_PATH}/"
+
+      - name: Cleanup
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          security delete-keychain build.keychain || true
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-devid.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-devid-finder.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-devid-quicklook.provisionprofile"
+          rm -rf /tmp/build
+          rm -f /tmp/ExportOptions.plist
+          rm -f ~/.appstoreconnect/private_keys/AuthKey_*.p8
+          security list-keychains -d user -s login.keychain
