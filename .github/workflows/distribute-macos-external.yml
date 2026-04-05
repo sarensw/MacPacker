@@ -110,8 +110,22 @@ jobs:
           echo "Finder Extension profile: $PROFILE_NAME_FINDER"
           echo "Quick Look Extension profile: $PROFILE_NAME_QUICKLOOK"
 
+      - name: Install App Store Connect API key
+        shell: bash
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_KEY_BASE64: ${{ secrets.ASC_KEY_BASE64 }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$ASC_KEY_BASE64" | base64 --decode \
+            > ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
+
       - name: Archive
         shell: bash
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           set -euo pipefail
 
@@ -119,7 +133,11 @@ jobs:
             -scheme "$PROJECT_NAME" \
             -configuration Release \
             -archivePath /tmp/build/app.xcarchive \
-            -destination "generic/platform=macOS"
+            -destination "generic/platform=macOS" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
 
       - name: Export for direct distribution
         shell: bash
@@ -158,13 +176,8 @@ jobs:
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_BASE64: ${{ secrets.ASC_KEY_BASE64 }}
         run: |
           set -euo pipefail
-
-          mkdir -p ~/.appstoreconnect/private_keys
-          echo "$ASC_KEY_BASE64" | base64 --decode \
-            > ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
 
           # Create a ZIP for notarization submission
           ditto -c -k --keepParent \
