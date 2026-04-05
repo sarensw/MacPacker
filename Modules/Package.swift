@@ -30,7 +30,6 @@ let cSevenZipSources: [String] = [
     "Sources/CSevenZip/vendor/7zip/C/7zFile.c",
     "Sources/CSevenZip/vendor/7zip/C/7zStream.c",
     "Sources/CSevenZip/vendor/7zip/C/Aes.c",
-    "Sources/CSevenZip/vendor/7zip/C/AesOpt.c",
     "Sources/CSevenZip/vendor/7zip/C/Bcj2.c",
     "Sources/CSevenZip/vendor/7zip/C/Bcj2Enc.c",
     "Sources/CSevenZip/vendor/7zip/C/Blake2s.c",
