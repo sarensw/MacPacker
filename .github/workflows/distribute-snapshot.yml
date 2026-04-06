@@ -1,0 +1,98 @@
+# ── Snapshot Distribution ────────────────────────────────────────────────────
+# Triggered when a PR is merged into main.
+# Builds a snapshot, uploads to S3, and comments on the PR with download links.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Distribute Snapshot
+
+on:
+  pull_request:
+    types: [closed]
+    branches: ['main']
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ── Determine version info and call the reusable build workflow ────────────
+  prepare:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build-number: ${{ steps.version.outputs.build-number }}
+      artifact-label: ${{ steps.version.outputs.artifact-label }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # need full history for git describe
+
+      - name: Determine version info
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Timestamp-based build number in UTC (always increasing)
+          BUILD_NUMBER=$(date -u +%y%m%d%H%M%S)
+
+          # Marketing version from the latest v*.*.* tag
+          if VERSION_TAG=$(git describe --tags --abbrev=0 --match 'v*.*.*' 2>/dev/null); then
+            VERSION="${VERSION_TAG#v}"
+          else
+            VERSION="0.0.0"
+          fi
+
+          ARTIFACT_LABEL="build-${BUILD_NUMBER}"
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "build-number=${BUILD_NUMBER}" >> $GITHUB_OUTPUT
+          echo "artifact-label=${ARTIFACT_LABEL}" >> $GITHUB_OUTPUT
+
+          echo "Snapshot build"
+          echo "  Marketing version: ${VERSION} (from last tag)"
+          echo "  Build number:      ${BUILD_NUMBER}"
+          echo "  Artifact label:    ${ARTIFACT_LABEL}"
+
+  build:
+    needs: prepare
+    uses: ./.github/workflows/distribute-build.yml
+    with:
+      version: ${{ needs.prepare.outputs.version }}
+      build-number: ${{ needs.prepare.outputs.build-number }}
+      artifact-label: ${{ needs.prepare.outputs.artifact-label }}
+    secrets: inherit
+
+  # ── Comment on the merged PR with download links ──────────────────────────
+  comment:
+    needs: [prepare, build]
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        env:
+          ARTIFACT_LABEL: ${{ needs.prepare.outputs.artifact-label }}
+        with:
+          script: |
+            const label = process.env.ARTIFACT_LABEL;
+            const body = [
+              `**Snapshot build ready** \u2705`,
+              ``,
+              `| Artifact | File |`,
+              `|----------|------|`,
+              `| DMG | \`MacPacker-${label}.dmg\` |`,
+              `| ZIP | \`MacPacker-${label}.zip\` |`,
+              ``,
+              `Build number: \`${{ needs.prepare.outputs.build-number }}\``,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body,
+            });

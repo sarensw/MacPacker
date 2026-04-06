@@ -1,9 +1,24 @@
-name: Distribute (macOS External)
+# ── Reusable Build Workflow ──────────────────────────────────────────────────
+# Shared build/sign/notarize/upload logic called by both snapshot and release
+# caller workflows. Not triggered directly.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Build & Distribute (macOS)
 
 on:
-  push:
-    branches:
-      - 'ci/distribution'
+  workflow_call:
+    inputs:
+      version:
+        description: "Marketing version (CFBundleShortVersionString)"
+        required: true
+        type: string
+      build-number:
+        description: "Build number (CFBundleVersion), timestamp-based"
+        required: true
+        type: string
+      artifact-label:
+        description: "Label for artifact filenames (e.g. '1.3.0' or 'build-260406143022')"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -17,7 +32,7 @@ env:
 # ────────────────────────────────────────────────────────────────────────────
 
 jobs:
-  distribute-external:
+  build:
     runs-on: [macos-26]
     timeout-minutes: 60
 
@@ -36,22 +51,20 @@ jobs:
             -scheme "$PROJECT_NAME" \
             -configuration Release
 
-      - name: Set build number
+      # ── Set version and build number ───────────────────────────────────────
+      - name: Set version and build number
         shell: bash
         run: |
           set -euo pipefail
 
-          VERSION="0.0.0-ci"
-          BUILD_NUMBER=$(date +%y%m%d%H%M%S)
+          echo "Marketing version: ${{ inputs.version }}"
+          echo "Build number:      ${{ inputs.build-number }}"
+          echo "Artifact label:    ${{ inputs.artifact-label }}"
 
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Version: $VERSION (ci branch)"
-          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
-          echo "Build number: $BUILD_NUMBER"
+          agvtool new-marketing-version "${{ inputs.version }}"
+          agvtool new-version -all "${{ inputs.build-number }}"
 
-          agvtool new-marketing-version "$VERSION"
-          agvtool new-version -all "$BUILD_NUMBER"
-
+      # ── Keychain ───────────────────────────────────────────────────────────
       - name: Set up keychain
         shell: bash
         env:
@@ -76,6 +89,7 @@ jobs:
 
           rm /tmp/certificate.p12
 
+      # ── Provisioning profiles ──────────────────────────────────────────────
       - name: Install provisioning profiles
         shell: bash
         env:
@@ -113,6 +127,7 @@ jobs:
           echo "Finder Extension profile: $PROFILE_NAME_FINDER"
           echo "Quick Look Extension profile: $PROFILE_NAME_QUICKLOOK"
 
+      # ── App Store Connect API key ──────────────────────────────────────────
       - name: Install App Store Connect API key
         shell: bash
         env:
@@ -124,6 +139,7 @@ jobs:
           echo "$ASC_KEY_BASE64" | base64 --decode \
             > ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
 
+      # ── Archive ────────────────────────────────────────────────────────────
       - name: Archive
         shell: bash
         env:
@@ -137,13 +153,14 @@ jobs:
             -configuration Release \
             -archivePath /tmp/build/app.xcarchive \
             -destination "generic/platform=macOS" \
-            MARKETING_VERSION=${VERSION} \
-            CURRENT_PROJECT_VERSION=${BUILD_NUMBER} \
+            MARKETING_VERSION=${{ inputs.version }} \
+            CURRENT_PROJECT_VERSION=${{ inputs.build-number }} \
             -allowProvisioningUpdates \
             -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID"
 
+      # ── Export ─────────────────────────────────────────────────────────────
       - name: Export for direct distribution
         shell: bash
         run: |
@@ -176,6 +193,7 @@ jobs:
             -exportPath /tmp/build/export \
             -exportOptionsPlist /tmp/ExportOptions.plist
 
+      # ── Notarize ───────────────────────────────────────────────────────────
       - name: Notarize
         shell: bash
         env:
@@ -184,7 +202,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Create a ZIP for notarization submission
           ditto -c -k --keepParent \
             "/tmp/build/export/${PROJECT_NAME}.app" \
             /tmp/build/notarize.zip
@@ -197,19 +214,21 @@ jobs:
 
           rm /tmp/build/notarize.zip
 
+      # ── Staple ─────────────────────────────────────────────────────────────
       - name: Staple notarization ticket
         shell: bash
         run: |
           set -euo pipefail
           xcrun stapler staple "/tmp/build/export/${PROJECT_NAME}.app"
 
+      # ── Create DMG and ZIP ─────────────────────────────────────────────────
       - name: Create DMG and ZIP
         shell: bash
         run: |
           set -euo pipefail
 
-          DMG_NAME="${PROJECT_NAME}-${VERSION}.dmg"
-          ZIP_NAME="${PROJECT_NAME}-${VERSION}.zip"
+          DMG_NAME="${PROJECT_NAME}-${{ inputs.artifact-label }}.dmg"
+          ZIP_NAME="${PROJECT_NAME}-${{ inputs.artifact-label }}.zip"
 
           # Create DMG with app and Applications symlink
           mkdir -p /tmp/build/dmg
@@ -235,6 +254,7 @@ jobs:
           echo "ZIP_PATH=/tmp/build/${ZIP_NAME}" >> $GITHUB_ENV
           echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
 
+      # ── Upload to S3 ──────────────────────────────────────────────────────
       - name: Install AWS CLI
         shell: bash
         run: |
@@ -263,6 +283,7 @@ jobs:
           echo "Uploaded ${DMG_NAME} to ${S3_DISTRIBUTION_PATH}/"
           echo "Uploaded ${ZIP_NAME} to ${S3_DISTRIBUTION_PATH}/"
 
+      # ── Cleanup ────────────────────────────────────────────────────────────
       - name: Cleanup
         if: always()
         shell: bash
