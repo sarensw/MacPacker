@@ -76,16 +76,18 @@ jobs:
         uses: actions/github-script@v7
         env:
           ARTIFACT_LABEL: ${{ needs.prepare.outputs.artifact-label }}
+          S3_DOWNLOAD_URL: ${{ vars.S3_DOWNLOAD_URL }}
         with:
           script: |
             const label = process.env.ARTIFACT_LABEL;
+            const baseUrl = process.env.S3_DOWNLOAD_URL;
             const body = [
               `**Snapshot build ready** \u2705`,
               ``,
-              `| Artifact | File |`,
+              `| Artifact | Link |`,
               `|----------|------|`,
-              `| DMG | \`MacPacker-${label}.dmg\` |`,
-              `| ZIP | \`MacPacker-${label}.zip\` |`,
+              `| DMG | [MacPacker-${label}.dmg](${baseUrl}/MacPacker-${label}.dmg) |`,
+              `| ZIP | [MacPacker-${label}.zip](${baseUrl}/MacPacker-${label}.zip) |`,
               ``,
               `Build number: \`${{ needs.prepare.outputs.build-number }}\``,
             ].join('\n');
