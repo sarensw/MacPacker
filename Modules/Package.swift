@@ -407,8 +407,16 @@ let package = Package(
             ]
         ),
         .target(
+            name: "CSevenZipPlatformStubs",
+            path: "Sources/CSevenZipPlatformStubs",
+            publicHeadersPath: "include",
+            cSettings: [
+                .unsafeFlags(["-w"])
+            ]
+        ),
+        .target(
             name: "Swift7zip",
-            dependencies: ["CSevenZip"],
+            dependencies: ["CSevenZip", "CSevenZipPlatformStubs"],
             path: "Sources/Swift7zip",
             swiftSettings: [
                 .swiftLanguageMode(.v6),

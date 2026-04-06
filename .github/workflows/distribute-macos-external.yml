@@ -137,7 +137,6 @@ jobs:
             -configuration Release \
             -archivePath /tmp/build/app.xcarchive \
             -destination "generic/platform=macOS" \
-            ARCHS=arm64 \
             MARKETING_VERSION=${VERSION} \
             CURRENT_PROJECT_VERSION=${BUILD_NUMBER} \
             -allowProvisioningUpdates \
