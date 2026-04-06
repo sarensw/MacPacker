@@ -28,6 +28,30 @@ struct ArchiveContentToolbarView: ToolbarContent {
     var body: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
             Button {
+                archiveState.save()
+            } label: {
+                Label {
+                    Text("Add", comment: "Button in the tooblar that allows the user to add a file to the current archive path.")
+                } icon: {
+                    Image(systemName: "plus")
+                }
+            }
+            .disabled(!archiveState.canBeEdited)
+            
+            Button {
+                archiveState.save()
+            } label: {
+                Label {
+                    Text("Save", comment: "Button in the tooblar that allows the user to save the current file after it was being edited.")
+                } icon: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+            }
+            .disabled(!archiveState.canBeEdited)
+            
+            Spacer()
+            
+            Button {
                 archiveState.updateSelectedItemForQuickLook()
             } label: {
                 Label {

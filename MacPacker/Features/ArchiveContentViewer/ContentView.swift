@@ -87,7 +87,8 @@ struct ContentView: View {
             )
             .frame(width: 366)
         }
-        .navigationTitle(archiveState.url == nil ? Bundle.main.displayName : archiveState.name!)
+        .navigationTitle(archiveState.hasArchive == false ? Bundle.main.displayName : archiveState.name!)
+        .navigationSubtitle("\(archiveState.diff.count > 0 ? "Edited • " : "")\(archiveState.url == nil ? "" : archiveState.url!.path)")
         .environmentObject(archiveState)
     }
 }

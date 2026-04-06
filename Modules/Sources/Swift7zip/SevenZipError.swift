@@ -11,6 +11,8 @@ public enum SevenZipError: Error, LocalizedError, Sendable {
     case extractionFailed(String)
     /// The entry is encrypted and no password was provided.
     case passwordMissing
+    /// Archive creation or update failed.
+    case writeFailed(String)
 
     /// A human-readable description of the error.
     public var errorDescription: String? {
@@ -23,6 +25,8 @@ public enum SevenZipError: Error, LocalizedError, Sendable {
             return "Extraction failed: \(msg)"
         case .passwordMissing:
             return "Entry is encrypted and no password was provided"
+        case .writeFailed(let msg):
+            return "Archive write failed: \(msg)"
         }
     }
 }

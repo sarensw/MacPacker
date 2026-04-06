@@ -1,0 +1,46 @@
+# ── PR Validation ────────────────────────────────────────────────────────────
+# Runs on every pull request targeting main.
+# Validates the Xcode project builds and Core module tests pass.
+# ─────────────────────────────────────────────────────────────────────────────
+name: CI
+
+on:
+  pull_request:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_NAME: "MacPacker"
+
+jobs:
+  validate:
+    runs-on: [macos-26]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      # ── Xcode project build ───────────────────────────────────────────────
+      - name: Build Xcode project
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild build \
+            -scheme "$PROJECT_NAME" \
+            -configuration Release \
+            -destination "generic/platform=macOS" \
+            CODE_SIGNING_ALLOWED=NO
+
+      # ── Core module build & test ──────────────────────────────────────────
+      - name: Build and test Core module
+        shell: bash
+        working-directory: Modules
+        run: |
+          set -euo pipefail
+          swift build
+          swift test

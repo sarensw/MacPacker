@@ -46,6 +46,27 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     public private(set) var url: URL? = nil
     public private(set) var archiveTypeId: String? = nil
     
+    /// Creates an archive item from an existing real file (used for create/edit mode)
+    /// - Parameter url: real file / folder
+    public init(url: URL) {
+        self.name = url.lastPathComponent
+        self.type = url.isDirectory ? .directory : .file
+        self.virtualPath = nil
+        self.compressedSize = -1
+        self.uncompressedSize = url.fileSize ?? -1
+        self.modificationDate = url.modificationDate
+        self.posixPermissions = url.permissions
+        self.index = nil
+        self.ext = ""
+        
+        if type != .directory {
+            self.ext = getExtension(name: name)
+        }
+        if type == .directory {
+            self.children = []
+        }
+    }
+    
     public init(
         index: UInt32? = nil,
         name: String,

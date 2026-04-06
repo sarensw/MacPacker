@@ -39,7 +39,7 @@ struct ArchiveView: View {
             for provider in providers {
                 provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { (data, error) in
                     if let data = data as? Data,
-                        let fileURL = URL(dataRepresentation: data, relativeTo: nil) {
+                       let fileURL = URL(dataRepresentation: data, relativeTo: nil) {
                         // Update the state variable with the accepted file URL
                         Task {
                             await self.drop(fileURL)
@@ -63,9 +63,23 @@ struct ArchiveView: View {
     // functions
     //
     
-//    @MainActor
     func drop(_ url: URL) async {
-        state.clean()
-        state.open(url: url)
+        // We have to distinguish 3 cases here.
+        // 1. No archive loaded > Check if archive,
+        // 1.1. if yes, load.
+        // 2.2. If no, create new archive and add the dropped file as first entry
+        // 2. Archive loaded > Add file to current archive
+        if state.hasArchive == false {
+            if state.isSupportedArchive(url: url) {
+                state.clean()
+                state.open(url: url)
+            } else {
+                state.create()
+                state.add(url: url)
+            }
+        } else {
+            // add to current archive
+            state.add(url: url)
+        }
     }
 }

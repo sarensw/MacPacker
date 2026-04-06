@@ -4,7 +4,7 @@ import CSevenZip
 /// An open 7-zip archive.
 public class SevenZipArchive {
 
-    private let handle: BridgeHandle
+    let handle: BridgeHandle
     /// The URL of the archive file.
     public let url: URL
     private var hasPassword = false

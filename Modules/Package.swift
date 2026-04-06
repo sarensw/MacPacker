@@ -370,6 +370,7 @@ let package = Package(
             path: ".",
             sources: cSevenZipSources + [
                 "Sources/CSevenZip/sevenzip_bridge.cpp",
+                "Sources/CSevenZip/sevenzip_bridge_write.cpp",
                 "Sources/CSevenZip/hw_stubs.c",
             ],
             publicHeadersPath: "Sources/CSevenZip/include",
@@ -406,8 +407,16 @@ let package = Package(
             ]
         ),
         .target(
+            name: "CSevenZipPlatformStubs",
+            path: "Sources/CSevenZipPlatformStubs",
+            publicHeadersPath: "include",
+            cSettings: [
+                .unsafeFlags(["-w"])
+            ]
+        ),
+        .target(
             name: "Swift7zip",
-            dependencies: ["CSevenZip"],
+            dependencies: ["CSevenZip", "CSevenZipPlatformStubs"],
             path: "Sources/Swift7zip",
             swiftSettings: [
                 .swiftLanguageMode(.v6),
