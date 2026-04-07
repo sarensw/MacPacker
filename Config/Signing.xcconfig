@@ -1,3 +1,5 @@
+#include "Version.xcconfig"
+
 // Signing configuration for MacPacker
 //
 // To build with your own Apple Development Team:

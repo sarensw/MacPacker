@@ -50,13 +50,8 @@ jobs:
 
           BUILD_NUMBER=$(date -u +%y%m%d%H%M%S)
 
-          if [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            VERSION="${GITHUB_REF_NAME#v}"
-          elif VERSION_TAG=$(git describe --tags --abbrev=0 --match 'v*.*.*' 2>/dev/null); then
-            VERSION="${VERSION_TAG#v}"
-          else
-            VERSION="0.0.0"
-          fi
+          # Marketing version from Config/Version.xcconfig (single source of truth)
+          VERSION=$(grep 'MARKETING_VERSION' Config/Version.xcconfig | sed 's/.*= *//')
 
           echo "Version: $VERSION"
           echo "Build number: $BUILD_NUMBER"
