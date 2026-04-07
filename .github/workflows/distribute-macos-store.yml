@@ -1,11 +1,12 @@
-name: Distribute (macOS)
+# ── App Store Distribution ───────────────────────────────────────────────────
+# Builds, signs, and uploads MacPacker to App Store Connect (TestFlight).
+# Triggered by version tags or manual dispatch.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Distribute App Store (macOS)
 
-# Disabled while testing distribute-macos-external workflow
-# on:
-#   push:
-#     tags:
-#       - 'v*'
 on:
+  push:
+    tags: ['v*.*.*']
   workflow_dispatch:
 
 permissions:
@@ -13,28 +14,26 @@ permissions:
 
 # ── Project identity ────────────────────────────────────────────────────────
 # Hardcoded here because MacPacker uses a plain .xcodeproj (no Tuist/Project.swift).
-# All other macOS projects that adopt this workflow and use Tuist should replace
-# these with the dynamic extraction step shown in the iOS workflow.
 env:
-  BUNDLE_ID: "com.sarensx.MacPacker"                              # main app
-  BUNDLE_ID_FINDER: "com.sarensx.MacPacker.FinderExtension"       # Finder Extension
-  BUNDLE_ID_QUICKLOOK: "com.sarensx.MacPacker.QuickLookExtension" # Quick Look Extension
-  PROJECT_NAME: "MacPacker"                                        # must match .xcodeproj scheme name
+  BUNDLE_ID: "com.sarensx.MacPacker"
+  BUNDLE_ID_FINDER: "com.sarensx.MacPacker.FinderExtension"
+  BUNDLE_ID_QUICKLOOK: "com.sarensx.MacPacker.QuickLookExtension"
+  PROJECT_NAME: "MacPacker Store"
 # ────────────────────────────────────────────────────────────────────────────
 
 jobs:
   distribute:
-    runs-on: [self-hosted]
+    runs-on: [macos-26]
     timeout-minutes: 60
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
 
       # ── Resolve Swift package dependencies ─────────────────────────────────
-      # Required because MacPacker embeds a local Swift package. xcodebuild will
-      # resolve the SPM graph before archiving, but doing it explicitly here
-      # surfaces dependency errors early and keeps the archive step clean.
       - name: Resolve Swift package dependencies
         shell: bash
         run: |
@@ -43,21 +42,31 @@ jobs:
             -scheme "$PROJECT_NAME" \
             -configuration Release
 
-      - name: Sync version and build number from tag
+      # ── Version & build number ─────────────────────────────────────────────
+      - name: Sync version and build number
         shell: bash
         run: |
           set -euo pipefail
 
-          # Strip the leading "v" from the tag → "v1.2" becomes "1.2"
-          VERSION=${GITHUB_REF_NAME#v}
-          BUILD_NUMBER=$(date +%y%m%d%H%M%S)
+          BUILD_NUMBER=$(date -u +%y%m%d%H%M%S)
+
+          if [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          elif VERSION_TAG=$(git describe --tags --abbrev=0 --match 'v*.*.*' 2>/dev/null); then
+            VERSION="${VERSION_TAG#v}"
+          else
+            VERSION="0.0.0"
+          fi
 
           echo "Version: $VERSION"
           echo "Build number: $BUILD_NUMBER"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
 
           agvtool new-marketing-version "$VERSION"
           agvtool new-version -all "$BUILD_NUMBER"
 
+      # ── Keychain ───────────────────────────────────────────────────────────
       - name: Set up keychain
         shell: bash
         env:
@@ -82,35 +91,34 @@ jobs:
 
           rm /tmp/certificate.p12
 
+      # ── Provisioning profiles ──────────────────────────────────────────────
       - name: Install provisioning profiles
         shell: bash
         env:
-          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
-          PROVISIONING_PROFILE_FINDER_BASE64: ${{ secrets.PROVISIONING_PROFILE_FINDER_BASE64 }}
-          PROVISIONING_PROFILE_QUICKLOOK_BASE64: ${{ secrets.PROVISIONING_PROFILE_QUICKLOOK_BASE64 }}
+          STORE_PROFILE_BASE64: ${{ secrets.PROV_PROF_STORE_BASE64 }}
+          STORE_PROFILE_FINDER_BASE64: ${{ secrets.PROV_PROF_STORE_FINDER_BASE64 }}
+          STORE_PROFILE_QUICKLOOK_BASE64: ${{ secrets.PROV_PROF_STORE_QL_BASE64 }}
         run: |
           set -euo pipefail
 
           PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
           mkdir -p "$PROFILE_DIR"
 
-          # Decode all three profiles
-          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode \
-            > "$PROFILE_DIR/macpacker.provisionprofile"
-          echo "$PROVISIONING_PROFILE_FINDER_BASE64" | base64 --decode \
-            > "$PROFILE_DIR/macpacker-finder.provisionprofile"
-          echo "$PROVISIONING_PROFILE_QUICKLOOK_BASE64" | base64 --decode \
-            > "$PROFILE_DIR/macpacker-quicklook.provisionprofile"
+          echo "$STORE_PROFILE_BASE64" | base64 --decode \
+            > "$PROFILE_DIR/macpacker-store.provisionprofile"
+          echo "$STORE_PROFILE_FINDER_BASE64" | base64 --decode \
+            > "$PROFILE_DIR/macpacker-store-finder.provisionprofile"
+          echo "$STORE_PROFILE_QUICKLOOK_BASE64" | base64 --decode \
+            > "$PROFILE_DIR/macpacker-store-quicklook.provisionprofile"
 
-          # Extract profile names for use in ExportOptions.plist
           PROFILE_NAME=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker.provisionprofile" \
+            -i "$PROFILE_DIR/macpacker-store.provisionprofile" \
             | plutil -extract Name raw -)
           PROFILE_NAME_FINDER=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-finder.provisionprofile" \
+            -i "$PROFILE_DIR/macpacker-store-finder.provisionprofile" \
             | plutil -extract Name raw -)
           PROFILE_NAME_QUICKLOOK=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-quicklook.provisionprofile" \
+            -i "$PROFILE_DIR/macpacker-store-quicklook.provisionprofile" \
             | plutil -extract Name raw -)
 
           echo "PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
@@ -121,44 +129,45 @@ jobs:
           echo "Finder Extension profile: $PROFILE_NAME_FINDER"
           echo "Quick Look Extension profile: $PROFILE_NAME_QUICKLOOK"
 
-      - name: Archive
+      # ── App Store Connect API key ──────────────────────────────────────────
+      - name: Install App Store Connect API key
         shell: bash
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_KEY_BASE64: ${{ secrets.ASC_KEY_BASE64 }}
         run: |
           set -euo pipefail
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$ASC_KEY_BASE64" | base64 --decode \
+            > ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
 
-          # Extract UUIDs for all three profiles — xcodebuild needs UUIDs at
-          # archive time, profile names are only used in ExportOptions.plist
-          PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-
-          PROFILE_UUID=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker.provisionprofile" \
-            | plutil -extract UUID raw -)
-          PROFILE_UUID_FINDER=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-finder.provisionprofile" \
-            | plutil -extract UUID raw -)
-          PROFILE_UUID_QUICKLOOK=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-quicklook.provisionprofile" \
-            | plutil -extract UUID raw -)
+      # ── Archive ────────────────────────────────────────────────────────────
+      - name: Archive
+        shell: bash
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          set -euo pipefail
 
           xcodebuild archive \
             -scheme "$PROJECT_NAME" \
             -configuration Release \
             -archivePath /tmp/build/app.xcarchive \
             -destination "generic/platform=macOS" \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
-            PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]:com.sarensx.MacPacker.FinderExtension="$PROFILE_UUID_FINDER" \
-            PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]:com.sarensx.MacPacker.QuickLookExtension="$PROFILE_UUID_QUICKLOOK"
+            MARKETING_VERSION=$VERSION \
+            CURRENT_PROJECT_VERSION=$BUILD_NUMBER \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
 
+      # ── Export for App Store ───────────────────────────────────────────────
       - name: Export for App Store
         shell: bash
         run: |
           set -euo pipefail
 
-          # ExportOptions.plist maps each bundle ID to its provisioning profile name.
-          # All three targets must be listed or the export will fall back to
-          # automatic signing and likely fail.
           cat > /tmp/ExportOptions.plist << PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -188,20 +197,15 @@ jobs:
             -exportPath /tmp/build/export \
             -exportOptionsPlist /tmp/ExportOptions.plist
 
+      # ── Upload to TestFlight ───────────────────────────────────────────────
       - name: Upload to TestFlight
         shell: bash
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_BASE64: ${{ secrets.ASC_KEY_BASE64 }}
         run: |
           set -euo pipefail
 
-          mkdir -p ~/.appstoreconnect/private_keys
-          echo "$ASC_KEY_BASE64" | base64 --decode \
-            > ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
-
-          # macOS export produces a .pkg, not an .ipa
           OUTPUT=$(xcrun altool --upload-app \
             --type macos \
             --file /tmp/build/export/*.pkg \
@@ -210,13 +214,12 @@ jobs:
 
           echo "$OUTPUT"
 
-          rm -f ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
-
           if echo "$OUTPUT" | grep -q "UPLOAD FAILED"; then
             echo "ERROR: Upload to TestFlight failed"
             exit 1
           fi
 
+      # ── Cleanup ────────────────────────────────────────────────────────────
       - name: Cleanup
         if: always()
         shell: bash
@@ -224,9 +227,10 @@ jobs:
           set -euo pipefail
 
           security delete-keychain build.keychain || true
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker.provisionprofile"
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-finder.provisionprofile"
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-quicklook.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-store.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-store-finder.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-store-quicklook.provisionprofile"
           rm -rf /tmp/build
           rm -f /tmp/ExportOptions.plist
+          rm -f ~/.appstoreconnect/private_keys/AuthKey_*.p8
           security list-keychains -d user -s login.keychain
