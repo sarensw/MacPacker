@@ -21,6 +21,9 @@ jobs:
       build-number: ${{ steps.version.outputs.build-number }}
       artifact-label: ${{ steps.version.outputs.artifact-label }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Determine version info
         id: version
         shell: bash
@@ -30,12 +33,12 @@ jobs:
           # Timestamp-based build number in UTC (always increasing)
           BUILD_NUMBER=$(date -u +%y%m%d%H%M%S)
 
-          # Extract version from tag: v1.3.0 -> 1.3.0
-          VERSION="${GITHUB_REF_NAME#v}"
+          # Marketing version from Config/Version.xcconfig (single source of truth)
+          VERSION=$(grep 'MARKETING_VERSION' Config/Version.xcconfig | sed 's/.*= *//')
 
           # Validate semver format
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Tag '${GITHUB_REF_NAME}' does not contain a valid semver version"
+            echo "::error::Version '${VERSION}' from Version.xcconfig is not a valid semver version"
             exit 1
           fi
 
@@ -46,7 +49,7 @@ jobs:
           echo "artifact-label=${ARTIFACT_LABEL}" >> $GITHUB_OUTPUT
 
           echo "Release build"
-          echo "  Marketing version: ${VERSION}"
+          echo "  Marketing version: ${VERSION} (from Version.xcconfig)"
           echo "  Build number:      ${BUILD_NUMBER}"
           echo "  Artifact label:    ${ARTIFACT_LABEL}"
 

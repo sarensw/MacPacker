@@ -8,6 +8,7 @@ on:
   pull_request:
     types: [closed]
     branches: ['main']
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -26,8 +27,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # need full history for git describe
 
       - name: Determine version info
         id: version
@@ -38,21 +37,17 @@ jobs:
           # Timestamp-based build number in UTC (always increasing)
           BUILD_NUMBER=$(date -u +%y%m%d%H%M%S)
 
-          # Marketing version from the latest v*.*.* tag
-          if VERSION_TAG=$(git describe --tags --abbrev=0 --match 'v*.*.*' 2>/dev/null); then
-            VERSION="${VERSION_TAG#v}"
-          else
-            VERSION="0.0.0"
-          fi
+          # Marketing version from Config/Version.xcconfig (single source of truth)
+          VERSION=$(grep 'MARKETING_VERSION' Config/Version.xcconfig | sed 's/.*= *//')
 
-          ARTIFACT_LABEL="build-${BUILD_NUMBER}"
+          ARTIFACT_LABEL="${VERSION}-beta-${BUILD_NUMBER}"
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "build-number=${BUILD_NUMBER}" >> $GITHUB_OUTPUT
           echo "artifact-label=${ARTIFACT_LABEL}" >> $GITHUB_OUTPUT
 
           echo "Snapshot build"
-          echo "  Marketing version: ${VERSION} (from last tag)"
+          echo "  Marketing version: ${VERSION} (from Version.xcconfig)"
           echo "  Build number:      ${BUILD_NUMBER}"
           echo "  Artifact label:    ${ARTIFACT_LABEL}"
 
@@ -89,7 +84,7 @@ jobs:
               `| DMG | [MacPacker-${label}.dmg](${baseUrl}/MacPacker-${label}.dmg) |`,
               `| ZIP | [MacPacker-${label}.zip](${baseUrl}/MacPacker-${label}.zip) |`,
               ``,
-              `Build number: \`${{ needs.prepare.outputs.build-number }}\``,
+              `Version: \`${{ needs.prepare.outputs.version }}\` · Build: \`${{ needs.prepare.outputs.build-number }}\``,
             ].join('\n');
 
             await github.rest.issues.createComment({
