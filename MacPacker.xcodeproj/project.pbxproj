@@ -87,8 +87,10 @@
 		254BB5592ABBE8430059A1D5 /* MacPackerStore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPackerStore.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuickLookExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2567C8302E8FB75F008E1BD8 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
-		25AA00012F0000000000CC01 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		25C0A8A42A78DE5F002C1C2A /* MacPacker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacPacker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		25CFF88D2F98BF5B003F064E /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		25CFF88E2F98BF5B003F064E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		25CFF88F2F98BF5B003F064E /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -180,7 +182,9 @@
 		25AA00022F0000000000CC02 /* Config */ = {
 			isa = PBXGroup;
 			children = (
-				25AA00012F0000000000CC01 /* Signing.xcconfig */,
+				25CFF88D2F98BF5B003F064E /* Debug.xcconfig */,
+				25CFF88E2F98BF5B003F064E /* Release.xcconfig */,
+				25CFF88F2F98BF5B003F064E /* Version.xcconfig */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -509,7 +513,6 @@
 /* Begin XCBuildConfiguration section */
 		252F120C2E7ABDD9004CCEBE /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 25AA00012F0000000000CC01 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = FinderExtension/FinderExtension.entitlements;
@@ -543,7 +546,6 @@
 		};
 		252F120D2E7ABDD9004CCEBE /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 25AA00012F0000000000CC01 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = FinderExtension/FinderExtension.entitlements;
@@ -576,7 +578,6 @@
 		};
 		254BB5572ABBE8430059A1D5 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 25AA00012F0000000000CC01 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -622,7 +623,6 @@
 		};
 		254BB5582ABBE8430059A1D5 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 25AA00012F0000000000CC01 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -668,7 +668,6 @@
 		};
 		2567C83F2E8FB75F008E1BD8 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 25AA00012F0000000000CC01 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = QuickLookExtension/QuickLookExtension.entitlements;
@@ -716,7 +715,6 @@
 		};
 		2567C8402E8FB75F008E1BD8 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 25AA00012F0000000000CC01 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = QuickLookExtension/QuickLookExtension.entitlements;
@@ -763,6 +761,7 @@
 		};
 		25C0A8C72A78DE62002C1C2A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 25CFF88D2F98BF5B003F064E /* Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -826,6 +825,7 @@
 		};
 		25C0A8C82A78DE62002C1C2A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 25CFF88E2F98BF5B003F064E /* Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -882,13 +882,11 @@
 		};
 		25C0A8CA2A78DE62002C1C2A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 25AA00012F0000000000CC01 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = MacPacker/MacPacker.entitlements;
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MacPacker/Preview Content\"";
@@ -930,13 +928,11 @@
 		};
 		25C0A8CB2A78DE62002C1C2A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 25AA00012F0000000000CC01 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = MacPacker/MacPacker.entitlements;
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MacPacker/Preview Content\"";
