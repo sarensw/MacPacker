@@ -1,0 +1,363 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>MacPacker</title>
+        <item>
+            <title>0.14.1</title>
+            <pubDate>Sun, 15 Feb 2026 08:43:17 +0100</pubDate>
+            <sparkle:version>21</sparkle:version>
+            <sparkle:shortVersionString>0.14.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+<h2>v0.14.1</h2>
+<ul>
+<li>fix: Wrong translations in settings (#65)</li>
+<li>lang: Language update for several languages</li>
+<li>lang: Language support for Polish</li>
+</ul>
+<h2>v0.14</h2>
+<ul>
+<li>feat: New menu to open a new empty window</li>
+<li>feat: Extended info on archive in status bar (#61)</li>
+<li>fix: tar.gz and tgz not working (#54)</li>
+<li>fix: Can't close QuickLook with Space (#55)</li>
+<li>fix: MacOS not recognizing MacPacker as a viable VHDX reader (#56)</li>
+<li>fix: Cache cleanup not happening when just closing a window or loading a new archive (#58)</li>
+<li>fix: App crashes when unpacking exe / msi files (#59)</li>
+<li>fix: Extract here and Extract to folder via Finder don't work (#62)</li>
+<li>core: Language support for Japanese</li>
+</ul>
+<h2>v0.13</h2>
+<ul>
+<li>feat: arj, dmg/apfs (Apple File System), chm, fat, ntfs, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk, xar support</li>
+<li>feat: Special handling for Apple Installer Packages (pkg)</li>
+<li>feat: Added settings for easier access to managing the Finder file provider extension</li>
+<li>fix: Extracting folders does not include files</li>
+<li>core: Added attributions for 3rd party libraries/code</li>
+<li>core: Language support for Persian</li>
+</ul>
+<h2>v0.12</h2>
+<ul>
+<li>feat: Added 'File' > 'Open...' menu to open archives when no window is open</li>
+<li>feat: Improved TAR archive handling</li>
+<li>fix: MacPacker not showing up in 'Open With…' menu in Finder (App Store version only)</li>
+<li>fix: Chinese (Unicode) characters in archive contents not displayed correctly</li>
+<li>core: Separated localization of changelog from app localization</li>
+<li>core: Language support for Ukranian, Russian</li>
+<li>core: Detect archive type based on magic number in addition to file extension</li>
+</ul>
+<h2>v0.11</h2>
+<ul>
+<li>feat: Use system preview instead of internal previewer</li>
+<li>feat: Navigate the archive using keys similar to Finder</li>
+<li>fix: Crash when using the open with option</li>
+<li>fix: Quick look extension missing in App Store version</li>
+<li>fix: Empty window opened in addition to file opened with Open With option in Finder</li>
+<li>core: Re-enable macOS 13 as minimum deployment target</li>
+<li>core: Language support for Italian</li>
+</ul>
+<h2>v0.10</h2>
+<ul>
+<li>feat: Quick Look extension</li>
+<li>feat: Added Send-a-smile menu to let users quickly star the repo or add a review in the App Store</li>
+<li>fix: App crashes when all windows are closed and then the app gets terminated</li>
+<li>core: Cleanup logging</li>
+</ul>
+<h2>v0.9</h2>
+<ul>
+<li>feat: Finder integration via context menu</li>
+<li>core: Language support for German, French, Simplified Chinese</li>
+</ul>
+<h2>v0.8</h2>
+<ul>
+<li>feat: gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support</li>
+<li>feat: show packed size, size, modified date, permissions in columns</li>
+</ul>
+<h2>v0.7</h2>
+<ul>
+<li>feat: lzh, lha, lzx support</li>
+<li>feat: close internal previewer using Space, or Esc</li>
+<li>feat: show archive name in title</li>
+<li>feat: extract selected files via UI</li>
+<li>feat: extract full archive</li>
+<li>fix: app store version shows "MacPacker store" as product name in launchpad</li>
+<li>core: new architecture for archive handlers</li>
+</ul>
+<h2>v0.6</h2>
+<ul>
+<li>feat: hit space to open internal preview</li>
+<li>feat: setting to change the breadcrumb position</li>
+<li>feat: rar read support</li>
+<li>feat: show folder / file icons in table</li>
+<li>chore: add support for macOS 14</li>
+</ul>
+<h2>v0.5</h2>
+<ul>
+<li>feat: multiple windows support</li>
+<li>feat: open info for archive</li>
+<li>feat: breadcrumb view for navigation</li>
+<li>fix: open with in Finder not working</li>
+<li>chore: major code cleanup</li>
+</ul>
+<h2>v0.4</h2>
+<ul>
+<li>feat: viewer to show preview of files</li>
+<li>feat: 7zip read support</li>
+<li>chore: clean cache when MacPacker terminates</li>
+</ul>
+<h2>v0.3</h2>
+<ul>
+<li>feat: highlight when dragging file to MacPacker window</li>
+<li>feat: double click any file opens it using the default system app</li>
+<li>feat: breadcrumb showing the current path in the archive</li>
+<li>feat: support for any valid zip-based file</li>
+<li>feat: automatic cache cleaning</li>
+</ul>
+<h2>v0.2</h2>
+<ul>
+<li>feat: welcome & about dialog</li>
+<li>feat: auto update</li>
+<li>feat: zip support</li>
+<li>feat: "Open With..." context menu support</li>
+</ul>
+<h2>v0.1</h2>
+<ul>
+<li>feat: Drag & drop an lz4 or tar file to MacPacker</li>
+<li>feat: Manual option to clear the cache</li>
+<li>feat: Traverse through nested archives</li>
+</ul>
+]]></description>
+            <enclosure url="https://macpacker-releases.s3.eu-central-1.amazonaws.com/MacPacker_v0.14.1.zip" length="11840984" type="application/octet-stream" sparkle:edSignature="oZ6/HG4Ep92eiLOXHYVWGYvF/L/nlZ+gy3pqxoS3jxmF98YKlX1/vP0N4pVAUfa8mwNF/mVj4lxvbHsaashCAw=="/>
+        </item>
+        <item>
+            <title>0.14</title>
+            <pubDate>Fri, 13 Feb 2026 12:14:34 +0200</pubDate>
+            <sparkle:version>19</sparkle:version>
+            <sparkle:shortVersionString>0.14</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+<h2>v0.14</h2>
+<ul>
+<li>feat: New menu to open a new empty window</li>
+<li>feat: Extended info on archive in status bar (#61)</li>
+<li>fix: tar.gz and tgz not working (#54)</li>
+<li>fix: Can't close QuickLook with Space (#55)</li>
+<li>fix: MacOS not recognizing MacPacker as a viable VHDX reader (#56)</li>
+<li>fix: Cache cleanup not happening when just closing a window or loading a new archive (#58)</li>
+<li>fix: App crashes when unpacking exe / msi files (#59)</li>
+<li>fix: Extract here and Extract to folder via Finder don't work (#62)</li>
+<li>core: Language support for Japanese</li>
+</ul>
+<h2>v0.13</h2>
+<ul>
+<li>feat: arj, dmg/apfs (Apple File System), chm, fat, ntfs, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk, xar support</li>
+<li>feat: Special handling for Apple Installer Packages (pkg)</li>
+<li>feat: Added settings for easier access to managing the Finder file provider extension</li>
+<li>fix: Extracting folders does not include files</li>
+<li>core: Added attributions for 3rd party libraries/code</li>
+<li>core: Language support for Persian</li>
+</ul>
+<h2>v0.12</h2>
+<ul>
+<li>feat: Added 'File' > 'Open...' menu to open archives when no window is open</li>
+<li>feat: Improved TAR archive handling</li>
+<li>fix: MacPacker not showing up in 'Open With…' menu in Finder (App Store version only)</li>
+<li>fix: Chinese (Unicode) characters in archive contents not displayed correctly</li>
+<li>core: Separated localization of changelog from app localization</li>
+<li>core: Language support for Ukranian, Russian</li>
+<li>core: Detect archive type based on magic number in addition to file extension</li>
+</ul>
+<h2>v0.11</h2>
+<ul>
+<li>feat: Use system preview instead of internal previewer</li>
+<li>feat: Navigate the archive using keys similar to Finder</li>
+<li>fix: Crash when using the open with option</li>
+<li>fix: Quick look extension missing in App Store version</li>
+<li>fix: Empty window opened in addition to file opened with Open With option in Finder</li>
+<li>core: Re-enable macOS 13 as minimum deployment target</li>
+<li>core: Language support for Italian</li>
+</ul>
+<h2>v0.10</h2>
+<ul>
+<li>feat: Quick Look extension</li>
+<li>feat: Added Send-a-smile menu to let users quickly star the repo or add a review in the App Store</li>
+<li>fix: App crashes when all windows are closed and then the app gets terminated</li>
+<li>core: Cleanup logging</li>
+</ul>
+<h2>v0.9</h2>
+<ul>
+<li>feat: Finder integration via context menu</li>
+<li>core: Language support for German, French, Simplified Chinese</li>
+</ul>
+<h2>v0.8</h2>
+<ul>
+<li>feat: gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support</li>
+<li>feat: show packed size, size, modified date, permissions in columns</li>
+</ul>
+<h2>v0.7</h2>
+<ul>
+<li>feat: lzh, lha, lzx support</li>
+<li>feat: close internal previewer using Space, or Esc</li>
+<li>feat: show archive name in title</li>
+<li>feat: extract selected files via UI</li>
+<li>feat: extract full archive</li>
+<li>fix: app store version shows "MacPacker store" as product name in launchpad</li>
+<li>core: new architecture for archive handlers</li>
+</ul>
+<h2>v0.6</h2>
+<ul>
+<li>feat: hit space to open internal preview</li>
+<li>feat: setting to change the breadcrumb position</li>
+<li>feat: rar read support</li>
+<li>feat: show folder / file icons in table</li>
+<li>chore: add support for macOS 14</li>
+</ul>
+<h2>v0.5</h2>
+<ul>
+<li>feat: multiple windows support</li>
+<li>feat: open info for archive</li>
+<li>feat: breadcrumb view for navigation</li>
+<li>fix: open with in Finder not working</li>
+<li>chore: major code cleanup</li>
+</ul>
+<h2>v0.4</h2>
+<ul>
+<li>feat: viewer to show preview of files</li>
+<li>feat: 7zip read support</li>
+<li>chore: clean cache when MacPacker terminates</li>
+</ul>
+<h2>v0.3</h2>
+<ul>
+<li>feat: highlight when dragging file to MacPacker window</li>
+<li>feat: double click any file opens it using the default system app</li>
+<li>feat: breadcrumb showing the current path in the archive</li>
+<li>feat: support for any valid zip-based file</li>
+<li>feat: automatic cache cleaning</li>
+</ul>
+<h2>v0.2</h2>
+<ul>
+<li>feat: welcome & about dialog</li>
+<li>feat: auto update</li>
+<li>feat: zip support</li>
+<li>feat: "Open With..." context menu support</li>
+</ul>
+<h2>v0.1</h2>
+<ul>
+<li>feat: Drag & drop an lz4 or tar file to MacPacker</li>
+<li>feat: Manual option to clear the cache</li>
+<li>feat: Traverse through nested archives</li>
+</ul>
+]]></description>
+            <enclosure url="https://macpacker-releases.s3.eu-central-1.amazonaws.com/MacPacker_v0.14.zip" length="11839045" type="application/octet-stream" sparkle:edSignature="3vRUbpWalHvb2jd/ed4ZcoG8Rl7p4x5FXWICCbNeiKYfw+KCCI7BQWpJ/XF5GQxo4Tci6vjNMe4lsyizh9XsBQ=="/>
+        </item>
+        <item>
+            <title>0.13</title>
+            <pubDate>Fri, 16 Jan 2026 00:20:24 +0100</pubDate>
+            <sparkle:version>18</sparkle:version>
+            <sparkle:shortVersionString>0.13</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>13.5</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+<h2>v0.13</h2>
+<ul>
+<li>feat: arj, dmg/apfs (Apple File System), chm, fat, ntfs, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk, xar support</li>
+<li>feat: Special handling for Apple Installer Packages (pkg)</li>
+<li>feat: Added settings for easier access to managing the Finder file provider extension</li>
+<li>fix: Extracting folders does not include files</li>
+<li>core: Added attributions for 3rd party libraries/code</li>
+<li>core: Language support for Persian</li>
+</ul>
+<h2>v0.12</h2>
+<ul>
+<li>feat: Added 'File' > 'Open...' menu to open archives when no window is open</li>
+<li>feat: Improved TAR archive handling</li>
+<li>fix: MacPacker not showing up in 'Open With…' menu in Finder (App Store version only)</li>
+<li>fix: Chinese (Unicode) characters in archive contents not displayed correctly</li>
+<li>core: Separated localization of changelog from app localization</li>
+<li>core: Language support for Ukranian, Russian</li>
+<li>core: Detect archive type based on magic number in addition to file extension</li>
+</ul>
+<h2>v0.11</h2>
+<ul>
+<li>feat: Use system preview instead of internal previewer</li>
+<li>feat: Navigate the archive using keys similar to Finder</li>
+<li>fix: Crash when using the open with option</li>
+<li>fix: Quick look extension missing in App Store version</li>
+<li>fix: Empty window opened in addition to file opened with Open With option in Finder</li>
+<li>core: Re-enable macOS 13 as minimum deployment target</li>
+<li>core: Language support for Italian</li>
+</ul>
+<h2>v0.10</h2>
+<ul>
+<li>feat: Quick Look extension</li>
+<li>feat: Added Send-a-smile menu to let users quickly star the repo or add a review in the App Store</li>
+<li>fix: App crashes when all windows are closed and then the app gets terminated</li>
+<li>core: Cleanup logging</li>
+</ul>
+<h2>v0.9</h2>
+<ul>
+<li>feat: Finder integration via context menu</li>
+<li>core: Language support for German, French, Simplified Chinese</li>
+</ul>
+<h2>v0.8</h2>
+<ul>
+<li>feat: gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support</li>
+<li>feat: show packed size, size, modified date, permissions in columns</li>
+</ul>
+<h2>v0.7</h2>
+<ul>
+<li>feat: lzh, lha, lzx support</li>
+<li>feat: close internal previewer using Space, or Esc</li>
+<li>feat: show archive name in title</li>
+<li>feat: extract selected files via UI</li>
+<li>feat: extract full archive</li>
+<li>fix: app store version shows "MacPacker store" as product name in launchpad</li>
+<li>core: new architecture for archive handlers</li>
+</ul>
+<h2>v0.6</h2>
+<ul>
+<li>feat: hit space to open internal preview</li>
+<li>feat: setting to change the breadcrumb position</li>
+<li>feat: rar read support</li>
+<li>feat: show folder / file icons in table</li>
+<li>chore: add support for macOS 14</li>
+</ul>
+<h2>v0.5</h2>
+<ul>
+<li>feat: multiple windows support</li>
+<li>feat: open info for archive</li>
+<li>feat: breadcrumb view for navigation</li>
+<li>fix: open with in Finder not working</li>
+<li>chore: major code cleanup</li>
+</ul>
+<h2>v0.4</h2>
+<ul>
+<li>feat: viewer to show preview of files</li>
+<li>feat: 7zip read support</li>
+<li>chore: clean cache when MacPacker terminates</li>
+</ul>
+<h2>v0.3</h2>
+<ul>
+<li>feat: highlight when dragging file to MacPacker window</li>
+<li>feat: double click any file opens it using the default system app</li>
+<li>feat: breadcrumb showing the current path in the archive</li>
+<li>feat: support for any valid zip-based file</li>
+<li>feat: automatic cache cleaning</li>
+</ul>
+<h2>v0.2</h2>
+<ul>
+<li>feat: welcome & about dialog</li>
+<li>feat: auto update</li>
+<li>feat: zip support</li>
+<li>feat: "Open With..." context menu support</li>
+</ul>
+<h2>v0.1</h2>
+<ul>
+<li>feat: Drag & drop an lz4 or tar file to MacPacker</li>
+<li>feat: Manual option to clear the cache</li>
+<li>feat: Traverse through nested archives</li>
+</ul>
+]]></description>
+            <enclosure url="https://macpacker-releases.s3.eu-central-1.amazonaws.com/MacPacker_v0.13.zip" length="11721068" type="application/octet-stream" sparkle:edSignature="ye8Gtcw5jeLuMWBG+Ss4AnDW9hBE4ZrLtUscMOgP52raen671DksU5i08wvAaAqIV3Tz9RHCulyX2fNGQNquBA=="/>
+        </item>
+    </channel>
+</rss>

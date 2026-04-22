@@ -1,3 +1,4 @@
 // Marketing version — single source of truth
 // Update this before starting work on a new release
 MARKETING_VERSION = 0.15.0
+CURRENT_PROJECT_VERSION = 1

@@ -1,0 +1,8 @@
+#include "Version.xcconfig"
+
+DEVELOPMENT_TEAM = ZJ2TSMMJWF
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = Developer ID Application
+PROVISIONING_PROFILE_SPECIFIER =
+
+#include? "SigningOverride.xcconfig"

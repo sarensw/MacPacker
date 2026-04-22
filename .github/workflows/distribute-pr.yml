@@ -1,14 +1,12 @@
 # ── Snapshot Distribution ────────────────────────────────────────────────────
-# Triggered when a PR is merged into main.
+# Triggered when a PR is created.
 # Builds a snapshot, uploads to S3, and comments on the PR with download links.
 # ─────────────────────────────────────────────────────────────────────────────
-name: Distribute Snapshot
+name: Distribute PR
 
 on:
   pull_request:
-    types: [closed]
-    branches: ['main']
-  workflow_dispatch:
+    types: [opened, synchronize]
 
 permissions:
   contents: read
@@ -17,13 +15,13 @@ permissions:
 jobs:
   # ── Determine version info and call the reusable build workflow ────────────
   prepare:
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       version: ${{ steps.version.outputs.version }}
       build-number: ${{ steps.version.outputs.build-number }}
       artifact-label: ${{ steps.version.outputs.artifact-label }}
+      pr-number: ${{ steps.version.outputs.pr-number }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,21 +32,21 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Timestamp-based build number in UTC (always increasing)
           BUILD_NUMBER=$(date -u +%y%m%d%H%M%S)
-
-          # Marketing version from Config/Version.xcconfig (single source of truth)
           VERSION=$(grep 'MARKETING_VERSION' Config/Version.xcconfig | sed 's/.*= *//')
 
-          ARTIFACT_LABEL="v${VERSION}-beta-${BUILD_NUMBER}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          ARTIFACT_LABEL="v${VERSION}-beta-${BUILD_NUMBER}-pr${PR_NUMBER}"
 
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "build-number=${BUILD_NUMBER}" >> $GITHUB_OUTPUT
-          echo "artifact-label=${ARTIFACT_LABEL}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "build-number=${BUILD_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "artifact-label=${ARTIFACT_LABEL}" >> "$GITHUB_OUTPUT"
+          echo "pr-number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
 
           echo "Snapshot build"
-          echo "  Marketing version: ${VERSION} (from Version.xcconfig)"
+          echo "  Marketing version: ${VERSION}"
           echo "  Build number:      ${BUILD_NUMBER}"
+          echo "  PR number:         ${PR_NUMBER}"
           echo "  Artifact label:    ${ARTIFACT_LABEL}"
 
   build:
@@ -60,10 +58,9 @@ jobs:
       artifact-label: ${{ needs.prepare.outputs.artifact-label }}
     secrets: inherit
 
-  # ── Comment on the merged PR with download links ──────────────────────────
   comment:
     needs: [prepare, build]
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -71,25 +68,32 @@ jobs:
         uses: actions/github-script@v7
         env:
           ARTIFACT_LABEL: ${{ needs.prepare.outputs.artifact-label }}
+          PR_NUMBER: ${{ needs.prepare.outputs.pr-number }}
           S3_DOWNLOAD_URL: ${{ vars.S3_DOWNLOAD_URL }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          BUILD_NUMBER: ${{ needs.prepare.outputs.build-number }}
         with:
           script: |
             const label = process.env.ARTIFACT_LABEL;
+            const pr = process.env.PR_NUMBER;
             const baseUrl = process.env.S3_DOWNLOAD_URL;
+            const version = process.env.VERSION;
+            const build = process.env.BUILD_NUMBER;
+
             const body = [
-              `**Snapshot build ready** \u2705`,
+              `**Snapshot build ready** ✅`,
               ``,
               `| Artifact | Link |`,
               `|----------|------|`,
               `| DMG | [${{ vars.PRODUCT_NAME }}_${label}.dmg](${baseUrl}/${{ vars.PRODUCT_NAME }}_${label}.dmg) |`,
               `| ZIP | [${{ vars.PRODUCT_NAME }}_${label}.zip](${baseUrl}/${{ vars.PRODUCT_NAME }}_${label}.zip) |`,
               ``,
-              `Version: \`${{ needs.prepare.outputs.version }}\` · Build: \`${{ needs.prepare.outputs.build-number }}\``,
+              `PR: #${pr} · Version: \`${version}\` · Build: \`${build}\``,
             ].join('\n');
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: body,
+              body,
             });

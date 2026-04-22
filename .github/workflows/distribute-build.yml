@@ -23,14 +23,6 @@ on:
 permissions:
   contents: read
 
-# ── Project identity ────────────────────────────────────────────────────────
-env:
-  BUNDLE_ID: "com.sarensx.MacPacker"
-  BUNDLE_ID_FINDER: "com.sarensx.MacPacker.FinderExtension"
-  BUNDLE_ID_QUICKLOOK: "com.sarensx.MacPacker.QuickLookExtension"
-  PROJECT_NAME: "MacPacker"
-# ────────────────────────────────────────────────────────────────────────────
-
 jobs:
   build:
     runs-on: [macos-26]
@@ -48,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild -resolvePackageDependencies \
-            -scheme "$PROJECT_NAME" \
+            -scheme "${{ vars.SCHEME_NAME }}" \
             -configuration Release
 
       # ── Set version and build number ───────────────────────────────────────
@@ -103,20 +95,20 @@ jobs:
           mkdir -p "$PROFILE_DIR"
 
           echo "$DEVID_PROFILE_BASE64" | base64 --decode \
-            > "$PROFILE_DIR/macpacker-devid.provisionprofile"
+            > "$PROFILE_DIR/pp-devid.provisionprofile"
           echo "$DEVID_PROFILE_FINDER_BASE64" | base64 --decode \
-            > "$PROFILE_DIR/macpacker-devid-finder.provisionprofile"
+            > "$PROFILE_DIR/pp-devid-finder.provisionprofile"
           echo "$DEVID_PROFILE_QUICKLOOK_BASE64" | base64 --decode \
-            > "$PROFILE_DIR/macpacker-devid-quicklook.provisionprofile"
+            > "$PROFILE_DIR/pp-devid-quicklook.provisionprofile"
 
           PROFILE_NAME=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-devid.provisionprofile" \
+            -i "$PROFILE_DIR/pp-devid.provisionprofile" \
             | plutil -extract Name raw -)
           PROFILE_NAME_FINDER=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-devid-finder.provisionprofile" \
+            -i "$PROFILE_DIR/pp-devid-finder.provisionprofile" \
             | plutil -extract Name raw -)
           PROFILE_NAME_QUICKLOOK=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-devid-quicklook.provisionprofile" \
+            -i "$PROFILE_DIR/pp-devid-quicklook.provisionprofile" \
             | plutil -extract Name raw -)
 
           echo "PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
@@ -142,23 +134,16 @@ jobs:
       # ── Archive ────────────────────────────────────────────────────────────
       - name: Archive
         shell: bash
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           set -euo pipefail
 
           xcodebuild archive \
-            -scheme "$PROJECT_NAME" \
+            -scheme "${{ vars.SCHEME_NAME }}" \
             -configuration Release \
             -archivePath /tmp/build/app.xcarchive \
             -destination "generic/platform=macOS" \
             MARKETING_VERSION=${{ inputs.version }} \
-            CURRENT_PROJECT_VERSION=${{ inputs.build-number }} \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+            CURRENT_PROJECT_VERSION=${{ inputs.build-number }}
 
       # ── Export ─────────────────────────────────────────────────────────────
       - name: Export for direct distribution
@@ -177,11 +162,11 @@ jobs:
             <string>manual</string>
             <key>provisioningProfiles</key>
             <dict>
-              <key>${BUNDLE_ID}</key>
+              <key>${{ vars.BUNDLE_ID }}</key>
               <string>${PROFILE_NAME}</string>
-              <key>${BUNDLE_ID_FINDER}</key>
+              <key>${{ vars.BUNDLE_ID_FINDER }}</key>
               <string>${PROFILE_NAME_FINDER}</string>
-              <key>${BUNDLE_ID_QUICKLOOK}</key>
+              <key>${{ vars.BUNDLE_ID_QUICKLOOK }}</key>
               <string>${PROFILE_NAME_QUICKLOOK}</string>
             </dict>
           </dict>
@@ -203,7 +188,7 @@ jobs:
           set -euo pipefail
 
           ditto -c -k --keepParent \
-            "/tmp/build/export/${PROJECT_NAME}.app" \
+            "/tmp/build/export/${{ vars.PRODUCT_NAME }}.app" \
             /tmp/build/notarize.zip
 
           xcrun notarytool submit /tmp/build/notarize.zip \
@@ -219,7 +204,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          xcrun stapler staple "/tmp/build/export/${PROJECT_NAME}.app"
+          xcrun stapler staple "/tmp/build/export/${{ vars.PRODUCT_NAME }}.app"
 
       # ── Create DMG and ZIP ─────────────────────────────────────────────────
       - name: Create DMG and ZIP
@@ -227,16 +212,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          DMG_NAME="${PROJECT_NAME}-${{ inputs.artifact-label }}.dmg"
-          ZIP_NAME="${PROJECT_NAME}-${{ inputs.artifact-label }}.zip"
+          DMG_NAME="${{ vars.PRODUCT_NAME }}_${{ inputs.artifact-label }}.dmg"
+          ZIP_NAME="${{ vars.PRODUCT_NAME }}_${{ inputs.artifact-label }}.zip"
 
           # Create DMG with app and Applications symlink
           mkdir -p /tmp/build/dmg
-          cp -R "/tmp/build/export/${PROJECT_NAME}.app" /tmp/build/dmg/
+          cp -R "/tmp/build/export/${{ vars.PRODUCT_NAME }}.app" /tmp/build/dmg/
           ln -s /Applications /tmp/build/dmg/Applications
 
           hdiutil create \
-            -volname "$PROJECT_NAME" \
+            -volname "${{ vars.PRODUCT_NAME }}" \
             -srcfolder /tmp/build/dmg \
             -ov \
             -format UDZO \
@@ -246,7 +231,7 @@ jobs:
 
           # Create ZIP containing the app bundle
           ditto -c -k --keepParent \
-            "/tmp/build/export/${PROJECT_NAME}.app" \
+            "/tmp/build/export/${{ vars.PRODUCT_NAME }}.app" \
             "/tmp/build/${ZIP_NAME}"
 
           echo "DMG_PATH=/tmp/build/${DMG_NAME}" >> $GITHUB_ENV
@@ -291,9 +276,9 @@ jobs:
           set -euo pipefail
 
           security delete-keychain build.keychain || true
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-devid.provisionprofile"
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-devid-finder.provisionprofile"
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-devid-quicklook.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/pp-devid.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/pp-devid-finder.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/pp-devid-quicklook.provisionprofile"
           rm -rf /tmp/build
           rm -f /tmp/ExportOptions.plist
           rm -f ~/.appstoreconnect/private_keys/AuthKey_*.p8
