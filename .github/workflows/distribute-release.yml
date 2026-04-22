@@ -7,6 +7,7 @@ name: Distribute Release
 on:
   push:
     tags: ['v*.*.*']
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -42,7 +43,7 @@ jobs:
             exit 1
           fi
 
-          ARTIFACT_LABEL="${VERSION}"
+          ARTIFACT_LABEL="v${VERSION}"
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "build-number=${BUILD_NUMBER}" >> $GITHUB_OUTPUT
@@ -61,3 +62,124 @@ jobs:
       build-number: ${{ needs.prepare.outputs.build-number }}
       artifact-label: ${{ needs.prepare.outputs.artifact-label }}
     secrets: inherit
+
+  # ── Update Sparkle appcast.xml ──────────────────────────────────────────────
+  update-appcast:
+    needs: [prepare, build]
+    runs-on: [macos-26]
+    timeout-minutes: 15
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      BUILD_NUMBER: ${{ needs.prepare.outputs.build-number }}
+      ARTIFACT_LABEL: ${{ needs.prepare.outputs.artifact-label }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install AWS CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v aws &>/dev/null; then
+            echo "AWS CLI not found — installing"
+            curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o /tmp/AWSCLIV2.pkg
+            sudo installer -pkg /tmp/AWSCLIV2.pkg -target /
+            rm -f /tmp/AWSCLIV2.pkg
+          fi
+          aws --version
+
+      - name: Download Sparkle
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          SPARKLE_TAG="$(
+            curl -fsSL \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "User-Agent: github-actions" \
+              https://api.github.com/repos/sparkle-project/Sparkle/releases/latest \
+            | python3 -c 'import sys, json; print(json.load(sys.stdin)["tag_name"])'
+          )"
+
+          echo "Sparkle version: ${SPARKLE_TAG}"
+
+          curl -fL \
+            -o /tmp/sparkle.tar.xz \
+            "https://github.com/sparkle-project/Sparkle/releases/download/${SPARKLE_TAG}/Sparkle-${SPARKLE_TAG}.tar.xz"
+
+          mkdir -p /tmp/sparkle
+          tar -xf /tmp/sparkle.tar.xz -C /tmp/sparkle
+          chmod +x /tmp/sparkle/bin/generate_appcast
+
+      - name: Prepare release directory
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "eu-central-1"
+          S3_DISTRIBUTION_PATH: ${{ secrets.S3_DISTRIBUTION_PATH }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/appcast-work
+
+          # Download the ZIP that was just uploaded by the build job
+          ZIP_NAME="${{ vars.PRODUCT_NAME }}_${ARTIFACT_LABEL}.zip"
+          aws s3 cp "${S3_DISTRIBUTION_PATH}/${ZIP_NAME}" "/tmp/appcast-work/${ZIP_NAME}"
+
+          # Download existing appcast.xml from S3 (fall back to repo seed)
+          if aws s3 cp "${S3_DISTRIBUTION_PATH}/appcast.xml" /tmp/appcast-work/appcast.xml; then
+            echo "Downloaded existing appcast.xml from S3"
+          else
+            echo "No appcast.xml on S3, using seed from repo"
+            cp Config/appcast.xml /tmp/appcast-work/appcast.xml
+          fi
+
+      - name: Run generate_appcast
+        shell: bash
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          echo "$SPARKLE_ED_PRIVATE_KEY" | /tmp/sparkle/bin/generate_appcast \
+            --ed-key-file - \
+            /tmp/appcast-work/
+          echo "generate_appcast completed"
+
+      - name: Inject changelog and trim appcast
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x .github/scripts/update-appcast.sh
+
+          VERSION="${VERSION}" \
+          APPCAST_PATH=/tmp/appcast-work/appcast.xml \
+          CHANGELOG_PATH=${{ vars.PRODUCT_NAME }}/CHANGELOG.md \
+          .github/scripts/update-appcast.sh
+
+      - name: Upload appcast as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appcast
+          path: /tmp/appcast-work/appcast.xml
+
+      - name: Upload appcast.xml to S3
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "eu-central-1"
+          S3_DISTRIBUTION_PATH: ${{ secrets.S3_DISTRIBUTION_PATH }}
+        run: |
+          set -euo pipefail
+          aws s3 cp /tmp/appcast-work/appcast.xml "${S3_DISTRIBUTION_PATH}/appcast_test.xml" \
+            --content-type "application/xml"
+          echo "Uploaded appcast.xml to ${S3_DISTRIBUTION_PATH}/"
+
+      - name: Cleanup
+        if: always()
+        shell: bash
+        run: |
+          rm -rf /tmp/sparkle /tmp/sparkle.tar.xz /tmp/appcast-work

@@ -12,15 +12,6 @@ on:
 permissions:
   contents: read
 
-# ── Project identity ────────────────────────────────────────────────────────
-# Hardcoded here because MacPacker uses a plain .xcodeproj (no Tuist/Project.swift).
-env:
-  BUNDLE_ID: "com.sarensx.MacPacker"
-  BUNDLE_ID_FINDER: "com.sarensx.MacPacker.FinderExtension"
-  BUNDLE_ID_QUICKLOOK: "com.sarensx.MacPacker.QuickLookExtension"
-  PROJECT_NAME: "MacPacker Store"
-# ────────────────────────────────────────────────────────────────────────────
-
 jobs:
   distribute:
     runs-on: [macos-26]
@@ -39,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild -resolvePackageDependencies \
-            -scheme "$PROJECT_NAME" \
+            -scheme "${{ vars.SCHEME_NAME_STORE }}" \
             -configuration Release
 
       # ── Version & build number ─────────────────────────────────────────────
@@ -100,20 +91,20 @@ jobs:
           mkdir -p "$PROFILE_DIR"
 
           echo "$STORE_PROFILE_BASE64" | base64 --decode \
-            > "$PROFILE_DIR/macpacker-store.provisionprofile"
+            > "$PROFILE_DIR/pp-store.provisionprofile"
           echo "$STORE_PROFILE_FINDER_BASE64" | base64 --decode \
-            > "$PROFILE_DIR/macpacker-store-finder.provisionprofile"
+            > "$PROFILE_DIR/pp-store-finder.provisionprofile"
           echo "$STORE_PROFILE_QUICKLOOK_BASE64" | base64 --decode \
-            > "$PROFILE_DIR/macpacker-store-quicklook.provisionprofile"
+            > "$PROFILE_DIR/pp-store-quicklook.provisionprofile"
 
           PROFILE_NAME=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-store.provisionprofile" \
+            -i "$PROFILE_DIR/pp-store.provisionprofile" \
             | plutil -extract Name raw -)
           PROFILE_NAME_FINDER=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-store-finder.provisionprofile" \
+            -i "$PROFILE_DIR/pp-store-finder.provisionprofile" \
             | plutil -extract Name raw -)
           PROFILE_NAME_QUICKLOOK=$(security cms -D \
-            -i "$PROFILE_DIR/macpacker-store-quicklook.provisionprofile" \
+            -i "$PROFILE_DIR/pp-store-quicklook.provisionprofile" \
             | plutil -extract Name raw -)
 
           echo "PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
@@ -139,23 +130,16 @@ jobs:
       # ── Archive ────────────────────────────────────────────────────────────
       - name: Archive
         shell: bash
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           set -euo pipefail
 
           xcodebuild archive \
-            -scheme "$PROJECT_NAME" \
+            -scheme "${{ vars.SCHEME_NAME_STORE }}" \
             -configuration Release \
             -archivePath /tmp/build/app.xcarchive \
             -destination "generic/platform=macOS" \
             MARKETING_VERSION=$VERSION \
-            CURRENT_PROJECT_VERSION=$BUILD_NUMBER \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+            CURRENT_PROJECT_VERSION=$BUILD_NUMBER
 
       # ── Export for App Store ───────────────────────────────────────────────
       - name: Export for App Store
@@ -176,11 +160,11 @@ jobs:
             <string>manual</string>
             <key>provisioningProfiles</key>
             <dict>
-              <key>${BUNDLE_ID}</key>
+              <key>${{ vars.BUNDLE_ID }}</key>
               <string>${PROFILE_NAME}</string>
-              <key>${BUNDLE_ID_FINDER}</key>
+              <key>${{ vars.BUNDLE_ID_FINDER }}</key>
               <string>${PROFILE_NAME_FINDER}</string>
-              <key>${BUNDLE_ID_QUICKLOOK}</key>
+              <key>${{ vars.BUNDLE_ID_QUICKLOOK }}</key>
               <string>${PROFILE_NAME_QUICKLOOK}</string>
             </dict>
           </dict>
@@ -222,9 +206,9 @@ jobs:
           set -euo pipefail
 
           security delete-keychain build.keychain || true
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-store.provisionprofile"
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-store-finder.provisionprofile"
-          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/macpacker-store-quicklook.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/pp-store.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/pp-store-finder.provisionprofile"
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/pp-store-quicklook.provisionprofile"
           rm -rf /tmp/build
           rm -f /tmp/ExportOptions.plist
           rm -f ~/.appstoreconnect/private_keys/AuthKey_*.p8
