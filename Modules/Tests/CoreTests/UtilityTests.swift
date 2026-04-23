@@ -672,18 +672,7 @@ extension AllCoreTests {
         }
     }
 
-    // MARK: - 13. Bool+Extensions
-
-    @MainActor struct BoolExtensionsTests {
-
-        @Test func macOS13ReturnsBool() {
-            let value = Bool.macOS13
-            // On macOS 14+ this should be false
-            #expect(value == false)
-        }
-    }
-
-    // MARK: - 14. ArchiveBatchResolver
+    // MARK: - 13. ArchiveBatchResolver
 
     @MainActor struct ArchiveBatchResolverTests {
 

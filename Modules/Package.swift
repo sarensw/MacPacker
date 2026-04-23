@@ -338,7 +338,7 @@ let cSevenZipSources: [String] = [
 
 let package = Package(
     name: "Modules",
-    platforms: [ .macOS(.v13) ],
+    platforms: [ .macOS(.v14) ],
     products: [
         .library(name: "Core", targets: ["Core"]),
         //.library(name: "SevenZipBridge", targets: ["SevenZipBridge"])

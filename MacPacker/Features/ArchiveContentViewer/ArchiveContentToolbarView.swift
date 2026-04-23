@@ -108,26 +108,13 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
         
             Menu {
-                if #available(macOS 14, *) {
-                    SettingsLink() {
-                        Label {
-                            Text("Settings...", comment: "Used to open the settings/preferences window")
-                        } icon: {
-                            Image(systemName: "gear")
-                        }
-                        .labelStyle(.titleAndIcon)
+                SettingsLink() {
+                    Label {
+                        Text("Settings...", comment: "Used to open the settings/preferences window")
+                    } icon: {
+                        Image(systemName: "gear")
                     }
-                } else {
-                    Button {
-                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                    } label: {
-                        Label {
-                            Text("Settings...", comment: "Used to open the settings/preferences window")
-                        } icon: {
-                            Image(systemName: "gear")
-                        }
-                        .labelStyle(.titleAndIcon)
-                    }
+                    .labelStyle(.titleAndIcon)
                 }
                 
                 Divider()

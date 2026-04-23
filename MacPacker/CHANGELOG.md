@@ -3,6 +3,7 @@ v0.15
 - feat: Open password protected / encrypted archives (#6)
 - core: Support for magic numbers at the end of archive files (#69)
 - core: Update acknowledgements (#79)
+- core: Drop macOS 13 support
 
 v0.14.1
 - fix: Wrong translations in settings

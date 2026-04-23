@@ -50,12 +50,10 @@ struct ContentView: View {
             
             StatusBarView()
         }
-        .if(!.macOS13) { view in
-            view.toolbar {
-                ArchiveContentToolbarView(
-                    archiveState: archiveState
-                )
-            }
+        .toolbar {
+            ArchiveContentToolbarView(
+                archiveState: archiveState
+            )
         }
         .onAppear {
             if self.archiveState.passwordProvider == nil {

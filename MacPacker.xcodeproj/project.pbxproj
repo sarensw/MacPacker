@@ -533,7 +533,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 0.14.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.FinderExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -567,7 +567,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 0.14.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.FinderExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -612,7 +612,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 0.14.1;
 				OTHER_SWIFT_FLAGS = "-DSTORE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
@@ -657,7 +657,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 0.14.1;
 				OTHER_SWIFT_FLAGS = "-DSTORE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
@@ -702,7 +702,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 0.14.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.QuickLookExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -750,7 +750,7 @@
 					"@executable_path/../../../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 0.14.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker.QuickLookExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -895,9 +895,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = MacPacker/MacPacker.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"MacPacker/Preview Content\"";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = ZJ2TSMMJWF;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -921,10 +923,11 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 0.14.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = MacPacker;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
@@ -968,7 +971,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 0.14.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sarensx.MacPacker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
