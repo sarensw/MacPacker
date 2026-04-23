@@ -17,8 +17,9 @@ extension NSImage {
 }
 
 struct ArchiveContentToolbarView: ToolbarContent {
-    @EnvironmentObject private var appDelegate: AppDelegate
-    @Environment(\.openURL) var openURL
+    @EnvironmentObject private var appState: AppState
+    @Environment(\.openURL) private var openURL
+    @Environment(\.openSettings) private var openSettings
     @State private var isExportingItem: Bool = false
     @State private var isExportingAll: Bool = false
     
@@ -108,7 +109,10 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
         
             Menu {
-                SettingsLink() {
+                Button {
+                    appState.selectedSettingsTab = .general
+                    openSettings()
+                } label: {
                     Label {
                         Text("Settings...", comment: "Used to open the settings/preferences window")
                     } icon: {
@@ -230,7 +234,8 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
                 
                 Button {
-                    appDelegate.openAboutWindow()
+                    appState.selectedSettingsTab = .about
+                    openSettings()
                 } label: {
                     Label {
                         Text("About \(Bundle.main.displayName)")

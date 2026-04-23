@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct DebugSettingsView: View {
-    @EnvironmentObject var appDelegate: AppDelegate
+    @Environment(\.openSettings) private var openSettings
+    @EnvironmentObject var appState: AppState
     
     var body: some View {
         VStack(spacing: 8) {
@@ -23,7 +24,8 @@ struct DebugSettingsView: View {
                         Text(verbatim: "Show Welcome window")
                     }
                     Button {
-                        appDelegate.openAboutWindow()
+                        appState.selectedSettingsTab = .about
+                        openSettings()
                     } label: {
                         Text(verbatim: "Show About window")
                     }

@@ -18,8 +18,8 @@ struct ArchiveFormatSettings: Identifiable {
 }
 
 struct FormatSettingsView: View {
-    @EnvironmentObject private var appDelegate: AppDelegate
-
+    @EnvironmentObject private var appState: AppState
+    
     @State private var rows: [ArchiveFormatSettings] = []
     @State private var selection: ArchiveFormatSettings.ID?
     
@@ -39,11 +39,11 @@ struct FormatSettingsView: View {
         var result: [ArchiveFormatSettings] = []
 
         // Take all known formats from the catalog
-        for type in appDelegate.catalog.getAllTypes() {
+        for type in appState.catalog.getAllTypes() {
             let formatId = type.id
 
             // Ask the store (via catalog) which engines exist for this format
-            let engineOptions = appDelegate.archiveEngineConfigStore.engineOptions(for: formatId)
+            let engineOptions = appState.archiveEngineConfigStore.engineOptions(for: formatId)
             guard !engineOptions.isEmpty else {
                 // No engines configured for this format – skip it
                 continue
@@ -51,7 +51,7 @@ struct FormatSettingsView: View {
 
             // Current engine = user override or catalog default
             guard let selectedEngine =
-                    appDelegate.archiveEngineConfigStore.selectedEngine(for: formatId) else { continue }
+                    appState.archiveEngineConfigStore.selectedEngine(for: formatId) else { continue }
 
             let engines = engineOptions.compactMap { ArchiveEngineType(configId: $0.id) }
             let extString = type.extensions.joined(separator: ", ")
@@ -190,7 +190,7 @@ struct FormatSettingsView: View {
             set: { newValue in
                 if let index = rows.firstIndex(where: { $0.id == identifier }) {
                     rows[index].selectedEngine = newValue
-                    appDelegate.archiveEngineConfigStore.setSelectedEngine(newValue, for: identifier)
+                    appState.archiveEngineConfigStore.setSelectedEngine(newValue, for: identifier)
                 }
             }
         )

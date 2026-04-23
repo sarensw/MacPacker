@@ -13,12 +13,12 @@ import SwiftUI
 @MainActor
 class ArchiveWindowManager {
     private var windowControllers: [ArchiveWindowController] = []
-    private let appDelegate: AppDelegate
+    private let appState: AppState
     
     /// Default constructor
-    /// - Parameter appDelegate: app delegate for handover to the archive windows
-    init(appDelegate: AppDelegate) {
-        self.appDelegate = appDelegate
+    /// - Parameter appState: The apps global state to not use AppStorage for every little global state setting that is not persisted
+    init(appState: AppState) {
+        self.appState = appState
     }
     
     /// Creates a new archive window and loads the archive from the given url if available
@@ -27,8 +27,8 @@ class ArchiveWindowManager {
         // every window has an archive state which defines both empty
         // (not yet loaded archives) or loaded archives
         let archiveState = ArchiveState(
-            catalog: appDelegate.catalog,
-            engineSelector: appDelegate.engineSelector
+            catalog: appState.catalog,
+            engineSelector: appState.engineSelector
         )
         if let url {
             archiveState.open(url: url)
@@ -39,7 +39,7 @@ class ArchiveWindowManager {
         // to open a new archive
         let archiveWindowController = ArchiveWindowController(
             archiveState: archiveState,
-            appDelegate: appDelegate
+            appState: appState
         )
         windowControllers.append(archiveWindowController)
         archiveWindowController.willCloseHandler = { [weak self] in
