@@ -23,7 +23,7 @@ Say hello to **MacPacker**, the archive manager for macOS. Open source, because 
 ## Installation
 
 ### System Requirements
-- macOS 13.5 or later
+- macOS 14.6 or later (macOS 13 was supported until v0.14.1, but is no longer supported in v0.15.0 and later)
 
 ### Option 1: Download from GitHub
 

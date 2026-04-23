@@ -28,18 +28,6 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         
         window.delegate = self
         
-        if #unavailable(macOS 14) {
-            // we have to use a classic toolbar for macOS 13 based on NSToolbar
-            // > no need for an else here as SwiftUIs .toolbar() loads the
-            //   toolbar in ContentView
-            let toolbar = NSToolbar(identifier: "ArchiveWindowToolbar")
-            toolbar.delegate = self
-            toolbar.displayMode = .iconOnly
-            window.toolbar = toolbar
-            
-            window.title = Bundle.main.displayName
-        }
-        
         window.toolbarStyle = .unified
         
         // show the content view

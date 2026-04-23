@@ -73,6 +73,7 @@ struct WelcomeWhatsNewView: View {
             WhatsNewPill(key: LocalizedStringResource("v0.15_issue_6", defaultValue: "Open password protected / ecrypted archives", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.15_pr_69", defaultValue: "Support for magic numbers at the end of archive files", table: "LocalizableWhatsNew"), type: .core)
             WhatsNewPill(key: LocalizedStringResource("v0.15_pr_79", defaultValue: "Update acknowledgements", table: "LocalizableWhatsNew"), type: .core)
+            WhatsNewPill(key: LocalizedStringResource("v0.15_issue_80", defaultValue: "Drop macOS 13 support", table: "LocalizableWhatsNew"), type: .core)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding()
