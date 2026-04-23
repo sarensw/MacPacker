@@ -42,3 +42,13 @@ struct CheckForUpdatesView: View {
         .disabled(!checkForUpdatesViewModel.canCheckForUpdates)
     }
 }
+
+class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
+    @AppStorage("updateBetaChannelOn") var updateBetaChannelOn: Bool = false
+    
+    func allowedChannels(for _: SPUUpdater) -> Set<String> {
+        #if !STORE
+        updateBetaChannelOn ? ["beta"] : []
+        #endif
+    }
+}

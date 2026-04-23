@@ -18,6 +18,9 @@
 		25A28EEB2EA7799200271329 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764242E6C6D5300464CF5 /* XADMasterSwift */; };
 		25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764262E6C6D6200464CF5 /* XADMasterSwift */; };
+		25CFF95C2F98F324003F064E /* Pandalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 25CFF95B2F98F324003F064E /* Pandalytics */; };
+		25CFF95E2F98F341003F064E /* Pandalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 25CFF95D2F98F341003F064E /* Pandalytics */; };
+		25CFF9602F98F34C003F064E /* Pandalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 25CFF95F2F98F34C003F064E /* Pandalytics */; };
 		25D80C9E2E80204A00A55040 /* FinderExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 252F12022E7ABDD9004CCEBE /* FinderExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25E426C92E6BEB3800F10BE5 /* XADMasterSwift */; };
 /* End PBXBuildFile section */
@@ -144,6 +147,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				25404E0C2ED71F86004A4380 /* TailBeatKit in Frameworks */,
+				25CFF9602F98F34C003F064E /* Pandalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,6 +157,7 @@
 			files = (
 				25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */,
 				2540451B2ECB50D5004A4380 /* Core in Frameworks */,
+				25CFF95E2F98F341003F064E /* Pandalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -170,6 +175,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */,
+				25CFF95C2F98F324003F064E /* Pandalytics in Frameworks */,
 				25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */,
 				254045192ECB50CD004A4380 /* Core in Frameworks */,
 				254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */,
@@ -243,6 +249,7 @@
 			name = FinderExtension;
 			packageProductDependencies = (
 				25404E0B2ED71F86004A4380 /* TailBeatKit */,
+				25CFF95F2F98F34C003F064E /* Pandalytics */,
 			);
 			productName = FinderExtension;
 			productReference = 252F12022E7ABDD9004CCEBE /* FinderExtension.appex */;
@@ -271,6 +278,7 @@
 			packageProductDependencies = (
 				25C764262E6C6D6200464CF5 /* XADMasterSwift */,
 				2540451A2ECB50D5004A4380 /* Core */,
+				25CFF95D2F98F341003F064E /* Pandalytics */,
 			);
 			productName = MacPacker;
 			productReference = 254BB5592ABBE8430059A1D5 /* MacPackerStore.app */;
@@ -324,6 +332,7 @@
 				25E426C92E6BEB3800F10BE5 /* XADMasterSwift */,
 				25C764242E6C6D5300464CF5 /* XADMasterSwift */,
 				254045182ECB50CD004A4380 /* Core */,
+				25CFF95B2F98F324003F064E /* Pandalytics */,
 			);
 			productName = MacPacker;
 			productReference = 25C0A8A42A78DE5F002C1C2A /* MacPacker.app */;
@@ -373,6 +382,7 @@
 				254BB55B2ABBE8F50059A1D5 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */,
 				25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "tailbeatkit" */,
+				25CFF95A2F98F324003F064E /* XCRemoteSwiftPackageReference "pandalytics-swift" */,
 			);
 			productRefGroup = 25C0A8A52A78DE5F002C1C2A /* Products */;
 			projectDirPath = "";
@@ -1060,6 +1070,14 @@
 				kind = branch;
 			};
 		};
+		25CFF95A2F98F324003F064E /* XCRemoteSwiftPackageReference "pandalytics-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PandalyticsIO/pandalytics-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1094,6 +1112,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */;
 			productName = XADMasterSwift;
+		};
+		25CFF95B2F98F324003F064E /* Pandalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25CFF95A2F98F324003F064E /* XCRemoteSwiftPackageReference "pandalytics-swift" */;
+			productName = Pandalytics;
+		};
+		25CFF95D2F98F341003F064E /* Pandalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25CFF95A2F98F324003F064E /* XCRemoteSwiftPackageReference "pandalytics-swift" */;
+			productName = Pandalytics;
+		};
+		25CFF95F2F98F34C003F064E /* Pandalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25CFF95A2F98F324003F064E /* XCRemoteSwiftPackageReference "pandalytics-swift" */;
+			productName = Pandalytics;
 		};
 		25E426C92E6BEB3800F10BE5 /* XADMasterSwift */ = {
 			isa = XCSwiftPackageProductDependency;

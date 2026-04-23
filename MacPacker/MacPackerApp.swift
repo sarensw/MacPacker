@@ -21,11 +21,16 @@ struct MacPackerApp: App {
     private let updaterController: SPUStandardUpdaterController
     #endif
     
+    private let appState: AppState
+    
     init() {
         #if !STORE
         // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
         // This is where you can also pass an updater delegate if you need one
         updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        appState = AppState(updaterController: updaterController)
+        #else
+        appState = AppState()
         #endif
         
         Logger.start()
@@ -35,6 +40,7 @@ struct MacPackerApp: App {
         Settings {
             SettingsView()
                 .environmentObject(appDelegate)
+                .environmentObject(appState)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {

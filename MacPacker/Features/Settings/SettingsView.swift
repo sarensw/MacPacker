@@ -39,6 +39,12 @@ struct SettingsView: View {
                         Text("Extensions")
                     }
                 
+                AboutSettingsView()
+                    .tabItem {
+                        Image(systemName: "info.circle")
+                        Text("About")
+                    }
+                
                 #if DEBUG
                 DebugSettingsView()
                     .tabItem {
@@ -53,4 +59,8 @@ struct SettingsView: View {
             NSApplication.shared.activate(ignoringOtherApps: true)
         }
     }
+}
+
+#Preview {
+    SettingsView()
 }

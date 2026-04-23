@@ -14,6 +14,8 @@ import TailBeatKit
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("welcomeScreenShownInVersion") private var welcomeScreenShownInVersion = "0.0"
+    @AppStorage("updateBetaChannelOn") var updateBetaChannelOn: Bool = false
+    @AppStorage("checkForUpdates") var checkForUpdates: SettingUpdateCheck = .automatically
     private var archiveWindowManager: ArchiveWindowManager? = nil
     
     let catalog: ArchiveTypeCatalog = ArchiveTypeCatalog()
@@ -23,6 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     override init() {
         archiveEngineConfigStore = ArchiveEngineConfigStore(catalog: catalog)
         engineSelector = ArchiveEngineSelector(catalog: catalog, configStore: archiveEngineConfigStore)
+        
         super.init()
         archiveWindowManager = ArchiveWindowManager(appDelegate: self)
         TailBeat.start()
@@ -98,23 +101,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     func openAboutWindow() {
+//        openSettings()
         
-        let window = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 480),
-            styleMask: [.titled, .closable, .fullSizeContentView],
-            backing: .buffered,
-            defer: true
-        )
-        window.titlebarAppearsTransparent = true
-        window.center()
-        window.isRestorable = false
-        
-        let contentView = AboutView()
-        
-        window.contentView = NSHostingView(rootView: contentView)
-        
-        // show the window
-        window.makeKeyAndOrderFront(nil)
+//        let window = NSPanel(
+//            contentRect: NSRect(x: 0, y: 0, width: 600, height: 480),
+//            styleMask: [.titled, .closable, .fullSizeContentView],
+//            backing: .buffered,
+//            defer: true
+//        )
+//        window.titlebarAppearsTransparent = true
+//        window.center()
+//        window.isRestorable = false
+//        
+//        let contentView = AboutSettingsView()
+//            .environmentObject(<#T##object: ObservableObject##ObservableObject#>)
+//        
+//        window.contentView = NSHostingView(rootView: contentView)
+//        
+//        // show the window
+//        window.makeKeyAndOrderFront(nil)
     }
     
     func openArchiveUsingOpenPanel() {
