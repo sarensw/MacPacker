@@ -1,9 +1,10 @@
 v0.15
 - feat: wim support (#70)
 - feat: Open password protected / encrypted archives (#6)
+- feat: New About dialog (#82)
 - core: Support for magic numbers at the end of archive files (#69)
 - core: Update acknowledgements (#79)
-- core: Drop macOS 13 support
+- core: Drop macOS 13 support (#80)
 
 v0.14.1
 - fix: Wrong translations in settings

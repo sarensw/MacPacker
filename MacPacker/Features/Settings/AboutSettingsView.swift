@@ -17,7 +17,7 @@ struct AboutSettingsView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
+            HStack(alignment: .top) {
                 if let nsImage = NSImage(named: "AppIcon") {
                     Image(nsImage: nsImage)
                 }
@@ -74,9 +74,32 @@ struct AboutSettingsView: View {
                     Text(verbatim: "Licensed under the GNU General Public License v3.0 (GPL-3.0-or-later). This is free software: you can redistribute it and/or modify it under the terms of the GPL.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(verbatim: "No warranty. See LICENSE for details.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                    
+                    #if !STORE
+                    Text("Support the development...", comment: "Hint to the user to support the app's development via some donation")
+                        .fontWeight(.semibold)
+                        .padding(.top, 14)
+                    HStack {
+                        Image("BuyMeCoffee")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 32)
+                            .onTapGesture {
+                                openURL(URL(string: "https://www.buymeacoffee.com/sarensw")!)
+                            }
+                        Image("Paypal")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: 32)
+                            .onTapGesture {
+                                openURL(URL(string: "https://www.paypal.com/donate/?hosted_button_id=KM8GA7MJMYNQN")!)
+                            }
+                    }
+                    #endif
                 }
                 .padding(.leading, 24)
             }

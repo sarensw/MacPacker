@@ -26,6 +26,18 @@ struct ArchiveContentToolbarView: ToolbarContent {
     let archiveState: ArchiveState
     let contentService: ArchiveContentService = ArchiveContentService()
     
+    private var moreAppsTitle: AttributedString {
+        var title = AttributedString(localized: LocalizedStringResource("More Apps", comment: "Hint to the user that the submenu contains links for more apps that they might like."))
+        title.append(AttributedString(stringLiteral: " "))
+        
+//        var dot = AttributedString(stringLiteral: "●")
+//        dot.foregroundColor = .accentColor
+//        dot.font = .system(size: 7)
+//        dot.baselineOffset = 2
+//        title.append(dot)
+        return title
+    }
+
     var body: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
             Button {
@@ -107,7 +119,9 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             to: folderURL)
                 }
             }
-        
+            
+            Spacer()
+            
             Menu {
                 Button {
                     appState.selectedSettingsTab = .general
@@ -208,9 +222,9 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     }
                 } label: {
                     Label {
-                        Text("More Apps")
+                        Text(moreAppsTitle)
                     } icon: {
-                        Image(systemName: "plus.square.dashed")
+                        Image(systemName: "square.grid.2x2")
                     }
                 }
                 .labelStyle(.titleAndIcon)
@@ -218,19 +232,13 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 Button {
                     openURL(URL(string: "https://macpacker.app/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui")!)
                 } label: {
-                    Label {
-                        Text("Website", comment: "Hint to the user that the button links to the app's website.")
-                    } icon: {
-                        Image(systemName: "link")
-                    }
-                        .labelStyle(.titleAndIcon)
+                    Text("Website", comment: "Hint to the user that the button links to the app's website.")
                 }
                 
                 Button {
                     openURL(URL(string: "https://github.com/sarensw/MacPacker/")!)
                 } label: {
-                    Label(Constants.otherAppGitHub, systemImage: "link")
-                        .labelStyle(.titleAndIcon)
+                    Text(verbatim: Constants.otherAppGitHub)
                 }
                 
                 Button {
@@ -240,7 +248,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     Label {
                         Text("About \(Bundle.main.displayName)")
                     } icon: {
-                        Image(systemName: "info.square")
+                        Image(systemName: "info.circle")
                     }
                     .labelStyle(.titleAndIcon)
                 }
@@ -251,7 +259,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     Image(systemName: "ellipsis")
                 }
             }
-            
+            .menuIndicator(.hidden)
             
         }
     }
