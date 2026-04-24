@@ -2,6 +2,7 @@ v0.15
 - feat: wim support (#70)
 - feat: Open password protected / encrypted archives (#6)
 - feat: New About dialog (#82)
+- fix: Up/down keys not working when preview is opened (#78)
 - core: Support for magic numbers at the end of archive files (#69)
 - core: Update acknowledgements (#79)
 - core: Drop macOS 13 support (#80)

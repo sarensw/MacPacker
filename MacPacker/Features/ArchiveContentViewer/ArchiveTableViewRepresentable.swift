@@ -435,6 +435,8 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         tableView.openSelected = openSelected
         tableView.openParent = openParent
         tableView.openPreview = openPreview
+        tableView.state = archiveState
+        tableView.startObserver()
         
         // make sure the table is scrollable
         scrollView.documentView = tableView
@@ -551,6 +553,28 @@ class ArchiveTableView: NSTableView {
     var openSelected: ((NSTableView) -> Void)?
     var openParent: ((NSTableView) -> Void)?
     var openPreview: (() -> Void)?
+    var state: ArchiveState?
+    
+    private var observerKeys: Any?
+    
+    deinit {
+        MainActor.assumeIsolated {
+            if let observerKeys { NSEvent.removeMonitor(observerKeys) }
+        }
+    }
+    
+    func startObserver() {
+        observerKeys = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
+            if let state = self.state, state.previewItemUrl != nil {
+                if event.keyCode == 125 || event.keyCode == 126 {
+                    super.keyDown(with: event)
+                    return nil
+                }
+            }
+            
+            return event
+        }
+    }
     
     override func keyDown(with event: NSEvent) {
         
