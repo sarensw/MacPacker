@@ -16,37 +16,29 @@ import TailBeatKit
 @main
 struct MacPackerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    
-    #if !STORE
-    private let updaterController: SPUStandardUpdaterController
-    #endif
+    @Environment(\.openSettings) private var openSettings
     
     init() {
-        #if !STORE
-        // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
-        // This is where you can also pass an updater delegate if you need one
-        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
-        #endif
-        
         Logger.start()
     }
     
     var body: some Scene {
         Settings {
             SettingsView()
-                .environmentObject(appDelegate)
+                .environmentObject(appDelegate.appState)
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button {
-                    appDelegate.openAboutWindow()
+                    appDelegate.appState.selectedSettingsTab = .about
+                    openSettings()
                 } label: {
                     Text("About \(Bundle.main.displayName)", comment: "Link to the About page of the app. The order depends on the language. For example: English: About MacPacker, Japanese: MacPackerについて")
                 }
             }
 #if !STORE
             CommandGroup(after: .appInfo) {
-                CheckForUpdatesView(updater: updaterController.updater)
+                CheckForUpdatesView(updater: appDelegate.updaterController.updater)
             }
 #endif
             

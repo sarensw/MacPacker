@@ -71,6 +71,7 @@ struct WelcomeWhatsNewView: View {
         VStack(alignment: .leading, spacing: 4) {
             WhatsNewPill(key: LocalizedStringResource("v0.15_pr_70", defaultValue: "Support for wim disk images", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.15_issue_6", defaultValue: "Open password protected / ecrypted archives", table: "LocalizableWhatsNew"), type: .feature)
+            WhatsNewPill(key: LocalizedStringResource("v0.15_issue_82", defaultValue: "New About dialog", table: "LocalizableWhatsNew"), type: .feature)
             WhatsNewPill(key: LocalizedStringResource("v0.15_pr_69", defaultValue: "Support for magic numbers at the end of archive files", table: "LocalizableWhatsNew"), type: .core)
             WhatsNewPill(key: LocalizedStringResource("v0.15_pr_79", defaultValue: "Update acknowledgements", table: "LocalizableWhatsNew"), type: .core)
             WhatsNewPill(key: LocalizedStringResource("v0.15_issue_80", defaultValue: "Drop macOS 13 support", table: "LocalizableWhatsNew"), type: .core)
@@ -168,10 +169,12 @@ struct WelcomeView: View {
     var body: some View {
         VStack (alignment: .center, spacing: 8) {
             Group {
-                Image("Logo")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 80, alignment: .center)
+                if let nsImage = NSImage(named: "AppIcon") {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 80, alignment: .center)
+                }
                 Text(styledString)
                 Text("Version v\(Bundle.main.appVersionLong)", comment: "This text shows the current version of the app in Welcome and About window")
                     .foregroundColor(.secondary)

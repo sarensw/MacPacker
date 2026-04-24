@@ -11,15 +11,13 @@ import SwiftUI
 
 class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     let archiveState: ArchiveState
-    let appDelegate: AppDelegate
     
     let contentService: ArchiveContentService = ArchiveContentService()
     
     var willCloseHandler: (() -> Void)?
     
-    init(archiveState: ArchiveState, appDelegate: AppDelegate) {
+    init(archiveState: ArchiveState, appState: AppState) {
         self.archiveState = archiveState
-        self.appDelegate = appDelegate
         
         let window = ArchiveWindow()
         window.isRestorable = false
@@ -32,7 +30,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         
         // show the content view
         let contentView = ContentView()
-            .environmentObject(appDelegate)
+            .environmentObject(appState)
             .environmentObject(archiveState)
         
         window.contentView = NSHostingView(rootView: contentView)

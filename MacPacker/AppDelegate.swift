@@ -8,23 +8,36 @@
 import AppKit
 import Core
 import Foundation
+#if !STORE
+import Sparkle
+#endif
 import SwiftUI
 import TailBeatKit
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("welcomeScreenShownInVersion") private var welcomeScreenShownInVersion = "0.0"
+    @AppStorage("updateBetaChannelOn") var updateBetaChannelOn: Bool = false
+    @AppStorage("checkForUpdates") var checkForUpdates: SettingUpdateCheck = .automatically
     private var archiveWindowManager: ArchiveWindowManager? = nil
     
-    let catalog: ArchiveTypeCatalog = ArchiveTypeCatalog()
-    let engineSelector: ArchiveEngineSelectorProtocol
-    let archiveEngineConfigStore: ArchiveEngineConfigStore
+    #if !STORE
+    let updaterController: SPUStandardUpdaterController
+    #endif
+
+    let appState: AppState
     
     override init() {
-        archiveEngineConfigStore = ArchiveEngineConfigStore(catalog: catalog)
-        engineSelector = ArchiveEngineSelector(catalog: catalog, configStore: archiveEngineConfigStore)
+        #if !STORE
+        // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
+        // This is where you can also pass an updater delegate if you need one
+        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        appState = AppState(updaterController: updaterController)
+        #else
+        appState = AppState()
+        #endif
+        
         super.init()
-        archiveWindowManager = ArchiveWindowManager(appDelegate: self)
         TailBeat.start()
     }
     
@@ -45,9 +58,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 //                handler = AppUrlExtractFilesHandler()
                 break
             case .extractHere:
-                handler = AppUrlExtractHereHandler(catalog: catalog, engineSelector: engineSelector)
+                handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .extractToFolder:
-                handler = AppUrlExtractToFolderHandler(catalog: catalog, engineSelector: engineSelector)
+                handler = AppUrlExtractToFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             }
             
             // we have all the url info, start the handlers now
@@ -70,6 +83,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     
     public func applicationDidFinishLaunching(_ notification: Notification) {
         Logger.log("finish launching")
+        
+        archiveWindowManager = ArchiveWindowManager(appState: appState)
         
         // make sure that at least one window will be shown
         // even if it is empty
@@ -95,26 +110,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     
     public func applicationWillTerminate(_ notification: Notification) {
         CacheCleaner().clean()
-    }
-    
-    func openAboutWindow() {
-        
-        let window = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 480),
-            styleMask: [.titled, .closable, .fullSizeContentView],
-            backing: .buffered,
-            defer: true
-        )
-        window.titlebarAppearsTransparent = true
-        window.center()
-        window.isRestorable = false
-        
-        let contentView = AboutView()
-        
-        window.contentView = NSHostingView(rootView: contentView)
-        
-        // show the window
-        window.makeKeyAndOrderFront(nil)
     }
     
     func openArchiveUsingOpenPanel() {

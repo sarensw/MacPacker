@@ -1,5 +1,5 @@
 {
-  "originHash" : "ed6447b99bbf291cf8b312be498b77a2bbb522a0350c83e062a2dec4a99374b2",
+  "originHash" : "de8589244405295f1ce7fda96b8f5e8e74c1ec173f5f5a2e68e989c826a422a1",
   "pins" : [
     {
       "identity" : "bitbytedata",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "cdcdc5177ad536cfb11b95c620f926a81014b7fe",
         "version" : "2.0.4"
+      }
+    },
+    {
+      "identity" : "pandalytics-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/PandalyticsIO/pandalytics-swift",
+      "state" : {
+        "revision" : "4894bb506bb75f4bdfd51918a6f24ad3b27502a0",
+        "version" : "0.5.0"
       }
     },
     {
