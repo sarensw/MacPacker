@@ -14,4 +14,7 @@ public enum Keys {
     public static let showColumnUncompressedSize = "showColumnUncompressedSize"
     public static let showColumnModificationDate = "showColumnModificationDate"
     public static let showColumnPosixPermissions = "showColumnPosixPermissions"
+    
+    public static let defaultOrderColumn = "defaultOrderColum"
+    public static let defaultOrderColumnAscending = "defaultOrderColumnAscending"
 }

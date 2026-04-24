@@ -2,6 +2,7 @@ v0.15
 - feat: wim support (#70)
 - feat: Open password protected / encrypted archives (#6)
 - feat: New About dialog (#82)
+- feat: Sorting enabled for all columns, sort order persisted and name is default (#77)
 - fix: Up/down keys not working when preview is opened (#78)
 - core: Support for magic numbers at the end of archive files (#69)
 - core: Update acknowledgements (#79)

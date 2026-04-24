@@ -7,17 +7,10 @@
 
 import AppKit
 import Cocoa
-import Foundation
 import Core
+import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
-
-enum SortOrder: String {
-    case name
-    case compressedSize
-    case uncompressedSize
-    case modificationDate
-}
 
 enum ArchiveViewerColumn: String, CaseIterable {
     case name
@@ -36,6 +29,9 @@ enum ArchiveViewerColumn: String, CaseIterable {
 }
 
 struct ArchiveTableViewRepresentable: NSViewRepresentable {
+    @AppStorage(Keys.defaultOrderColumn) private var defaultOrderColumn: ArchiveSortOrder = ArchiveSortOrder.name
+    @AppStorage(Keys.defaultOrderColumnAscending) private var defaultOrderColumnAscending: Bool = true
+    
     @Binding var selection: IndexSet?
     @Binding var isReloadNeeded: Bool
     @EnvironmentObject var archiveState: ArchiveState
@@ -261,11 +257,18 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         ) {
             guard let sortDescriptors = tableView.sortDescriptors.first else { return }
             
-            if let order = SortOrder(rawValue: sortDescriptors.key!) {
-                parent.archiveState.loadChildren(sortedBy: sortDescriptors)
+            if let order = ArchiveSortOrder(rawValue: sortDescriptors.key!) {
+                parent.defaultOrderColumn = order
+                parent.defaultOrderColumnAscending = sortDescriptors.ascending
+                
+                parent.archiveState.loadChildren()
                 parent.archiveState.isReloadNeeded = true
             }
         }
+        
+        //
+        // MARK: Drag
+        //
         
         // ---
         // Drag function to external application using a promise
@@ -436,6 +439,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         tableView.openParent = openParent
         tableView.openPreview = openPreview
         tableView.state = archiveState
+        tableView.sortDescriptors = [NSSortDescriptor(key: defaultOrderColumn.rawValue, ascending: defaultOrderColumnAscending)]
         tableView.startObserver()
         
         // make sure the table is scrollable
@@ -520,27 +524,31 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         colName.title = NSLocalizedString("Name", comment: "Column that shows the name of the archive files")
         colName.width = 300
         colName.resizingMask = .userResizingMask
-        colName.sortDescriptorPrototype = NSSortDescriptor(key: SortOrder.name.rawValue, ascending: true)
+        colName.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.name.rawValue, ascending: true)
         tableView.addTableColumn(colName)
         
         let colSizeCompressed = NSTableColumn(identifier: ArchiveViewerColumn.compressedSize.identifier)
         colSizeCompressed.title = NSLocalizedString("Packed Size", comment: "Column that shows the packed size of the archive files")
         colSizeCompressed.width = 100
+        colSizeCompressed.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.compressedSize.rawValue, ascending: true)
         tableView.addTableColumn(colSizeCompressed)
         
         let colSizeUncompressed = NSTableColumn(identifier: ArchiveViewerColumn.uncompressedSize.identifier)
         colSizeUncompressed.title = NSLocalizedString("Size", comment: "Column that shows the unpacked size of the archive files")
         colSizeUncompressed.width = 100
+        colSizeUncompressed.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.uncompressedSize.rawValue, ascending: true)
         tableView.addTableColumn(colSizeUncompressed)
         
         let colModDate = NSTableColumn(identifier: ArchiveViewerColumn.modificationDate.identifier)
         colModDate.title = NSLocalizedString("Date Modified", comment: "Column that shows the date the file was modified")
         colModDate.width = 150
+        colModDate.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.modificationDate.rawValue, ascending: true)
         tableView.addTableColumn(colModDate)
         
         let colPosInArchive = NSTableColumn(identifier: ArchiveViewerColumn.posixPermissions.identifier)
         colPosInArchive.title = NSLocalizedString("Permissions", comment: "Column that shows the file permissions")
         colPosInArchive.width = 80
+        colPosInArchive.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.posixPermissions.rawValue, ascending: true)
         tableView.addTableColumn(colPosInArchive)
     }
     
