@@ -16,6 +16,14 @@ public enum ArchiveStateStatus: String {
     case done
 }
 
+public enum ArchiveSortOrder: String {
+    case name
+    case compressedSize
+    case uncompressedSize
+    case modificationDate
+    case posixPermissions
+}
+
 @MainActor
 public class ArchiveState: ObservableObject {
     @Published private(set) public var hasArchive: Bool = false
@@ -41,7 +49,6 @@ public class ArchiveState: ObservableObject {
     // table of the archive view
     @Published private(set) public var selectedItem: ArchiveItem?
     @Published private(set) public var childItems: [ArchiveItem]?
-    private var currentSortOrder: NSSortDescriptor? = nil
     
     // Items currently selected by the user in the tree / table
     @Published public var selectedItems: [ArchiveItem] = []
@@ -141,7 +148,6 @@ extension ArchiveState {
         self.selectedItems = []
         
         self.childItems = nil
-        self.currentSortOrder = nil
         
         self.archiveLoader = nil
         
@@ -168,25 +174,56 @@ extension ArchiveState {
         }
     }
     
-    public func loadChildren(sortedBy: NSSortDescriptor? = nil) {
+    public func loadChildren() {
         guard let selectedItem else { return }
-        guard let sortedBy else {
+        
+        let defaultOrderColumn = UserDefaults.standard.string(forKey: Keys.defaultOrderColumn)
+        let defaultOrderColumnAscending = UserDefaults.standard.bool(forKey: Keys.defaultOrderColumnAscending)
+        
+        guard defaultOrderColumn != nil else {
             childItems = selectedItem.children?.compactMap { entries[$0] }
-            currentSortOrder = nil
             return
         }
         
         if let children = selectedItem.children?.compactMap({ entries[$0] }) {
-            currentSortOrder = sortedBy
-
             childItems = children.sorted { a, b in
-                if a.type != b.type { return a.type == .directory }
+                switch defaultOrderColumn {
+                case ArchiveSortOrder.name.rawValue:
+                    if a.type != b.type {
+                        return a.type == .directory
+                    }
 
-                let cmp = a.name.localizedStandardCompare(b.name)
-                if sortedBy.ascending {
-                    return cmp == .orderedAscending
-                } else {
-                    return cmp == .orderedDescending
+                    let cmp = a.name.localizedStandardCompare(b.name)
+                    return defaultOrderColumnAscending ? cmp == .orderedAscending : cmp == .orderedDescending
+
+                case ArchiveSortOrder.modificationDate.rawValue:
+                    let lhs = a.modificationDate ?? .distantPast
+                    let rhs = b.modificationDate ?? .distantPast
+                    
+                    return defaultOrderColumnAscending
+                    ? lhs < rhs
+                    : lhs > rhs
+
+                case ArchiveSortOrder.uncompressedSize.rawValue:
+                    return defaultOrderColumnAscending
+                    ? a.uncompressedSize < b.uncompressedSize
+                    : a.uncompressedSize > b.uncompressedSize
+                    
+                case ArchiveSortOrder.compressedSize.rawValue:
+                    return defaultOrderColumnAscending
+                    ? a.compressedSize < b.compressedSize
+                    : a.compressedSize > b.compressedSize
+                    
+                case ArchiveSortOrder.posixPermissions.rawValue:
+                    let lhs = a.posixPermissions ?? 0
+                    let rhs = b.posixPermissions ?? 0
+                    
+                    return defaultOrderColumnAscending
+                    ? lhs < rhs
+                    : lhs > rhs
+
+                default:
+                    return false
                 }
             }
         }
@@ -252,7 +289,7 @@ extension ArchiveState {
         self.isReloadNeeded = true
         
         self.selectedItem = root
-        loadChildren(sortedBy: currentSortOrder)
+        loadChildren()
     }
     
     public func add(url: URL) {
@@ -270,7 +307,7 @@ extension ArchiveState {
         entries[item.id] = item
         
         self.isReloadNeeded = true
-        loadChildren(sortedBy: currentSortOrder)
+        loadChildren()
     }
     
     /// Saves the current changes to the file
@@ -367,7 +404,7 @@ extension ArchiveState {
                 self.entries.merge(loaderResult.entries, uniquingKeysWith: { lhs, _ in lhs })
                 self.entries[loaderResult.root.id] = root
                 
-                loadChildren(sortedBy: currentSortOrder)
+                loadChildren()
                 
                 updateStatusText(nil)
                 
@@ -435,22 +472,22 @@ extension ArchiveState {
                 // Do nothing here. It is an archive. It is extracted already.
                 // We have updated the hierarchy already. Just select the item
                 self.selectedItem = item
-                loadChildren(sortedBy: currentSortOrder)
+                loadChildren()
             }
         case .archive:
             // TODO: This can never happen as each archive is also of type .file > Remove .archive as a type
             break
         case .virtual:
             self.selectedItem = item
-            loadChildren(sortedBy: currentSortOrder)
+            loadChildren()
             break
         case .directory:
             self.selectedItem = item
-            loadChildren(sortedBy: currentSortOrder)
+            loadChildren()
             break
         case .root:
             self.selectedItem = item
-            loadChildren(sortedBy: currentSortOrder)
+            loadChildren()
             break
         case .unknown:
             Logger.error("Unhandled ArchiveItem.Type: \(item.name)")
@@ -477,7 +514,7 @@ extension ArchiveState {
         let previousItem = selectedItem
         
         selectedItem = entries.first(where: { $0.key == selectedItem?.parent })?.value
-        loadChildren(sortedBy: currentSortOrder)
+        loadChildren()
         
         self.isReloadNeeded = true
         
@@ -545,7 +582,7 @@ extension ArchiveState {
 
             // set the nested archive as item
             selectedItem = item
-            loadChildren(sortedBy: currentSortOrder)
+            loadChildren()
         } else {
             // Could not detect any archive, just open the file
             NSWorkspace.shared.open(tempUrl)
@@ -597,7 +634,7 @@ extension ArchiveState {
                 }
                 self.entries.merge(loaderResult.entries) { (current, _) in current }
                 
-                loadChildren(sortedBy: currentSortOrder)
+                loadChildren()
                 
                 updateStatusText(nil)
                 
