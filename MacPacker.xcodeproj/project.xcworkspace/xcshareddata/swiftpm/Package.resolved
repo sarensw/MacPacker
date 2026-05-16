@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/PandalyticsIO/pandalytics-swift",
       "state" : {
-        "revision" : "4894bb506bb75f4bdfd51918a6f24ad3b27502a0",
-        "version" : "0.5.0"
+        "revision" : "f84563a9af504b8020cc1a61af4e131551df2a7a",
+        "version" : "0.7.0"
       }
     },
     {

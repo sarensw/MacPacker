@@ -211,14 +211,27 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 
                 Menu {
                     Button {
+                        openURL(Constants.otherAppFlowMooseURL)
+                    } label: {
+                        Label {
+                            Text(verbatim: "\(Constants.otherAppFlowMoose)")
+                        } icon: {
+                            Image(nsImage: .menuIcon(named: "AppIcon_FlowMoose", pointSize: 16))
+                        }
+                        .labelStyle(.titleAndIcon)
+                        Text("Voice-2-Text working everywhere")
+                    }
+                    
+                    Button {
                         openURL(URL(string: "https://filefillet.com/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui")!)
                     } label: {
                         Label {
-                            Text(Constants.otherAppFileFillet)
+                            Text(verbatim: "\(Constants.otherAppFileFillet)")
                         } icon: {
-                            Image(nsImage: .menuIcon(named: "FileFillet", pointSize: 16))
+                            Image(nsImage: .menuIcon(named: "AppIcon_FileFillet", pointSize: 16))
                         }
                         .labelStyle(.titleAndIcon)
+                        Text("Organize files. Fast.")
                     }
                 } label: {
                     Label {

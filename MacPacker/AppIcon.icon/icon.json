@@ -8,14 +8,14 @@
         {
           "image-name-specializations" : [
             {
-              "value" : "Asset 7 2.svg"
+              "value" : "light.svg"
             },
             {
               "appearance" : "dark",
-              "value" : "Asset 8.svg"
+              "value" : "dark.svg"
             }
           ],
-          "name" : "Asset 8",
+          "name" : "dark",
           "position" : {
             "scale" : 2.6,
             "translation-in-points" : [

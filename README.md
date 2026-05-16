@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="http://macpacker.app"><img src="https://raw.githubusercontent.com/sarensw/MacPacker/main/MacPacker/Assets.xcassets/Logo.imageset/icon_256x256.png" alt="MacPacker" width="128"></a>
+  <a href="http://macpacker.app"><img src="https://raw.githubusercontent.com/sarensw/MacPacker/main/assets/AppIcon-iOS-Default-1024x1024@1x.png" alt="MacPacker" width="128"></a>
   <br>
   MacPacker
   <br>
