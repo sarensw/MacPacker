@@ -105,6 +105,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         return true
     }
     
+    public func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return true
+    }
+
     public func applicationWillTerminate(_ notification: Notification) {
         CacheCleaner().clean()
     }
