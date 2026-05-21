@@ -1,0 +1,34 @@
+# ── Per-app beta distribution shell ──────────────────────────────────────────
+# Copy into each app repo at .github/workflows/distribute-beta.yml.
+# Triggered when a PR is merged to main. The `if:` gate prevents firing on
+# closed-but-unmerged PRs.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Distribute Beta
+
+on:
+  push: 
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write          # for the GH pre-release
+  pull-requests: write     # for the PR comment
+
+jobs:
+  beta:
+    # if: github.event.pull_request.merged == true
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.21
+    secrets: inherit
+    with:
+      # ── Build toggles ──
+      build-direct: true
+      build-app-store: true
+
+      # ── Distribute toggles ──
+      distribute-app-store: true      # TestFlight
+      distribute-beta-appcast: true   # Sparkle beta channel
+
+      # ── Per-app build flags ──
+      has-finder-extension: true     # macpacker
+      has-quicklook-extension: true  # macpacker
