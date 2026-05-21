@@ -14,8 +14,20 @@ permissions:
 
 jobs:
   pr:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.3.21
-    secrets: inherit
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.3.22
+    secrets: 
+      DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+      DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
+      KEYCHAIN_PASSWORD:              ${{ secrets.KEYCHAIN_PASSWORD }}
+      PROV_PROF_DEVID_BASE64:         ${{ secrets.PROV_PROF_DEVID_BASE64 }}
+      PROV_PROF_DEVID_FINDER_BASE64:  ${{ secrets.PROV_PROF_DEVID_FINDER_BASE64 }}
+      PROV_PROF_DEVID_QL_BASE64:      ${{ secrets.PROV_PROF_DEVID_QL_BASE64 }}
+      ASC_KEY_ID:                     ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID:                  ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_BASE64:                 ${{ secrets.ASC_KEY_BASE64 }}
+      AWS_ACCESS_KEY_ID:              ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY:          ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      SHARED_WORKFLOWS_TOKEN:         ${{ secrets.SHARED_WORKFLOWS_TOKEN }}
     with:
       has-finder-extension: true
       has-quicklook-extension: true
