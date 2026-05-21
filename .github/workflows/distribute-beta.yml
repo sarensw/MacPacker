@@ -17,7 +17,7 @@ permissions:
 jobs:
   beta:
     # if: github.event.pull_request.merged == true
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.22
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.23
     secrets: 
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
