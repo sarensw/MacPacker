@@ -1,0 +1,690 @@
+{
+    "comingNext": {
+        "en": "Support for deletion of files / folders from .zip archives",
+        "zh-Hans": "支持从 .zip 压缩包中删除文件 / 文件夹",
+        "fr": "Prise en charge de la suppression de fichiers / dossiers des archives .zip",
+        "de": "Unterstützung zum Löschen von Dateien / Ordnern aus .zip-Archiven",
+        "it": "Supporto per l’eliminazione di file / cartelle dagli archivi .zip",
+        "ja": ".zip アーカイブ内のファイル / フォルダ削除をサポート",
+        "fa": "پشتیبانی از حذف فایل‌ها / پوشه‌ها از آرشیوهای .zip",
+        "pl": "Obsługa usuwania plików / folderów z archiwów .zip",
+        "pt-BR": "Suporte para exclusão de arquivos / pastas de arquivos .zip",
+        "ru": "Поддержка удаления файлов / папок из архивов .zip",
+        "uk": "Підтримка видалення файлів / папок з архівів .zip",
+        "es-MX": "Compatibilidad con eliminación de archivos / carpetas de archivos .zip",
+        "ko": ".zip 아카이브에서 파일 / 폴더 삭제 지원"
+    },
+    "versions": [
+        {
+            "version": "0.15",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "wim support",
+                        "zh-Hans": "支持 WIM",
+                        "fr": "Prise en charge de WIM",
+                        "de": "WIM-Unterstützung",
+                        "it": "Supporto WIM",
+                        "ja": "WIM サポート",
+                        "fa": "پشتیبانی از WIM",
+                        "pl": "Obsługa WIM",
+                        "pt-BR": "Suporte a WIM",
+                        "ru": "Поддержка WIM",
+                        "uk": "Підтримка WIM",
+                        "es-MX": "Compatibilidad con WIM",
+                        "ko": "WIM 지원"
+                    },
+                    "pr": 70
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Open password protected / encrypted archives",
+                        "zh-Hans": "打开受密码保护/加密的压缩包",
+                        "fr": "Ouverture des archives protégées par mot de passe / chiffrées",
+                        "de": "Öffnen passwortgeschützter / verschlüsselter Archive",
+                        "it": "Apri archivi protetti da password / crittografati",
+                        "ja": "パスワード保護 / 暗号化されたアーカイブを開く",
+                        "fa": "باز کردن آرشیوهای رمزدار / رمزگذاری‌شده",
+                        "pl": "Otwieranie archiwów chronionych hasłem / zaszyfrowanych",
+                        "pt-BR": "Abrir arquivos protegidos por senha / criptografados",
+                        "ru": "Открытие архивов, защищённых паролем / зашифрованных",
+                        "uk": "Відкриття архівів, захищених паролем / зашифрованих",
+                        "es-MX": "Abrir archivos protegidos con contraseña / cifrados",
+                        "ko": "암호 보호 / 암호화된 아카이브 열기"
+                    },
+                    "pr": 6
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "New Welcome & About dialogs",
+                        "zh-Hans": "全新的欢迎与关于对话框",
+                        "fr": "Nouvelles fenêtres de bienvenue et À propos",
+                        "de": "Neue Willkommens- und „Über“-Dialoge",
+                        "it": "Nuove finestre di Benvenuto e Informazioni",
+                        "ja": "新しいウェルカムおよび「このアプリについて」ダイアログ",
+                        "fa": "پنجره‌های جدید خوش‌آمدگویی و «درباره»",
+                        "pl": "Nowe okna powitalne i „O programie”",
+                        "pt-BR": "Novos diálogos de Boas-vindas e Sobre",
+                        "ru": "Новые окна приветствия и «О программе»",
+                        "uk": "Нові вікна привітання та «Про програму»",
+                        "es-MX": "Nuevos diálogos de Bienvenida y Acerca de",
+                        "ko": "새로운 환영 및 정보 대화상자"
+                    },
+                    "pr": 82
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Sorting enabled for all columns, sort order persisted and name is default",
+                        "zh-Hans": "所有列均支持排序，排序顺序会被保存，名称为默认排序",
+                        "fr": "Tri activé pour toutes les colonnes, ordre de tri conservé et nom défini par défaut",
+                        "de": "Sortierung für alle Spalten aktiviert, Sortierreihenfolge wird gespeichert und Name ist Standard",
+                        "it": "Ordinamento abilitato per tutte le colonne, ordine salvato e nome come predefinito",
+                        "ja": "すべての列で並び替えを有効化、並び順を保持し、名前をデフォルトに設定",
+                        "fa": "مرتب‌سازی برای همه ستون‌ها فعال شد، ترتیب مرتب‌سازی ذخیره می‌شود و نام پیش‌فرض است",
+                        "pl": "Sortowanie dostępne dla wszystkich kolumn, kolejność sortowania zapisywana, nazwa jako domyślna",
+                        "pt-BR": "Ordenação habilitada para todas as colunas, ordem persistida e nome como padrão",
+                        "ru": "Сортировка доступна для всех столбцов, порядок сохраняется, имя — по умолчанию",
+                        "uk": "Сортування доступне для всіх стовпців, порядок зберігається, назва — за замовчуванням",
+                        "es-MX": "Ordenación habilitada para todas las columnas, el orden se conserva y el nombre es el predeterminado",
+                        "ko": "모든 열 정렬 지원, 정렬 순서 유지 및 이름을 기본값으로 설정"
+                    },
+                    "pr": 77
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Up/down keys not working when preview is opened",
+                        "zh-Hans": "打开预览时上下方向键无法使用",
+                        "fr": "Les touches haut/bas ne fonctionnaient pas lorsque l’aperçu était ouvert",
+                        "de": "Pfeiltasten hoch/runter funktionierten nicht bei geöffneter Vorschau",
+                        "it": "I tasti su/giù non funzionavano quando l’anteprima era aperta",
+                        "ja": "プレビュー表示中に上下キーが動作しない問題を修正",
+                        "fa": "کلیدهای بالا/پایین هنگام باز بودن پیش‌نمایش کار نمی‌کردند",
+                        "pl": "Klawisze góra/dół nie działały przy otwartym podglądzie",
+                        "pt-BR": "As teclas para cima/baixo não funcionavam com a pré-visualização aberta",
+                        "ru": "Клавиши вверх/вниз не работали при открытом предпросмотре",
+                        "uk": "Клавіші вгору/вниз не працювали при відкритому перегляді",
+                        "es-MX": "Las teclas arriba/abajo no funcionaban cuando la vista previa estaba abierta",
+                        "ko": "미리보기 열림 상태에서 위/아래 키가 동작하지 않던 문제 수정"
+                    },
+                    "pr": 78
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Support for magic numbers at the end of archive files",
+                        "zh-Hans": "支持压缩文件末尾的魔术数字",
+                        "fr": "Prise en charge des magic numbers à la fin des fichiers d’archive",
+                        "de": "Unterstützung für Magic Numbers am Ende von Archivdateien",
+                        "it": "Supporto per magic number alla fine dei file archivio",
+                        "ja": "アーカイブファイル末尾のマジックナンバーをサポート",
+                        "fa": "پشتیبانی از اعداد جادویی در انتهای فایل‌های آرشیو",
+                        "pl": "Obsługa magic numbers na końcu plików archiwów",
+                        "pt-BR": "Suporte a magic numbers no final de arquivos compactados",
+                        "ru": "Поддержка magic numbers в конце архивных файлов",
+                        "uk": "Підтримка magic numbers наприкінці архівних файлів",
+                        "es-MX": "Compatibilidad con magic numbers al final de archivos comprimidos",
+                        "ko": "아카이브 파일 끝의 매직 넘버 지원"
+                    },
+                    "pr": 69
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Update acknowledgements",
+                        "zh-Hans": "更新致谢内容",
+                        "fr": "Mise à jour des remerciements",
+                        "de": "Danksagungen aktualisiert",
+                        "it": "Aggiornati i riconoscimenti",
+                        "ja": "謝辞を更新",
+                        "fa": "به‌روزرسانی قدردانی‌ها",
+                        "pl": "Zaktualizowano podziękowania",
+                        "pt-BR": "Atualização dos agradecimentos",
+                        "ru": "Обновлены благодарности",
+                        "uk": "Оновлено подяки",
+                        "es-MX": "Actualización de agradecimientos",
+                        "ko": "감사의 말 업데이트"
+                    },
+                    "pr": 79
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Drop macOS 13 support",
+                        "zh-Hans": "停止支持 macOS 13",
+                        "fr": "Abandon de la prise en charge de macOS 13",
+                        "de": "Unterstützung für macOS 13 eingestellt",
+                        "it": "Rimosso il supporto per macOS 13",
+                        "ja": "macOS 13 のサポートを終了",
+                        "fa": "پشتیبانی از macOS 13 حذف شد",
+                        "pl": "Usunięto wsparcie dla macOS 13",
+                        "pt-BR": "Encerrado o suporte ao macOS 13",
+                        "ru": "Прекращена поддержка macOS 13",
+                        "uk": "Припинено підтримку macOS 13",
+                        "es-MX": "Se eliminó el soporte para macOS 13",
+                        "ko": "macOS 13 지원 종료"
+                    },
+                    "pr": 80
+                }
+            ]
+        },
+        {
+            "version": "0.14.1",
+            "items": [
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Wrong translations in settings"
+                    }
+                },
+                {
+                    "type": "lang",
+                    "title": {
+                        "en": "Language update for several languages"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.14",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "New menu to open a new empty window"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Extended info on archive in status bar"
+                    },
+                    "pr": 61
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "tar.gz and tgz not working"
+                    },
+                    "pr": 54
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Can't close QuickLook with Space"
+                    },
+                    "pr": 55
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "macOS not recognizing MacPacker as a viable VHDX reader"
+                    },
+                    "pr": 56
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Cache cleanup not happening when just closing a window or loading a new archive"
+                    },
+                    "pr": 58
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "App crashes when unpacking exe / msi files"
+                    },
+                    "pr": 59
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Extract here and Extract to folder via Finder don't work"
+                    },
+                    "pr": 62
+                }
+            ]
+        },
+        {
+            "version": "0.13",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "arj, dmg/apfs (Apple File System), chm, fat, ntfs, tar.z/taz, qcow2, squashfs, vdi, vhd, vhdx, vmdk, xar support"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Special handling for Apple Installer Packages (pkg)"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Added settings for easier access to managing the Finder file provider extension"
+                    }
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Extracting folders does not include files"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Added attributions for 3rd party libraries/code"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Language support for Persian"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.12",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Added 'File' > 'Open...' menu to open archives when no window is open"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Improved TAR archive handling"
+                    }
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "MacPacker not showing up in 'Open With…' menu in Finder (App Store version only)"
+                    }
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Chinese (Unicode) characters in archive contents not displayed correctly"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Separated localization of changelog from app localization"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Language support for Ukrainian, Russian"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Detect archive type based on magic number in addition to file extension"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.11",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Use system preview instead of internal previewer"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Navigate the archive using keys similar to Finder"
+                    }
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Crash when using the open with option"
+                    }
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Quick look extension missing in App Store version"
+                    }
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Empty window opened in addition to file opened with 'Open With' option in Finder"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Re-enable macOS 13 as minimum deployment target"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Language support for Italian"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.10",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Quick Look extension"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Added Send-a-smile menu to let users quickly star the repo or add a review in the App Store"
+                    }
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "App crashes when all windows are closed and then the app gets terminated"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Cleanup logging"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.9",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Finder integration via context menu"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Language support for German, French, Simplified Chinese"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.8",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "gzip, bzip2, xz, cab, iso, sit & sea (StuffIt), Z, cpio support"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Show packed size, size, modified date, permissions in columns"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.7",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "lzh, lha, lzx support"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Close internal previewer using Space, or Esc"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Show archive name in title"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Extract selected files via UI"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Extract full archive"
+                    }
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "App Store version shows \"MacPacker store\" as product name in Launchpad"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "New architecture for archive handlers"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.6",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Hit space to open internal preview"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Setting to change the breadcrumb position"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "rar read support"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Show folder / file icons in table"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Add support for macOS 14"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.5",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Multiple windows support"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Open info for archive"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Breadcrumb view for navigation"
+                    }
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Open With in Finder not working"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Major code cleanup"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.4",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Viewer to show preview of files"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "7zip read support"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Clean cache when MacPacker terminates"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.3",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Highlight when dragging file to MacPacker window"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Double click any file to extract and open it using the default editor"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Breadcrumb showing the current path in the archive (incl. nested support)"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Support for any valid zip-based file"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Automatic cache cleaning & zip creation support"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Prepare the core for creating/editing archives"
+                    }
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Unit tests"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.2",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Welcome & about dialog"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Auto update"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "zip support"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "\"Open With...\" context menu support"
+                    }
+                }
+            ]
+        },
+        {
+            "version": "0.1",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Drag & drop an lz4 or tar file to MacPacker"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Manual option to clear the cache"
+                    }
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Traverse through nested archives"
+                    }
+                }
+            ]
+        }
+    ]
+}
