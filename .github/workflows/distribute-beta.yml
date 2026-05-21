@@ -1,22 +1,23 @@
-# ── Per-app release distribution shell ───────────────────────────────────────
-# Copy into each app repo at .github/workflows/distribute-release.yml.
-# Triggered by pushing a v*.*.* tag. Strict fail-safe order: GH Release is
-# only created after every other publish step succeeds.
+# ── Per-app beta distribution shell ──────────────────────────────────────────
+# Copy into each app repo at .github/workflows/distribute-beta.yml.
+# Triggered when a PR is merged to main. The `if:` gate prevents firing on
+# closed-but-unmerged PRs.
 # ─────────────────────────────────────────────────────────────────────────────
-name: Distribute Release
+name: Distribute Beta
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
-      - '!v*-beta.*'   # exclude beta tags auto-pushed by distribute-beta.yml
+  pull_request:
+    types: [closed]
+    branches: [main]
 
 permissions:
-  contents: write    # for the GH Release
+  contents: write          # for the GH pre-release
+  pull-requests: write     # for the PR comment
 
 jobs:
-  release:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.3.23
+  beta:
+    # if: github.event.pull_request.merged == true
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.23
     secrets: 
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
@@ -39,14 +40,14 @@ jobs:
       SPARKLE_ED_PRIVATE_KEY:         ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
       SHARED_WORKFLOWS_TOKEN:         ${{ secrets.SHARED_WORKFLOWS_TOKEN }}
     with:
-      # ── Build toggles ─
+      # ── Build toggles ──
       build-direct: true
       build-app-store: true
 
       # ── Distribute toggles ──
-      distribute-app-store: true
-      distribute-stable-appcast: true
+      distribute-app-store: true      # TestFlight
+      distribute-beta-appcast: true   # Sparkle beta channel
 
       # ── Per-app build flags ──
-      has-finder-extension: true
-      has-quicklook-extension: true
+      has-finder-extension: true     # macpacker
+      has-quicklook-extension: true  # macpacker
