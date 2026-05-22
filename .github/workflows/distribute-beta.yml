@@ -6,18 +6,15 @@
 name: Distribute Beta
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches: [main]
 
 permissions:
   contents: write          # for the GH pre-release
-  pull-requests: write     # for the PR comment
 
 jobs:
   beta:
-    # if: github.event.pull_request.merged == true
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.27
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.30
     secrets: 
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
