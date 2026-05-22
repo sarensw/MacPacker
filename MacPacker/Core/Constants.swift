@@ -20,6 +20,7 @@ class Constants {
     static let changelogURL: URL = URL(string: "https://github.com/sarensw/MacPacker/releases")!
     static let privacyURL: URL = URL(string: "https://github.com/sarensw/MacPacker/blob/main/PRIVACY.md")!
     static let termsURL: URL = URL(string: "https://github.com/sarensw/MacPacker/blob/main/TERMS.md")!
+    static let imprintURL: URL = URL(string: "https://macpacker.app/imprint")!
     
     // MARK: Other products
     public static let otherAppMacPacker: String = "MacPacker"

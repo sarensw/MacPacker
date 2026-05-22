@@ -15,6 +15,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     let contentService: ArchiveContentService = ArchiveContentService()
     
     var willCloseHandler: (() -> Void)?
+    var didBecomeMain: (() -> Void)?
     
     init(archiveState: ArchiveState, appState: AppState) {
         self.archiveState = archiveState

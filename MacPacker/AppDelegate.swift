@@ -90,13 +90,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // even if it is empty
         archiveWindowManager?.openLaunchArchiveWindow()
         
-        if let appVersion = Version(Bundle.main.appVersionLong),
-           let welcomeVersion = Version(welcomeScreenShownInVersion) {
-            if appVersion > welcomeVersion {
-                Logger.debug("Higher app version detected, showing welcome screen")
-                WelcomeWindowController().show()
-                welcomeScreenShownInVersion = Bundle.main.appVersionLong
-            }
+        // opens the welcome window
+        if welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") {
+            WelcomeWindowController().show()
+            welcomeScreenShownInVersion = Bundle.main.appVersionLong
         }
     }
     
