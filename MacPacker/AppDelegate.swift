@@ -19,8 +19,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("welcomeScreenShownInVersion") private var welcomeScreenShownInVersion = "0.0"
     @AppStorage("updateBetaChannelOn") var updateBetaChannelOn: Bool = false
     @AppStorage("checkForUpdates") var checkForUpdates: SettingUpdateCheck = .automatically
+    @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     private var archiveWindowManager: ArchiveWindowManager? = nil
     
+    private static var isRunningInPreview: Bool {
+        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+    }
     #if !STORE
     let updaterController: SPUStandardUpdaterController
     #endif
@@ -31,14 +35,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         #if !STORE
         // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
         // This is where you can also pass an updater delegate if you need one
-        updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        updaterController = SPUStandardUpdaterController(startingUpdater: !Self.isRunningInPreview, updaterDelegate: nil, userDriverDelegate: nil)
         appState = AppState(updaterController: updaterController)
         #else
         appState = AppState()
         #endif
         
         super.init()
+        if !Self.isRunningInPreview {
         TailBeat.start()
+        }
     }
     
     public func application(_ application: NSApplication, open urls: [URL]) {
@@ -82,6 +88,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     public func applicationDidFinishLaunching(_ notification: Notification) {
+        guard !Self.isRunningInPreview else { return }
         Logger.log("finish launching")
         
         archiveWindowManager = ArchiveWindowManager(appState: appState)
@@ -98,6 +105,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        guard !Self.isRunningInPreview else { return true }
         if !hasVisibleWindows {
             archiveWindowManager?.openArchiveWindow()
             NSApp.activate(ignoringOtherApps: true)
@@ -106,10 +114,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     public func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        return true
+        if quitOnLastWindowClosed {
+            return true
+        }
+        return false
     }
 
     public func applicationWillTerminate(_ notification: Notification) {
+        guard !Self.isRunningInPreview else { return }
         CacheCleaner().clean()
     }
     

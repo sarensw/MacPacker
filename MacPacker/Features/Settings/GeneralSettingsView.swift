@@ -15,12 +15,13 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
+    @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
                 Text("Columns:", comment: "Let's the user choose to show or hide columns in the archive window")
-                    .frame(width: 160, alignment: .trailing)
+                    .frame(width: 200, alignment: .trailing)
                 
                 VStack(alignment: .leading) {
                     Toggle(isOn: $showCompressedSize) {
@@ -45,7 +46,7 @@ struct GeneralSettingsView: View {
             
             HStack(alignment: .top) {
                 Text("Breadcrumb position:", comment: "Allows the user to change the breadcrumb position to either top or bottom of the archive window")
-                    .frame(width: 160, alignment: .trailing)
+                    .frame(width: 200, alignment: .trailing)
                 
                 HStack {
                     Picker(String(""), selection: $breadcrumbPosition) {
@@ -55,6 +56,17 @@ struct GeneralSettingsView: View {
                         }
                     }
                 }
+                .frame(width: 240, alignment: .leading)
+            }
+            
+            HStack(alignment: .top) {
+                Text("Quit on last window closed:", comment: "Quit the app when the last archive window is closed")
+                    .frame(width: 200, alignment: .trailing)
+                
+                HStack {
+                    Toggle(isOn: $quitOnLastWindowClosed) {}
+                }
+                .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
             }
         }
