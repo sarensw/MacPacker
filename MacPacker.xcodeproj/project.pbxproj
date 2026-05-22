@@ -269,7 +269,6 @@
 				254BB5502ABBE8430059A1D5 /* Frameworks */,
 				254BB5532ABBE8430059A1D5 /* Resources */,
 				252F12132E7BAC5D004CCEBE /* Embed Foundation Extensions */,
-				254045212ECB66B5004A4380 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -321,7 +320,6 @@
 				25C0A8A12A78DE5F002C1C2A /* Frameworks */,
 				25C0A8A22A78DE5F002C1C2A /* Resources */,
 				252F13D02E801C4C004CCEBE /* Embed Foundation Extensions */,
-				25951DF52EC62EB000890351 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -434,45 +432,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		254045212ECB66B5004A4380 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\nset -eu\n\n# Keep for Release/Archive\nif [ \"${CONFIGURATION:-}\" != \"Release\" ]; then\n  exit 0\nfi\n\nAPP=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\necho \"APP=$APP\"\n\n# Sign every 7zz inside THIS app bundle\n/usr/bin/find \"$APP\" -type f -name \"7zz\" -print | while IFS= read -r helper; do\n  echo \"Signing helper: $helper\"\n  /bin/chmod +x \"$helper\" 2>/dev/null || true\n\n  ENT=\"$(dirname \"$helper\")/7zz.entitlements\"\n  if [ ! -f \"$ENT\" ]; then\n    echo \"Entitlements not found next to helper: $ENT\"\n    exit 1\n  fi\n\n  /usr/bin/codesign --force \\\n    --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n    --entitlements \"$ENT\" \\\n    \"$helper\"\ndone\n";
-		};
-		25951DF52EC62EB000890351 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\nset -euo pipefail\n\n# Only for Release (Archive is Release anyway)\nif [ \"$CONFIGURATION\" != \"Release\" ]; then\n  exit 0\nfi\n\nAPP=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\n\nHELPERS=\"\n$APP/Contents/Resources/Modules_Core.bundle/Contents/Resources/7zz\n$APP/Contents/PlugIns/QuickLookExtension.appex/Contents/Resources/Modules_Core.bundle/Contents/Resources/7zz\n\"\n\nfor helper in $HELPERS; do\n  if [ -f \"$helper\" ]; then\n    echo \"Signing: $helper\"\n    /bin/chmod +x \"$helper\" 2>/dev/null || true\n    /usr/bin/codesign --force \\\n      --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" \\\n      --options runtime \\\n      --timestamp \\\n      \"$helper\"\n  else\n    echo \"Missing (skipping): $helper\"\n  fi\ndone\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		252F11FE2E7ABDD9004CCEBE /* Sources */ = {
