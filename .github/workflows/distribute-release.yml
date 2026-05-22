@@ -8,15 +8,15 @@ name: Distribute Release
 on:
   push:
     tags:
-      - 'v*.*.*'
-      - '!v*-beta.*'   # exclude beta tags auto-pushed by distribute-beta.yml
+      - 'v*'
+      - '!v*-beta.*'
 
 permissions:
   contents: write    # for the GH Release
 
 jobs:
   release:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.3.33
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.3.34
     secrets: 
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
@@ -54,3 +54,6 @@ jobs:
       # ── Build configuration ──
       configuration-direct: Release
       configuration-app-store: Release Store
+
+      # ── GitHub release ──
+      discussion-category: Announcements
