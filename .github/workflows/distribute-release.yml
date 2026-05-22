@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   release:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.3.23
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.3.25
     secrets: 
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
@@ -50,3 +50,7 @@ jobs:
       # ── Per-app build flags ──
       has-finder-extension: true
       has-quicklook-extension: true
+
+      # ── Build configuration ──
+      configuration-direct: Release
+      configuration-app-store: Release Store

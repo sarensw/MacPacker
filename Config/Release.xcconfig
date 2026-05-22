@@ -3,6 +3,9 @@
 DEVELOPMENT_TEAM = ZJ2TSMMJWF
 CODE_SIGN_STYLE = Manual
 CODE_SIGN_IDENTITY = Developer ID Application
-PROVISIONING_PROFILE_SPECIFIER =
 
-#include? "SigningOverride.xcconfig"
+PROVISIONING_PROFILE_SPECIFIER = $(DIRECT_PROFILE_FOR_$(PRODUCT_BUNDLE_IDENTIFIER:c99extidentifier))
+
+DIRECT_PROFILE_FOR_com_sarensx_MacPacker                    = MacPacker
+DIRECT_PROFILE_FOR_com_sarensx_MacPacker_FinderExtension    = MacPackerFinder
+DIRECT_PROFILE_FOR_com_sarensx_MacPacker_QuickLookExtension = MacPackerQuickLook

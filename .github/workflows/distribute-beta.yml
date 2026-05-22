@@ -17,7 +17,7 @@ permissions:
 jobs:
   beta:
     # if: github.event.pull_request.merged == true
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.23
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.25
     secrets: 
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
@@ -51,3 +51,7 @@ jobs:
       # ── Per-app build flags ──
       has-finder-extension: true     # macpacker
       has-quicklook-extension: true  # macpacker
+
+      # ── Build configuration ──
+      configuration-direct: Release
+      configuration-app-store: Release Store
