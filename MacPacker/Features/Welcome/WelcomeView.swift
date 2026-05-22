@@ -45,6 +45,7 @@ struct WelcomeView: View {
                     WelcomeChangelogView()
                 }
                 .padding(16)
+                .frame(maxWidth: .infinity)
                 
                 Divider()
                 
@@ -80,6 +81,7 @@ struct WelcomeView: View {
                     Spacer()
                     #endif
                 }
+                .frame(maxWidth: .infinity)
             }
             
             Divider()
@@ -94,5 +96,5 @@ struct WelcomeView: View {
 
 #Preview(traits: .sizeThatFitsLayout) {
     WelcomeView()
-        .frame(width: 900, height: 500)
+        .frame(width: 900)
 }

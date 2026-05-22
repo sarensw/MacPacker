@@ -15,34 +15,29 @@ class WelcomeWindowController {
     private var welcomeWindowController: NSWindowController? = nil
     
     init() {
-        let rootView = WelcomeView()
-        let hostingView = NSHostingView(rootView: rootView)
+        let targetWidth: CGFloat = 800
+
+        let hostingView = NSHostingView(rootView: WelcomeView().frame(width: targetWidth))
+        hostingView.frame = NSRect(x: 0, y: 0, width: targetWidth, height: 0)
         hostingView.layoutSubtreeIfNeeded()
-        
-        let fittingSize = hostingView.fittingSize
-        
-        // load the window
-        welcomeWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 800, height: fittingSize.height),
-            styleMask: [.titled, .closable],
+        let contentSize = NSSize(width: targetWidth, height: ceil(hostingView.fittingSize.height))
+
+        let window = NSWindow(
+            contentRect: NSRect(origin: .zero, size: contentSize),
+            styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        welcomeWindow?.titlebarAppearsTransparent = true
-        welcomeWindow?.isMovableByWindowBackground = true
-        welcomeWindow?.showsToolbarButton = true
-        welcomeWindow?.styleMask = [.titled, .closable, .fullSizeContentView]
-        welcomeWindow?.setContentSize(NSSize(width: 640, height: 500))
-        welcomeWindow?.center()
-        welcomeWindow?.contentView = hostingView
-        
-        let fixedSize = NSSize(width: 800, height: fittingSize.height)
-        
-        welcomeWindow?.minSize = fixedSize
-        welcomeWindow?.maxSize = fixedSize
-        welcomeWindow?.setContentSize(fixedSize)
-        
-        welcomeWindowController = NSWindowController(window: welcomeWindow)
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
+        window.showsToolbarButton = true
+        window.contentView = hostingView
+        window.minSize = contentSize
+        window.maxSize = contentSize
+        window.center()
+
+        self.welcomeWindow = window
+        self.welcomeWindowController = NSWindowController(window: window)
     }
     
     func show() {
