@@ -3210,6 +3210,9 @@
         }
       }
     },
+    "Quit on last window closed:" : {
+      "comment" : "Quit the app when the last archive window is closed"
+    },
     "Refresh" : {
       "comment" : "A button to refresh the list of supported file formats.",
       "localizations" : {

@@ -95,6 +95,25 @@
                     "pr": 77
                 },
                 {
+                    "type": "feat",
+                    "title": {
+                        "en": "New option to quit on last window closed",
+                        "zh-Hans": "新增“关闭最后一个窗口时退出”选项",
+                        "fr": "Nouvelle option pour quitter à la fermeture de la dernière fenêtre",
+                        "de": "Neue Option zum Beenden beim Schließen des letzten Fensters",
+                        "it": "Nuova opzione per uscire alla chiusura dell’ultima finestra",
+                        "ja": "最後のウィンドウを閉じたときに終了する新オプション",
+                        "fa": "گزینه جدید برای خروج هنگام بسته شدن آخرین پنجره",
+                        "pl": "Nowa opcja zamykania aplikacji po zamknięciu ostatniego okna",
+                        "pt-BR": "Nova opção para encerrar ao fechar a última janela",
+                        "ru": "Новая опция выхода при закрытии последнего окна",
+                        "uk": "Нова опція виходу після закриття останнього вікна",
+                        "es-MX": "Nueva opción para salir al cerrar la última ventana",
+                        "ko": "마지막 창 닫기 시 종료하는 새 옵션"
+                    },
+                    "pr": 89
+                },
+                {
                     "type": "fix",
                     "title": {
                         "en": "Up/down keys not working when preview is opened",

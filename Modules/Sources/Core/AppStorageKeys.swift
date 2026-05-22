@@ -8,6 +8,7 @@
 public enum Keys {
     // general settings
     public static let settingBreadcrumbPosition = "settingBreadcrumbPosition"
+    public static let quitOnLastWindowClosed = "quitOnLastWindowClosed"
     
     // table settings
     public static let showColumnCompressedSize = "showColumnCompressedSize"
