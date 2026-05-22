@@ -13,7 +13,8 @@ permissions:
 
 jobs:
   pr:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.3.27
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.3.28
     with:
       has-finder-extension: true
       has-quicklook-extension: true
+      scheme-name: MacPacker
