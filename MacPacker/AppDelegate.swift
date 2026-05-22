@@ -26,6 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
     }
     #if !STORE
+    private let updaterDelegate = UpdaterDelegate()
     let updaterController: SPUStandardUpdaterController
     #endif
 
@@ -35,7 +36,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         #if !STORE
         // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
         // This is where you can also pass an updater delegate if you need one
-        updaterController = SPUStandardUpdaterController(startingUpdater: !Self.isRunningInPreview, updaterDelegate: nil, userDriverDelegate: nil)
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: !Self.isRunningInPreview,
+            updaterDelegate: updaterDelegate,
+            userDriverDelegate: nil
+        )
         appState = AppState(updaterController: updaterController)
         #else
         appState = AppState()
