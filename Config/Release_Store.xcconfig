@@ -1,0 +1,14 @@
+#include "Version.xcconfig"
+
+DEVELOPMENT_TEAM = ZJ2TSMMJWF
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = Apple Distribution
+
+// Per-target Store profile, looked up by bundle ID.
+// :c99extidentifier converts e.g. com.sarensx.MacPacker.FinderExtension
+// → com_sarensx_MacPacker_FinderExtension so we can use it as a key.
+PROVISIONING_PROFILE_SPECIFIER = $(STORE_PROFILE_FOR_$(PRODUCT_BUNDLE_IDENTIFIER:c99extidentifier))
+
+STORE_PROFILE_FOR_com_sarensx_MacPacker                    = MacPackerStore
+STORE_PROFILE_FOR_com_sarensx_MacPacker_FinderExtension    = MacPackerStoreFinder
+STORE_PROFILE_FOR_com_sarensx_MacPacker_QuickLookExtension = MacPackerStoreQuickLook
