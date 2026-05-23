@@ -35,7 +35,7 @@
                         "es-MX": "Compatibilidad con el idioma coreano",
                         "ko": "한국어 지원 추가"
                     },
-                    "pr": 0
+                    "pr": 95
                 },
                 {
                     "type": "feat",
@@ -54,7 +54,7 @@
                         "es-MX": "Compatibilidad con español mexicano",
                         "ko": "멕시코 스페인어 지원 추가"
                     },
-                    "pr": 0
+                    "pr": 95
                 }
             ]
         },
