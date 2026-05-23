@@ -49,7 +49,7 @@ struct AboutSettingsView: View {
                     
 #if !STORE
                     VStack(alignment: .leading) {
-                        Toggle("Automatically check for updates", isOn: Binding (
+                        Toggle(isOn: Binding (
                             get: { checkForUpdates == .automatically },
                             set: { newValue in
                                 if newValue == true {
@@ -58,7 +58,9 @@ struct AboutSettingsView: View {
                                     checkForUpdates = .manually
                                 }
                             }
-                        ))
+                        )) {
+                            Text("Automatically check for updates", comment: "Toggle to enable or disable the automatic check for updates")
+                        }
                         .toggleStyle(.checkbox)
                         
                         Toggle("Include Beta updates", isOn: $updateBetaChannelOn)
@@ -124,7 +126,7 @@ struct AboutSettingsView: View {
                 Button {
                     openURL(Constants.privacyURL)
                 } label: {
-                    Text("Privacy Policy")
+                    Text(verbatim: "Privacy Policy")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -134,7 +136,7 @@ struct AboutSettingsView: View {
                 Button {
                     openURL(Constants.termsURL)
                 } label: {
-                    Text("Terms of Service")
+                    Text(verbatim: "Terms of Service")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

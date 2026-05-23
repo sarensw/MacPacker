@@ -86,7 +86,7 @@ struct ContentView: View {
             .frame(width: 366)
         }
         .navigationTitle(archiveState.hasArchive == false ? Bundle.main.displayName : archiveState.name!)
-        .navigationSubtitle("\(archiveState.diff.count > 0 ? "Edited • " : "")\(archiveState.url == nil ? "" : archiveState.url!.path)")
+        .navigationSubtitle(Text(verbatim: "\(archiveState.diff.count > 0 ? "Edited • " : "")\(archiveState.url == nil ? "" : archiveState.url!.path)"))
         .environmentObject(archiveState)
     }
 }

@@ -16,6 +16,49 @@
     },
     "versions": [
         {
+            "version": "0.15.1",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Language support for Korean",
+                        "zh-Hans": "新增韩语支持",
+                        "fr": "Prise en charge de la langue coréenne",
+                        "de": "Unterstützung für Koreanisch",
+                        "it": "Supporto per la lingua coreana",
+                        "ja": "韓国語サポートを追加",
+                        "fa": "پشتیبانی از زبان کره‌ای",
+                        "pl": "Obsługa języka koreańskiego",
+                        "pt-BR": "Suporte ao idioma coreano",
+                        "ru": "Поддержка корейского языка",
+                        "uk": "Підтримка корейської мови",
+                        "es-MX": "Compatibilidad con el idioma coreano",
+                        "ko": "한국어 지원 추가"
+                    },
+                    "pr": 0
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Language support for Mexican Spanish",
+                        "zh-Hans": "新增墨西哥西班牙语支持",
+                        "fr": "Prise en charge de l’espagnol mexicain",
+                        "de": "Unterstützung für mexikanisches Spanisch",
+                        "it": "Supporto per lo spagnolo messicano",
+                        "ja": "メキシコスペイン語サポートを追加",
+                        "fa": "پشتیبانی از اسپانیایی مکزیکی",
+                        "pl": "Obsługa hiszpańskiego (Meksyk)",
+                        "pt-BR": "Suporte ao espanhol mexicano",
+                        "ru": "Поддержка мексиканского испанского языка",
+                        "uk": "Підтримка мексиканської іспанської мови",
+                        "es-MX": "Compatibilidad con español mexicano",
+                        "ko": "멕시코 스페인어 지원 추가"
+                    },
+                    "pr": 0
+                }
+            ]
+        },
+        {
             "version": "0.15",
             "items": [
                 {

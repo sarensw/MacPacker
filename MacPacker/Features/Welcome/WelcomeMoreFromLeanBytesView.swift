@@ -29,8 +29,8 @@ struct MoreFromLeanBytesProductView: View {
                         .frame(width: 24, height: 24, alignment: .center)
                     
                     VStack(alignment: .leading) {
-                        Text(title)
-                        Text(description)
+                        Text(verbatim: title)
+                        Text(verbatim: description)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
