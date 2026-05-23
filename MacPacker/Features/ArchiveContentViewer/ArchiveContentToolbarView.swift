@@ -219,7 +219,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FlowMoose", pointSize: 16))
                         }
                         .labelStyle(.titleAndIcon)
-                        Text("Voice-2-Text working everywhere")
+                        Text(verbatim: "Voice-2-Text working everywhere")
                     }
                     
                     Button {
@@ -231,7 +231,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FileFillet", pointSize: 16))
                         }
                         .labelStyle(.titleAndIcon)
-                        Text("Organize files. Fast.")
+                        Text(verbatim: "Organize files. Fast.")
                     }
                 } label: {
                     Label {
