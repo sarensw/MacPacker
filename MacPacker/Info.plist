@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>MacPackerURLScheme</key>
+	<string>$(APP_URL_SCHEME)</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -721,7 +723,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>app.macpacker</string>
+				<string>$(APP_URL_SCHEME)</string>
 			</array>
 		</dict>
 	</array>

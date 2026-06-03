@@ -23,9 +23,13 @@ struct AppUrl {
 
 class UrlParser {
     
+    /// The app's custom URL scheme, read from Info.plist so Debug and Release builds
+    /// (which register different schemes) stay in sync with the build automatically.
+    static let appScheme: String = Bundle.main.object(forInfoDictionaryKey: "MacPackerURLScheme") as? String ?? ""
+
     func parse(appUrl: URL) -> AppUrl? {
-        // we're just reacting on "app.macpacker" scheme here
-        if appUrl.scheme != "app.macpacker" {
+        // we're just reacting on the app's registered scheme here
+        if appUrl.scheme != UrlParser.appScheme {
             Logger.warning("wrong scheme \(String(describing: appUrl.scheme)) found")
             return nil
         }

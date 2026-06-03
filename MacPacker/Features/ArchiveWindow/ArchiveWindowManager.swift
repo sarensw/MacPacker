@@ -81,7 +81,7 @@ class ArchiveWindowManager {
     func openArchiveWindow(for url: URL) {
         Logger.log("creating new window for \(String(describing: url))")
         
-        if let wc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {
+        if let wc = windowControllers.first(where: { $0.archiveState.url == url }) {
             // Case 1: archive already loaded > bring window to front
             wc.showWindow(nil)
         } else if let ewc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {

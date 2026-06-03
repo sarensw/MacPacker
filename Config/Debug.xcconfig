@@ -1,1 +1,19 @@
 #include "Version.xcconfig"
+
+// ── Debug identity overrides ─────────────────────────────────────────────────
+// Give Debug builds a distinct Launch Services / QuickLook / FinderSync identity
+// so they no longer collide with an installed Release build. Defined here on the
+// project-level Debug configuration, these cascade to every target's Debug config.
+// Non-debug builds get the canonical values from the project-level Release /
+// Release Store build settings (BUNDLE_ID_SUFFIX is simply empty there).
+BUNDLE_ID_SUFFIX = .debug
+APP_URL_SCHEME = app.macpacker.debug
+
+// ── Debug code signing: "Sign to Run Locally" (ad-hoc) ───────────────────────
+// No team, certificate, or provisioning profile required, so anyone can clone
+// the repo and build/run the Debug build with zero configuration. Release and
+// Release Store keep the maintainer's manual Developer ID / Apple Distribution
+// signing (project Release configs + Release*.xcconfig) and are unaffected.
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = -
+PROVISIONING_PROFILE_SPECIFIER =
