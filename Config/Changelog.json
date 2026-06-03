@@ -16,6 +16,30 @@
     },
     "versions": [
         {
+            "version": "0.15.2",
+            "items": [
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Archives opened via Finder integration show empty contents",
+                        "zh-Hans": "通过 Finder 集成打开的压缩包显示为空",
+                        "fr": "Les archives ouvertes via l’intégration Finder affichent un contenu vide",
+                        "de": "Über die Finder-Integration geöffnete Archive zeigen leeren Inhalt an",
+                        "it": "Gli archivi aperti tramite l’integrazione Finder mostrano un contenuto vuoto",
+                        "ja": "Finder 統合経由で開いたアーカイブの内容が空になる問題を修正",
+                        "fa": "آرشیوهای بازشده از طریق یکپارچه‌سازی Finder محتوای خالی نشان می‌دادند",
+                        "pl": "Archiwa otwierane przez integrację z Finderem wyświetlały pustą zawartość",
+                        "pt-BR": "Arquivos abertos pela integração com o Finder exibiam conteúdo vazio",
+                        "ru": "Архивы, открытые через интеграцию с Finder, отображали пустое содержимое",
+                        "uk": "Архіви, відкриті через інтеграцію Finder, відображали порожній вміст",
+                        "es-MX": "Los archivos abiertos mediante la integración con Finder mostraban contenido vacío",
+                        "ko": "Finder 통합으로 연 아카이브의 내용이 비어 보이던 문제 수정"
+                    },
+                    "pr": 98
+                }
+            ]
+        },
+        {
             "version": "0.15.1",
             "items": [
                 {

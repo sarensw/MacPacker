@@ -1,5 +1,8 @@
 #include "Version.xcconfig"
 
+// Custom app URL scheme, injected into the Info.plists via $(APP_URL_SCHEME).
+APP_URL_SCHEME = app.macpacker
+
 DEVELOPMENT_TEAM = ZJ2TSMMJWF
 CODE_SIGN_STYLE = Manual
 CODE_SIGN_IDENTITY = Apple Distribution

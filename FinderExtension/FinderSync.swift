@@ -36,6 +36,10 @@ extension Bundle {
 
 class FinderSync: FIFinderSync {
     private let mainAppBundleId = "com.sarensx.MacPacker"
+
+    /// The main app's custom URL scheme, read from this extension's Info.plist so a
+    /// Debug extension talks to the Debug app (app.macpacker.debug) and Release to Release.
+    private let appScheme = Bundle.main.object(forInfoDictionaryKey: "MacPackerURLScheme") as? String ?? ""
     
     var baseFolderUrl = FileManager.default.homeDirectoryForCurrentUser
     var documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -227,7 +231,7 @@ class FinderSync: FIFinderSync {
             return
         }
         
-        var urlComponents = URLComponents(string: "app.macpacker://\(action)")
+        var urlComponents = URLComponents(string: "\(appScheme)://\(action)")
         let queryItems: [URLQueryItem] = [
             URLQueryItem(name: "files", value: encodedPaths),
             URLQueryItem(name: "target", value: encodedTarget)
