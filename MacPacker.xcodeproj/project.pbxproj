@@ -11,7 +11,10 @@
 		254045192ECB50CD004A4380 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 254045182ECB50CD004A4380 /* Core */; };
 		2540451B2ECB50D5004A4380 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 2540451A2ECB50D5004A4380 /* Core */; };
 		2540451D2ECB5DEB004A4380 /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 2540451C2ECB5DEB004A4380 /* Core */; };
-		25404E0C2ED71F86004A4380 /* TailBeatKit in Frameworks */ = {isa = PBXBuildFile; productRef = 25404E0B2ED71F86004A4380 /* TailBeatKit */; };
+		25404BB42ECB50CD004A4380 /* tb in Frameworks */ = {isa = PBXBuildFile; productRef = 25404BB12ECB50CD004A4380 /* tb */; };
+		25404BB52ECB50D5004A4380 /* tb in Frameworks */ = {isa = PBXBuildFile; productRef = 25404BB22ECB50D5004A4380 /* tb */; };
+		25404BB62ECB5DEB004A4380 /* tb in Frameworks */ = {isa = PBXBuildFile; productRef = 25404BB32ECB5DEB004A4380 /* tb */; };
+		25404BB82ED71F86004A4380 /* tb in Frameworks */ = {isa = PBXBuildFile; productRef = 25404BB72ED71F86004A4380 /* tb */; };
 		254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 254BB55C2ABBE8F50059A1D5 /* Sparkle */; };
 		2567C8312E8FB75F008E1BD8 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2567C8302E8FB75F008E1BD8 /* Quartz.framework */; };
 		2567C83D2E8FB75F008E1BD8 /* QuickLookExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -150,7 +153,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				25404E0C2ED71F86004A4380 /* TailBeatKit in Frameworks */,
+				25404BB82ED71F86004A4380 /* tb in Frameworks */,
 				25CFF9602F98F34C003F064E /* Pandalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -161,6 +164,7 @@
 			files = (
 				25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */,
 				2540451B2ECB50D5004A4380 /* Core in Frameworks */,
+				25404BB52ECB50D5004A4380 /* tb in Frameworks */,
 				25CFF95E2F98F341003F064E /* Pandalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -171,6 +175,7 @@
 			files = (
 				2567C8312E8FB75F008E1BD8 /* Quartz.framework in Frameworks */,
 				2540451D2ECB5DEB004A4380 /* Core in Frameworks */,
+				25404BB62ECB5DEB004A4380 /* tb in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,6 +187,7 @@
 				25CFF95C2F98F324003F064E /* Pandalytics in Frameworks */,
 				25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */,
 				254045192ECB50CD004A4380 /* Core in Frameworks */,
+				25404BB42ECB50CD004A4380 /* tb in Frameworks */,
 				254BB55D2ABBE8F50059A1D5 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -254,7 +260,7 @@
 			);
 			name = FinderExtension;
 			packageProductDependencies = (
-				25404E0B2ED71F86004A4380 /* TailBeatKit */,
+				25404BB72ED71F86004A4380 /* tb */,
 				25CFF95F2F98F34C003F064E /* Pandalytics */,
 			);
 			productName = FinderExtension;
@@ -283,6 +289,7 @@
 			packageProductDependencies = (
 				25C764262E6C6D6200464CF5 /* XADMasterSwift */,
 				2540451A2ECB50D5004A4380 /* Core */,
+				25404BB22ECB50D5004A4380 /* tb */,
 				25CFF95D2F98F341003F064E /* Pandalytics */,
 			);
 			productName = MacPacker;
@@ -307,6 +314,7 @@
 			name = QuickLookExtension;
 			packageProductDependencies = (
 				2540451C2ECB5DEB004A4380 /* Core */,
+				25404BB32ECB5DEB004A4380 /* tb */,
 			);
 			productName = QuickLookExtension;
 			productReference = 2567C82F2E8FB75F008E1BD8 /* QuickLookExtension.appex */;
@@ -336,6 +344,7 @@
 				25E426C92E6BEB3800F10BE5 /* XADMasterSwift */,
 				25C764242E6C6D5300464CF5 /* XADMasterSwift */,
 				254045182ECB50CD004A4380 /* Core */,
+				25404BB12ECB50CD004A4380 /* tb */,
 				25CFF95B2F98F324003F064E /* Pandalytics */,
 			);
 			productName = MacPacker;
@@ -385,8 +394,8 @@
 			packageReferences = (
 				254BB55B2ABBE8F50059A1D5 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */,
-				25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "tailbeatkit" */,
 				25CFF95A2F98F324003F064E /* XCRemoteSwiftPackageReference "pandalytics-swift" */,
+				25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "TailBeatKit" */,
 			);
 			productRefGroup = 25C0A8A52A78DE5F002C1C2A /* Products */;
 			projectDirPath = "";
@@ -1225,12 +1234,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "tailbeatkit" */ = {
+		25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "TailBeatKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/tailbeat/tailbeatkit";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.11.0;
+				minimumVersion = 0.13.0;
 			};
 		};
 		254BB55B2ABBE8F50059A1D5 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
@@ -1272,10 +1281,25 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Core;
 		};
-		25404E0B2ED71F86004A4380 /* TailBeatKit */ = {
+		25404BB12ECB50CD004A4380 /* tb */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "tailbeatkit" */;
-			productName = TailBeatKit;
+			package = 25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "TailBeatKit" */;
+			productName = tb;
+		};
+		25404BB22ECB50D5004A4380 /* tb */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "TailBeatKit" */;
+			productName = tb;
+		};
+		25404BB32ECB5DEB004A4380 /* tb */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "TailBeatKit" */;
+			productName = tb;
+		};
+		25404BB72ED71F86004A4380 /* tb */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "TailBeatKit" */;
+			productName = tb;
 		};
 		254BB55C2ABBE8F50059A1D5 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;

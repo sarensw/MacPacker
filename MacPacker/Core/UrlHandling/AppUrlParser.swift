@@ -7,6 +7,9 @@
 
 import Core
 import Foundation
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 enum AppUrlAction: String {
     case open
@@ -30,17 +33,17 @@ class UrlParser {
     func parse(appUrl: URL) -> AppUrl? {
         // we're just reacting on the app's registered scheme here
         if appUrl.scheme != UrlParser.appScheme {
-            Logger.warning("wrong scheme \(String(describing: appUrl.scheme)) found")
+            log.warning("wrong scheme \(String(describing: appUrl.scheme)) found")
             return nil
         }
         
         // check the action
         guard let actionString = appUrl.host() else {
-            Logger.warning("correct scheme, but action could not be extracted")
+            log.warning("correct scheme, but action could not be extracted")
             return nil
         }
         guard let action = AppUrlAction(rawValue: actionString) else {
-            Logger.warning("unknown action \(actionString)")
+            log.warning("unknown action \(actionString)")
             return nil
         }
         
@@ -70,7 +73,7 @@ class UrlParser {
         guard let target,
               !files.isEmpty else
         {
-            Logger.warning("could not parse url correctly (no files?: \(files.isEmpty)) (no target?: \(target == nil))")
+            log.warning("could not parse url correctly (no files?: \(files.isEmpty)) (no target?: \(target == nil))")
             return nil
         }
         
@@ -79,6 +82,7 @@ class UrlParser {
             files: files,
             target: target
         )
+        log.notice("Parsed app url: action=\(action.rawValue), files=\(files.count), target=\(target.lastPathComponent)")
         return appUrl
     }
     

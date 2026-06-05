@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 @testable import Core
+import tb
 
 extension AllCoreTests {
 
@@ -632,43 +633,31 @@ extension AllCoreTests {
     // MARK: - 12. Logger
 
     @MainActor struct LoggerTests {
+        let log = tb.Logger(subsystem: "app.MacPacker.tests", category: "test")
 
-        @Test func logDoesNotCrash() {
-            Logger.log("test message")
+        @Test func levelsDoNotCrash() {
+            log.trace("trace")
+            log.debug("debug")
+            log.info("info")
+            log.notice("notice")
+            log.warning("warning")
+            log.error("error")
+            log.fault("fault")
+            log.log(level: .default, "log")
         }
 
-        @Test func debugDoesNotCrash() {
-            Logger.debug("debug message")
+        @Test func contextDoesNotCrash() {
+            log.info("with context", context: ["key": "value"])
         }
 
-        @Test func infoDoesNotCrash() {
-            Logger.info("info message")
-        }
-
-        @Test func warningDoesNotCrash() {
-            Logger.warning("warning message")
-        }
-
-        @Test func errorStringDoesNotCrash() {
-            Logger.error("error message")
-        }
-
-        @Test func errorErrorDoesNotCrash() {
+        @Test func errorOverloadDoesNotCrash() {
             struct TestError: Error {}
-            Logger.error(TestError())
+            log.error(TestError())
         }
 
-        @Test func startDoesNotCrash() {
-            Logger.start()
-        }
-
-        @Test func logLevelTailBeatLevel() {
-            #expect(LogLevel.Trace.tailBeatLevel == .Trace)
-            #expect(LogLevel.Debug.tailBeatLevel == .Debug)
-            #expect(LogLevel.Info.tailBeatLevel == .Info)
-            #expect(LogLevel.Warning.tailBeatLevel == .Warning)
-            #expect(LogLevel.Error.tailBeatLevel == .Error)
-            #expect(LogLevel.Fatal.tailBeatLevel == .Fatal)
+        @Test func startAndMaskDoNotCrash() {
+            tb.start(subsystem: "app.MacPacker.tests")
+            #expect(tb.mask("secret") != "secret")
         }
     }
 

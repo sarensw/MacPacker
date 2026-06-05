@@ -7,6 +7,9 @@
 
 import Foundation
 import SWCompression
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "engine")
 
 final actor ArchiveSwcEngine: ArchiveEngine {
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
@@ -90,10 +93,10 @@ final actor ArchiveSwcEngine: ArchiveEngine {
                 
                 FileManager.default.createFile(atPath: extractedFilePathName.path, contents: decompressedData)
             } else {
-                Logger.error("Could not decompress archive")
+                log.error("Could not decompress archive")
             }
         } catch {
-            Logger.error(error.localizedDescription)
+            log.error(error.localizedDescription)
         }
     }
     

@@ -6,6 +6,9 @@
 //
 
 import Core
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 class AppUrlExtractHereHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
@@ -18,11 +21,11 @@ class AppUrlExtractHereHandler: AppUrlHandler {
     
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
         for fileUrl in appUrl.files {
-            Logger.log("Extracting \(fileUrl) here... \(appUrl.target)")
+            log.debug("Extracting \(fileUrl) here... \(appUrl.target)")
             
             requestAccessToDir(for: appUrl.target) { response, url in
                 if response == .OK {
-                    Logger.log("Found archive handler for \(fileUrl.lastPathComponent)")
+                    log.debug("Found archive handler for \(fileUrl.lastPathComponent)")
                     if let url {
                         Task {
                             let state = ArchiveState(catalog: self.catalog, engineSelector: self.engineSelector)

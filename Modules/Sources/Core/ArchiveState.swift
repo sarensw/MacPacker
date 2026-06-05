@@ -9,6 +9,11 @@ import Combine
 import Foundation
 import Swift7zip
 import SwiftUI
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
+private let extractLog = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
+private let passwordLog = tb.Logger(subsystem: "app.MacPacker", category: "password")
 
 public enum ArchiveStateStatus: String {
     case idle
@@ -100,9 +105,13 @@ extension ArchiveState {
             }
             
             // if not cached, ask the user to provide the password
+            passwordLog.info("Password requested", context: ["archive": request.url.lastPathComponent])
             let password = await self.passwordProvider?(request)
             if let password {
                 self.passwords[request.url] = password
+                passwordLog.info("Password accepted", context: ["archive": request.url.lastPathComponent])
+            } else {
+                passwordLog.notice("Password entry cancelled", context: ["archive": request.url.lastPathComponent])
             }
             
             return password
@@ -239,11 +248,11 @@ extension ArchiveState {
                 case .cancelled:
                     updateStatusText(nil)
                     self.progress = nil
-                    print("cancelled")
+                    log.debug("status: cancelled")
                 case .idle:
                     updateStatusText(nil)
                     self.progress = nil
-                    print("idle")
+                    log.debug("status: idle")
                 case .processing(let progress, let message):
                     updateStatusText(message)
                     if progress != nil {
@@ -252,11 +261,11 @@ extension ArchiveState {
                 case .done:
                     updateStatusText("done")
                     self.progress = nil
-                    print("done")
+                    log.debug("status: done")
                 case .error(let error):
                     updateStatusText("error: \(error.localizedDescription)")
                     self.progress = nil
-                    print("error: \(error.localizedDescription)")
+                    log.error("engine status error", context: ["error": error.localizedDescription])
                 }
             }
         }
@@ -332,7 +341,7 @@ extension ArchiveState {
                 
                 diff.removeAll()
             } catch {
-                print(error)
+                log.error(error)
             }
         }
     }
@@ -353,6 +362,7 @@ extension ArchiveState {
         self.url = url
         self.name = url.lastPathComponent
         self.ext = url.pathExtension
+        log.info("Opening archive", context: ["file": url.lastPathComponent, "ext": url.pathExtension])
         
         openTask = Task {
             do {
@@ -380,6 +390,7 @@ extension ArchiveState {
                 if loaderResult.error != nil {
                     updateStatusText("failed to load")
                     self.error = loaderResult.error
+                    log.error("Archive load reported an error", context: ["file": url.lastPathComponent, "error": loaderResult.error ?? "?"])
                 }
                 self.root = loaderResult.root
                 self.selectedItem = loaderResult.root
@@ -400,12 +411,21 @@ extension ArchiveState {
                 if !loaderResult.hasTree {
                     let builderResult = await archiveLoader.buildTree(at: loaderResult.root)
                     self.error = builderResult.error
+                    if let treeError = builderResult.error {
+                        log.error("Tree build failed", context: ["file": url.lastPathComponent, "error": treeError])
+                    }
                 }
                 self.entries.merge(loaderResult.entries, uniquingKeysWith: { lhs, _ in lhs })
                 self.entries[loaderResult.root.id] = root
-                
+
                 loadChildren()
-                
+                log.notice("Archive ready to display", context: [
+                    "file": url.lastPathComponent,
+                    "entries": "\(self.entries.count)",
+                    "topLevelItems": "\(self.childItems?.count ?? 0)",
+                    "hasTree": "\(loaderResult.hasTree)"
+                ])
+
                 updateStatusText(nil)
                 
                 self.selectedItems = []
@@ -419,8 +439,10 @@ extension ArchiveState {
                 reset()
             } catch ArchiveError.invalidArchive {
                 // happens when the loaded archive is an unknown archive
+                log.notice("Unsupported or invalid archive", context: ["file": url.lastPathComponent])
                 reset()
             } catch {
+                log.error("Failed to open archive", context: ["file": url.lastPathComponent, "error": error.localizedDescription])
                 reset()
                 self.error = error.localizedDescription
             }
@@ -490,7 +512,7 @@ extension ArchiveState {
             loadChildren()
             break
         case .unknown:
-            Logger.error("Unhandled ArchiveItem.Type: \(item.name)")
+            log.error("Unhandled ArchiveItem.Type: \(item.name)")
             break
         }
         
@@ -696,7 +718,7 @@ extension ArchiveState {
                 )
                 tempDirectories.append(contentsOf: result.tempDirs)
             } catch {
-                Logger.error(error)
+                extractLog.error(error)
                 self.error = error.localizedDescription
                 self.isBusy = false
             }
@@ -712,7 +734,7 @@ extension ArchiveState {
         Task {
             do {
                 guard let root else {
-                    Logger.error("No root item set")
+                    extractLog.error("No root item set")
                     return
                 }
                 
@@ -724,7 +746,7 @@ extension ArchiveState {
                     try await extractor.extractAll(archiveUrl, archiveTypeId: archiveTypeId, to: destination)
                 }
             } catch {
-                Logger.error(error)
+                extractLog.error(error)
                 self.error = error.localizedDescription
                 self.isBusy = false
             }
@@ -772,7 +794,7 @@ extension ArchiveState {
                     self.previewItemUrl = nil
                 }
             } catch {
-                Logger.error(error)
+                extractLog.error(error)
                 self.error = error.localizedDescription
                 self.isBusy = false
             }
@@ -782,7 +804,7 @@ extension ArchiveState {
     }
     
     public func changeSelection(selection: IndexSet) {
-        Logger.log("Selection changed: tableViewSelectionDidChange(_:)")
+        log.debug("Selection changed: tableViewSelectionDidChange(_:)")
         
         guard let selectedItem else { return }
         let hasParent = selectedItem.type != .root

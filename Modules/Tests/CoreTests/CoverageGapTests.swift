@@ -382,25 +382,6 @@ extension AllCoreTests {
         }
     }
 
-    // MARK: - Logger: TailBeatSink methods
-
-    @MainActor struct TailBeatSinkTests {
-
-        @Test func sinkMethodsDoNotCrash() {
-            let sink = TailBeatSink()
-            sink.log(level: .Debug, "test message")
-            sink.debug("debug message")
-            sink.info("info message")
-            sink.warning("warning message")
-            sink.error("error message")
-        }
-
-        @Test func dummyClassCallsLogger() {
-            let d = Dummy()
-            d.dummyFunc()
-        }
-    }
-
     // MARK: - ArchiveXadEngine: full extraction and error methods
 
     @MainActor struct ArchiveXadEngineExtraTests {

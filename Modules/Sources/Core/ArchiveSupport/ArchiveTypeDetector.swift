@@ -7,6 +7,9 @@
 
 import Foundation
 import UniformTypeIdentifiers
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
 public enum DetectionSource: String {
     case fileExtension
@@ -94,7 +97,7 @@ final public class ArchiveTypeDetector: Sendable {
                                 source: .fileExtension
                             )
                         } else {
-                            Logger.error("Composition found, but could not retrieve the base type for \(ext)")
+                            log.error("Composition found, but could not retrieve the base type for \(ext)")
                         }
                     }
                 }
@@ -117,7 +120,7 @@ final public class ArchiveTypeDetector: Sendable {
             let resourceValues = try url.resourceValues(forKeys: [.fileSizeKey])
             return UInt64(resourceValues.fileSize ?? 0)
         } catch {
-            print("Error getting file size: \(error.localizedDescription)")
+            log.error("Error getting file size: \(error.localizedDescription)")
             return nil
         }
     }

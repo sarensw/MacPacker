@@ -9,6 +9,9 @@ import AppKit
 import Foundation
 import Core
 import SwiftUI
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "lifecycle")
 
 @MainActor
 class ArchiveWindowManager {
@@ -19,11 +22,13 @@ class ArchiveWindowManager {
     /// - Parameter appState: The apps global state to not use AppStorage for every little global state setting that is not persisted
     init(appState: AppState) {
         self.appState = appState
+        log.notice("ArchiveWindowManager initialised")
     }
     
     /// Creates a new archive window and loads the archive from the given url if available
     /// - Parameter url: url of the archive
     fileprivate func createAndShowArchiveWindow(_ url: URL?) {
+        log.notice("Creating window", context: ["url": url?.lastPathComponent ?? "(empty)"])
         // every window has an archive state which defines both empty
         // (not yet loaded archives) or loaded archives
         let archiveState = ArchiveState(
@@ -53,6 +58,7 @@ class ArchiveWindowManager {
     /// guaranteed. That's why `openLaunchArchiveWindow` is only called once when the app launches
     /// and only creates an empty window in case the app was not launched with a url.
     func openLaunchArchiveWindow() {
+        log.notice("openLaunchArchiveWindow (existing windows: \(windowControllers.count))")
         if windowControllers.isEmpty {
             createAndShowArchiveWindow(nil)
         }
@@ -79,17 +85,18 @@ class ArchiveWindowManager {
     /// 3. no `url` given: Open a new window if there is no empty window available
     /// - Parameter url: url to open (if `nil`, just create an empty window)
     func openArchiveWindow(for url: URL) {
-        Logger.log("creating new window for \(String(describing: url))")
-        
         if let wc = windowControllers.first(where: { $0.archiveState.url == url }) {
             // Case 1: archive already loaded > bring window to front
+            log.notice("Archive already open, focusing existing window for \(url.lastPathComponent)")
             wc.showWindow(nil)
         } else if let ewc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {
             // Case 2: archive not loaded yet, but empty window available > load archive in empty
             // and bring window to front
+            log.notice("Reusing empty window to open \(url.lastPathComponent)")
             ewc.archiveState.open(url: url)
             ewc.showWindow(nil)
         } else {
+            log.notice("Opening a new window for \(url.lastPathComponent)")
             // Case 3: archive not loaded yet, no empty window available > create new window and
             // load archive in it
             createAndShowArchiveWindow(url)

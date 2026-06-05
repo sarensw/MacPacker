@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "cache")
 
 class CacheCleaner {
     private let applicationSupportDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
@@ -15,8 +18,7 @@ class CacheCleaner {
             do {
                 try FileManager.default.removeItem(at: url.appendingPathComponent("ta", conformingTo: .directory))
             } catch {
-                Logger.error("Could not clear cache because...")
-                Logger.error(error.localizedDescription)
+                log.error("Could not clear cache", context: ["error": error.localizedDescription])
             }
         }
     }
@@ -26,8 +28,7 @@ class CacheCleaner {
             do {
                 try FileManager.default.removeItem(at: url)
             } catch {
-                Logger.error("Could not clear cache because...")
-                Logger.error(error.localizedDescription)
+                log.error("Could not clear cache", context: ["error": error.localizedDescription])
             }
         }
     }
