@@ -7,6 +7,9 @@
 
 import Foundation
 import Core
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 class AppUrlExtractToFolderHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
@@ -19,7 +22,7 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
     
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
         for fileUrl in appUrl.files {
-            Logger.log("Extracting \(fileUrl) to folder \(appUrl.target)")
+            log.debug("Extracting \(fileUrl) to folder \(appUrl.target)")
             
             requestAccessToDir(for: appUrl.target) { response, url in
                 if response == .OK {
@@ -32,7 +35,7 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
                                 withIntermediateDirectories: true
                             )
                             
-                            Logger.log("Found archive handler for \(fileUrl.lastPathComponent)")
+                            log.debug("Found archive handler for \(fileUrl.lastPathComponent)")
                             
                             Task {
                                 let state = ArchiveState(catalog: self.catalog, engineSelector: self.engineSelector)
@@ -41,7 +44,7 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
                                 state.extract(to: folderUrl)
                             }
                         } catch {
-                            Logger.error(error.localizedDescription)
+                            log.error(error.localizedDescription)
                         }
                     }
                 }

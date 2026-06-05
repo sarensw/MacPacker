@@ -9,7 +9,9 @@ import AppKit
 import Cocoa
 import FinderSync
 import Foundation
-import TailBeatKit
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "finder")
 
 extension Bundle {
 
@@ -47,8 +49,8 @@ class FinderSync: FIFinderSync {
     override init() {
         super.init()
         
-        Logger.start()
-        Logger.log("FinderSync() launched from \(Bundle.main.bundlePath as NSString)")
+        tb.start()
+        log.debug("FinderSync() launched from \(Bundle.main.bundlePath as NSString)")
         
         // Set up the directory we are syncing.
         let syncUrls: Set<URL> = [
@@ -56,9 +58,9 @@ class FinderSync: FIFinderSync {
             URL(fileURLWithPath: "/Users/\(ProcessInfo.processInfo.userName)")
         ]
         FIFinderSyncController.default().directoryURLs = syncUrls
-        Logger.log("Initializing on...")
+        log.debug("Initializing on...")
         for syncUrl in syncUrls {
-            Logger.log("\t\(syncUrl.path)")
+            log.debug("\t\(syncUrl.path)")
         }
     }
     
@@ -67,17 +69,17 @@ class FinderSync: FIFinderSync {
     override func beginObservingDirectory(at url: URL) {
         // The user is now seeing the container's contents.
         // If they see it in more than one view at a time, we're only told once.
-        Logger.log("beginObservingDirectoryAtURL: \(url.path as NSString)")
+        log.debug("beginObservingDirectoryAtURL: \(url.path as NSString)")
     }
     
     
     override func endObservingDirectory(at url: URL) {
         // The user is no longer seeing the container's contents.
-        Logger.log("endObservingDirectoryAtURL: \(url.path as NSString)")
+        log.debug("endObservingDirectoryAtURL: \(url.path as NSString)")
     }
     
     override func requestBadgeIdentifier(for url: URL) {
-        Logger.log("requestBadgeIdentifierForURL: \(url.path as NSString)")
+        log.debug("requestBadgeIdentifierForURL: \(url.path as NSString)")
     }
     
     // MARK: - Menu and toolbar item support
@@ -98,18 +100,18 @@ class FinderSync: FIFinderSync {
     
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
         // we're removing all urls that are folders until we support compression
-        Logger.log(String(describing: FIFinderSyncController.default().selectedItemURLs()))
+        log.debug(String(describing: FIFinderSyncController.default().selectedItemURLs()))
         for item in FIFinderSyncController.default().selectedItemURLs() ?? [] {
             if item.hasDirectoryPath {
-                Logger.log("Removing \(item.absoluteString)")
+                log.debug("Removing \(item.absoluteString)")
             }
         }
         let selecteditems = FIFinderSyncController.default().selectedItemURLs()?.filter({ !$0.hasDirectoryPath }) ?? []
-        Logger.log(String(describing: selecteditems))
+        log.debug(String(describing: selecteditems))
         
         if selecteditems.count > 0 // let selecteditems = FIFinderSyncController.default().selectedItemURLs()?.filter({ !$0.hasDirectoryPath })
         {
-            Logger.log("Creating menu for \(selecteditems[0].absoluteString), isDir? \(selecteditems[0].hasDirectoryPath)")
+            log.debug("Creating menu for \(selecteditems[0].absoluteString), isDir? \(selecteditems[0].hasDirectoryPath)")
             // if all items are folders then ignore for now until we
             // actually support compression
             
@@ -215,71 +217,83 @@ class FinderSync: FIFinderSync {
     // MARK: - Actions
     
     private func communicateWithMainApp(action: String) {
+        log.notice("Finder action '\(action)' requested", context: ["scheme": appScheme])
+        if appScheme.isEmpty {
+            log.error("MacPackerURLScheme missing from the extension's Info.plist — cannot reach the main app")
+        }
+
         guard let items = FIFinderSyncController.default().selectedItemURLs() else {
-            Logger.error("No items selected")
+            log.error("No items selected for action '\(action)'")
             return
         }
-        
-        Logger.log("Trying to encode \(items.count) items to send them over to the main app")
+
+        log.notice("Encoding \(items.count) item(s) for '\(action)'",
+                   context: ["first": items.first?.lastPathComponent ?? "-"])
         let paths = items.map { $0.path }.joined(separator: ",")
         guard let encodedPaths = paths.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            Logger.error("Failed to encode the urls")
+            log.error("Failed to percent-encode the file paths")
             return
         }
         guard let encodedTarget = FIFinderSyncController.default().targetedURL()?.path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            Logger.error("Failed to encode the target url")
+            log.error("Failed to encode the target url (no targetedURL?)")
             return
         }
-        
+
         var urlComponents = URLComponents(string: "\(appScheme)://\(action)")
         let queryItems: [URLQueryItem] = [
             URLQueryItem(name: "files", value: encodedPaths),
             URLQueryItem(name: "target", value: encodedTarget)
         ]
         urlComponents?.queryItems = queryItems
-        
+
         guard let url = urlComponents?.url else {
-            Logger.error("Failed to create URL")
+            log.error("Failed to build the app URL for action '\(action)'")
             return
         }
-        
-        NSWorkspace.shared.open(url)
+
+        log.notice("Opening main app for '\(action)'", context: ["url": url.absoluteString])
+        let opened = NSWorkspace.shared.open(url)
+        if opened {
+            log.notice("Handed '\(action)' off to the main app")
+        } else {
+            log.error("NSWorkspace could not open \(url.absoluteString) — is the '\(appScheme)' scheme registered to MacPacker?")
+        }
     }
 
     @objc func openArchive(_ sender: Any?) {
-        Logger.log("Open")
+        log.notice("Finder menu: Open archive")
         communicateWithMainApp(action: "open")
     }
 
     @objc func extractFiles(_ sender: Any?) {
         communicateWithMainApp(action: "extractFiles")
-        Logger.log("Extract Files…")
+        log.debug("Extract Files…")
     }
 
     @objc func extractHere(_ sender: Any?) {
         communicateWithMainApp(action: "extractHere")
-        Logger.log("Extract Here")
+        log.debug("Extract Here")
     }
 
     @objc func extractToFolder(_ sender: Any?) {
         communicateWithMainApp(action: "extractToFolder")
-        Logger.log("Extract to “%FOLDER%/”")
+        log.debug("Extract to “%FOLDER%/”")
     }
 
     @objc func addToArchive(_ sender: Any?) {
-        Logger.log("Add to Archive…")
+        log.debug("Add to Archive…")
     }
 
     @objc func addTo7z(_ sender: Any?) {
-        Logger.log("Add to “%FILENAME%.7z”")
+        log.debug("Add to “%FILENAME%.7z”")
     }
 
     @objc func addToZip(_ sender: Any?) {
-        Logger.log("Add to “%FILENAME%.zip”")
+        log.debug("Add to “%FILENAME%.zip”")
     }
 
     @objc func testArchive(_ sender: Any?) {
-        Logger.log("Test Archive")
+        log.debug("Test Archive")
     }
 
 }

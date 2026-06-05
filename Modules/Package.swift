@@ -348,7 +348,7 @@ let package = Package(
         .package(url: "https://github.com/kumamotone/XADMasterSwift.git", branch: "main"),
         .package(url: "https://github.com/tsolomko/BitByteData.git", from: "2.0.0"),
         .package(url: "https://github.com/tsolomko/SWCompression.git", from: "4.8.0"),
-        .package(url: "https://github.com/tailbeat/TailBeatKit.git", from: "0.10.0")
+        .package(url: "https://github.com/tailbeat/TailBeatKit.git", from: "0.13.0")
     ],
     targets: [
         .target(
@@ -358,7 +358,7 @@ let package = Package(
                 .product(name: "XADMasterSwift", package: "XADMasterSwift"),
                 "BitByteData",
                 "SWCompression",
-                .product(name: "TailBeatKit", package: "TailBeatKit"),
+                .product(name: "tb", package: "TailBeatKit"),
                 "Swift7zip"
             ],
             resources: [
@@ -426,7 +426,7 @@ let package = Package(
             name: "CoreTests",
             dependencies: [
                 "Core",
-                "TailBeatKit"
+                .product(name: "tb", package: "TailBeatKit")
             ],
             resources: [
                 .copy("TestArchives/defaultArchives"),

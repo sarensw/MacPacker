@@ -9,6 +9,7 @@ import Cocoa
 import Core
 import OSLog
 import os
+import tb
 import Quartz
 
 enum ArchiveViewerColumn: String, CaseIterable {
@@ -29,9 +30,9 @@ enum ArchiveViewerColumn: String, CaseIterable {
 
 
 enum QLLog {
-    static let subsystem = "app.MacPacker.QuickLookExt"
-    static let general = Logger(subsystem: subsystem, category: "general")
-    static let drag    = Logger(subsystem: subsystem, category: "drag")
+    static let subsystem = "app.MacPacker"
+    static let general = tb.Logger(subsystem: subsystem, category: "quicklook")
+    static let drag    = tb.Logger(subsystem: subsystem, category: "quicklook.drag")
 }
 
 class PreviewViewController: NSViewController, QLPreviewingController {

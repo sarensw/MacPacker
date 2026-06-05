@@ -10,6 +10,9 @@ import Cocoa
 import Core
 import Foundation
 import SwiftUI
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 import UniformTypeIdentifiers
 
 enum ArchiveViewerColumn: String, CaseIterable {
@@ -283,7 +286,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             _ tableView: NSTableView,
             pasteboardWriterForRow row: Int
         ) -> NSPasteboardWriting? {
-            Logger.debug("Starting to drag item in row \(row)")
+            log.debug("Starting to drag item in row \(row)")
             
             guard let selectedItem = parent.archiveState.selectedItem else { return nil }
             guard let childItems = parent.archiveState.childItems else { return nil }
@@ -374,7 +377,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             guard
                 let item = filePromiseProvider.userInfo as? ArchiveItem
             else {
-                Logger.error("Could not fulfill file promise")
+                log.error("Could not fulfill file promise")
                 return completionHandler(NSError(domain: "Drag", code: 1))
             }
             Task {
@@ -383,7 +386,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                     try FileManager.default.moveItem(at: tempUrl, to: url)
                     completionHandler(nil)
                 } catch {
-                    Logger.error("File promise extraction failed: \(error)")
+                    log.error("File promise extraction failed: \(error)")
                     completionHandler(error)
                 }
             }
@@ -467,8 +470,8 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     ///   - context: context
     func updateNSView(_ nsView: NSScrollView, context: Context) {
         if isReloadNeeded {
-            Logger.log(
-                level: isReloadNeeded ? .Warning : .Debug,
+            log.log(
+                level: isReloadNeeded ? .default : .debug,
                 "isReloadNeeded: \(isReloadNeeded)"
             )
         }

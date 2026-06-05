@@ -11,7 +11,9 @@ import SwiftUI
 #if !STORE
 import Sparkle
 #endif
-import TailBeatKit
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "lifecycle")
 
 @main
 struct MacPackerApp: App {
@@ -19,7 +21,8 @@ struct MacPackerApp: App {
     @Environment(\.openSettings) private var openSettings
     
     init() {
-        Logger.start()
+        tb.start()
+        log.notice("MacPackerApp.init — app process starting")
     }
     
     var body: some Scene {

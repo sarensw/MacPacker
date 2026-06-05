@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "engine")
 
 public enum ArchiveEngineType: String, Identifiable, Sendable, Codable {
     case xad = "XAD (The Unarchiver)"
@@ -50,7 +53,7 @@ public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
     
     public func engine(for id: String) -> ArchiveEngine? {
         if let engineId = archiveEngineConfigStore.selectedEngine(for: id) {
-            Logger.debug("Using engine: \(engineId)")
+            log.debug("Using engine: \(engineId)")
             switch engineId {
             case .`7zip`:   return Archive7ZipEngine()
             case .swc:      return ArchiveSwcEngine()
@@ -71,7 +74,7 @@ public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
     
     public func engineType(for id: String) -> ArchiveEngineType? {
         if let engineId = archiveEngineConfigStore.selectedEngine(for: id) {
-            Logger.debug("Using engine: \(engineId)")
+            log.debug("Using engine: \(engineId)")
             return engineId
         }
         

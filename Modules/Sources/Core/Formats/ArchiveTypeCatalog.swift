@@ -11,6 +11,9 @@
 // - /System/Library/CoreServices/CoreTypes.bundle/Contents/Info.plist
 
 import UniformTypeIdentifiers
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
 public final class ArchiveTypeCatalog: ArchiveTypeCatalogProtocol, Sendable {
     private let formatById: [String: ArchiveTypeDto]
@@ -46,7 +49,7 @@ public final class ArchiveTypeCatalog: ArchiveTypeCatalogProtocol, Sendable {
             self.engineOptionsByFormat = engineOptionsByFormat
             self.defaultEngineByFormat = defaultEngineByFormat
         } catch {
-            Logger.error(error)
+            log.error(error)
             self.catalog = nil
             self.formatById = [:]
             self.engineOptionsByFormat = [:]
