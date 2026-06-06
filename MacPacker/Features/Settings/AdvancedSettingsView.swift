@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import tb
 
 struct AdvancedSettingsView: View {
     private let applicationSupportDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
@@ -38,8 +39,38 @@ struct AdvancedSettingsView: View {
                 }
                 .frame(width: 240, alignment: .leading)
             }
+            
+            HStack(alignment: .top) {
+                Text("Logs:", comment: "A label for the log related section in the advanced settings")
+                    .frame(width: 160, alignment: .trailing)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Button {
+                        exportLogs()
+                    } label: {
+                        Text("Export Logs", comment: "A button that allows the user to export the app's recent logs")
+                    }
+                }
+                .frame(width: 240, alignment: .leading)
+            }
         }
         .padding()
+    }
+    
+    private func exportLogs() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "MacPacker-logs.ndjson"
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try tb.exportRecentLogs(since: Date(timeIntervalSinceNow: -60 * 60), to: url)
+            NSWorkspace.shared.activateFileViewerSelecting([url])
+        } catch {
+            let alert = NSAlert()
+            alert.messageText = "Export failed"
+            alert.informativeText = error.localizedDescription
+            alert.runModal()
+        }
     }
 }
 

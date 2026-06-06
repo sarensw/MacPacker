@@ -36,6 +36,25 @@
                         "ko": "Finder 통합으로 연 아카이브의 내용이 비어 보이던 문제 수정"
                     },
                     "pr": 98
+                },
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Export logs for troubleshooting",
+                        "zh-Hans": "导出日志用于故障排查",
+                        "fr": "Exporter les journaux pour le dépannage",
+                        "de": "Protokolle für die Fehleranalyse exportieren",
+                        "it": "Esporta i log per la risoluzione dei problemi",
+                        "ja": "トラブルシューティング用にログをエクスポート",
+                        "fa": "خروجی گرفتن از گزارش‌ها برای عیب‌یابی",
+                        "pl": "Eksportowanie logów do diagnostyki",
+                        "pt-BR": "Exportar logs para diagnóstico",
+                        "ru": "Экспорт журналов для диагностики",
+                        "uk": "Експорт журналів для діагностики",
+                        "es-MX": "Exportar registros para diagnóstico",
+                        "ko": "문제 해결을 위한 로그 내보내기"
+                    },
+                    "pr": 100
                 }
             ]
         },
