@@ -7,7 +7,6 @@
 
 import AppKit
 import SwiftUI
-import tb
 
 struct DebugSettingsView: View {
     @Environment(\.openSettings) private var openSettings
@@ -55,40 +54,7 @@ struct DebugSettingsView: View {
                 }
                 .frame(width: 240, alignment: .leading)
             }
-
-            HStack(alignment: .top) {
-                Text(verbatim: "Logs:")
-                    .frame(width: 160, alignment: .trailing)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Button {
-                        exportLogs()
-                    } label: {
-                        Text(verbatim: "Export Logs…")
-                    }
-                    Text(verbatim: "Saves this session's logs (notice level and above) as NDJSON you can send for diagnosis.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(width: 240, alignment: .leading)
-            }
         }
         .padding()
-    }
-
-    private func exportLogs() {
-        let panel = NSSavePanel()
-        panel.nameFieldStringValue = "MacPacker-logs.ndjson"
-        panel.canCreateDirectories = true
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do {
-            try tb.exportRecentLogs(since: Date(timeIntervalSinceNow: -24 * 60 * 60), to: url)
-            NSWorkspace.shared.activateFileViewerSelecting([url])
-        } catch {
-            let alert = NSAlert()
-            alert.messageText = "Could not export logs"
-            alert.informativeText = error.localizedDescription
-            alert.runModal()
-        }
     }
 }
