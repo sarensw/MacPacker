@@ -54,6 +54,3 @@ jobs:
       # ── Build configuration ──
       configuration-direct: Release
       configuration-app-store: Release Store
-
-      # ── GitHub release ──
-      discussion-category: Announcements
