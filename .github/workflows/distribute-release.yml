@@ -56,5 +56,6 @@ jobs:
       configuration-direct: Release
       configuration-app-store: Release Store
 
-      # ── Release configuration ──
+      # ── Discussion configuration ──
+      create-discussion: true
       discussion-category: Announcements
