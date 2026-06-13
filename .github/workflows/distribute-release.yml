@@ -13,10 +13,11 @@ on:
 
 permissions:
   contents: write    # for the GH Release
+  discussions: write # for linking the GH Release to a discussion
 
 jobs:
   release:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.3.35
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.3.45
     secrets: 
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
@@ -54,3 +55,6 @@ jobs:
       # ── Build configuration ──
       configuration-direct: Release
       configuration-app-store: Release Store
+
+      # ── Release configuration ──
+      discussion-category: Announcements
