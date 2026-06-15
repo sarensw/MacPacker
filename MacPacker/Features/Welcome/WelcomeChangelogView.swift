@@ -30,7 +30,7 @@ struct ChangelogItem: Decodable, Identifiable {
 
     let type: String
     let title: [String: String]
-    let pr: Int?
+    let issue: String?
 }
 
 final class ChangelogLoader {
