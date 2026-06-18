@@ -18,6 +18,7 @@
 #include "Common/StringConvert.h"
 #include "Common/UTFConvert.h"
 #include "Common/IntToString.h"
+#include "Common/Wildcard.h"   // SplitPathToParts -- already-linked 7-Zip util
 
 #include "Windows/FileDir.h"
 #include "Windows/FileFind.h"
@@ -211,9 +212,30 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     _archive->GetProperty(index, kpidIsDir, &propIsDir);
     bool isDir = (propIsDir.vt == VT_BOOL && propIsDir.boolVal != VARIANT_FALSE);
 
+    // Sanitize the archive-supplied entry path to prevent Zip-Slip / path
+    // traversal. This logic lives in our bridge; we do not modify 7-Zip. Split
+    // on path separators (7-Zip's already-linked SplitPathToParts), then drop
+    // every "", ".", and ".." segment. A leading "/" produces a leading empty
+    // segment, so absolute paths are de-rooted too. The rebuilt path is always
+    // relative and cannot escape _destDir.
+    UStringVector rawParts;
+    SplitPathToParts(filePath, rawParts);
+
+    UString safePath;
+    FOR_VECTOR (i, rawParts) {
+        const UString &part = rawParts[i];
+        if (part.IsEmpty() || part.IsEqualTo(".") || part.IsEqualTo(".."))
+            continue;
+        if (!safePath.IsEmpty())
+            safePath.Add_PathSepar();
+        safePath += part;
+    }
+    if (safePath.IsEmpty())
+        safePath = L"unknown";
+
     FString fullPath = _destDir;
     fullPath += FCHAR_PATH_SEPARATOR;
-    fullPath += us2fs(filePath);
+    fullPath += us2fs(safePath);
 
     if (isDir) {
         NWindows::NFile::NDir::CreateComplexDir(fullPath);
