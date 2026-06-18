@@ -19,6 +19,25 @@
             "version": "0.15.3",
             "items": [
                 {
+                    "type": "core",
+                    "title": {
+                        "en": "Update 7-Zip to v26.01",
+                        "zh-Hans": "更新 7-Zip 至 v26.01",
+                        "fr": "Mise à jour de 7-Zip vers la version 26.01",
+                        "de": "7-Zip auf Version 26.01 aktualisiert",
+                        "it": "Aggiornamento di 7-Zip alla versione 26.01",
+                        "ja": "7-Zip を v26.01 に更新",
+                        "fa": "به‌روزرسانی 7-Zip به نسخه 26.01",
+                        "pl": "Aktualizacja 7-Zip do wersji 26.01",
+                        "pt-BR": "Atualização do 7-Zip para a versão 26.01",
+                        "ru": "Обновление 7-Zip до версии 26.01",
+                        "uk": "Оновлення 7-Zip до версії 26.01",
+                        "es-MX": "Actualización de 7-Zip a la versión 26.01",
+                        "ko": "7-Zip을 v26.01로 업데이트"
+                    },
+                    "issues": ["104"]
+                },
+                {
                     "type": "fix",
                     "title": {
                         "en": "Potential Zip-Slip vulnerability in archive extraction",
@@ -35,7 +54,7 @@
                         "es-MX": "Posible vulnerabilidad Zip-Slip durante la extracción de archivos",
                         "ko": "아카이브 추출 과정의 잠재적 Zip-Slip 취약점"
                     },
-                    "pr": 103
+                    "issues": ["103", "LB-555"]
                 }
             ]
         },
