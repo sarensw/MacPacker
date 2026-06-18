@@ -1,13 +1,13 @@
 {
-  "originHash" : "56d60c1365c0e68e4693cdf7879de778138b7496eca6c0aeabdcd258703d29b5",
+  "originHash" : "d8370f7148e476f379a0b64dcfa785ad37ddf304a576010520756c30b18ac78d",
   "pins" : [
     {
       "identity" : "bitbytedata",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/tsolomko/BitByteData",
+      "location" : "https://github.com/tsolomko/BitByteData.git",
       "state" : {
-        "revision" : "cdcdc5177ad536cfb11b95c620f926a81014b7fe",
-        "version" : "2.0.4"
+        "revision" : "e1a5443be67daf0833cbb5f4fa3a06a265ca3105",
+        "version" : "2.1.0"
       }
     },
     {
@@ -15,8 +15,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/PandalyticsIO/pandalytics-swift",
       "state" : {
-        "revision" : "f84563a9af504b8020cc1a61af4e131551df2a7a",
-        "version" : "0.7.0"
+        "revision" : "322c35bfae5d891caa6bfed82af4c90964f6eb14",
+        "version" : "0.10.0"
+      }
+    },
+    {
+      "identity" : "sandboxpilotkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/LeanBytes/SandboxPilotKit",
+      "state" : {
+        "revision" : "4275c8b7e9b558f33713cda2212221cc423b4516",
+        "version" : "1.0.1"
       }
     },
     {
@@ -24,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/sparkle-project/Sparkle",
       "state" : {
-        "revision" : "6276ba2b404829d139c45ff98427cf90e2efc59b",
-        "version" : "2.9.2"
+        "revision" : "d46d456107feacc80711b21847b82b07bd9fb46e",
+        "version" : "2.9.3"
       }
     },
     {
@@ -33,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tsolomko/SWCompression.git",
       "state" : {
-        "revision" : "390e0b0af8dd19a600005a242a89e570ff482e09",
-        "version" : "4.8.6"
+        "revision" : "03a68e67991815a267e28174a0a01fbe0cff937b",
+        "version" : "4.9.1"
       }
     },
     {
@@ -42,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-subprocess.git",
       "state" : {
-        "revision" : "44922dfe46380cd354ca4b0208e717a3e92b13dd",
-        "version" : "0.2.1"
+        "revision" : "11633673a41f509f8945f23c96c7acd4adafd679",
+        "version" : "0.5.0"
       }
     },
     {
@@ -51,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-system",
       "state" : {
-        "revision" : "395a77f0aa927f0ff73941d7ac35f2b46d47c9db",
-        "version" : "1.6.3"
+        "revision" : "7502b711c92a17741fa625d722b0ccbd595d8ed1",
+        "version" : "1.7.2"
       }
     },
     {

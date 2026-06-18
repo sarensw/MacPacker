@@ -12,6 +12,9 @@ import SwiftUI
 import Sparkle
 #endif
 import tb
+#if DEBUG
+import SandboxPilotKit
+#endif
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "lifecycle")
 
@@ -23,6 +26,10 @@ struct MacPackerApp: App {
     init() {
         tb.start()
         log.notice("MacPackerApp.init — app process starting")
+        
+        #if DEBUG
+        SandboxPilot.start()
+        #endif
     }
     
     var body: some Scene {
