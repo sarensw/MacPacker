@@ -285,7 +285,7 @@ extension AllCoreTests {
         @Test func loadChildrenWithNilSelectedItem() {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             // No archive opened, selectedItem is nil
-            state.loadChildren(sortedBy: nil)
+            state.loadChildren()
             #expect(state.childItems == nil)
         }
 

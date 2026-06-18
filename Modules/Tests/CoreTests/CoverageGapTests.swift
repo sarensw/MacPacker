@@ -151,8 +151,11 @@ extension AllCoreTests {
             let dir = state.entries.values.first(where: { $0.type == .directory && ($0.children?.count ?? 0) > 1 })
             if let dir {
                 try await state.openAsync(item: dir)
-                let descendingSort = NSSortDescriptor(key: "name", ascending: false)
-                state.loadChildren(sortedBy: descendingSort)
+                
+                UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+                UserDefaults.standard.set(false, forKey: Keys.defaultOrderColumnAscending)
+
+                state.loadChildren()
 
                 if let items = state.childItems, items.count >= 2 {
                     // Files should be sorted in descending order within their type group

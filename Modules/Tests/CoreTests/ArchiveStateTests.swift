@@ -114,7 +114,7 @@ extension AllCoreTests {
             state.open(url: url)
             try await state.openTask?.value
 
-            state.loadChildren(sortedBy: nil)
+            state.loadChildren()
 
             #expect(state.childItems != nil)
             #expect(!state.childItems!.isEmpty)
@@ -127,9 +127,11 @@ extension AllCoreTests {
 
             state.open(url: url)
             try await state.openTask?.value
+            
+            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
 
-            let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-            state.loadChildren(sortedBy: sortDescriptor)
+            state.loadChildren()
 
             let items = state.childItems!
             #expect(items.count == 2)
@@ -148,8 +150,10 @@ extension AllCoreTests {
             state.open(url: url)
             try await state.openTask?.value
 
-            let sortDescriptor = NSSortDescriptor(key: "name", ascending: false)
-            state.loadChildren(sortedBy: sortDescriptor)
+            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(false, forKey: Keys.defaultOrderColumnAscending)
+
+            state.loadChildren()
 
             let items = state.childItems!
             #expect(items.count == 2)
@@ -166,8 +170,10 @@ extension AllCoreTests {
             state.open(url: url)
             try await state.openTask?.value
 
-            let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-            state.loadChildren(sortedBy: sortDescriptor)
+            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
+
+            state.loadChildren()
 
             let items = state.childItems!
             let directoryItems = items.filter { $0.type == .directory }
@@ -419,8 +425,10 @@ extension AllCoreTests {
             state.open(url: url)
             try await state.openTask?.value
 
-            let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-            state.loadChildren(sortedBy: sortDescriptor)
+            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
+
+            state.loadChildren()
 
             // At root, selectedItem.type == .root, so no offset shift
             state.changeSelection(selection: IndexSet(integer: 0))
@@ -444,8 +452,10 @@ extension AllCoreTests {
 
             try await state.openAsync(item: dirChild)
 
-            let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-            state.loadChildren(sortedBy: sortDescriptor)
+            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
+
+            state.loadChildren()
 
             // With parent row, index 0 is the parent; index 1 maps to childItems[0]
             state.changeSelection(selection: IndexSet(integer: 1))
@@ -462,8 +472,10 @@ extension AllCoreTests {
             state.open(url: url)
             try await state.openTask?.value
 
-            let sortDescriptor = NSSortDescriptor(key: "name", ascending: true)
-            state.loadChildren(sortedBy: sortDescriptor)
+            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
+
+            state.loadChildren()
 
             // Select both items at root (no parent offset)
             state.changeSelection(selection: IndexSet([0, 1]))
@@ -709,7 +721,7 @@ extension AllCoreTests {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
 
             // No archive opened, selectedItem is nil
-            state.loadChildren(sortedBy: nil)
+            state.loadChildren()
             #expect(state.childItems == nil)
         }
 
@@ -723,7 +735,7 @@ extension AllCoreTests {
 
             state.clean()
 
-            state.loadChildren(sortedBy: nil)
+            state.loadChildren()
             #expect(state.childItems == nil)
         }
     }
