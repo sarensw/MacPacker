@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   beta:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.45
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.3.47
     secrets: 
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}

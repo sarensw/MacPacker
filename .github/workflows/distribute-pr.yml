@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   pr:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.3.45
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.3.47
     with:
       has-finder-extension: true
       has-quicklook-extension: true
