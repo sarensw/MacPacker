@@ -376,6 +376,7 @@ let package = Package(
             publicHeadersPath: "Sources/CSevenZip/include",
             cSettings: [
                 .define("_7ZIP_ST"),
+                .define("Z7_NO_LARGE_PAGES"),
                 .define("_FILE_OFFSET_BITS", to: "64"),
                 .headerSearchPath("Sources/CSevenZip/vendor/7zip"),
                 .headerSearchPath("Sources/CSevenZip/vendor/7zip/CPP"),
@@ -390,6 +391,7 @@ let package = Package(
             ],
             cxxSettings: [
                 .define("_7ZIP_ST"),
+                .define("Z7_NO_LARGE_PAGES"),
                 .define("_FILE_OFFSET_BITS", to: "64"),
                 .headerSearchPath("Sources/CSevenZip/vendor/7zip"),
                 .headerSearchPath("Sources/CSevenZip/vendor/7zip/CPP"),
