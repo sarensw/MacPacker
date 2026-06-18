@@ -122,6 +122,49 @@ extension AllCoreTests {
             #expect(extractResult.urls.count == fileItems.count)
         }
 
+        // Regression for LB-555 (Zip-Slip / path traversal): a crafted archive whose
+        // entries contain "../" or absolute paths must never write outside the
+        // destination directory. The fixture `zip/zipslip.zip` has entries
+        // "../escaped_rel.txt" and "/escaped_abs.txt" alongside a benign "safe.txt".
+        @Test func extractionRejectsPathTraversal() async throws {
+            let engine = Archive7ZipEngine()
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zipslip.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            // Nested temp layout: anything written outside `dest` (i.e. elsewhere
+            // under `parent`) is a traversal escape.
+            let parent = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            let dest = parent.appendingPathComponent("dest")
+            try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: parent) }
+
+            _ = try await engine.extract(
+                items: items,
+                from: url,
+                to: dest,
+                passwordResolver: { _ in nil }
+            )
+
+            // Every regular file produced by the extraction must live under `dest`.
+            let destPrefix = dest.standardizedFileURL.path + "/"
+            let walker = FileManager.default.enumerator(
+                at: parent,
+                includingPropertiesForKeys: [.isRegularFileKey]
+            )!
+            while let fileURL = walker.nextObject() as? URL {
+                let isRegularFile = (try? fileURL.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile ?? false
+                if isRegularFile {
+                    #expect(
+                        fileURL.standardizedFileURL.path.hasPrefix(destPrefix),
+                        "Extracted file escaped the destination: \(fileURL.path)"
+                    )
+                }
+            }
+        }
+
         @Test func extractEmptyItemsThrows() async throws {
             let engine = Archive7ZipEngine()
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
