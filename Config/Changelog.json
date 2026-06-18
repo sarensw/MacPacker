@@ -16,6 +16,30 @@
     },
     "versions": [
         {
+            "version": "0.15.3",
+            "items": [
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Potential Zip-Slip vulnerability in archive extraction",
+                        "zh-Hans": "归档解压过程中存在潜在的 Zip-Slip 漏洞",
+                        "fr": "Vulnérabilité Zip-Slip potentielle lors de l’extraction d’archives",
+                        "de": "Potenzielle Zip-Slip-Sicherheitslücke bei der Archivextraktion",
+                        "it": "Potenziale vulnerabilità Zip-Slip durante l’estrazione degli archivi",
+                        "ja": "アーカイブ展開時の潜在的な Zip-Slip 脆弱性",
+                        "fa": "آسیب‌پذیری احتمالی Zip-Slip هنگام استخراج آرشیوها",
+                        "pl": "Potencjalna podatność Zip-Slip podczas rozpakowywania archiwów",
+                        "pt-BR": "Possível vulnerabilidade Zip-Slip na extração de arquivos",
+                        "ru": "Потенциальная уязвимость Zip-Slip при распаковке архивов",
+                        "uk": "Потенційна вразливість Zip-Slip під час розпакування архівів",
+                        "es-MX": "Posible vulnerabilidad Zip-Slip durante la extracción de archivos",
+                        "ko": "아카이브 추출 과정의 잠재적 Zip-Slip 취약점"
+                    },
+                    "pr": 103
+                }
+            ]
+        },
+        {
             "version": "0.15.2",
             "items": [
                 {
