@@ -31,6 +31,11 @@ struct DebugSettingsView: View {
                     } label: {
                         Text(verbatim: "Show About window")
                     }
+                    Button {
+                        QuickLookHarnessWindowController().show()
+                    } label: {
+                        Text(verbatim: "Open Quick Look Harness…")
+                    }
                 }
                 .padding(.leading, 8)
                 .toggleStyle(.checkbox)

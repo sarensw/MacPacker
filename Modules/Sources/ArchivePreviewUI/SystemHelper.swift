@@ -8,9 +8,11 @@
 import AppKit
 import UniformTypeIdentifiers
 
-final class SystemHelper {
+/// Stateless icon/formatting helpers. `Sendable` (no stored state) so the
+/// `shared` singleton is usable from the package's Swift 6 concurrency model.
+final class SystemHelper: Sendable {
     public static let shared = SystemHelper()
-    
+
     private init() {}
     
     func getNSImageByExtension(fileName: String) -> NSImage? {

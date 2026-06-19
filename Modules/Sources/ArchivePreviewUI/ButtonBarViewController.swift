@@ -7,6 +7,7 @@
 
 import AppKit
 
+@MainActor
 protocol ButtonBarDelegate: AnyObject {
     func didRequestExtractSelected()
     func didRequestExtractAll()
