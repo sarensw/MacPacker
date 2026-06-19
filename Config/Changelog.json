@@ -55,6 +55,25 @@
                         "ko": "아카이브 추출 과정의 잠재적 Zip-Slip 취약점"
                     },
                     "issues": ["103", "LB-555"]
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Archives with UTF-8 characters in their file name could not be opened",
+                        "zh-Hans": "文件名包含 UTF-8 字符的压缩包无法打开",
+                        "fr": "Les archives dont le nom contient des caractères UTF-8 ne pouvaient pas être ouvertes",
+                        "de": "Archive mit UTF-8-Zeichen im Dateinamen konnten nicht geöffnet werden",
+                        "it": "Gli archivi con caratteri UTF-8 nel nome del file non potevano essere aperti",
+                        "ja": "ファイル名に UTF-8 文字を含むアーカイブを開けない問題を修正",
+                        "fa": "آرشیوهایی با نویسه‌های UTF-8 در نام فایل قابل باز شدن نبودند",
+                        "pl": "Nie można było otwierać archiwów z znakami UTF-8 w nazwie pliku",
+                        "pt-BR": "Arquivos com caracteres UTF-8 no nome não podiam ser abertos",
+                        "ru": "Архивы с символами UTF-8 в имени файла не открывались",
+                        "uk": "Архіви з символами UTF-8 в імені файлу не відкривалися",
+                        "es-MX": "No se podían abrir archivos con caracteres UTF-8 en el nombre",
+                        "ko": "파일 이름에 UTF-8 문자가 포함된 아카이브를 열 수 없던 문제 수정"
+                    },
+                    "issues": ["107"]
                 }
             ]
         },

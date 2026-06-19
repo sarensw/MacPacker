@@ -62,6 +62,18 @@ STDAPI CreateArchiver(const GUID *clsid, const GUID *iid, void **outObject);
 
 // --- Helpers ---
 
+// Force 7-Zip's narrow<->wide string conversions to use UTF-8.
+//
+// 7-Zip's load-time constructor (DllExports2.cpp) sets the global
+// `g_ForceToUTF8` from `IsNativeUTF8()`, which probes the C locale. In a macOS
+// GUI/test process that locale is "C"/"POSIX", so the flag becomes false and
+// `us2fs()` falls back to wcstombs() -- which cannot represent non-ASCII bytes
+// and replaces them with '_'. macOS filesystem paths are always UTF-8, so we
+// force the flag on. Shared with the write bridge.
+void sz_force_utf8_paths(void) {
+    g_ForceToUTF8 = true;
+}
+
 static std::string UStringToUTF8(const UString &src) {
     AString dest;
     ConvertUnicodeToUTF8(src, dest);
@@ -280,6 +292,14 @@ extern "C" {
 
 SZArchiveRef sz_open(const char *path, char **error_out) {
     try {
+        // Force 7-Zip to treat all narrow<->wide path conversions as UTF-8.
+        // On macOS the filesystem encoding is always UTF-8, but 7-Zip's
+        // load-time constructor (DllExports2.cpp) sets g_ForceToUTF8 based on
+        // the C locale, which is "C"/"POSIX" in a GUI/test process. That makes
+        // us2fs() route through wcstombs(), mangling non-ASCII path bytes into
+        // '_' so archives with UTF-8 names (e.g. utf_你好.zip) fail to open.
+        sz_force_utf8_paths();
+
         auto *handle = new SZArchiveHandle();
 
         // Open the file stream

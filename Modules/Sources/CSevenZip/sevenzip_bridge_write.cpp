@@ -28,6 +28,10 @@
 #include "7zip/Archive/IArchive.h"
 #include "7zip/IPassword.h"
 
+// Defined in sevenzip_bridge.cpp -- forces 7-Zip's narrow<->wide path
+// conversions to UTF-8 so archives with non-ASCII names work on macOS.
+void sz_force_utf8_paths(void);
+
 // --- GUIDs ---
 
 static const GUID IID_IOutArchive_Local = {
@@ -300,6 +304,9 @@ int sz_update_archive(
     if (error_out) *error_out = nullptr;
 
     try {
+        // macOS paths are UTF-8; make 7-Zip honor that (see sz_force_utf8_paths).
+        sz_force_utf8_paths();
+
         // 1. Find the format
         GUID clsid;
         const char *fmt = (options && options->format) ? options->format : "7z";
