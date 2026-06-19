@@ -18,3 +18,8 @@ jobs:
       has-finder-extension: true
       has-quicklook-extension: true
       scheme-name: MacPacker
+
+      # ── Test configuration ──
+      run-tests: true
+      test-runner: swift
+      swift-package-path: Modules

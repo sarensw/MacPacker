@@ -32,6 +32,7 @@
 		25D7B4F22FBFB84B00021B10 /* Changelog.json in Resources */ = {isa = PBXBuildFile; fileRef = 25D7B4F02FBFB82E00021B10 /* Changelog.json */; };
 		25D80C9E2E80204A00A55040 /* FinderExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 252F12022E7ABDD9004CCEBE /* FinderExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25E426C92E6BEB3800F10BE5 /* XADMasterSwift */; };
+		25E6DA782FE5A6FC00AD47BB /* ArchivePreviewUI in Frameworks */ = {isa = PBXBuildFile; productRef = 25E6DA772FE5A6FC00AD47BB /* ArchivePreviewUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -166,6 +167,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				25E6DA782FE5A6FC00AD47BB /* ArchivePreviewUI in Frameworks */,
 				25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */,
 				2540451B2ECB50D5004A4380 /* Core in Frameworks */,
 				25C69EAE2FE4969F002287A0 /* SandboxPilotKit in Frameworks */,
@@ -300,6 +302,7 @@
 				25404BB22ECB50D5004A4380 /* tb */,
 				25CFF95D2F98F341003F064E /* Pandalytics */,
 				25C69EAD2FE4969F002287A0 /* SandboxPilotKit */,
+				25E6DA772FE5A6FC00AD47BB /* ArchivePreviewUI */,
 			);
 			productName = MacPacker;
 			productReference = 254BB5592ABBE8430059A1D5 /* MacPackerStore.app */;
@@ -1294,14 +1297,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Core;
 		};
-		2540AB010000000000000001 /* ArchivePreviewUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ArchivePreviewUI;
-		};
-		2540AB010000000000000003 /* ArchivePreviewUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ArchivePreviewUI;
-		};
 		2540451A2ECB50D5004A4380 /* Core */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Core;
@@ -1329,6 +1324,14 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 25404E0A2ED71F86004A4380 /* XCRemoteSwiftPackageReference "tailbeatkit" */;
 			productName = tb;
+		};
+		2540AB010000000000000001 /* ArchivePreviewUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ArchivePreviewUI;
+		};
+		2540AB010000000000000003 /* ArchivePreviewUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ArchivePreviewUI;
 		};
 		254BB55C2ABBE8F50059A1D5 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1373,6 +1376,10 @@
 		25E426C92E6BEB3800F10BE5 /* XADMasterSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = XADMasterSwift;
+		};
+		25E6DA772FE5A6FC00AD47BB /* ArchivePreviewUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ArchivePreviewUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
