@@ -341,6 +341,7 @@ let package = Package(
     platforms: [ .macOS(.v14) ],
     products: [
         .library(name: "Core", targets: ["Core"]),
+        .library(name: "ArchivePreviewUI", targets: ["ArchivePreviewUI"]),
         //.library(name: "SevenZipBridge", targets: ["SevenZipBridge"])
     ],
     dependencies: [
@@ -363,6 +364,16 @@ let package = Package(
             ],
             resources: [
                 .copy("Formats/Catalog.json")
+            ]
+        ),
+        .target(
+            name: "ArchivePreviewUI",
+            dependencies: [
+                "Core",
+                .product(name: "tb", package: "TailBeatKit")
+            ],
+            resources: [
+                .process("Localizable.xcstrings")
             ]
         ),
         .target(
