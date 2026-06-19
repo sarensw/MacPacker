@@ -74,6 +74,25 @@
                         "ko": "파일 이름에 UTF-8 문자가 포함된 아카이브를 열 수 없던 문제 수정"
                     },
                     "issues": ["107"]
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Quick Look preview not working",
+                        "zh-Hans": "快速查看预览无法使用",
+                        "fr": "L’aperçu Quick Look ne fonctionnait pas",
+                        "de": "Quick-Look-Vorschau funktionierte nicht",
+                        "it": "L’anteprima Quick Look non funzionava",
+                        "ja": "Quick Look プレビューが機能しない問題を修正",
+                        "fa": "پیش‌نمایش Quick Look کار نمی‌کرد",
+                        "pl": "Podgląd Quick Look nie działał",
+                        "pt-BR": "A visualização do Quick Look não funcionava",
+                        "ru": "Предпросмотр Quick Look не работал",
+                        "uk": "Попередній перегляд Quick Look не працював",
+                        "es-MX": "La vista previa de Quick Look no funcionaba",
+                        "ko": "Quick Look 미리보기가 동작하지 않던 문제 수정"
+                    },
+                    "issues": ["106"]
                 }
             ]
         },

@@ -52,3 +52,8 @@ jobs:
       # ── Build configuration ──
       configuration-direct: Release
       configuration-app-store: Release Store
+
+      # ── Test configuration ──
+      run-tests: true
+      test-runner: swift
+      swift-package-path: Modules

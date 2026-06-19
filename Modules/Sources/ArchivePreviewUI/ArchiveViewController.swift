@@ -98,27 +98,30 @@ class ArchiveViewController: NSViewController {
 extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
 //    private var rootNode: ArchiveItem { hierarchy?.root ?? .root }
     
+    /// Resolves the child UUIDs stored on an `ArchiveItem` (or on the root, when
+    /// `item` is `nil`) into the actual `ArchiveItem`s via `state.entries`.
+    ///
+    /// `ArchiveItem.children` holds `[UUID]` (changed in `4659e4a`), so the
+    /// outline view has to look the items up here. Returning the raw UUIDs makes
+    /// every `as? ArchiveItem` cast in `viewFor` / `isItemExpandable` fail, which
+    /// is why the preview showed empty, non-expandable rows.
+    private func resolvedChildren(of item: Any?) -> [ArchiveItem] {
+        guard let state else { return [] }
+        let node = (item as? ArchiveItem) ?? state.root
+        guard let childIDs = node?.children else { return [] }
+        return childIDs.compactMap { state.entries[$0] }
+    }
+
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-        guard let state else { return 0 }
-        guard let node = (item as? ArchiveItem) ?? state.root else { return 0 }
-        guard let children = node.children else { return 0 }
-        
-        return children.count
+        resolvedChildren(of: item).count
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        guard let state else { return 0 }
-        guard let node = (item as? ArchiveItem) ?? state.root else { return 0 }
-        guard let children = node.children else { return 0 }
-        
-        return children[index]
+        resolvedChildren(of: item)[index]
     }
-    
+
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        guard let node = item as? ArchiveItem else { return false }
-        guard let children = node.children else { return false }
-        
-        return !children.isEmpty
+        !resolvedChildren(of: item).isEmpty
     }
     
     func outlineView(
