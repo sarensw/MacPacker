@@ -67,6 +67,14 @@ public final class ArchivePreviewViewController: NSViewController {
     public func loadPreview(of url: URL) async throws {
         PreviewLog.general.debug("Previewing file at \(url.path)")
 
+        // QuickLook hands the extension a security-scoped URL; inside the appex
+        // sandbox the archive bytes are only readable while we're accessing it.
+        // (The in-app harness opens a user-selected URL, which is broadly
+        // accessible — that's why the harness shows content but the real
+        // extension came up empty.) Access is held across the awaited load below.
+        let didAccess = url.startAccessingSecurityScopedResource()
+        defer { if didAccess { url.stopAccessingSecurityScopedResource() } }
+
         let state = ArchivePreviewLoader.makeState()
         state.open(url: url)
         try await state.openTask?.value
