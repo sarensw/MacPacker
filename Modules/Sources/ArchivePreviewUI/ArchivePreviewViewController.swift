@@ -21,6 +21,8 @@ public final class ArchivePreviewViewController: NSViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .secondaryLabelColor
         label.alignment = .center
+        label.maximumNumberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
         label.isHidden = true
         return label
     }()
@@ -79,11 +81,23 @@ public final class ArchivePreviewViewController: NSViewController {
         state.open(url: url)
         try await state.openTask?.value
 
+        // Diagnostics: NSLog always surfaces in Console/Xcode (the appex doesn't
+        // call tb.start(), so tb logs don't reach the unified log).
+        let entryCount = state.entries.count
+        let rootChildren = state.root?.children?.count ?? -1
+        NSLog("[MacPacker QL] loadPreview path=%@ access=%d error=%@ entries=%d rootChildren=%d",
+              url.path, didAccess ? 1 : 0, state.error ?? "nil", entryCount, rootChildren)
+
         if let error = state.error {
             PreviewLog.general.error("Preview load failed", context: ["error": error])
-            showMessage(NSLocalizedString(
-                "Couldn’t read this archive.",
-                comment: "Shown in the Quick Look preview when the archive can't be read"))
+            showMessage("Couldn’t read this archive.\n\(error)")
+            return
+        }
+
+        if state.root == nil || (state.root?.children?.isEmpty ?? true) {
+            // Opened without an error but produced no listable entries — surface
+            // it instead of rendering a silent, empty list.
+            showMessage("No entries read from this archive.\nentries: \(entryCount) · file access: \(didAccess ? "granted" : "not security-scoped")")
             return
         }
 
@@ -94,9 +108,11 @@ public final class ArchivePreviewViewController: NSViewController {
     private func showMessage(_ text: String) {
         messageLabel.stringValue = text
         messageLabel.isHidden = false
+        contentViewController.view.isHidden = true   // ensure the message isn't hidden behind the (opaque) outline view
     }
 
     private func hideMessage() {
         messageLabel.isHidden = true
+        contentViewController.view.isHidden = false
     }
 }
