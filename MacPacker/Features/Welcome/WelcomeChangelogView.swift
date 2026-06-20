@@ -13,6 +13,7 @@ enum ChangelogType: String {
     case fix
     case core
     case release
+    case lang
 }
 
 struct Changelog: Decodable {
@@ -199,6 +200,7 @@ struct ChangelogPillView: View {
             case .fix: PillView(.fix)
             case .release: PillView(.release)
             case .core: PillView(.core)
+            case .lang: PillView(.lang)
             }
 
             VStack(alignment: .leading, spacing: 2) {

@@ -93,6 +93,25 @@
                         "ko": "Quick Look 미리보기가 동작하지 않던 문제 수정"
                     },
                     "issues": ["106"]
+                },
+                {
+                    "type": "lang",
+                    "title": {
+                        "en": "Updates to Chinese & Polish translations",
+                        "zh-Hans": "更新中文和波兰语翻译",
+                        "fr": "Mises à jour des traductions chinoise et polonaise",
+                        "de": "Aktualisierungen der chinesischen und polnischen Übersetzungen",
+                        "it": "Aggiornamenti alle traduzioni in cinese e polacco",
+                        "ja": "中国語およびポーランド語翻訳を更新",
+                        "fa": "به‌روزرسانی ترجمه‌های چینی و لهستانی",
+                        "pl": "Aktualizacje tłumaczeń chińskich i polskich",
+                        "pt-BR": "Atualizações nas traduções para chinês e polonês",
+                        "ru": "Обновления китайского и польского переводов",
+                        "uk": "Оновлення китайського та польського перекладів",
+                        "es-MX": "Actualizaciones de las traducciones al chino y polaco",
+                        "ko": "중국어 및 폴란드어 번역 업데이트"
+                    },
+                    "issues": []
                 }
             ]
         },

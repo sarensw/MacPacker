@@ -433,6 +433,18 @@
               }
             }
           }
+        },
+        "zh-Hans" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld 个项目"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -621,6 +633,18 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld вибрано"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "已选择 %lld 项"
                 }
               }
             }
@@ -838,6 +862,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Подяки"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "致谢"
           }
         }
       }
@@ -1058,6 +1088,12 @@
             "state" : "translated",
             "value" : "Формати архівів"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "归档格式"
+          }
         }
       }
     },
@@ -1157,6 +1193,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automatically check for updates"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatycznie szukaj aktualizacji"
           }
         },
         "zh-Hans" : {
@@ -1341,6 +1383,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Changelog"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dziennik zmian"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新日志"
           }
         }
       }
@@ -1685,6 +1739,18 @@
             "state" : "translated",
             "value" : "Coming next"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nadchodzące zmiany"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "即将发布"
+          }
         }
       }
     },
@@ -1983,6 +2049,12 @@
             "state" : "translated",
             "value" : "Стан за замовчуванням та налаштування рушія"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认状态 与 引擎设置"
+          }
         }
       }
     },
@@ -2198,6 +2270,12 @@
             "state" : "translated",
             "value" : "Рушій"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "引擎"
+          }
         }
       }
     },
@@ -2333,6 +2411,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Розширення"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "扩展"
           }
         }
       }
@@ -2559,6 +2643,12 @@
             "state" : "translated",
             "value" : "Формат файлу"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件格式"
+          }
         }
       }
     },
@@ -2618,6 +2708,12 @@
             "state" : "translated",
             "value" : "Розширення менеджера файлів"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件提供程序扩展"
+          }
         }
       }
     },
@@ -2671,6 +2767,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Відслідкувати"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关注"
           }
         }
       }
@@ -2897,6 +2999,12 @@
             "state" : "translated",
             "value" : "Як встановити %@ за замовчуванням?"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如何将 %@ 设为默认？"
+          }
         }
       }
     },
@@ -2914,6 +3022,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Include Beta updates"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj wersje Beta"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "包含测试版更新"
           }
         }
       }
@@ -2973,6 +3093,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Інформація про рушії"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "引擎信息"
           }
         }
       }
@@ -3181,6 +3307,12 @@
             "state" : "translated",
             "value" : "MacPacker включає кілька архівних рушіїв. Рекомендується використовувати рушій за замовчуванням; альтернативні рушії можуть допомогти у вирішенні проблем, пов'язаних із конкретними форматами. Майте на увазі, що підтримка движків залежить від формату."
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker 包含数种归档引擎。推荐使用默认引擎；如果你遇到特定格式的问题，可以尝试替代引擎。不过请注意，不同格式对引擎的支持可能有所不同。"
+          }
         }
       }
     },
@@ -3239,6 +3371,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Керувати в Налаштуваннях системи"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在系统设置中管理"
           }
         }
       }
@@ -3524,6 +3662,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нове вікно %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新 %@ 窗口"
           }
         }
       }
@@ -4136,6 +4280,12 @@
             "value" : "Quit on last window closed:"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakończ po zamknięciu ostatniego okna:"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4200,6 +4350,12 @@
             "state" : "translated",
             "value" : "Оновити"
           }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刷新"
+          }
         }
       }
     },
@@ -4253,6 +4409,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Додати відгук"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "评价"
           }
         }
       }
@@ -4691,6 +4853,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Додати до обраного"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加星"
           }
         }
       }
