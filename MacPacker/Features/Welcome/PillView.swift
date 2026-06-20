@@ -50,7 +50,7 @@ public struct PillView: View {
 
 public enum PillStyle {
     // Changelog
-    case feature, fix, core, release
+    case feature, fix, core, release, lang
 
     public var background: Color {
         switch self {
@@ -58,6 +58,7 @@ public enum PillStyle {
         case .fix:         .pillFixBackground
         case .core:        .pillCoreBackground
         case .release:     .pillReleaseBackground
+        case .lang:        .pillLanguageBackground
         }
     }
 
@@ -67,6 +68,7 @@ public enum PillStyle {
         case .fix:         .pillFixForeground
         case .core:        .pillCoreForeground
         case .release:     .pillReleaseForeground
+        case .lang:        .pillLanguageForeground
         }
     }
 
@@ -76,6 +78,7 @@ public enum PillStyle {
         case .fix:         "Fix"
         case .core:        "Core"
         case .release:     "Release"
+        case .lang:        "Language"
         }
     }
 }
@@ -84,17 +87,20 @@ public enum PillStyle {
 
 public extension Color {
     // Changelog
-    static let pillFeatureBackground = Color.adaptive(light: 0xEAF3DE, dark: 0x27500A)
-    static let pillFeatureForeground = Color.adaptive(light: 0x27500A, dark: 0xC0DD97)
+    static let pillFeatureBackground = Color.adaptive(light: 0xC8E2A8, dark: 0x2E6010)
+    static let pillFeatureForeground = Color.adaptive(light: 0x1A3D06, dark: 0xD4EBA8)
 
-    static let pillFixBackground     = Color.adaptive(light: 0xE6F1FB, dark: 0x0C447C)
-    static let pillFixForeground     = Color.adaptive(light: 0x0C447C, dark: 0xB5D4F4)
+    static let pillFixBackground     = Color.adaptive(light: 0xBAD5F5, dark: 0x144F8E)
+    static let pillFixForeground     = Color.adaptive(light: 0x073060, dark: 0xC8E0F8)
 
-    static let pillCoreBackground    = Color.adaptive(light: 0xEEEDFE, dark: 0x3C3489)
-    static let pillCoreForeground    = Color.adaptive(light: 0x3C3489, dark: 0xCECBF6)
+    static let pillCoreBackground    = Color.adaptive(light: 0xCECBF6, dark: 0x453B9E)
+    static let pillCoreForeground    = Color.adaptive(light: 0x26215C, dark: 0xDDD9FA)
 
-    static let pillReleaseBackground = Color.adaptive(light: 0xFAECE7, dark: 0x712B13)
-    static let pillReleaseForeground = Color.adaptive(light: 0x712B13, dark: 0xF5C4B3)
+    static let pillReleaseBackground = Color.adaptive(light: 0xF5C4B3, dark: 0x893318)
+    static let pillReleaseForeground = Color.adaptive(light: 0x4A1B0C, dark: 0xFADBD0)
+
+    static let pillLanguageBackground = Color.adaptive(light: 0xFAC775, dark: 0x7A4F08)
+    static let pillLanguageForeground = Color.adaptive(light: 0x412402, dark: 0xFDDDA0)
 }
 
 // MARK: - Adaptive Helper
