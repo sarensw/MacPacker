@@ -93,9 +93,9 @@ class FinderSync: FIFinderSync {
     }
     
     override var toolbarItemImage: NSImage {
-        let img = NSImage(named: "Logo")!
+        let img = NSImage(named: "AppIcon_MacPacker") ?? NSImage()
+        img.size = NSSize(width: 18, height: 18)
         return img
-        
     }
     
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
