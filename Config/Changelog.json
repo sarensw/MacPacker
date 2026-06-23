@@ -16,6 +16,30 @@
     },
     "versions": [
         {
+            "version": "0.15.4",
+            "items": [
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Finder toolbar icon appears too large",
+                        "zh-Hans": "Finder 工具栏图标显示过大",
+                        "fr": "L’icône de la barre d’outils du Finder apparaissait trop grande",
+                        "de": "Finder-Symbol in der Symbolleiste erschien zu groß",
+                        "it": "L’icona della barra degli strumenti del Finder appariva troppo grande",
+                        "ja": "Finder ツールバーのアイコンが大きすぎて表示される問題を修正",
+                        "fa": "آیکون نوار ابزار Finder بیش از حد بزرگ نمایش داده می‌شد",
+                        "pl": "Ikona paska narzędzi Findera była wyświetlana zbyt duża",
+                        "pt-BR": "O ícone da barra de ferramentas do Finder aparecia grande demais",
+                        "ru": "Значок панели инструментов Finder отображался слишком большим",
+                        "uk": "Значок панелі інструментів Finder відображався занадто великим",
+                        "es-MX": "El ícono de la barra de herramientas de Finder aparecía demasiado grande",
+                        "ko": "Finder 도구 막대 아이콘이 너무 크게 표시되던 문제 수정"
+                    },
+                    "issues": ["112"]
+                }
+            ]
+        },
+        {
             "version": "0.15.3",
             "items": [
                 {
@@ -93,25 +117,6 @@
                         "ko": "Quick Look 미리보기가 동작하지 않던 문제 수정"
                     },
                     "issues": ["106"]
-                },
-                {
-                    "type": "fix",
-                    "title": {
-                        "en": "Finder toolbar icon appears too large",
-                        "zh-Hans": "Finder 工具栏图标显示过大",
-                        "fr": "L’icône de la barre d’outils du Finder apparaissait trop grande",
-                        "de": "Finder-Symbol in der Symbolleiste erschien zu groß",
-                        "it": "L’icona della barra degli strumenti del Finder appariva troppo grande",
-                        "ja": "Finder ツールバーのアイコンが大きすぎて表示される問題を修正",
-                        "fa": "آیکون نوار ابزار Finder بیش از حد بزرگ نمایش داده می‌شد",
-                        "pl": "Ikona paska narzędzi Findera była wyświetlana zbyt duża",
-                        "pt-BR": "O ícone da barra de ferramentas do Finder aparecia grande demais",
-                        "ru": "Значок панели инструментов Finder отображался слишком большим",
-                        "uk": "Значок панелі інструментів Finder відображався занадто великим",
-                        "es-MX": "El ícono de la barra de herramientas de Finder aparecía demasiado grande",
-                        "ko": "Finder 도구 막대 아이콘이 너무 크게 표시되던 문제 수정"
-                    },
-                    "issues": ["112"]
                 },
                 {
                     "type": "lang",
