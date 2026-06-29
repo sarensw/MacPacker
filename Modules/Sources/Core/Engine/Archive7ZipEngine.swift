@@ -25,11 +25,56 @@ final actor Archive7ZipEngine: ArchiveEngine {
     func cancel() async {
     }
     
+    /// For split/multi-volume archives (.001 etc.), symlinks all sibling
+    /// volumes into a temp directory so the C bridge can fopen() them without
+    /// sandbox restrictions. Symlinks avoid duplicating the data on disk.
+    private func copyVolumesToTemp(url: URL) -> URL? {
+        let ext = url.pathExtension.lowercased()
+        guard ext == "001" else { return nil }
+        
+        let baseName = url.lastPathComponent
+        let basePrefix = String(baseName.dropLast(3))
+        
+        let fm = FileManager.default
+        let tempDir = fm.temporaryDirectory
+            .appendingPathComponent("split_\(UUID().uuidString)")
+        guard (try? fm.createDirectory(at: tempDir, withIntermediateDirectories: true)) != nil
+        else { return nil }
+        
+        let parentDir = url.deletingLastPathComponent()
+        
+        func linkVol(_ volName: String) -> Bool {
+            let src = parentDir.appendingPathComponent(volName)
+            let dst = tempDir.appendingPathComponent(volName)
+            // Symlink first (zero-cost, works on APFS).
+            if (try? fm.createSymbolicLink(at: dst, withDestinationURL: src)) != nil { return true }
+            // Fall back to a hard-link clone (COW on APFS, still no extra space).
+            if (try? fm.linkItem(at: src, to: dst)) != nil { return true }
+            // Last resort: full copy.
+            if (try? fm.copyItem(at: src, to: dst)) != nil { return true }
+            return false
+        }
+        
+        guard linkVol(baseName) else { return nil }
+        
+        for volNum in 2...999 {
+            let volName = basePrefix + String(format: "%03d", volNum)
+            let src = parentDir.appendingPathComponent(volName)
+            guard fm.fileExists(atPath: src.path) else { break }
+            guard linkVol(volName) else { break }
+        }
+        
+        return tempDir.appendingPathComponent(baseName)
+    }
+    
     func loadArchive(
         url: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws -> ArchiveEngineLoadResult {
-        let szip = try SevenZipArchive(url: url)
+        // For split volumes, copy all volumes to temp dir first so the C
+        // bridge's SplitHandler can fopen() siblings without sandbox issues.
+        let archiveURL = copyVolumesToTemp(url: url) ?? url
+        let szip = try SevenZipArchive(url: archiveURL)
         
         var items: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0

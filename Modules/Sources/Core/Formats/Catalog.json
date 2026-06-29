@@ -364,6 +364,18 @@
       ]
     },
     {
+      "id": "split",
+      "name": "Split Archive",
+      "kind": "archive",
+      "uti": [],
+      "extensions": ["001"],
+      "mime": [],
+      "rules": [],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
       "id": "squashfs",
       "name": "SquashFS Disk Image",
       "kind": "image",
