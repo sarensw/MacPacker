@@ -5,7 +5,6 @@
 //  Created by Stephan Arenswald on 12.04.26.
 //
 
-import Pandalytics
 import SwiftUI
 
 struct AboutSettingsView: View {
