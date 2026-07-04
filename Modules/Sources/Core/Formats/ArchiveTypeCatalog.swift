@@ -76,6 +76,11 @@ public final class ArchiveTypeCatalog: ArchiveTypeCatalogProtocol, Sendable {
         guard let catalog else { return [] }
         return catalog.compounds
     }
+
+    public func allSplits() -> [SplitTypeDto] {
+        guard let catalog else { return [] }
+        return catalog.splits
+    }
     
     public func allFormatIds() -> [String] {
         return Array(formatById.keys)

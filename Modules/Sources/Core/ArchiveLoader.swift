@@ -16,6 +16,9 @@ struct ArchiveLoaderLoadResult: Sendable {
     let tempDirectory: URL?
     let uncompressedSize: Int64?
     let hasTree: Bool
+    /// For a split archive, the resolved first volume — so the window shows the
+    /// canonical `.z01`/`.zip.001` regardless of which part was opened. nil otherwise.
+    let firstVolumeURL: URL?
 }
 
 struct ArchiveLoaderBuildTreeResult {
@@ -26,7 +29,8 @@ final actor ArchiveLoader {
     private let archiveTypeDetector: ArchiveTypeDetector
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let passwordResolver: ArchivePasswordResolver
-    
+    private let folderAccessResolver: ArchiveFolderAccessResolver
+
     private var entries: [UUID: ArchiveItem] = [:]
     private var engine: (any ArchiveEngine)?
     
@@ -42,13 +46,24 @@ final actor ArchiveLoader {
     public init(
         archiveTypeDetector: ArchiveTypeDetector,
         archiveEngineSelector: ArchiveEngineSelectorProtocol,
-        passwordResolver: @escaping ArchivePasswordResolver
+        passwordResolver: @escaping ArchivePasswordResolver,
+        folderAccessResolver: @escaping ArchiveFolderAccessResolver = { _ in true }
     ) {
         self.archiveTypeDetector = archiveTypeDetector
         self.archiveEngineSelector = archiveEngineSelector
         self.passwordResolver = passwordResolver
+        self.folderAccessResolver = folderAccessResolver
     }
-    
+
+    /// Whether the engine currently selected for `type` declares `capability`.
+    private func engineDeclares(_ capability: String, for type: ArchiveTypeDto) -> Bool {
+        guard let selected = archiveEngineSelector.engineType(for: type.id),
+              let engine = type.engines.first(where: { $0.id == selected.configId }) else {
+            return false
+        }
+        return engine.capabilities.contains(capability)
+    }
+
     /// Returns the status stream to the UI
     /// - Returns: status stream from the underlying engine that is doing the actual extraction
     public func statusStream() -> AsyncStream<EngineStatus> {
@@ -82,6 +97,8 @@ final actor ArchiveLoader {
     public func loadEntries(url: URL) async throws -> ArchiveLoaderLoadResult {
         // in case this is a compount `archiveUrl` will hold the extracted url
         var archiveUrl: URL? = url
+        // for a split, the resolved first volume (adopted as the window identity)
+        var firstVolumeURL: URL? = nil
         var compoundTempUrl: URL? = nil
         
         guard let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true) else {
@@ -109,10 +126,12 @@ final actor ArchiveLoader {
             compoundTempUrl = temp.url
             yield(.processing(progress: nil, message: "temp dir created: \(temp.url)"))
             
-            let loaderResult = try await engine.loadArchive(
-                url: url,
-                passwordResolver: passwordResolver
-            )
+            let loaderResult = try await Sandbox.access(url: url) {
+                try await engine.loadArchive(
+                    url: url,
+                    passwordResolver: passwordResolver
+                )
+            }
             let entries = loaderResult.items
             yield(.processing(progress: nil, message: "entries found: \(entries.count)"))
             
@@ -120,15 +139,33 @@ final actor ArchiveLoader {
                 throw ArchiveError.extractionFailed("Extraction of \(url.lastPathComponent) resulted in no files")
             }
             
-            archiveUrl = try await engine.extract(
-                item: entries.first!.value,
-                from: url,
-                to: temp.url,
-                passwordResolver: passwordResolver
-            )
+            archiveUrl = try await Sandbox.access(url: url) {
+                try await engine.extract(
+                    item: entries.first!.value,
+                    from: url,
+                    to: temp.url,
+                    passwordResolver: passwordResolver
+                )
+            }
             yield(.processing(progress: nil, message: "entry extracted: \(String(describing: archiveUrl))"))
+        } else if let split = detectorResult.split {
+            // A split archive — same shape as the compound step: reduce any volume to
+            // the real archive (its first segment). First the selected engine must be
+            // able to read split volumes, and we must hold folder access for the
+            // siblings — requested through the app via the resolver, exactly like a
+            // password. The read itself is wrapped in `Sandbox.access`.
+            guard engineDeclares("splitVolumes", for: detectorResult.type) else {
+                throw ArchiveError.invalidArchive("The engine selected for \(detectorResult.type.name) can't read split archives. Switch to 7-Zip in Settings.")
+            }
+            let firstVolume = SplitVolumeResolver.firstVolume(for: url, split: split)
+            guard await folderAccessResolver(firstVolume) else {
+                throw ArchiveError.invalidArchive("Access to the folder of \(firstVolume.lastPathComponent) was declined; the other volumes can't be read.")
+            }
+            archiveUrl = firstVolume
+            firstVolumeURL = firstVolume
+            yield(.processing(progress: nil, message: "split first volume: \(firstVolume.lastPathComponent)"))
         }
-        
+
         guard let archiveUrl else {
             yield(.processing(progress: nil, message: "archiveUrl lost: \(detectorResult.type.id)"))
             throw ArchiveError.invalidArchive("Somehow we lost the archiveUrl while decompressing")
@@ -149,10 +186,12 @@ final actor ArchiveLoader {
         defer { forwardTask.cancel() }
         
         // set the entries
-        let engineLoadResult = try await engine.loadArchive(
-            url: archiveUrl,
-            passwordResolver: passwordResolver
-        )
+        let engineLoadResult = try await Sandbox.access(url: archiveUrl) {
+            try await engine.loadArchive(
+                url: archiveUrl,
+                passwordResolver: passwordResolver
+            )
+        }
         self.entries = engineLoadResult.items
         yield(.processing(progress: nil, message: "entries found: \(self.entries.count)"))
         
@@ -178,7 +217,8 @@ final actor ArchiveLoader {
             error: nil,
             tempDirectory: compoundTempUrl,
             uncompressedSize: engineLoadResult.uncompressedSize,
-            hasTree: engineLoadResult.hasTree
+            hasTree: engineLoadResult.hasTree,
+            firstVolumeURL: firstVolumeURL
         )
         return result
     }

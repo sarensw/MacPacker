@@ -364,18 +364,6 @@
       ]
     },
     {
-      "id": "split",
-      "name": "Split Archive",
-      "kind": "archive",
-      "uti": [],
-      "extensions": ["001"],
-      "mime": [],
-      "rules": [],
-      "engines": [
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
-      ]
-    },
-    {
       "id": "squashfs",
       "name": "SquashFS Disk Image",
       "kind": "image",
@@ -538,7 +526,7 @@
       ],
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "edit"], "default": true },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "edit", "splitVolumes"], "default": true },
         { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
       ]
     },
@@ -597,5 +585,17 @@
       "extensions": ["taz","tar.z"],
       "components": ["tar","z"]
     }
+  ],
+  "splits": [
+    { "id": "zip-spanned", "name": "Spanned ZIP", "format": "zip", "scheme": "spanned",
+      "pattern": "\\.z[0-9]{2,}$",
+      "marker": { "bytes": "50 4B 05 06", "field": { "offset": 4, "length": 2, "match": "nonzero" } },
+      "firstVolume": { "pattern": "\\.(z[0-9]{2,}|zip)$", "replacement": ".z01" },
+      "label": ".zip" },
+
+    { "id": "zip-numeric", "name": "Split ZIP", "format": "zip", "scheme": "numeric",
+      "pattern": "\\.zip\\.[0-9]{3,}$",
+      "firstVolume": { "pattern": "\\.[0-9]{3,}$", "replacement": ".001" },
+      "label": ".zip.001" }
   ]
 }

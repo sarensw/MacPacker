@@ -81,6 +81,7 @@ public class ArchiveState: ObservableObject {
     private var tempDirectories: [URL] = []
     
     public var passwordProvider: ArchivePasswordUserProvider?
+    public var folderAccessProvider: ArchiveFolderAccessUserProvider?
     private var passwords: [URL: String] = [:]
     
     public private(set) var openTask: Task<Void, any Error>?
@@ -117,7 +118,14 @@ extension ArchiveState {
             return password
         }
     }
-    
+
+    private func makeFolderAccessResolver() -> ArchiveFolderAccessResolver {
+        return { @MainActor [weak self] fileURL in
+            guard let self, let provider = self.folderAccessProvider else { return false }
+            return await provider(fileURL)
+        }
+    }
+
     private func updateStatus(_ status: ArchiveStateStatus) {
         if status == .done {
             onStatusChange?(.done)
@@ -352,6 +360,21 @@ extension ArchiveState {
     
     /// Opens the given url.
     /// - Parameter url: url of the archiver to open
+    /// The archive's display name. For a split volume, the name the set reassembles
+    /// to — the base with the volume suffix replaced by the format's extension
+    /// (`split.z02`/`split.zip` → `split.zip`, `x.zip.003` → `x.zip`) — so the title
+    /// names the set, not the specific part opened. Purely lexical, no file read;
+    /// plain archives keep their file name.
+    private func splitSetName(for url: URL) -> String {
+        let file = url.lastPathComponent
+        for split in catalog.allSplits()
+        where file.range(of: split.pattern, options: [.regularExpression, .caseInsensitive]) != nil {
+            return file.replacingOccurrences(of: split.pattern, with: ".\(split.format)",
+                                             options: [.regularExpression, .caseInsensitive])
+        }
+        return file
+    }
+
     public func open(url: URL) {
         reset()
         updateStatus(.processing)
@@ -360,7 +383,7 @@ extension ArchiveState {
         self.isBusy = true
         self.error = nil
         self.url = url
-        self.name = url.lastPathComponent
+        self.name = splitSetName(for: url)
         self.ext = url.pathExtension
         log.info("Opening archive", context: ["file": url.lastPathComponent, "ext": url.pathExtension])
         
@@ -370,7 +393,8 @@ extension ArchiveState {
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: self.archiveTypeDetector,
                     archiveEngineSelector: self.archiveEngineSelector,
-                    passwordResolver: passwordResolver
+                    passwordResolver: passwordResolver,
+                    folderAccessResolver: makeFolderAccessResolver()
                 )
                 self.archiveLoader = archiveLoader
                 
@@ -397,6 +421,11 @@ extension ArchiveState {
                 
                 self.type = loaderResult.type
                 self.compositionType = loaderResult.compositionType
+                // Split archive: show the canonical first volume as the window
+                // identity, whichever part the user actually opened.
+                if let firstVolume = loaderResult.firstVolumeURL {
+                    self.url = firstVolume
+                }
                 if let type,
                     type.engines.contains(where: {$0.capabilities.contains(where: {$0 == "edit"})}) {
                     canBeEdited = true
@@ -628,7 +657,8 @@ extension ArchiveState {
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: self.archiveTypeDetector,
                     archiveEngineSelector: self.archiveEngineSelector,
-                    passwordResolver: passwordResolver
+                    passwordResolver: passwordResolver,
+                    folderAccessResolver: makeFolderAccessResolver()
                 )
                 
                 let stream = await archiveLoader.statusStream()
