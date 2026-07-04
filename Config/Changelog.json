@@ -16,6 +16,30 @@
     },
     "versions": [
         {
+            "version": "0.16.0",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Open split ZIP files",
+                        "zh-Hans": "支持打开分卷 ZIP 文件",
+                        "fr": "Ouverture des archives ZIP fractionnées",
+                        "de": "Geteilte ZIP-Archive öffnen",
+                        "it": "Apri archivi ZIP suddivisi",
+                        "ja": "分割 ZIP ファイルをサポート",
+                        "fa": "باز کردن فایل‌های ZIP چندبخشی",
+                        "pl": "Otwieranie podzielonych archiwów ZIP",
+                        "pt-BR": "Abrir arquivos ZIP divididos",
+                        "ru": "Открытие составных ZIP-архивов",
+                        "uk": "Відкриття багатотомних ZIP-архівів",
+                        "es-MX": "Abrir archivos ZIP divididos",
+                        "ko": "분할 ZIP 파일 열기"
+                    },
+                    "issues": ["115"]
+                }
+            ]
+        },
+        {
             "version": "0.15.4",
             "items": [
                 {

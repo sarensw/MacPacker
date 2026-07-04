@@ -2,14 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>MacPackerURLScheme</key>
-	<string>$(APP_URL_SCHEME)</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleShortVersionString</key>
-			<string>0.0</string>
-			<key>CFBundleVersion</key>
 			<string>0.0</string>
 			<key>CFBundleTypeExtensions</key>
 			<array>
@@ -19,6 +15,8 @@
 			<string>7Z Archive</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>CFBundleVersion</key>
+			<string>0.0</string>
 			<key>LSHandlerRank</key>
 			<string>Default</string>
 			<key>LSItemContentTypes</key>
@@ -407,12 +405,12 @@
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
 			<string>Default</string>
-			<key>LSTypeIsPackage</key>
-			<false/>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>public.z-archive</string>
 			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -446,8 +444,7 @@
 			<key>LSHandlerRank</key>
 			<string>Default</string>
 			<key>LSItemContentTypes</key>
-			<array>
-			</array>
+			<array/>
 			<key>LSTypeIsPackage</key>
 			<false/>
 		</dict>
@@ -715,6 +712,119 @@
 			<key>LSTypeIsPackage</key>
 			<false/>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>001</string>
+				<string>002</string>
+				<string>003</string>
+				<string>004</string>
+				<string>005</string>
+				<string>006</string>
+				<string>007</string>
+				<string>008</string>
+				<string>009</string>
+				<string>010</string>
+				<string>011</string>
+				<string>012</string>
+				<string>013</string>
+				<string>014</string>
+				<string>015</string>
+				<string>016</string>
+				<string>017</string>
+				<string>018</string>
+				<string>019</string>
+				<string>020</string>
+				<string>021</string>
+				<string>022</string>
+				<string>023</string>
+				<string>024</string>
+				<string>025</string>
+				<string>026</string>
+				<string>027</string>
+				<string>028</string>
+				<string>029</string>
+				<string>030</string>
+				<string>031</string>
+				<string>032</string>
+				<string>033</string>
+				<string>034</string>
+				<string>035</string>
+				<string>036</string>
+				<string>037</string>
+				<string>038</string>
+				<string>039</string>
+				<string>040</string>
+				<string>041</string>
+				<string>042</string>
+				<string>043</string>
+				<string>044</string>
+				<string>045</string>
+				<string>046</string>
+				<string>047</string>
+				<string>048</string>
+				<string>049</string>
+				<string>050</string>
+				<string>051</string>
+				<string>052</string>
+				<string>053</string>
+				<string>054</string>
+				<string>055</string>
+				<string>056</string>
+				<string>057</string>
+				<string>058</string>
+				<string>059</string>
+				<string>060</string>
+				<string>061</string>
+				<string>062</string>
+				<string>063</string>
+				<string>064</string>
+				<string>065</string>
+				<string>066</string>
+				<string>067</string>
+				<string>068</string>
+				<string>069</string>
+				<string>070</string>
+				<string>071</string>
+				<string>072</string>
+				<string>073</string>
+				<string>074</string>
+				<string>075</string>
+				<string>076</string>
+				<string>077</string>
+				<string>078</string>
+				<string>079</string>
+				<string>080</string>
+				<string>081</string>
+				<string>082</string>
+				<string>083</string>
+				<string>084</string>
+				<string>085</string>
+				<string>086</string>
+				<string>087</string>
+				<string>088</string>
+				<string>089</string>
+				<string>090</string>
+				<string>091</string>
+				<string>092</string>
+				<string>093</string>
+				<string>094</string>
+				<string>095</string>
+				<string>096</string>
+				<string>097</string>
+				<string>098</string>
+				<string>099</string>
+				<string>100</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Split Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
@@ -727,6 +837,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>MacPackerURLScheme</key>
+	<string>$(APP_URL_SCHEME)</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

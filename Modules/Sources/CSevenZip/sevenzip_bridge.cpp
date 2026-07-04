@@ -124,13 +124,70 @@ struct SZArchiveHandle {
     }
 };
 
+// --- Volume callback for split/multi-volume archives ---
+
+class COpenVolumeCallback final :
+    public IArchiveOpenVolumeCallback,
+    public IArchiveOpenCallback,
+    public CMyUnknownImp
+{
+    Z7_COM_UNKNOWN_IMP_2(IArchiveOpenVolumeCallback, IArchiveOpenCallback)
+
+    FString _basePath;
+    FString _fileName;
+
+public:
+    void SetFilePath(const FString &path) {
+        int pos = path.ReverseFind_PathSepar();
+        if (pos >= 0) {
+            _basePath = path.Left(pos + 1);
+            _fileName = path.Ptr(pos + 1);
+        } else {
+            _basePath.Empty();
+            _fileName = path;
+        }
+    }
+
+    Z7_COM7F_IMF(GetProperty(PROPID propID, PROPVARIANT *value)) {
+        if (propID == kpidName) {
+            NWindows::NCOM::CPropVariant prop(fs2us(_fileName));
+            prop.Detach(value);
+            return S_OK;
+        }
+        return S_OK;
+    }
+
+    Z7_COM7F_IMF(GetStream(const wchar_t *name, IInStream **inStream)) {
+        *inStream = nullptr;
+        UString uName(name);
+        FString fName = us2fs(uName);
+        FString fullPath = _basePath + fName;
+
+        NWindows::NFile::NFind::CFileInfo fi;
+        if (!fi.Find_FollowLink(fullPath) || fi.IsDir())
+            return S_FALSE;
+
+        CInFileStream *fileSpec = new CInFileStream;
+        CMyComPtr<IInStream> streamRef = fileSpec;
+        if (!fileSpec->Open(fullPath))
+            return S_FALSE;
+
+        *inStream = streamRef.Detach();
+        return S_OK;
+    }
+
+    Z7_COM7F_IMF(SetTotal(const UInt64 *, const UInt64 *)) { return S_OK; }
+    Z7_COM7F_IMF(SetCompleted(const UInt64 *, const UInt64 *)) { return S_OK; }
+};
+
 // --- Format probing helper ---
 
 /// Try all registered formats against the given seekable stream.
 /// Returns S_OK on success with archiveOut set, S_FALSE if no format matched.
 static HRESULT tryOpenStream(
     IInStream *stream,
-    CMyComPtr<IInArchive> &archiveOut)
+    CMyComPtr<IInArchive> &archiveOut,
+    IArchiveOpenCallback *callback = nullptr)
 {
     UInt32 numFormats = 0;
     GetNumberOfFormats(&numFormats);
@@ -153,7 +210,7 @@ static HRESULT tryOpenStream(
         stream->Seek(0, STREAM_SEEK_SET, &newPos);
 
         UInt64 maxCheckStart = 1 << 22; // 4MB
-        hr = archive->Open(stream, &maxCheckStart, nullptr);
+        hr = archive->Open(stream, &maxCheckStart, callback);
         if (hr == S_OK) {
             archiveOut = archive;
             return S_OK;
@@ -320,9 +377,15 @@ SZArchiveRef sz_open(const char *path, char **error_out) {
             return nullptr;
         }
 
+        // Create a volume callback so SplitHandler can discover sibling
+        // volume files (.002, .003, ...) by name-pattern probing.
+        COpenVolumeCallback *volCallbackSpec = new COpenVolumeCallback;
+        CMyComPtr<IArchiveOpenCallback> volCallback = volCallbackSpec;
+        volCallbackSpec->SetFilePath(fpath);
+
         // Try each registered format on the file stream
         CMyComPtr<IInArchive> firstArchive;
-        HRESULT hr = tryOpenStream(handle->fileStream, firstArchive);
+        HRESULT hr = tryOpenStream(handle->fileStream, firstArchive, volCallback);
         if (hr != S_OK || !firstArchive) {
             if (error_out)
                 *error_out = strdup("No suitable archive format found");

@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 24.09.25.
 //
 
+import Foundation
 import Core
 import tb
 
@@ -28,7 +29,11 @@ class AppUrlExtractHereHandler: AppUrlHandler {
                     log.debug("Found archive handler for \(fileUrl.lastPathComponent)")
                     if let url {
                         Task {
+                            // The loader resolves a split to its first volume and asks
+                            // for source-folder access itself, via the provider — like
+                            // a password. We just hand it the file.
                             let state = ArchiveState(catalog: self.catalog, engineSelector: self.engineSelector)
+                            state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
                             state.open(url: fileUrl)
                             try await state.openTask?.value
                             state.extract(to: url)

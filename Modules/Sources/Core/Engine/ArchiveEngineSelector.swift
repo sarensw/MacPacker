@@ -28,8 +28,8 @@ extension ArchiveEngineType {
         }
     }
 
-    /// For writing back OR for documentation
-    var configId: String {
+    /// The catalog `EngineDto.id` for this engine ("xad" | "7zip" | "swc").
+    public var configId: String {
         switch self {
         case .xad:  "xad"
         case .`7zip`: "7zip"

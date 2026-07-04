@@ -24,11 +24,15 @@ final actor Archive7ZipEngine: ArchiveEngine {
     
     func cancel() async {
     }
-    
+
     func loadArchive(
         url: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws -> ArchiveEngineLoadResult {
+        // Split/multi-volume archives are read in place. The caller resolves the
+        // canonical entry (`.zip` for spanned, `.001` for numeric) and holds a
+        // security-scoped grant on the containing folder, so the C bridge's
+        // volume callback opens sibling volumes directly — no staging needed.
         let szip = try SevenZipArchive(url: url)
         
         var items: [UUID: ArchiveItem] = [:]

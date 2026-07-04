@@ -72,12 +72,14 @@ final actor ArchiveExtractor {
 
         let engine = archiveEngineSelector.engine(for: batch.engineType)
 
-        let extractedURLs = try await engine.extract(
-            items: batch.items,
-            from: batch.archiveURL,
-            to: temp.url,
-            passwordResolver: passwordResolver
-        )
+        let extractedURLs = try await Sandbox.access(url: batch.archiveURL) {
+            try await engine.extract(
+                items: batch.items,
+                from: batch.archiveURL,
+                to: temp.url,
+                passwordResolver: passwordResolver
+            )
+        }
 
         return (extractedURLs.urlsByItemID, temp.url)
     }
@@ -164,11 +166,13 @@ final actor ArchiveExtractor {
     ) async throws {
         _ = destination.startAccessingSecurityScopedResource()
         defer { destination.stopAccessingSecurityScopedResource() }
-        
+
         guard let engine = archiveEngineSelector.engine(for: archiveTypeId) else {
             throw ArchiveError.extractionFailed("Could not determine archive engine for \(archiveTypeId).")
         }
 
-        try await engine.extract(url, to: destination, passwordResolver: passwordResolver)
+        try await Sandbox.access(url: url) {
+            try await engine.extract(url, to: destination, passwordResolver: passwordResolver)
+        }
     }
 }
