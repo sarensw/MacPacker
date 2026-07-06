@@ -47,7 +47,10 @@ class ArchiveWindowManager {
         // to open a new archive
         let archiveWindowController = ArchiveWindowController(
             archiveState: archiveState,
-            appState: appState
+            appState: appState,
+            openArchiveInNewWindow: { [weak self] url in
+                self?.openArchiveWindow(for: url)
+            }
         )
         windowControllers.append(archiveWindowController)
         archiveWindowController.willCloseHandler = { [weak self] in

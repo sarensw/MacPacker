@@ -29,6 +29,15 @@ public enum ArchiveSortOrder: String {
     case posixPermissions
 }
 
+/// What the status bar should communicate while a file is dragged over the window.
+/// The UI maps each case to a localized, styled hint.
+public enum ArchiveDropHint: Equatable, Sendable {
+    /// A file is over the window with no modifier held — teach the ⌥ affordance.
+    case dragging
+    /// ⌥ is held — releasing will open the file in a new window.
+    case openInNewWindow
+}
+
 @MainActor
 public class ArchiveState: ObservableObject {
     @Published private(set) public var hasArchive: Bool = false
@@ -64,7 +73,10 @@ public class ArchiveState: ObservableObject {
     @Published private(set) public var progress: Int? = nil
     @Published private(set) public var error: String? = nil
     @Published public var isReloadNeeded: Bool = false
-    
+    /// Transient state shown in the status bar while a file is dragged over the
+    /// window. nil when no drag is active — the normal status-bar info shows then.
+    @Published public var dropHint: ArchiveDropHint? = nil
+
     // Listeners for non-ui
     @Published private(set) public var status: ArchiveStateStatus = .idle
     public var onStatusChange: ((ArchiveStateStatus) -> Void)?
@@ -326,7 +338,19 @@ extension ArchiveState {
         self.isReloadNeeded = true
         loadChildren()
     }
-    
+
+    /// Opens a dropped file in this window: a supported archive is opened directly;
+    /// anything else becomes the first entry of a new archive. `open`/`create` reset
+    /// the state, so this replaces whatever is currently loaded.
+    public func openDropped(url: URL) {
+        if isSupportedArchive(url: url) {
+            open(url: url)
+        } else {
+            create()
+            add(url: url)
+        }
+    }
+
     /// Saves the current changes to the file
     public func save() {
         guard let url else { return }
