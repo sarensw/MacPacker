@@ -24,7 +24,9 @@ struct StatusBarView: View {
     
     var body: some View {
         HStack(alignment: .center) {
-            if archiveState.hasArchive == false {
+            if let hint = archiveState.dropHint {
+                dropHintView(hint)
+            } else if archiveState.hasArchive == false {
                 HStack(spacing: 4) {
                     Button {
                         guard let gitHubURL = URL(string: Constants.gitHubLink) else {
@@ -124,5 +126,37 @@ struct StatusBarView: View {
         }
         .padding(.windowSafeHorizontal)
         .frame(height: 27)
+    }
+
+    /// Shown only while a file is dragged over the window, replacing the normal
+    /// status info. The ⌥-held state is set apart by colour (a soft accent chip),
+    /// not by wording, so the mode change reads at a glance.
+    @ViewBuilder
+    private func dropHintView(_ hint: ArchiveDropHint) -> some View {
+        HStack(spacing: 6) {
+            Spacer(minLength: 0)
+            switch hint {
+            case .dragging:
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.up.forward.square")
+                    Text("Hold ⌥ to open in a new window",
+                         comment: "Status-bar hint shown while dragging a file over the window: holding Option opens the file in a new window instead of adding it to the current archive.")
+                }
+                .foregroundStyle(.secondary)
+            case .openInNewWindow:
+                HStack(spacing: 5) {
+                    Image(systemName: "macwindow.badge.plus")
+                    Text("Open in a new window",
+                         comment: "Status-bar hint shown while holding Option during a file drag: releasing opens the file in a new window.")
+                }
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.accentColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(Capsule().fill(Color.accentColor.opacity(0.15)))
+            }
+            Spacer()
+        }
+        .font(.subheadline)
     }
 }

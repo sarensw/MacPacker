@@ -36,6 +36,25 @@
                         "ko": "분할 ZIP 파일 열기"
                     },
                     "issues": ["115"]
+                },
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Hold ⌥ while dropping an archive to open it in a new window",
+                        "zh-Hans": "拖放压缩包时按住 ⌥ 可在新窗口中打开",
+                        "fr": "Maintenez ⌥ en déposant une archive pour l’ouvrir dans une nouvelle fenêtre",
+                        "de": "⌥ beim Ablegen eines Archivs gedrückt halten, um es in einem neuen Fenster zu öffnen",
+                        "it": "Tieni premuto ⌥ mentre trascini un archivio per aprirlo in una nuova finestra",
+                        "ja": "アーカイブをドロップする際に ⌥ を押し続けると新しいウィンドウで開く",
+                        "fa": "با نگه داشتن ⌥ هنگام رها کردن آرشیو، آن را در پنجره‌ای جدید باز کنید",
+                        "pl": "Przytrzymaj ⌥ podczas upuszczania archiwum, aby otworzyć je w nowym oknie",
+                        "pt-BR": "Mantenha ⌥ pressionado ao soltar um arquivo para abri-lo em uma nova janela",
+                        "ru": "Удерживайте ⌥ при перетаскивании архива, чтобы открыть его в новом окне",
+                        "uk": "Утримуйте ⌥ під час перетягування архіву, щоб відкрити його в новому вікні",
+                        "es-MX": "Mantén presionada la tecla ⌥ al soltar un archivo para abrirlo en una ventana nueva",
+                        "ko": "아카이브를 놓을 때 ⌥ 키를 누르고 있으면 새 창에서 열립니다"
+                    },
+                    "issues": ["116"]
                 }
             ]
         },

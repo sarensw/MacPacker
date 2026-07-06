@@ -2943,6 +2943,9 @@
         }
       }
     },
+    "Hold ⌥ to open in a new window" : {
+      "comment" : "Status-bar hint shown while dragging a file over the window: holding Option opens the file in a new window instead of adding it to the current archive."
+    },
     "How to set %@ as default?" : {
       "comment" : "A button that shows a popover explaining how to set MacPacker as the default file opener.",
       "localizations" : {
@@ -3748,6 +3751,9 @@
           }
         }
       }
+    },
+    "Open in a new window" : {
+      "comment" : "Status-bar hint shown while holding Option during a file drag: releasing opens the file in a new window."
     },
     "Open..." : {
       "comment" : "A label for a button that allows the user to open an archive from disk. The order depends on the language.",

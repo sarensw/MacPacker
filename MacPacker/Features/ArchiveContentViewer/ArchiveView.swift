@@ -9,20 +9,26 @@ import Foundation
 import QuickLook
 import Core
 import SwiftUI
+import UniformTypeIdentifiers
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
 struct ArchiveView: View {
     @Environment(\.openWindow) var openWindow
+    @Environment(\.openArchiveInNewWindow) private var openArchiveInNewWindow
     @EnvironmentObject private var state: ArchiveState
-    
+
     @AppStorage(Keys.showColumnCompressedSize) var showCompressedSize: Bool = true
     @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
-    
-    @State private var isDraggingOver = false
+
     @State private var selection: IndexSet?
     @State private var loading: Bool = false
-    
+    @State private var isDropTargeted = false
+    @State private var hintTimer: Timer?
+
     var body: some View {
         VStack {
             ArchiveTableViewRepresentable(
@@ -34,52 +40,103 @@ struct ArchiveView: View {
                 showPosixPermissionsColumn: $showPermissions
             )
         }
-        .border(isDraggingOver ? Color.blue : Color.clear, width: 2)
-        .onDrop(of: ["public.file-url"], isTargeted: $isDraggingOver) { providers -> Bool in
-            for provider in providers {
-                provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { (data, error) in
-                    if let data = data as? Data,
-                       let fileURL = URL(dataRepresentation: data, relativeTo: nil) {
-                        // Update the state variable with the accepted file URL
-                        Task {
-                            await self.drop(fileURL)
-                        }
-                    }
-                }
-            }
+        // Plain drop = add (or open, when nothing is loaded / it can't be edited).
+        // ⌥ drop = open in a new window. `isDropTargeted` (SwiftUI-managed) reliably
+        // brackets the drag, so the status-bar hint always clears when it ends.
+        .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
+            handleDrop(providers)
             return true
         }
+        .onChange(of: isDropTargeted) { _, targeted in
+            if targeted { startHintPolling() } else { stopHintPolling() }
+        }
+        .onDisappear { stopHintPolling() }
         .onAppear {
             if state.openWithUrls.count > 0 {
-                Task {
-                    await self.drop(state.openWithUrls[0])
-                }
+                state.openDropped(url: state.openWithUrls[0])
             }
         }
         .quickLookPreview($state.previewItemUrl)
     }
-    
-    //
-    // functions
-    //
-    
-    func drop(_ url: URL) async {
-        // We have to distinguish 3 cases here.
-        // 1. No archive loaded > Check if archive,
-        // 1.1. if yes, load.
-        // 2.2. If no, create new archive and add the dropped file as first entry
-        // 2. Archive loaded > Add file to current archive
-        if state.hasArchive == false {
-            if state.isSupportedArchive(url: url) {
-                state.clean()
-                state.open(url: url)
-            } else {
-                state.create()
-                state.add(url: url)
+
+    // MARK: - Drop
+
+    /// Plain drop adds to the current editable archive (or opens it, if nothing is
+    /// loaded / it can't be edited). ⌥ drop opens the file in a new window. ⌥ is
+    /// used rather than ⌘ because a Finder ⌘-drag means "move" — a copy target would
+    /// reject it (what looked like "nothing happens"), and accepting a move risks
+    /// deleting the source file. ⌥ maps cleanly to copy.
+    private func handleDrop(_ providers: [NSItemProvider]) {
+        let flags = NSEvent.modifierFlags
+        let openInNewWindow = flags.contains(.option)
+        // Capture the "open in new window" action and state up front (on the main
+        // actor) so the async provider callbacks don't have to reach back through
+        // the view.
+        let openInNewWindowAction = openArchiveInNewWindow
+        let state = self.state
+        log.notice("File drop performed", context: [
+            "providers": "\(providers.count)",
+            "option": "\(flags.contains(.option))",
+            "command": "\(flags.contains(.command))"
+        ])
+        for provider in providers {
+            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { data, _ in
+                guard let data = data as? Data,
+                      let url = URL(dataRepresentation: data, relativeTo: nil) else {
+                    log.error("Drop: could not read a file URL from the dropped item")
+                    return
+                }
+                Task { @MainActor in
+                    if openInNewWindow {
+                        log.notice("Drop → open in a new window", context: ["file": url.lastPathComponent])
+                        openInNewWindowAction(url)
+                    } else if state.hasArchive, state.canBeEdited {
+                        log.notice("Drop → add to current archive", context: ["file": url.lastPathComponent])
+                        state.add(url: url)
+                    } else {
+                        log.notice("Drop → open in this window", context: ["file": url.lastPathComponent])
+                        state.openDropped(url: url)
+                    }
+                }
             }
-        } else {
-            // add to current archive
-            state.add(url: url)
         }
     }
+
+    // MARK: - Status-bar hint
+
+    /// While a file is over the window, poll ⌥ so the status-bar hint can flip
+    /// between "add" and "open in a new window". A timer (not `dropUpdated`) is used
+    /// so the flip tracks the key even when the pointer is still; it runs on the
+    /// common run-loop mode so it keeps firing during the drag.
+    private func startHintPolling() {
+        stopHintPolling(clearHint: false)
+        let state = self.state
+        // Show the hint whenever an archive is open. The default drop differs — add
+        // for an editable archive, replace for a read-only one — but ⌥ always opens a
+        // new window, so the affordance is worth advertising either way. An empty
+        // window just opens the dropped file, so no hint there.
+        guard state.hasArchive else {
+            state.dropHint = nil
+            return
+        }
+        setHint(on: state)
+        let timer = Timer(timeInterval: 0.06, repeats: true) { _ in
+            MainActor.assumeIsolated { setHint(on: state) }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        hintTimer = timer
+    }
+
+    private func stopHintPolling(clearHint: Bool = true) {
+        hintTimer?.invalidate()
+        hintTimer = nil
+        if clearHint { state.dropHint = nil }
+    }
+}
+
+/// Free function (no `self` capture) so it's safe to call from the polling timer.
+@MainActor
+private func setHint(on state: ArchiveState) {
+    let hint: ArchiveDropHint = NSEvent.modifierFlags.contains(.option) ? .openInNewWindow : .dragging
+    if state.dropHint != hint { state.dropHint = hint }
 }

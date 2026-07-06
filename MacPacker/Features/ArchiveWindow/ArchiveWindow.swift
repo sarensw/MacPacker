@@ -17,23 +17,28 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     var willCloseHandler: (() -> Void)?
     var didBecomeMain: (() -> Void)?
     
-    init(archiveState: ArchiveState, appState: AppState) {
+    init(
+        archiveState: ArchiveState,
+        appState: AppState,
+        openArchiveInNewWindow: @escaping @MainActor (URL) -> Void
+    ) {
         self.archiveState = archiveState
-        
+
         let window = ArchiveWindow()
         window.isRestorable = false
         window.center()
         super.init(window: window)
-        
+
         window.delegate = self
-        
+
         window.toolbarStyle = .unified
-        
+
         // show the content view
         let contentView = ContentView()
             .environmentObject(appState)
             .environmentObject(archiveState)
-        
+            .environment(\.openArchiveInNewWindow, openArchiveInNewWindow)
+
         window.contentView = NSHostingView(rootView: contentView)
     }
     
@@ -55,5 +60,19 @@ class ArchiveWindow: NSWindow {
             backing: .buffered,
             defer: true
         )
+    }
+}
+
+/// Lets a window's content open a *different* archive in a new window (the
+/// ⌥-drag-to-open gesture) without holding — or cycling with — the window manager.
+/// `ArchiveWindowController` injects a weakly-captured closure from the manager.
+private struct OpenArchiveInNewWindowKey: EnvironmentKey {
+    static let defaultValue: @MainActor (URL) -> Void = { _ in }
+}
+
+extension EnvironmentValues {
+    var openArchiveInNewWindow: @MainActor (URL) -> Void {
+        get { self[OpenArchiveInNewWindowKey.self] }
+        set { self[OpenArchiveInNewWindowKey.self] = newValue }
     }
 }
