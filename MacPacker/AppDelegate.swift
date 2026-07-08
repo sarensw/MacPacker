@@ -23,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("checkForUpdates") var checkForUpdates: SettingUpdateCheck = .automatically
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     private var archiveWindowManager: ArchiveWindowManager? = nil
+    private var extractionProgressWindowController: ExtractionProgressWindowController? = nil
     private var pendingOpenURLs: [URL] = []
     
     private static var isRunningInPreview: Bool {
@@ -119,6 +120,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         log.notice("applicationDidFinishLaunching — creating window manager")
 
         archiveWindowManager = ArchiveWindowManager(appState: appState)
+        extractionProgressWindowController = ExtractionProgressWindowController(center: .shared)
 
         // make sure that at least one window will be shown
         // even if it is empty
@@ -140,6 +142,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             welcomeScreenShownInVersion = Bundle.main.appVersionLong
         }
         log.notice("applicationDidFinishLaunching done")
+
+#if DEBUG
+        // Debug-only end-to-end hook: MACPACKER_DEBUG_EXTRACT="<archive>|<destDir>"
+        // opens the archive headless and extracts it fully — lets the
+        // extraction progress window be exercised without UI scripting.
+        if let spec = ProcessInfo.processInfo.environment["MACPACKER_DEBUG_EXTRACT"] {
+            let parts = spec.split(separator: "|").map(String.init)
+            if parts.count == 2 {
+                let archiveURL = URL(fileURLWithPath: parts[0])
+                let destURL = URL(fileURLWithPath: parts[1], isDirectory: true)
+                log.notice("DEBUG extract hook starting", context: ["archive": archiveURL.path, "dest": destURL.path])
+                let state = ArchiveState(catalog: appState.catalog, engineSelector: appState.engineSelector)
+                state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
+                Task {
+                    state.open(url: archiveURL)
+                    try? await state.openTask?.value
+                    state.extract(to: destURL)
+                }
+            }
+        }
+#endif
     }
     
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
@@ -157,6 +180,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             return true
         }
         return false
+    }
+
+    /// Asked for in #119: don't let the app quit silently while an
+    /// extraction is running.
+    public func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard ExtractionProgressCenter.shared.hasActiveJobs else {
+            return .terminateNow
+        }
+
+        log.notice("Quit requested while extraction is running — asking user")
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = String(localized: "An extraction is still in progress", comment: "Title of the alert shown when the user quits while an extraction is running.")
+        alert.informativeText = String(localized: "Quitting now stops the extraction and may leave incomplete files at the destination.", comment: "Body of the alert shown when the user quits while an extraction is running.")
+        alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button that keeps the app running so the extraction can finish."))
+        alert.addButton(withTitle: String(localized: "Quit Anyway", comment: "Alert button that quits the app even though an extraction is running."))
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            log.notice("Quit cancelled — extraction continues")
+            return .terminateCancel
+        }
+        log.notice("Quit forced during extraction")
+        return .terminateNow
     }
 
     public func applicationWillTerminate(_ notification: Notification) {

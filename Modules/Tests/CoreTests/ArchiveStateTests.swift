@@ -405,11 +405,12 @@ extension AllCoreTests {
                 state.extract(to: tempDest)
             }
 
-            // Note: Archive7ZipEngine.extract(_:to:passwordResolver:) is currently
-            // a no-op, so no files will be produced. We verify the method completes
-            // without error and status returns to idle.
             #expect(state.error == nil)
             #expect(state.status == .idle)
+
+            // Full-archive extraction produces the archive's files.
+            let contents = try FileManager.default.contentsOfDirectory(at: tempDest, includingPropertiesForKeys: nil)
+            #expect(!contents.isEmpty)
         }
     }
 

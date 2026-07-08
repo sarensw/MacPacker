@@ -20,13 +20,18 @@ struct MultiExtractionResult {
 final actor ArchiveExtractor {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let passwordResolver: ArchivePasswordResolver
+    /// Fired for every temp directory an extraction writes into, so callers
+    /// can watch it for progress (see `ExtractionProgressWatcher`).
+    private let onTempDirectoryCreated: (@Sendable (URL) -> Void)?
 
     init(
         archiveEngineSelector: ArchiveEngineSelectorProtocol,
-        passwordResolver: @escaping ArchivePasswordResolver
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onTempDirectoryCreated: (@Sendable (URL) -> Void)? = nil
     ) {
         self.archiveEngineSelector = archiveEngineSelector
         self.passwordResolver = passwordResolver
+        self.onTempDirectoryCreated = onTempDirectoryCreated
     }
 
     /// Moves the given set of extracted temporary files to another destination.
@@ -69,6 +74,7 @@ final actor ArchiveExtractor {
         guard let temp = utilities.createTempDirectory() else {
             throw ArchiveError.extractionFailed("Could not create temp directory")
         }
+        onTempDirectoryCreated?(temp.url)
 
         let engine = archiveEngineSelector.engine(for: batch.engineType)
 
@@ -136,6 +142,7 @@ final actor ArchiveExtractor {
         var tempDirectories: [URL] = []
 
         for batch in batches {
+            try Task.checkCancellation()
             let (extractedURLs, tempDirectory) = try await extract(batch: batch)
 
             tempDirectories.append(tempDirectory)

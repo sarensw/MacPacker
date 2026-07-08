@@ -267,6 +267,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
         var urlsByItemID: [UUID: URL] = [:]
 
         for item in items {
+            try Task.checkCancellation()
             guard let virtualPath = item.virtualPath else {
                 throw ArchiveError.extractionFailed("Could not extract file: missing virtual path")
             }

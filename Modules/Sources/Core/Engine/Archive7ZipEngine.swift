@@ -152,6 +152,30 @@ final actor Archive7ZipEngine: ArchiveEngine {
         to destination: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws {
-        
+        let szip = try SevenZipArchive(url: url)
+
+        var attempt = 0
+        // Same retry shape as extract(items:): loop until the archive
+        // extracts or the user cancels the password prompt.
+        while true {
+            do {
+                try szip.extractAll(to: destination)
+                return
+            } catch SevenZipError.passwordMissing {
+                attempt += 1
+
+                let request = ArchivePasswordRequest(
+                    url: url,
+                    attempt: attempt
+                )
+
+                guard let password = await passwordResolver(request) else {
+                    throw ArchiveError.passwordCancelled
+                }
+
+                szip.setPassword(password)
+                continue
+            }
+        }
     }
 }

@@ -94,6 +94,10 @@ public class ArchiveState: ObservableObject {
     
     public var passwordProvider: ArchivePasswordUserProvider?
     public var folderAccessProvider: ArchiveFolderAccessUserProvider?
+    /// Where user-triggered extractions report their progress. Defaults to
+    /// the app-wide center that feeds the extraction progress window;
+    /// tests inject their own instance.
+    public var progressCenter: ExtractionProgressCenter = .shared
     private var passwords: [URL: String] = [:]
     
     public private(set) var openTask: Task<Void, any Error>?
@@ -746,6 +750,17 @@ extension ArchiveState {
         return result.url
     }
     
+    /// Sum of the known uncompressed sizes of the given file items.
+    /// ponytail: folders are resolved during extraction, so folder-heavy
+    /// selections under-count and fall back to an indeterminate bar (nil).
+    private static func plannedBytes(of items: [ArchiveItem]) -> Int64? {
+        let known = items
+            .filter { $0.type == .file && $0.uncompressedSize > 0 }
+            .map { Int64($0.uncompressedSize) }
+        guard !known.isEmpty else { return nil }
+        return known.reduce(0, +)
+    }
+
     /// Extracts the given set of items to the given destination. This is usually triggered by the
     /// user from within the UI
     /// - Parameters:
@@ -756,14 +771,27 @@ extension ArchiveState {
         to destination: URL
     ) {
         updateStatus(.processing)
-        
+
+        let watcher = ExtractionProgressWatcher()
         let extractor = ArchiveExtractor(
             archiveEngineSelector: archiveEngineSelector,
-            passwordResolver: makePasswordResolver()
+            passwordResolver: makePasswordResolver(),
+            onTempDirectoryCreated: { url in
+                Task { await watcher.watch(url) }
+            }
         )
         let batchResolver = ArchiveBatchResolver()
-        
-        Task {
+
+        let jobId = progressCenter.begin(
+            archiveName: name ?? url?.lastPathComponent ?? "Archive",
+            destination: destination,
+            itemCount: items.count,
+            totalBytes: Self.plannedBytes(of: items)
+        )
+
+        let task = Task {
+            let pollTask = watcher.startReporting(to: progressCenter, jobId: jobId)
+            defer { pollTask.cancel() }
             do {
                 let batches = try batchResolver.resolveBatches(for: items, in: entries, using: archiveEngineSelector)
                 let result = try await extractor.extract(
@@ -771,42 +799,65 @@ extension ArchiveState {
                     to: destination
                 )
                 tempDirectories.append(contentsOf: result.tempDirs)
+                progressCenter.finish(jobId, .done)
+            } catch is CancellationError {
+                progressCenter.finish(jobId, .cancelled)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
                 self.isBusy = false
+                progressCenter.finish(jobId, .failed(error.localizedDescription))
             }
-            
+
             updateStatus(.done)
         }
+        progressCenter.setOnCancel(jobId) { task.cancel() }
     }
-    
+
     public func extract(to destination: URL) {
         isBusy = true
         updateStatus(.processing)
-        
-        Task {
+
+        let watcher = ExtractionProgressWatcher()
+        let jobId = progressCenter.begin(
+            archiveName: name ?? url?.lastPathComponent ?? "Archive",
+            destination: destination,
+            itemCount: entries.values.count(where: { $0.type == .file }),
+            totalBytes: (uncompressedSize ?? 0) > 0 ? uncompressedSize : nil
+        )
+
+        let task = Task {
+            // Full archives extract straight into the destination; the
+            // baseline taken here makes pre-existing folder content not count.
+            await watcher.watch(destination)
+            let pollTask = watcher.startReporting(to: progressCenter, jobId: jobId)
+            defer { pollTask.cancel() }
             do {
                 guard let root else {
-                    extractLog.error("No root item set")
-                    return
+                    throw ArchiveError.extractionFailed("No root item set")
                 }
-                
-                if let (archiveTypeId, archiveUrl) = ArchiveSupportUtilities().findHandlerAndUrl(for: root, in: entries) {
-                    let extractor = ArchiveExtractor(
-                        archiveEngineSelector: archiveEngineSelector,
-                        passwordResolver: makePasswordResolver()
-                    )
-                    try await extractor.extractAll(archiveUrl, archiveTypeId: archiveTypeId, to: destination)
+                guard let (archiveTypeId, archiveUrl) = ArchiveSupportUtilities().findHandlerAndUrl(for: root, in: entries) else {
+                    throw ArchiveError.extractionFailed("No archive handler found")
                 }
+
+                let extractor = ArchiveExtractor(
+                    archiveEngineSelector: archiveEngineSelector,
+                    passwordResolver: makePasswordResolver()
+                )
+                try await extractor.extractAll(archiveUrl, archiveTypeId: archiveTypeId, to: destination)
+                progressCenter.finish(jobId, .done)
+            } catch is CancellationError {
+                progressCenter.finish(jobId, .cancelled)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
-                self.isBusy = false
+                progressCenter.finish(jobId, .failed(error.localizedDescription))
             }
-            
+
+            self.isBusy = false
             updateStatus(.done)
         }
+        progressCenter.setOnCancel(jobId) { task.cancel() }
     }
     
     /// Updates the quick look preview URL. The previewer we're using is the default systems
