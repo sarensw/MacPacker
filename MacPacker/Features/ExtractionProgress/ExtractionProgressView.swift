@@ -17,50 +17,24 @@ import SwiftUI
 struct ExtractionProgressView: View {
     @ObservedObject var center: ExtractionProgressCenter
     @State private var expandedJobs: Set<UUID> = []
-    @State private var listHeight: CGFloat = 90
 
     var body: some View {
+        // The window follows the natural content height (the dialog grows
+        // when details expand, like the Windows copy dialog). No measured
+        // heights and no animation here: animating a layout that drives the
+        // window size while chart data ticks every 400 ms wedged SwiftUI
+        // mid-transition — the chart froze until the next expand/collapse.
         VStack(alignment: .leading, spacing: 0) {
-            // The window follows the content height (dialog grows when
-            // details expand, like the Windows copy dialog); the scroll
-            // view only kicks in once many parallel extractions run.
-            ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(center.jobs) { job in
-                        ExtractionProgressRowView(
-                            job: job,
-                            isExpanded: expandedJobs.contains(job.id),
-                            onToggleExpanded: {
-                                if expandedJobs.contains(job.id) {
-                                    expandedJobs.remove(job.id)
-                                } else {
-                                    expandedJobs.insert(job.id)
-                                }
-                            },
-                            onCancel: {
-                                center.requestCancel(job.id)
-                            }
-                        )
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-
-                        if job.id != center.jobs.last?.id {
-                            Divider()
-                                .padding(.leading, 20)
-                        }
-                    }
+            if center.jobs.count <= 4 {
+                rows
+            } else {
+                // many parallel extractions: cap the dialog, scroll inside
+                ScrollView {
+                    rows
                 }
-                .padding(.top, 2)
-                .padding(.bottom, 6)
-                .onGeometryChange(for: CGFloat.self) { proxy in
-                    proxy.size.height
-                } action: { height in
-                    listHeight = height
-                }
+                .frame(height: 480)
             }
-            .frame(height: min(max(listHeight, 80), 480))
         }
-        .animation(.easeInOut(duration: 0.15), value: expandedJobs)
         .frame(width: 500)
 #if DEBUG
         // screenshot support for the headless e2e hook
@@ -69,8 +43,51 @@ struct ExtractionProgressView: View {
                 expandedJobs = Set(center.jobs.map(\.id))
             }
         }
+        // simulates a user toggling Details mid-run (expand 5s in,
+        // collapse at 11s, expand again at 13s)
+        .task {
+            guard ProcessInfo.processInfo.environment["MACPACKER_DEBUG_EXPAND_CYCLE"] != nil else { return }
+            try? await Task.sleep(for: .seconds(5))
+            expandedJobs = Set(center.jobs.map(\.id))
+            try? await Task.sleep(for: .seconds(6))
+            expandedJobs = []
+            try? await Task.sleep(for: .seconds(2))
+            expandedJobs = Set(center.jobs.map(\.id))
+        }
 #endif
     }
+
+    @ViewBuilder
+    private var rows: some View {
+        VStack(spacing: 0) {
+            ForEach(center.jobs) { job in
+                ExtractionProgressRowView(
+                    job: job,
+                    isExpanded: expandedJobs.contains(job.id),
+                    onToggleExpanded: {
+                        if expandedJobs.contains(job.id) {
+                            expandedJobs.remove(job.id)
+                        } else {
+                            expandedJobs.insert(job.id)
+                        }
+                    },
+                    onCancel: {
+                        center.requestCancel(job.id)
+                    }
+                )
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+
+                if job.id != center.jobs.last?.id {
+                    Divider()
+                        .padding(.leading, 20)
+                }
+            }
+        }
+        .padding(.top, 2)
+        .padding(.bottom, 6)
+    }
+
 }
 
 private struct ExtractionProgressRowView: View {
