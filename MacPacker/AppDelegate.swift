@@ -156,13 +156,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             if parts.count == 2 {
                 let archiveURL = URL(fileURLWithPath: parts[0])
                 let destURL = URL(fileURLWithPath: parts[1], isDirectory: true)
-                log.notice("DEBUG extract hook starting", context: ["archive": archiveURL.path, "dest": destURL.path])
+                // MACPACKER_DEBUG_EXTRACT_ITEMS=1 exercises the item flow
+                // (temp dir + move) instead of the full-archive flow
+                let asItems = ProcessInfo.processInfo.environment["MACPACKER_DEBUG_EXTRACT_ITEMS"] != nil
+                log.notice("DEBUG extract hook starting", context: ["archive": archiveURL.path, "dest": destURL.path, "asItems": "\(asItems)"])
                 let state = ArchiveState(catalog: appState.catalog, engineSelector: appState.engineSelector)
                 state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
                 Task {
                     state.open(url: archiveURL)
                     try? await state.openTask?.value
-                    state.extract(to: destURL)
+                    if asItems {
+                        let items = state.root?.children?.compactMap { state.entries[$0] } ?? []
+                        state.extract(items: items, to: destURL)
+                    } else {
+                        state.extract(to: destURL)
+                    }
                 }
             }
         }

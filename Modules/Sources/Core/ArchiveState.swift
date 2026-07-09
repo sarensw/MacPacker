@@ -787,7 +787,7 @@ extension ArchiveState {
                 archiveEngineSelector: archiveEngineSelector,
                 passwordResolver: makePasswordResolver(),
                 onTempDirectoryCreated: { tempUrl in
-                    Task { await watcher.watch(tempUrl) }
+                    watcher.watch(tempUrl)
                 }
             )
             let result = try await extractor.extract(batch: batch)
@@ -797,8 +797,8 @@ extension ArchiveState {
         }
         progressCenter.setOnCancel(jobId) { work.cancel() }
 
-        let pollTask = watcher.startReporting(to: progressCenter, jobId: jobId)
-        defer { pollTask.cancel() }
+        let poll = watcher.startReporting(to: progressCenter, jobId: jobId)
+        defer { poll.cancel() }
 
         do {
             try await work.value
@@ -829,7 +829,7 @@ extension ArchiveState {
             archiveEngineSelector: archiveEngineSelector,
             passwordResolver: makePasswordResolver(),
             onTempDirectoryCreated: { url in
-                Task { await watcher.watch(url) }
+                watcher.watch(url)
             }
         )
         let batchResolver = ArchiveBatchResolver()
@@ -842,8 +842,8 @@ extension ArchiveState {
         )
 
         let task = Task {
-            let pollTask = watcher.startReporting(to: progressCenter, jobId: jobId)
-            defer { pollTask.cancel() }
+            let poll = watcher.startReporting(to: progressCenter, jobId: jobId)
+            defer { poll.cancel() }
             do {
                 let batches = try batchResolver.resolveBatches(for: items, in: entries, using: archiveEngineSelector)
                 let result = try await extractor.extract(
@@ -883,9 +883,9 @@ extension ArchiveState {
             // watcher only counts files touched after the job started, so
             // pre-existing folder content — including stale output of an
             // earlier run — does not count.
-            await watcher.watch(destination)
-            let pollTask = watcher.startReporting(to: progressCenter, jobId: jobId)
-            defer { pollTask.cancel() }
+            watcher.watch(destination)
+            let poll = watcher.startReporting(to: progressCenter, jobId: jobId)
+            defer { poll.cancel() }
             do {
                 guard let root else {
                     throw ArchiveError.extractionFailed("No root item set")

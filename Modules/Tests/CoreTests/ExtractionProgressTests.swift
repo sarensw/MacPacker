@@ -213,15 +213,15 @@ extension AllCoreTests {
             try await Task.sleep(for: .milliseconds(50))
 
             let watcher = ExtractionProgressWatcher(startedAt: Date())
-            await watcher.watch(dir)
-            #expect(await watcher.sampleCompletedBytes() == 0)
+            watcher.watch(dir)
+            #expect(watcher.sampleCompletedBytes() == 0)
 
             let sub = dir.appendingPathComponent("sub")
             try FileManager.default.createDirectory(at: sub, withIntermediateDirectories: true)
             try write(bytes: 15, to: dir.appendingPathComponent("new1.bin"))
             try write(bytes: 10, to: sub.appendingPathComponent("new2.bin"))
 
-            let sampled = await watcher.sampleCompletedBytes()
+            let sampled = watcher.sampleCompletedBytes()
             #expect(sampled == 25)
         }
 
@@ -234,15 +234,15 @@ extension AllCoreTests {
             try await Task.sleep(for: .milliseconds(50))
 
             let watcher = ExtractionProgressWatcher(startedAt: Date())
-            await watcher.watch(dir)
-            #expect(await watcher.sampleCompletedBytes() == 0)
+            watcher.watch(dir)
+            #expect(watcher.sampleCompletedBytes() == 0)
 
             // re-extraction overwrites the stale file in place — its full
             // current size counts (a size delta would stay ≤ 0 here and
             // pin the progress bar)
             try write(bytes: 40, to: dir.appendingPathComponent("big.bin"))
 
-            let sampled = await watcher.sampleCompletedBytes()
+            let sampled = watcher.sampleCompletedBytes()
             #expect(sampled == 40)
         }
 
@@ -255,19 +255,19 @@ extension AllCoreTests {
             }
 
             let watcher = ExtractionProgressWatcher()
-            await watcher.watch(dirA)
-            await watcher.watch(dirB)
+            watcher.watch(dirA)
+            watcher.watch(dirB)
 
             try write(bytes: 7, to: dirA.appendingPathComponent("a.bin"))
             try write(bytes: 5, to: dirB.appendingPathComponent("b.bin"))
 
-            let sampled = await watcher.sampleCompletedBytes()
+            let sampled = watcher.sampleCompletedBytes()
             #expect(sampled == 12)
         }
 
         @Test func sampleIsZeroForEmptyWatcher() async {
             let watcher = ExtractionProgressWatcher()
-            let sampled = await watcher.sampleCompletedBytes()
+            let sampled = watcher.sampleCompletedBytes()
             #expect(sampled == 0)
         }
     }

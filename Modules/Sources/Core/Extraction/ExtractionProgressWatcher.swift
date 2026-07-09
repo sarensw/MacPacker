@@ -10,6 +10,19 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 
+/// Cancels the polling started by `ExtractionProgressWatcher.startReporting`.
+public final class ExtractionProgressPollHandle: @unchecked Sendable {
+    private let timer: DispatchSourceTimer
+
+    fileprivate init(timer: DispatchSourceTimer) {
+        self.timer = timer
+    }
+
+    public func cancel() {
+        timer.cancel()
+    }
+}
+
 /// Measures extraction progress by watching the bytes an extraction writes
 /// into its output directories.
 ///
@@ -25,57 +38,93 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 /// keep the delta at or below zero and pin the bar. mtime is unusable
 /// because the engines restore the archive's original timestamps; ctime
 /// cannot be set backwards.
+///
+/// Polling deliberately runs on a GCD timer, not on Swift concurrency: a
+/// `sample → report → sleep` await chain proved wedgeable in the field (pool
+/// starvation, layout transactions) — the UI froze while extraction kept
+/// running. A dispatch timer keeps firing no matter what the cooperative
+/// pool or the main run loop are doing; reports are fire-and-forget onto the
+/// main queue, so a busy main thread delays display but never stops the
+/// sampling.
 /// ponytail: polling at ~2.5 Hz; upgrade path is real progress callbacks in
 /// our Swift7zip bridge if sampling ever proves too coarse.
-public actor ExtractionProgressWatcher {
+public final class ExtractionProgressWatcher: @unchecked Sendable {
     private let startedAt: Date
+    private let lock = NSLock()
     private var watched: [URL] = []
 
     public init(startedAt: Date = Date()) {
         self.startedAt = startedAt
     }
 
-    /// Starts watching a directory.
+    /// Starts watching a directory. Callable from any thread.
     public func watch(_ url: URL) {
+        lock.lock()
+        defer { lock.unlock() }
         guard !watched.contains(url) else { return }
         watched.append(url)
     }
 
     /// Total bytes of files touched since the job started, across all
-    /// watched directories.
+    /// watched directories. Blocking filesystem work — runs on the caller's
+    /// thread.
     public func sampleCompletedBytes() -> Int64 {
-        watched.reduce(Int64(0)) { sum, url in
+        lock.lock()
+        let directories = watched
+        lock.unlock()
+
+        return directories.reduce(Int64(0)) { sum, url in
             sum + Self.bytesTouched(at: url, since: startedAt)
         }
     }
 
-    /// Polls in the background and pushes samples into the center until the
-    /// returned task is cancelled.
-    public nonisolated func startReporting(
+    /// Polls on a dedicated GCD timer and pushes samples into the center
+    /// until the returned handle is cancelled.
+    public func startReporting(
         to center: ExtractionProgressCenter,
         jobId: UUID,
         every interval: Duration = .milliseconds(400)
-    ) -> Task<Void, Never> {
-        Task {
-            var iteration = 0
-            while !Task.isCancelled {
-                let bytes = await self.sampleCompletedBytes()
-                await center.report(jobId, completedBytes: bytes)
-                iteration += 1
-                if iteration % 25 == 0 {
-                    log.debug("Progress sample", context: [
-                        "job": jobId.uuidString,
-                        "iteration": "\(iteration)",
-                        "bytes": "\(bytes)"
-                    ])
-                }
-                try? await Task.sleep(for: interval)
+    ) -> ExtractionProgressPollHandle {
+        let queue = DispatchQueue(label: "app.MacPacker.extraction-progress", qos: .utility)
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        let seconds = Double(interval.components.seconds)
+            + Double(interval.components.attoseconds) / 1e18
+        let trace = ProcessInfo.processInfo.environment["MACPACKER_DEBUG_PROGRESS_TRACE"] != nil
+
+        var iteration = 0
+        timer.setEventHandler { [weak self] in
+            guard let self else { return }
+            let sampleStart = Date()
+            let bytes = self.sampleCompletedBytes()
+            iteration += 1
+
+            if trace {
+                log.info("Progress trace", context: [
+                    "iteration": "\(iteration)",
+                    "bytes": "\(bytes)",
+                    "sampleMs": String(format: "%.1f", Date().timeIntervalSince(sampleStart) * 1000)
+                ])
+            } else if iteration % 25 == 0 {
+                log.debug("Progress sample", context: [
+                    "job": jobId.uuidString,
+                    "iteration": "\(iteration)",
+                    "bytes": "\(bytes)"
+                ])
             }
-            log.debug("Progress polling ended", context: [
-                "job": jobId.uuidString,
-                "iterations": "\(iteration)"
-            ])
+
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    center.report(jobId, completedBytes: bytes)
+                }
+            }
         }
+        timer.setCancelHandler {
+            log.debug("Progress polling ended", context: ["job": jobId.uuidString])
+        }
+        timer.schedule(deadline: .now() + seconds, repeating: seconds, leeway: .milliseconds(100))
+        timer.resume()
+
+        return ExtractionProgressPollHandle(timer: timer)
     }
 
     /// Recursive sum of the sizes of regular files whose ctime is at or
