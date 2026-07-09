@@ -57,6 +57,11 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     /// report up to the same cap.
     public internal(set) var speedSamples: [ExtractionSpeedSample] = []
     public static let maxSpeedSamples = 300
+    /// Causal smoothing factor: each recorded point blends the newest raw
+    /// speed with the running average (≈ the last five reports), applied at
+    /// record time only — drawn points never change afterwards.
+    public static let speedSmoothing = 0.3
+    var smoothedSpeed: Double = 0
     var lastReportAt: Date?
     var lastReportBytes: Int64 = 0
 
@@ -101,7 +106,11 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
         guard dt > 0 else { return }
 
         let clamped = max(0, bytes)
-        let speed = max(0, Double(clamped - lastReportBytes) / dt)
+        let raw = max(0, Double(clamped - lastReportBytes) / dt)
+        // exponential moving average over the incoming raw speeds — smooths
+        // the line a bit without ever rewriting already recorded points
+        smoothedSpeed = smoothedSpeed == 0 ? raw : raw * Self.speedSmoothing + smoothedSpeed * (1 - Self.speedSmoothing)
+        let speed = smoothedSpeed
         let elapsed = date.timeIntervalSince(startedAt)
         lastReportAt = date
         lastReportBytes = clamped

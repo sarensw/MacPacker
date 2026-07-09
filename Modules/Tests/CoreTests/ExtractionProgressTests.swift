@@ -125,12 +125,13 @@ extension AllCoreTests {
             #expect(positions.first == 0)
 
             // a second report at a different speed fills its slots with the
-            // new raw speed — earlier points stay untouched
+            // causally smoothed speed — earlier points stay untouched
             center.report(id, completedBytes: 800, at: start.addingTimeInterval(1.2))
             let twoThirds = center.jobs[0].speedSamples
             #expect(Array(twoThirds.prefix(third.count)) == third)
-            #expect(abs(twoThirds.last!.bytesPerSecond - 500) < 1)
-            #expect(abs(center.jobs[0].currentBytesPerSecond - 500) < 1)
+            let smoothed = 500 * ExtractionJob.speedSmoothing + 1000 * (1 - ExtractionJob.speedSmoothing)
+            #expect(abs(twoThirds.last!.bytesPerSecond - smoothed) < 1)
+            #expect(abs(center.jobs[0].currentBytesPerSecond - smoothed) < 1)
         }
 
         @Test func slotPointsAreImmutableOnceRecorded() {
