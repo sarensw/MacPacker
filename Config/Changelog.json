@@ -16,6 +16,49 @@
     },
     "versions": [
         {
+            "version": "0.17.0",
+            "items": [
+                {
+                    "type": "feat",
+                    "title": {
+                        "en": "Extraction progress window with live speed chart and cancel",
+                        "zh-Hans": "解压进度窗口，含实时速度图表和取消功能",
+                        "fr": "Fenêtre de progression d’extraction avec graphique de vitesse en direct et annulation",
+                        "de": "Fortschrittsfenster beim Entpacken mit Live-Geschwindigkeitsdiagramm und Abbrechen",
+                        "it": "Finestra di avanzamento dell’estrazione con grafico della velocità in tempo reale e annullamento",
+                        "ja": "解凍の進行状況ウィンドウ（リアルタイム速度グラフとキャンセル機能付き）",
+                        "fa": "پنجره پیشرفت استخراج با نمودار سرعت زنده و امکان لغو",
+                        "pl": "Okno postępu wypakowywania z wykresem prędkości na żywo i możliwością anulowania",
+                        "pt-BR": "Janela de progresso da extração com gráfico de velocidade ao vivo e cancelamento",
+                        "ru": "Окно хода распаковки с графиком скорости в реальном времени и отменой",
+                        "uk": "Вікно перебігу розпакування з живим графіком швидкості та скасуванням",
+                        "es-MX": "Ventana de progreso de extracción con gráfica de velocidad en vivo y cancelación",
+                        "ko": "실시간 속도 차트와 취소 기능이 있는 압축 해제 진행 창"
+                    },
+                    "issues": ["119"]
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "\"Extract archive\" produced no files for zip/7z archives",
+                        "zh-Hans": "修复 zip/7z 压缩包使用「解压归档」时不生成文件的问题",
+                        "fr": "« Extraire l’archive » ne produisait aucun fichier pour les archives zip/7z",
+                        "de": "\"Archiv entpacken\" erzeugte bei zip/7z-Archiven keine Dateien",
+                        "it": "\"Estrai archivio\" non produceva file per gli archivi zip/7z",
+                        "ja": "zip/7z アーカイブで「アーカイブを解凍」がファイルを生成しない問題を修正",
+                        "fa": "«استخراج آرشیو» برای آرشیوهای zip/7z هیچ فایلی ایجاد نمی‌کرد",
+                        "pl": "„Wypakuj archiwum” nie tworzyło plików dla archiwów zip/7z",
+                        "pt-BR": "\"Extrair arquivo\" não produzia arquivos para arquivos zip/7z",
+                        "ru": "«Извлечь архив» не создавал файлы для архивов zip/7z",
+                        "uk": "«Розпакувати архів» не створював файли для архівів zip/7z",
+                        "es-MX": "\"Extraer archivo\" no producía archivos para archivos zip/7z",
+                        "ko": "zip/7z 아카이브에서 \"아카이브 추출\"이 파일을 생성하지 않던 문제 수정"
+                    },
+                    "issues": []
+                }
+            ]
+        },
+        {
             "version": "0.16.0",
             "items": [
                 {
