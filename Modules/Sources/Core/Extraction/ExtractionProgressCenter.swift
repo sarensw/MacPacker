@@ -56,11 +56,12 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     /// is immutable by construction. Without a known total, one point per
     /// report up to the same cap.
     public internal(set) var speedSamples: [ExtractionSpeedSample] = []
-    public static let maxSpeedSamples = 360
+    public static let maxSpeedSamples = 420
     /// Causal smoothing factor: each recorded point blends the newest raw
-    /// speed with the running average (≈ the last five reports), applied at
-    /// record time only — drawn points never change afterwards.
-    public static let speedSmoothing = 0.3
+    /// speed with the running average, applied at record time only — drawn
+    /// points never change afterwards. α = 2/(N+1) with N = 10, i.e. the
+    /// average effectively covers the last ten reports.
+    public static let speedSmoothing = 2.0 / 11.0
     var smoothedSpeed: Double = 0
     var lastReportAt: Date?
     var lastReportBytes: Int64 = 0
