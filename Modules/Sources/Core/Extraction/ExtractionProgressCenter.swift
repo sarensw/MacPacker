@@ -21,6 +21,46 @@ public struct ExtractionSpeedSample: Equatable, Sendable {
     public let bytesPerSecond: Double
 }
 
+public extension Array where Element == ExtractionSpeedSample {
+    /// Stable display reduction for the speed chart.
+    ///
+    /// Samples land in fixed buckets keyed by their progress position and
+    /// each bucket is averaged, so appending new samples only affects the
+    /// newest bucket — already drawn history never changes. (Index-stride
+    /// subsampling picked a different subset on every render as the sample
+    /// count grew; the line visibly flickered between shapes.)
+    ///
+    /// Without a progress denominator there is no fixed domain to bucket
+    /// into; the samples are returned as-is.
+    func bucketedForDisplay(maxCount: Int, progressDenominator: Int64?) -> [ExtractionSpeedSample] {
+        guard count > maxCount, let total = progressDenominator, total > 0 else { return self }
+
+        var speedSums = [Double](repeating: 0, count: maxCount)
+        var counts = [Int](repeating: 0, count: maxCount)
+        var lastSample = [ExtractionSpeedSample?](repeating: nil, count: maxCount)
+
+        for sample in self {
+            let position = Double(sample.completedBytes) * Double(maxCount) / Double(total)
+            let bucket = Swift.min(maxCount - 1, Swift.max(0, Int(position)))
+            speedSums[bucket] += sample.bytesPerSecond
+            counts[bucket] += 1
+            lastSample[bucket] = sample
+        }
+
+        var result: [ExtractionSpeedSample] = []
+        result.reserveCapacity(maxCount)
+        for bucket in 0..<maxCount {
+            guard counts[bucket] > 0, let last = lastSample[bucket] else { continue }
+            result.append(ExtractionSpeedSample(
+                elapsed: last.elapsed,
+                completedBytes: last.completedBytes,
+                bytesPerSecond: speedSums[bucket] / Double(counts[bucket])
+            ))
+        }
+        return result
+    }
+}
+
 /// One user-visible extraction run (e.g. "extract selected items to folder X").
 public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public enum State: Equatable, Sendable {

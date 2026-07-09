@@ -268,13 +268,11 @@ private struct ExtractionSpeedChartView: View {
         (job.effectiveTotalBytes ?? 0) > 0
     }
 
-    /// The chart never needs more than ~60 points across 500 pt — thinning
-    /// keeps the per-tick re-render cheap enough for the main thread.
+    /// The chart never needs more than ~60 points across 500 pt. Bucketed
+    /// by progress position so already drawn history never changes shape
+    /// while new samples arrive.
     private var displaySamples: [ExtractionSpeedSample] {
-        let samples = job.speedSamples
-        guard samples.count > 60 else { return samples }
-        let stride = Double(samples.count) / 60.0
-        return (0..<60).map { samples[Int(Double($0) * stride)] }
+        job.speedSamples.bucketedForDisplay(maxCount: 60, progressDenominator: job.effectiveTotalBytes)
     }
 
     var body: some View {

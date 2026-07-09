@@ -175,6 +175,41 @@ extension AllCoreTests {
             #expect(center.jobs[1].estimatedSecondsRemaining == nil)
         }
 
+        @Test func bucketedDisplaySamplesAreStableUnderAppends() {
+            // index-stride subsampling redrew history with a different
+            // subset every tick — the chart visibly flickered between
+            // shapes. Bucketing by progress position must keep already
+            // drawn buckets identical when new samples arrive.
+            func sample(_ i: Int) -> ExtractionSpeedSample {
+                ExtractionSpeedSample(
+                    elapsed: Double(i) * 0.4,
+                    completedBytes: Int64(i) * 10,
+                    bytesPerSecond: Double(100 + (i % 7))
+                )
+            }
+            let total: Int64 = 4000
+
+            let first = (0..<200).map(sample(_:))
+            let more = (0..<240).map(sample(_:))
+
+            let a = first.bucketedForDisplay(maxCount: 60, progressDenominator: total)
+            let b = more.bucketedForDisplay(maxCount: 60, progressDenominator: total)
+
+            #expect(a.count <= 60)
+            #expect(b.count <= 60)
+            // every bucket fully covered by the first batch is identical
+            // in the second result
+            let sharedPrefix = a.dropLast(1)
+            #expect(Array(b.prefix(sharedPrefix.count)) == Array(sharedPrefix))
+        }
+
+        @Test func bucketedDisplayWithoutTotalKeepsSamples() {
+            let samples = (0..<30).map {
+                ExtractionSpeedSample(elapsed: Double($0), completedBytes: Int64($0), bytesPerSecond: 1)
+            }
+            #expect(samples.bucketedForDisplay(maxCount: 60, progressDenominator: nil) == samples)
+        }
+
         @Test func clearFinishedKeepsRunningJobs() {
             let center = ExtractionProgressCenter()
             let done = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
@@ -326,6 +361,57 @@ extension AllCoreTests {
             let completed = events.map(\.completed)
             #expect(completed == completed.sorted())
             #expect(completed.last! <= events.last!.total)
+        }
+
+        @Test func xadExtractReportsByteProgress() async throws {
+            let engine = ArchiveXadEngine()
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+            let load = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let files = load.items.values.filter { $0.type == .file && $0.uncompressedSize > 0 }
+            #expect(!files.isEmpty)
+
+            let dest = try makeDest()
+            defer { try? FileManager.default.removeItem(at: dest) }
+
+            let collector = ProgressCollector()
+            _ = try await engine.extract(
+                items: Array(files),
+                from: url,
+                to: dest,
+                passwordResolver: { _ in nil },
+                onProgress: { completed, total in
+                    collector.add(completed, total)
+                    return true
+                }
+            )
+
+            let events = collector.events
+            #expect(!events.isEmpty)
+            #expect(events.allSatisfy { $0.total > 0 })
+            let completed = events.map(\.completed)
+            #expect(completed == completed.sorted())
+        }
+
+        @Test func xadAbortFromProgressCancelsExtraction() async throws {
+            let engine = ArchiveXadEngine()
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+            let load = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let files = load.items.values.filter { $0.type == .file && $0.uncompressedSize > 0 }
+
+            let dest = try makeDest()
+            defer { try? FileManager.default.removeItem(at: dest) }
+
+            await #expect(throws: CancellationError.self) {
+                _ = try await engine.extract(
+                    items: Array(files),
+                    from: url,
+                    to: dest,
+                    passwordResolver: { _ in nil },
+                    onProgress: { _, _ in false }
+                )
+            }
         }
 
         @Test func abortFromProgressCancelsExtraction() async throws {

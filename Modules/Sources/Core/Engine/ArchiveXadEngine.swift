@@ -156,12 +156,80 @@ private final class XADArchiveWithPasswordSupport {
         }
     }
     
+    public func setDelegate(_ delegate: AnyObject?) {
+        archive.setDelegate(delegate)
+    }
+
     public func lastError() -> XADError {
         return archive.lastError()
     }
     
     public func describeLastError() -> String {
         return archive.describeLastError()
+    }
+}
+
+/// Receives XADArchive's informal-delegate callbacks and relays byte
+/// progress to the engine consumer; also answers the should-stop poll so
+/// the cancel button aborts XAD extractions mid-flight. Only our delegate
+/// object — vendored XADMaster stays untouched.
+private final class XADExtractionProgressDelegate: NSObject, @unchecked Sendable {
+    private let lock = NSLock()
+    private let onProgress: ArchiveExtractionProgress
+    /// Total for per-entry mode, from the items' listing sizes.
+    private let totalBytes: Int64
+    /// True when the whole-archive extraction runs — XAD then reports
+    /// global counters itself and the per-entry callback is ignored.
+    private let usesGlobalCounters: Bool
+    private var baseBytes: Int64 = 0
+    private var stopped = false
+
+    init(onProgress: @escaping ArchiveExtractionProgress, totalBytes: Int64, usesGlobalCounters: Bool) {
+        self.onProgress = onProgress
+        self.totalBytes = totalBytes
+        self.usesGlobalCounters = usesGlobalCounters
+    }
+
+    var wasStopped: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return stopped
+    }
+
+    /// Called by the engine after an entry finished, so the next entry's
+    /// per-entry byte counts continue from the right offset.
+    func advanceBase(by bytes: Int64) {
+        lock.lock()
+        defer { lock.unlock() }
+        baseBytes += Swift.max(0, bytes)
+    }
+
+    private func relay(_ completed: Int64, _ total: Int64) {
+        if !onProgress(completed, total) {
+            lock.lock()
+            stopped = true
+            lock.unlock()
+        }
+    }
+
+    @objc(archiveExtractionShouldStop:)
+    override func archiveExtractionShouldStop(_ archive: XADArchive!) -> Bool {
+        wasStopped
+    }
+
+    @objc(archive:extractionProgressForEntry:bytes:of:)
+    override func archive(_ archive: XADArchive!, extractionProgressForEntry n: Int32, bytes: off_t, of total: off_t) {
+        guard !usesGlobalCounters else { return }
+        lock.lock()
+        let base = baseBytes
+        lock.unlock()
+        relay(base + Int64(bytes), totalBytes)
+    }
+
+    @objc(archive:extractionProgressBytes:of:)
+    override func archive(_ archive: XADArchive!, extractionProgressBytes bytes: off_t, of total: off_t) {
+        guard usesGlobalCounters else { return }
+        relay(Int64(bytes), Int64(total))
     }
 }
 
@@ -259,12 +327,30 @@ final actor ArchiveXadEngine: ArchiveEngine {
         to destination: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws -> ArchiveExtractionResult {
+        try await extract(items: items, from: url, to: destination, passwordResolver: passwordResolver, onProgress: nil)
+    }
+
+    func extract(
+        items: [ArchiveItem],
+        from url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveExtractionResult {
         let archive = try XADArchiveWithPasswordSupport(
             url: url,
             passwordResolver: passwordResolver
         )
         try await archive.setNameEncoding(NSUTF8StringEncoding)
-        
+
+        let totalBytes = items.reduce(Int64(0)) { $0 + Int64(Swift.max(0, $1.uncompressedSize)) }
+        let progressDelegate = onProgress.map {
+            XADExtractionProgressDelegate(onProgress: $0, totalBytes: totalBytes, usesGlobalCounters: false)
+        }
+        if let progressDelegate {
+            archive.setDelegate(progressDelegate)
+        }
+
         var urlsByItemID: [UUID: URL] = [:]
 
         for item in items {
@@ -276,7 +362,20 @@ final actor ArchiveXadEngine: ArchiveEngine {
                 throw ArchiveError.extractionFailed("Could not extract file: missing index")
             }
 
-            try await archive.extractEntry(Int32(itemIndex), to: destination.path)
+            do {
+                try await archive.extractEntry(Int32(itemIndex), to: destination.path)
+            } catch {
+                // a should-stop answer makes XAD fail the entry — surface
+                // it as cancellation, not as an extraction error
+                if progressDelegate?.wasStopped == true {
+                    throw CancellationError()
+                }
+                throw error
+            }
+            if progressDelegate?.wasStopped == true {
+                throw CancellationError()
+            }
+            progressDelegate?.advanceBase(by: Int64(Swift.max(0, item.uncompressedSize)))
 
             let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: item.type == .directory)
             urlsByItemID[item.id] = resultUrl
@@ -284,20 +383,47 @@ final actor ArchiveXadEngine: ArchiveEngine {
 
         return ArchiveExtractionResult(urlsByItemID: urlsByItemID)
     }
-    
+
     func extract(
         _ url: URL,
         to destination: URL,
         passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws {
+        try await extract(url, to: destination, passwordResolver: passwordResolver, onProgress: nil)
+    }
+
+    func extract(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
     ) async throws {
         let archive = try XADArchiveWithPasswordSupport(
             url: url,
             passwordResolver: passwordResolver
         )
         try await archive.setNameEncoding(NSUTF8StringEncoding)
-        
-        try await archive.extract(
-            to: destination.path
-        )
+
+        let progressDelegate = onProgress.map {
+            // whole-archive mode: XAD reports its own global byte counters
+            XADExtractionProgressDelegate(onProgress: $0, totalBytes: 0, usesGlobalCounters: true)
+        }
+        if let progressDelegate {
+            archive.setDelegate(progressDelegate)
+        }
+
+        do {
+            try await archive.extract(
+                to: destination.path
+            )
+        } catch {
+            if progressDelegate?.wasStopped == true {
+                throw CancellationError()
+            }
+            throw error
+        }
+        if progressDelegate?.wasStopped == true {
+            throw CancellationError()
+        }
     }
 }
