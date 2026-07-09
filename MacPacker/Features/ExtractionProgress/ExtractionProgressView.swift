@@ -340,21 +340,22 @@ private struct ExtractionSpeedChartView: View, Equatable {
                 grid.addLine(to: CGPoint(x: width, y: height / 2))
                 context.stroke(grid, with: .color(.secondary.opacity(0.2)), style: StrokeStyle(lineWidth: 1, dash: [2, 3]))
 
-                // raw polyline + fill underneath — straight segments only
+                // the data stays raw and immutable — only the DRAWING
+                // interpolates: a monotone cubic through the points (same
+                // look as Swift Charts' .monotone, no overshoot on spikes)
                 if samples.count > 1 {
-                    var line = Path()
-                    line.move(to: CGPoint(x: CGFloat(xFraction(samples[0])) * width, y: yPosition(samples[0].bytesPerSecond)))
-                    for sample in samples.dropFirst() {
-                        line.addLine(to: CGPoint(x: CGFloat(xFraction(sample)) * width, y: yPosition(sample.bytesPerSecond)))
+                    let points = samples.map { sample in
+                        CGPoint(x: CGFloat(xFraction(sample)) * width, y: yPosition(sample.bytesPerSecond))
                     }
+                    let line = monotoneCurve(through: points)
 
                     var area = line
-                    area.addLine(to: CGPoint(x: CGFloat(xFraction(samples[samples.count - 1])) * width, y: height))
-                    area.addLine(to: CGPoint(x: CGFloat(xFraction(samples[0])) * width, y: height))
+                    area.addLine(to: CGPoint(x: points[points.count - 1].x, y: height))
+                    area.addLine(to: CGPoint(x: points[0].x, y: height))
                     area.closeSubpath()
 
                     context.fill(area, with: .color(.accentColor.opacity(0.2)))
-                    context.stroke(line, with: .color(.accentColor), style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                    context.stroke(line, with: .color(.accentColor), style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
                 }
 
                 // dashed average line
@@ -387,6 +388,62 @@ private struct ExtractionSpeedChartView: View, Equatable {
         .frame(height: 92)
         .padding(.vertical, 2)
     }
+}
+
+/// Monotone cubic interpolation (Fritsch–Carlson) through points with
+/// strictly increasing x: smooth like Swift Charts' `.monotone`, and never
+/// overshoots above or below the actual data between two points.
+private func monotoneCurve(through rawPoints: [CGPoint]) -> Path {
+    // collapse duplicate x positions (keep the newest point)
+    var points: [CGPoint] = []
+    for point in rawPoints {
+        if let last = points.last, point.x - last.x < 0.01 {
+            points[points.count - 1] = point
+        } else {
+            points.append(point)
+        }
+    }
+
+    var path = Path()
+    guard let first = points.first else { return path }
+    path.move(to: first)
+    guard points.count > 2 else {
+        points.dropFirst().forEach { path.addLine(to: $0) }
+        return path
+    }
+
+    let n = points.count
+    var slopes = [CGFloat](repeating: 0, count: n)
+    var secants = [CGFloat](repeating: 0, count: n - 1)
+    for i in 0..<(n - 1) {
+        secants[i] = (points[i + 1].y - points[i].y) / (points[i + 1].x - points[i].x)
+    }
+    slopes[0] = secants[0]
+    slopes[n - 1] = secants[n - 2]
+    for i in 1..<(n - 1) {
+        // opposite-sign or flat secants force a horizontal tangent — this
+        // is what prevents overshoot at local peaks
+        slopes[i] = secants[i - 1] * secants[i] <= 0 ? 0 : (secants[i - 1] + secants[i]) / 2
+    }
+    for i in 0..<(n - 1) where secants[i] != 0 {
+        let a = slopes[i] / secants[i]
+        let b = slopes[i + 1] / secants[i]
+        let h = (a * a + b * b).squareRoot()
+        if h > 3 {
+            slopes[i] = 3 * secants[i] * a / h
+            slopes[i + 1] = 3 * secants[i] * b / h
+        }
+    }
+
+    for i in 0..<(n - 1) {
+        let dx = (points[i + 1].x - points[i].x) / 3
+        path.addCurve(
+            to: points[i + 1],
+            control1: CGPoint(x: points[i].x + dx, y: points[i].y + slopes[i] * dx),
+            control2: CGPoint(x: points[i + 1].x - dx, y: points[i + 1].y - slopes[i + 1] * dx)
+        )
+    }
+    return path
 }
 
 /// Smallest "nice" chart ceiling (1, 2, or 5 times a power of ten) at or
