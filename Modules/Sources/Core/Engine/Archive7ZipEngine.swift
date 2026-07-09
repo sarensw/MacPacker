@@ -116,7 +116,10 @@ final actor Archive7ZipEngine: ArchiveEngine {
         // TODO: Change from while true loop to a loop with a real end condition
         while true {
             do {
-                let extractedEntries: [UInt32: URL] = try szip.extract(indices: sorted, to: destination)
+                // blocking C call — keep it off the cooperative pool
+                let extractedEntries: [UInt32: URL] = try await runBlocking {
+                    try szip.extract(indices: sorted, to: destination)
+                }
                 
                 let urlsByItemID: [UUID: URL] = Dictionary(
                     uniqueKeysWithValues: extractedEntries.compactMap { (index, url) in
@@ -159,7 +162,10 @@ final actor Archive7ZipEngine: ArchiveEngine {
         // extracts or the user cancels the password prompt.
         while true {
             do {
-                try szip.extractAll(to: destination)
+                // blocking C call — keep it off the cooperative pool
+                try await runBlocking {
+                    try szip.extractAll(to: destination)
+                }
                 return
             } catch SevenZipError.passwordMissing {
                 attempt += 1

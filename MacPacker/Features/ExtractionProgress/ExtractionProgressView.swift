@@ -322,8 +322,8 @@ private struct ExtractionSpeedChartView: View {
             }
         }
         .chartPlotStyle { plot in
+            // no plot fill — only the progressed part is tinted (RectangleMark)
             plot
-                .background(.quinary.opacity(0.5))
                 .overlay(
                     RoundedRectangle(cornerRadius: 4)
                         .strokeBorder(.quaternary, lineWidth: 1)

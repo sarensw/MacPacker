@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 
 /// Measures extraction progress by watching the byte growth of the
 /// directories an extraction writes into.
@@ -46,29 +49,48 @@ public actor ExtractionProgressWatcher {
         every interval: Duration = .milliseconds(400)
     ) -> Task<Void, Never> {
         Task {
+            var iteration = 0
             while !Task.isCancelled {
                 let bytes = await self.sampleCompletedBytes()
                 await center.report(jobId, completedBytes: bytes)
+                iteration += 1
+                if iteration % 25 == 0 {
+                    log.debug("Progress sample", context: [
+                        "job": jobId.uuidString,
+                        "iteration": "\(iteration)",
+                        "bytes": "\(bytes)"
+                    ])
+                }
                 try? await Task.sleep(for: interval)
             }
+            log.debug("Progress polling ended", context: [
+                "job": jobId.uuidString,
+                "iterations": "\(iteration)"
+            ])
         }
     }
 
     /// Recursive logical file size of a directory tree.
+    ///
+    /// Sizes are read per file via `attributesOfItem` (lstat): it reports the
+    /// live vnode size of files that are currently being written. The
+    /// enumerator's prefetched URL resource values (getattrlistbulk) serve
+    /// catalog-cached sizes that lag far behind an active writer — that made
+    /// the progress UI freeze on large single-file extractions.
     private static func bytes(at url: URL) -> Int64 {
-        let keys: Set<URLResourceKey> = [.isRegularFileKey, .fileSizeKey]
-        guard let enumerator = FileManager.default.enumerator(
+        let fileManager = FileManager.default
+        guard let enumerator = fileManager.enumerator(
             at: url,
-            includingPropertiesForKeys: Array(keys),
+            includingPropertiesForKeys: [],
             options: []
         ) else { return 0 }
 
         var total: Int64 = 0
         for case let fileURL as URL in enumerator {
-            guard let values = try? fileURL.resourceValues(forKeys: keys),
-                  values.isRegularFile == true,
-                  let size = values.fileSize else { continue }
-            total += Int64(size)
+            guard let attributes = try? fileManager.attributesOfItem(atPath: fileURL.path),
+                  (attributes[.type] as? FileAttributeType) == .typeRegular,
+                  let size = attributes[.size] as? Int64 else { continue }
+            total += size
         }
         return total
     }

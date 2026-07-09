@@ -26,14 +26,15 @@ private final class XADArchiveWithPasswordSupport {
     }
     
     func performXADOperationWithPasswordRetry<T>(
-        operation: () -> T
+        operation: @escaping () -> T
     ) async throws -> T {
         var attempt = 0
 
         while true {
             archive.clearLastError()
-            
-            let value = operation()
+
+            // blocking XADMaster call — keep it off the cooperative pool
+            let value = try await runBlocking { operation() }
             let error = archive.lastError()
             
             // success
@@ -69,62 +70,62 @@ private final class XADArchiveWithPasswordSupport {
     
     public func setNameEncoding(_ encoding: UInt) async throws {
         try await performXADOperationWithPasswordRetry {
-            archive.setNameEncoding(encoding)
+            self.archive.setNameEncoding(encoding)
         }
     }
     
     public func numberOfEntries() async throws -> Int32 {
         try await performXADOperationWithPasswordRetry {
-            let nrofEntries = archive.numberOfEntries()
+            let nrofEntries = self.archive.numberOfEntries()
             return nrofEntries
         }
     }
     
     public func name(ofEntry n: Int32) async throws -> String {
         try await performXADOperationWithPasswordRetry {
-            let name = archive.name(ofEntry: n) ?? ""
+            let name = self.archive.name(ofEntry: n) ?? ""
             return name
         }
     }
     
     public func entryIsDirectory(_ n: Int32) async throws -> Bool {
         try await performXADOperationWithPasswordRetry {
-            let isDir = archive.entryIsDirectory(n)
+            let isDir = self.archive.entryIsDirectory(n)
             return isDir
         }
     }
     
     public func entryHasSize(_ n: Int32) async throws -> Bool {
         try await performXADOperationWithPasswordRetry {
-            let hasSize = archive.entryHasSize(n)
+            let hasSize = self.archive.entryHasSize(n)
             return hasSize
         }
     }
     
     public func compressedSize(ofEntry n: Int32) async throws -> Int {
         try await performXADOperationWithPasswordRetry {
-            let size = archive.compressedSize(ofEntry: n)
+            let size = self.archive.compressedSize(ofEntry: n)
             return Int(size)
         }
     }
     
     public func uncompressedSize(ofEntry n: Int32) async throws -> Int {
         try await performXADOperationWithPasswordRetry {
-            let size = archive.uncompressedSize(ofEntry: n)
+            let size = self.archive.uncompressedSize(ofEntry: n)
             return Int(size)
         }
     }
     
     public func attributes(ofEntry n: Int32) async throws -> [AnyHashable : Any] {
         try await performXADOperationWithPasswordRetry {
-            let attrs = archive.attributes(ofEntry: n) ?? [:]
+            let attrs = self.archive.attributes(ofEntry: n) ?? [:]
             return attrs
         }
     }
     
     public func extractEntry(_ n: Int32, to: String) async throws {
         let result = try await performXADOperationWithPasswordRetry {
-            let r = archive.extractEntry(n, to: to)
+            let r = self.archive.extractEntry(n, to: to)
             return r
         }
         
@@ -135,7 +136,7 @@ private final class XADArchiveWithPasswordSupport {
     
     public func extractEntries(_ entryset: IndexSet!, to: String) async throws {
         let result = try await performXADOperationWithPasswordRetry {
-            let r = archive.extractEntries(entryset, to: to)
+            let r = self.archive.extractEntries(entryset, to: to)
             return r
         }
         
@@ -146,7 +147,7 @@ private final class XADArchiveWithPasswordSupport {
     
     public func extract(to: String) async throws {
         let result = try await performXADOperationWithPasswordRetry {
-            let r = archive.extract(to: to)
+            let r = self.archive.extract(to: to)
             return r
         }
         

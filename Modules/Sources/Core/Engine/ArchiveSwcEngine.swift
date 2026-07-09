@@ -63,19 +63,20 @@ final actor ArchiveSwcEngine: ArchiveEngine {
         let sourceFileName = url.lastPathComponent
         let extractedFileName = stripFileExtension(sourceFileName)
         let extractedFilePathName = destination.appendingPathComponent(extractedFileName, isDirectory: false)
-        
-        if let data = try? Data(contentsOf: url, options: .mappedIfSafe) {
-            let decompressedData = try LZ4.decompress(data: data)
-            
-            FileManager.default.createFile(atPath: extractedFilePathName.path, contents: decompressedData)
-            
-            let urlsByItemID: [UUID: URL] = [UUID(): extractedFilePathName]
-            let result = ArchiveExtractionResult(urlsByItemID: urlsByItemID)
-            
-            return result
+
+        // blocking decompression — keep it off the cooperative pool
+        return try await runBlocking {
+            if let data = try? Data(contentsOf: url, options: .mappedIfSafe) {
+                let decompressedData = try LZ4.decompress(data: data)
+
+                FileManager.default.createFile(atPath: extractedFilePathName.path, contents: decompressedData)
+
+                let urlsByItemID: [UUID: URL] = [UUID(): extractedFilePathName]
+                return ArchiveExtractionResult(urlsByItemID: urlsByItemID)
+            }
+
+            throw ArchiveError.extractionFailed("Swc engine: Could not decompress archive")
         }
-        
-        throw ArchiveError.extractionFailed("Swc engine: Could not decompress archive")
     }
     
     func extract(
@@ -86,14 +87,17 @@ final actor ArchiveSwcEngine: ArchiveEngine {
         let sourceFileName = url.lastPathComponent
         let extractedFileName = stripFileExtension(sourceFileName)
         let extractedFilePathName = destination.appendingPathComponent(extractedFileName, isDirectory: false)
-        
+
         do {
-            if let data = try? Data(contentsOf: url, options: .mappedIfSafe) {
-                let decompressedData = try LZ4.decompress(data: data)
-                
-                FileManager.default.createFile(atPath: extractedFilePathName.path, contents: decompressedData)
-            } else {
-                log.error("Could not decompress archive")
+            // blocking decompression — keep it off the cooperative pool
+            try await runBlocking {
+                if let data = try? Data(contentsOf: url, options: .mappedIfSafe) {
+                    let decompressedData = try LZ4.decompress(data: data)
+
+                    FileManager.default.createFile(atPath: extractedFilePathName.path, contents: decompressedData)
+                } else {
+                    log.error("Could not decompress archive")
+                }
             }
         } catch {
             log.error(error.localizedDescription)
