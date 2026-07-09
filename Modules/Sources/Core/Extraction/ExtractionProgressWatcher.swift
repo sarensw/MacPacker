@@ -65,6 +65,14 @@ public final class ExtractionProgressWatcher: @unchecked Sendable {
         watched.append(url)
     }
 
+    /// The directories being watched — used to register temp directories
+    /// for cleanup when an extraction is cancelled mid-flight.
+    public var watchedDirectories: [URL] {
+        lock.lock()
+        defer { lock.unlock() }
+        return watched
+    }
+
     /// Total bytes of files touched since the job started, across all
     /// watched directories. Blocking filesystem work — runs on the caller's
     /// thread.
@@ -97,6 +105,9 @@ public final class ExtractionProgressWatcher: @unchecked Sendable {
             let sampleStart = Date()
             let bytes = self.sampleCompletedBytes()
             iteration += 1
+            // timestamp at sampling time: reports can drain from the main
+            // queue in bursts, and speed math needs the real spacing
+            let sampledAt = Date()
 
             if trace {
                 log.info("Progress trace", context: [
@@ -114,7 +125,7 @@ public final class ExtractionProgressWatcher: @unchecked Sendable {
 
             DispatchQueue.main.async {
                 MainActor.assumeIsolated {
-                    center.report(jobId, completedBytes: bytes)
+                    center.report(jobId, completedBytes: bytes, at: sampledAt)
                 }
             }
         }

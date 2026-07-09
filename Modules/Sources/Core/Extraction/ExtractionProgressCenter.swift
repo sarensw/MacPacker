@@ -34,9 +34,16 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public let archiveName: String
     public let destination: URL?
     public let itemCount: Int
-    /// Expected total uncompressed bytes. `nil` means unknown — show an
-    /// indeterminate progress bar.
+    /// Expected total uncompressed bytes from the archive listing. `nil`
+    /// means unknown — show an indeterminate progress bar.
     public let totalBytes: Int64?
+    /// Total reported by the engine itself, in the engine's own byte unit.
+    /// When present it supersedes `totalBytes` (same unit as the engine's
+    /// completed counter, so fractions stay consistent).
+    public internal(set) var engineTotalBytes: Int64?
+    /// True once the engine reported progress directly — directory sampling
+    /// is ignored from then on so the two sources can't fight.
+    var hasEngineProgress: Bool = false
     public internal(set) var completedBytes: Int64 = 0
     public let startedAt: Date
     public internal(set) var finishedAt: Date?
@@ -55,10 +62,16 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
 
     public var isFinished: Bool { state != .running }
 
+    /// The total used for fractions and display: the engine's own total
+    /// when it reports progress, the listing total otherwise.
+    public var effectiveTotalBytes: Int64? {
+        engineTotalBytes ?? totalBytes
+    }
+
     /// 0...1 while the total is known, nil for indeterminate progress.
     public var fractionCompleted: Double? {
-        guard let totalBytes, totalBytes > 0 else { return nil }
-        return min(1.0, Double(completedBytes) / Double(totalBytes))
+        guard let total = effectiveTotalBytes, total > 0 else { return nil }
+        return min(1.0, Double(completedBytes) / Double(total))
     }
 
     /// Most recent throughput sample.
@@ -76,10 +89,10 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     /// Rough time-to-finish estimate from the current speed (falls back to
     /// the average). nil when the total or the speed is unknown.
     public var estimatedSecondsRemaining: TimeInterval? {
-        guard state == .running, let totalBytes, totalBytes > 0 else { return nil }
+        guard state == .running, let total = effectiveTotalBytes, total > 0 else { return nil }
         let speed = currentBytesPerSecond > 0 ? currentBytesPerSecond : averageBytesPerSecond
         guard speed > 0 else { return nil }
-        return max(0, Double(totalBytes - completedBytes)) / speed
+        return max(0, Double(total - completedBytes)) / speed
     }
 
     mutating func recordSpeed(completedBytes bytes: Int64, at date: Date) {
@@ -172,10 +185,28 @@ public final class ExtractionProgressCenter: ObservableObject {
         handler()
     }
 
+    /// Directory-sampled progress (fallback for engines without callbacks).
+    /// Ignored once the engine reports progress directly.
     public func report(_ id: UUID, completedBytes: Int64, at date: Date = Date()) {
-        guard let index = jobs.firstIndex(where: { $0.id == id }), !jobs[index].isFinished else { return }
+        guard let index = jobs.firstIndex(where: { $0.id == id }),
+              !jobs[index].isFinished,
+              !jobs[index].hasEngineProgress else { return }
         jobs[index].completedBytes = max(0, completedBytes)
         jobs[index].recordSpeed(completedBytes: max(0, completedBytes), at: date)
+    }
+
+    /// Byte progress reported by the extraction engine itself.
+    /// `date` must be the time the engine emitted the values — reports may
+    /// arrive on the main queue in bursts, and speed math needs the real
+    /// emission spacing.
+    public func reportEngineProgress(_ id: UUID, completed: Int64, total: Int64, at date: Date) {
+        guard let index = jobs.firstIndex(where: { $0.id == id }), !jobs[index].isFinished else { return }
+        jobs[index].hasEngineProgress = true
+        if total > 0 {
+            jobs[index].engineTotalBytes = total
+        }
+        jobs[index].completedBytes = max(0, completed)
+        jobs[index].recordSpeed(completedBytes: max(0, completed), at: date)
     }
 
     /// Moves a job into a terminal state. Later calls for the same job are ignored.
@@ -184,7 +215,7 @@ public final class ExtractionProgressCenter: ObservableObject {
         guard let index = jobs.firstIndex(where: { $0.id == id }), !jobs[index].isFinished else { return }
         jobs[index].state = state
         jobs[index].finishedAt = Date()
-        if state == .done, let total = jobs[index].totalBytes {
+        if state == .done, let total = jobs[index].effectiveTotalBytes {
             jobs[index].completedBytes = total
         }
         cancelHandlers[id] = nil

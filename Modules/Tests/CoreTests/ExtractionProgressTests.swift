@@ -272,6 +272,84 @@ extension AllCoreTests {
         }
     }
 
+    // MARK: - Engine progress (7zip bridge callback)
+
+    struct EngineProgressTests {
+
+        private final class ProgressCollector: @unchecked Sendable {
+            private let lock = NSLock()
+            private var _events: [(completed: Int64, total: Int64)] = []
+            var events: [(completed: Int64, total: Int64)] {
+                lock.lock(); defer { lock.unlock() }
+                return _events
+            }
+            func add(_ completed: Int64, _ total: Int64) {
+                lock.lock(); defer { lock.unlock() }
+                _events.append((completed, total))
+            }
+        }
+
+        private func makeDest() throws -> URL {
+            let url = FileManager.default.temporaryDirectory
+                .appendingPathComponent("EngineProgressTests_\(UUID().uuidString)")
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+            return url
+        }
+
+        @Test func sevenZipExtractReportsByteProgress() async throws {
+            let engine = Archive7ZipEngine()
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+            let load = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let files = load.items.values.filter { $0.type == .file }
+            #expect(!files.isEmpty)
+
+            let dest = try makeDest()
+            defer { try? FileManager.default.removeItem(at: dest) }
+
+            let collector = ProgressCollector()
+            _ = try await engine.extract(
+                items: Array(files),
+                from: url,
+                to: dest,
+                passwordResolver: { _ in nil },
+                onProgress: { completed, total in
+                    collector.add(completed, total)
+                    return true
+                }
+            )
+
+            let events = collector.events
+            #expect(!events.isEmpty)
+            #expect(events.allSatisfy { $0.total > 0 })
+            // completed values never go backwards
+            let completed = events.map(\.completed)
+            #expect(completed == completed.sorted())
+            #expect(completed.last! <= events.last!.total)
+        }
+
+        @Test func abortFromProgressCancelsExtraction() async throws {
+            let engine = Archive7ZipEngine()
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+            let load = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let files = load.items.values.filter { $0.type == .file }
+
+            let dest = try makeDest()
+            defer { try? FileManager.default.removeItem(at: dest) }
+
+            await #expect(throws: CancellationError.self) {
+                _ = try await engine.extract(
+                    items: Array(files),
+                    from: url,
+                    to: dest,
+                    passwordResolver: { _ in nil },
+                    onProgress: { _, _ in false }
+                )
+            }
+        }
+    }
+
     // MARK: - ArchiveState extraction reports jobs
 
     @MainActor struct ArchiveStateExtractProgressTests {

@@ -750,6 +750,28 @@ extension ArchiveState {
         return result.url
     }
     
+    /// Builds the engine byte-progress callback for a job: throttled,
+    /// timestamped-at-emission forwarding to the center, plus cooperative
+    /// abort through the cancel flag (stops the C extraction mid-flight).
+    private func makeEngineProgress(
+        jobId: UUID,
+        cancelFlag: ExtractionCancelFlag
+    ) -> ArchiveExtractionProgress {
+        let center = progressCenter
+        let throttle = ProgressThrottle()
+        return { completed, total in
+            let now = Date()
+            if throttle.shouldEmit(at: now) {
+                DispatchQueue.main.async {
+                    MainActor.assumeIsolated {
+                        center.reportEngineProgress(jobId, completed: completed, total: total, at: now)
+                    }
+                }
+            }
+            return !cancelFlag.isCancelled
+        }
+    }
+
     /// Sum of the known uncompressed sizes of the given file items.
     /// ponytail: folders are resolved during extraction, so folder-heavy
     /// selections under-count and fall back to an indeterminate bar (nil).
@@ -778,6 +800,7 @@ extension ArchiveState {
         )
 
         // own task so the window's cancel button can stop the extraction
+        let cancelFlag = ExtractionCancelFlag()
         let work = Task {
             let batchResolver = ArchiveBatchResolver()
             guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: archiveEngineSelector).first else {
@@ -790,12 +813,18 @@ extension ArchiveState {
                     watcher.watch(tempUrl)
                 }
             )
-            let result = try await extractor.extract(batch: batch)
+            let result = try await extractor.extract(
+                batch: batch,
+                onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
+            )
             tempDirectories.append(result.tempDir)
             try Task.checkCancellation()
             try FileManager.default.moveItem(at: result.url, to: url)
         }
-        progressCenter.setOnCancel(jobId) { work.cancel() }
+        progressCenter.setOnCancel(jobId) {
+            cancelFlag.cancel()
+            work.cancel()
+        }
 
         let poll = watcher.startReporting(to: progressCenter, jobId: jobId)
         defer { poll.cancel() }
@@ -804,10 +833,14 @@ extension ArchiveState {
             try await work.value
             progressCenter.finish(jobId, .done)
         } catch is CancellationError {
+            // partial temp output of the aborted extraction must not
+            // linger — register it for the regular cache cleanup
+            tempDirectories.append(contentsOf: watcher.watchedDirectories)
             progressCenter.finish(jobId, .cancelled)
             throw CancellationError()
         } catch {
             extractLog.error(error)
+            tempDirectories.append(contentsOf: watcher.watchedDirectories)
             progressCenter.finish(jobId, .failed(error.localizedDescription))
             throw error
         }
@@ -841,6 +874,7 @@ extension ArchiveState {
             totalBytes: Self.plannedBytes(of: items)
         )
 
+        let cancelFlag = ExtractionCancelFlag()
         let task = Task {
             let poll = watcher.startReporting(to: progressCenter, jobId: jobId)
             defer { poll.cancel() }
@@ -848,22 +882,30 @@ extension ArchiveState {
                 let batches = try batchResolver.resolveBatches(for: items, in: entries, using: archiveEngineSelector)
                 let result = try await extractor.extract(
                     batches: batches,
-                    to: destination
+                    to: destination,
+                    onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 tempDirectories.append(contentsOf: result.tempDirs)
                 progressCenter.finish(jobId, .done)
             } catch is CancellationError {
+                // partial temp output of the aborted extraction must not
+                // linger — register it for the regular cache cleanup
+                tempDirectories.append(contentsOf: watcher.watchedDirectories)
                 progressCenter.finish(jobId, .cancelled)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
                 self.isBusy = false
+                tempDirectories.append(contentsOf: watcher.watchedDirectories)
                 progressCenter.finish(jobId, .failed(error.localizedDescription))
             }
 
             updateStatus(.done)
         }
-        progressCenter.setOnCancel(jobId) { task.cancel() }
+        progressCenter.setOnCancel(jobId) {
+            cancelFlag.cancel()
+            task.cancel()
+        }
     }
 
     public func extract(to destination: URL) {
@@ -878,6 +920,7 @@ extension ArchiveState {
             totalBytes: (uncompressedSize ?? 0) > 0 ? uncompressedSize : nil
         )
 
+        let cancelFlag = ExtractionCancelFlag()
         let task = Task {
             // Full archives extract straight into the destination; the
             // watcher only counts files touched after the job started, so
@@ -898,7 +941,12 @@ extension ArchiveState {
                     archiveEngineSelector: archiveEngineSelector,
                     passwordResolver: makePasswordResolver()
                 )
-                try await extractor.extractAll(archiveUrl, archiveTypeId: archiveTypeId, to: destination)
+                try await extractor.extractAll(
+                    archiveUrl,
+                    archiveTypeId: archiveTypeId,
+                    to: destination,
+                    onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
+                )
                 progressCenter.finish(jobId, .done)
             } catch is CancellationError {
                 progressCenter.finish(jobId, .cancelled)
@@ -911,9 +959,12 @@ extension ArchiveState {
             self.isBusy = false
             updateStatus(.done)
         }
-        progressCenter.setOnCancel(jobId) { task.cancel() }
+        progressCenter.setOnCancel(jobId) {
+            cancelFlag.cancel()
+            task.cancel()
+        }
     }
-    
+
     /// Updates the quick look preview URL. The previewer we're using is the default systems
     /// preview that is called Quick Look and that can be reached via Space in Finder
     ///

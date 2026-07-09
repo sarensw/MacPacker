@@ -53,6 +53,20 @@ void sz_set_password(SZArchiveRef archive, const char *password);
 
 // --- Extraction ---
 
+/// Byte-level progress reported by 7-Zip during extraction.
+/// `completed`/`total` are the handler's processed-bytes counters for the
+/// whole operation (same unit for both). Return false to abort the
+/// extraction — it stops at the next progress checkpoint and the extract
+/// call returns SZ_EXTRACT_ABORTED.
+/// Called on the extraction thread.
+typedef bool (*sz_progress_callback)(uint64_t completed, uint64_t total,
+                                     void *context);
+
+/// Extract call result codes.
+#define SZ_EXTRACT_OK 0
+#define SZ_EXTRACT_FAILED (-1)
+#define SZ_EXTRACT_ABORTED 2
+
 /// Extract a single entry by index into dest_dir (which must already exist).
 /// Returns 0 on success. On failure, *error_out receives a malloc'd string.
 int sz_extract_entry(SZArchiveRef archive, uint32_t index,
@@ -60,13 +74,18 @@ int sz_extract_entry(SZArchiveRef archive, uint32_t index,
 
 /// Extract multiple entries by index into dest_dir (which must already exist).
 /// The indices array must be sorted in ascending order.
-/// Returns 0 on success. On failure, *error_out receives a malloc'd string.
+/// progress may be NULL. Returns SZ_EXTRACT_OK, SZ_EXTRACT_FAILED, or
+/// SZ_EXTRACT_ABORTED (when the progress callback returned false).
 int sz_extract_entries(SZArchiveRef archive, const uint32_t *indices,
-                       uint32_t count, const char *dest_dir, char **error_out);
+                       uint32_t count, const char *dest_dir,
+                       sz_progress_callback progress, void *progress_context,
+                       char **error_out);
 
 /// Extract all entries into dest_dir (which must already exist).
-/// Returns 0 on success.
+/// progress may be NULL. Returns SZ_EXTRACT_OK, SZ_EXTRACT_FAILED, or
+/// SZ_EXTRACT_ABORTED (when the progress callback returned false).
 int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
+                   sz_progress_callback progress, void *progress_context,
                    char **error_out);
 
 // --- Tree support ---

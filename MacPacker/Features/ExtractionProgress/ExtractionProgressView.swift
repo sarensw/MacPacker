@@ -202,7 +202,7 @@ private struct ExtractionProgressRowView: View {
     private var statusLine: some View {
         switch job.state {
         case .running:
-            if let total = job.totalBytes {
+            if let total = job.effectiveTotalBytes {
                 Text("\(formatBytes(job.completedBytes)) of \(formatBytes(total))",
                      comment: "Progress line in the extraction window, e.g. '12 MB of 87 MB'.")
             } else {
@@ -258,14 +258,23 @@ private struct ExtractionSpeedChartView: View {
     /// x position of a sample: transfer fraction when the total is known,
     /// elapsed seconds otherwise.
     private func xValue(_ sample: ExtractionSpeedSample) -> Double {
-        if let total = job.totalBytes, total > 0 {
+        if let total = job.effectiveTotalBytes, total > 0 {
             return min(1.0, Double(sample.completedBytes) / Double(total))
         }
         return sample.elapsed
     }
 
     private var hasKnownTotal: Bool {
-        (job.totalBytes ?? 0) > 0
+        (job.effectiveTotalBytes ?? 0) > 0
+    }
+
+    /// The chart never needs more than ~60 points across 500 pt — thinning
+    /// keeps the per-tick re-render cheap enough for the main thread.
+    private var displaySamples: [ExtractionSpeedSample] {
+        let samples = job.speedSamples
+        guard samples.count > 60 else { return samples }
+        let stride = Double(samples.count) / 60.0
+        return (0..<60).map { samples[Int(Double($0) * stride)] }
     }
 
     var body: some View {
@@ -281,7 +290,7 @@ private struct ExtractionSpeedChartView: View {
                 .foregroundStyle(Color.accentColor.opacity(0.12))
             }
 
-            ForEach(Array(job.speedSamples.enumerated()), id: \.offset) { _, sample in
+            ForEach(Array(displaySamples.enumerated()), id: \.offset) { _, sample in
                 AreaMark(
                     x: .value("Progress", xValue(sample)),
                     y: .value("Speed", sample.bytesPerSecond)
