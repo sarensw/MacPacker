@@ -119,6 +119,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         guard !Self.isRunningInPreview else { return }
         log.notice("applicationDidFinishLaunching — creating window manager")
 
+        // the terminate-time cleanup never runs when the app crashes or is
+        // killed — clear stale extraction caches from previous runs here too
+        CacheCleaner().clean()
+
         archiveWindowManager = ArchiveWindowManager(appState: appState)
         extractionProgressWindowController = ExtractionProgressWindowController(center: .shared)
 

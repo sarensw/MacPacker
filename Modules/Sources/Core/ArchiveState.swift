@@ -880,7 +880,9 @@ extension ArchiveState {
 
         let task = Task {
             // Full archives extract straight into the destination; the
-            // baseline taken here makes pre-existing folder content not count.
+            // watcher only counts files touched after the job started, so
+            // pre-existing folder content — including stale output of an
+            // earlier run — does not count.
             await watcher.watch(destination)
             let pollTask = watcher.startReporting(to: progressCenter, jobId: jobId)
             defer { pollTask.cancel() }

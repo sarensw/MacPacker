@@ -203,15 +203,18 @@ extension AllCoreTests {
             try Data(repeating: 0x41, count: bytes).write(to: url)
         }
 
-        @Test func sampleMeasuresBytesAddedAfterWatch() async throws {
+        @Test func ignoresFilesFromBeforeStart() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
 
-            // pre-existing content must not count (baseline)
+            // stale content (e.g. leftovers of a crashed previous run)
+            // must not count
             try write(bytes: 10, to: dir.appendingPathComponent("existing.bin"))
+            try await Task.sleep(for: .milliseconds(50))
 
-            let watcher = ExtractionProgressWatcher()
+            let watcher = ExtractionProgressWatcher(startedAt: Date())
             await watcher.watch(dir)
+            #expect(await watcher.sampleCompletedBytes() == 0)
 
             let sub = dir.appendingPathComponent("sub")
             try FileManager.default.createDirectory(at: sub, withIntermediateDirectories: true)
@@ -220,6 +223,27 @@ extension AllCoreTests {
 
             let sampled = await watcher.sampleCompletedBytes()
             #expect(sampled == 25)
+        }
+
+        @Test func countsOverwrittenStaleFiles() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            // previous run's output sitting at the destination
+            try write(bytes: 100, to: dir.appendingPathComponent("big.bin"))
+            try await Task.sleep(for: .milliseconds(50))
+
+            let watcher = ExtractionProgressWatcher(startedAt: Date())
+            await watcher.watch(dir)
+            #expect(await watcher.sampleCompletedBytes() == 0)
+
+            // re-extraction overwrites the stale file in place — its full
+            // current size counts (a size delta would stay ≤ 0 here and
+            // pin the progress bar)
+            try write(bytes: 40, to: dir.appendingPathComponent("big.bin"))
+
+            let sampled = await watcher.sampleCompletedBytes()
+            #expect(sampled == 40)
         }
 
         @Test func sampleSumsMultipleWatchedDirectories() async throws {

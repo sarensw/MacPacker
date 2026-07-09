@@ -10,34 +10,42 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 
-/// Measures extraction progress by watching the byte growth of the
-/// directories an extraction writes into.
+/// Measures extraction progress by watching the bytes an extraction writes
+/// into its output directories.
 ///
 /// None of the engines (7zip bridge, XADMaster, SWCompression) reports
 /// byte-level progress callbacks, and the vendored libraries must stay
 /// pristine. Sampling the output directories is engine-agnostic and accurate
 /// enough for a progress bar.
+///
+/// A file counts when it was *touched since the job started* (ctime): stale
+/// output of an earlier run at the same destination — including leftovers of
+/// a crashed run — is ignored, and files it overwrites in place count at
+/// their full current size. A size-delta baseline can't do that: overwrites
+/// keep the delta at or below zero and pin the bar. mtime is unusable
+/// because the engines restore the archive's original timestamps; ctime
+/// cannot be set backwards.
 /// ponytail: polling at ~2.5 Hz; upgrade path is real progress callbacks in
 /// our Swift7zip bridge if sampling ever proves too coarse.
 public actor ExtractionProgressWatcher {
+    private let startedAt: Date
     private var watched: [URL] = []
-    private var baselines: [URL: Int64] = [:]
 
-    public init() {}
-
-    /// Starts watching a directory. Bytes already present count as baseline
-    /// and are subtracted from every sample, so watching a non-empty
-    /// destination (full-archive extraction) reports only the new bytes.
-    public func watch(_ url: URL) {
-        guard baselines[url] == nil else { return }
-        watched.append(url)
-        baselines[url] = Self.bytes(at: url)
+    public init(startedAt: Date = Date()) {
+        self.startedAt = startedAt
     }
 
-    /// Total bytes written into all watched directories since `watch`.
+    /// Starts watching a directory.
+    public func watch(_ url: URL) {
+        guard !watched.contains(url) else { return }
+        watched.append(url)
+    }
+
+    /// Total bytes of files touched since the job started, across all
+    /// watched directories.
     public func sampleCompletedBytes() -> Int64 {
         watched.reduce(Int64(0)) { sum, url in
-            sum + max(0, Self.bytes(at: url) - (baselines[url] ?? 0))
+            sum + Self.bytesTouched(at: url, since: startedAt)
         }
     }
 
@@ -70,27 +78,33 @@ public actor ExtractionProgressWatcher {
         }
     }
 
-    /// Recursive logical file size of a directory tree.
+    /// Recursive sum of the sizes of regular files whose ctime is at or
+    /// after `threshold`.
     ///
-    /// Sizes are read per file via `attributesOfItem` (lstat): it reports the
-    /// live vnode size of files that are currently being written. The
-    /// enumerator's prefetched URL resource values (getattrlistbulk) serve
-    /// catalog-cached sizes that lag far behind an active writer — that made
-    /// the progress UI freeze on large single-file extractions.
-    private static func bytes(at url: URL) -> Int64 {
-        let fileManager = FileManager.default
-        guard let enumerator = fileManager.enumerator(
+    /// Attributes are read per file via `lstat`: it reports the live vnode
+    /// size of files that are currently being written. The enumerator's
+    /// prefetched URL resource values (getattrlistbulk) serve catalog-cached
+    /// sizes that lag far behind an active writer — that made the progress
+    /// UI freeze on large single-file extractions.
+    private static func bytesTouched(at url: URL, since threshold: Date) -> Int64 {
+        guard let enumerator = FileManager.default.enumerator(
             at: url,
             includingPropertiesForKeys: [],
             options: []
         ) else { return 0 }
 
+        let thresholdSeconds = threshold.timeIntervalSince1970
         var total: Int64 = 0
         for case let fileURL as URL in enumerator {
-            guard let attributes = try? fileManager.attributesOfItem(atPath: fileURL.path),
-                  (attributes[.type] as? FileAttributeType) == .typeRegular,
-                  let size = attributes[.size] as? Int64 else { continue }
-            total += size
+            var status = stat()
+            guard lstat(fileURL.path, &status) == 0,
+                  (status.st_mode & S_IFMT) == S_IFREG else { continue }
+
+            let changedAt = TimeInterval(status.st_ctimespec.tv_sec)
+                + TimeInterval(status.st_ctimespec.tv_nsec) / 1_000_000_000
+            guard changedAt >= thresholdSeconds else { continue }
+
+            total += Int64(status.st_size)
         }
         return total
     }
