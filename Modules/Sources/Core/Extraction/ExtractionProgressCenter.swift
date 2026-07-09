@@ -14,6 +14,10 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 public struct ExtractionSpeedSample: Equatable, Sendable {
     /// Seconds since the job started.
     public let elapsed: TimeInterval
+    /// Progress at sampling time — lets the chart plot speed over transfer
+    /// position, so the area builds up left to right like the Windows
+    /// copy dialog.
+    public let completedBytes: Int64
     public let bytesPerSecond: Double
 }
 
@@ -90,6 +94,7 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
         let speed = max(0, Double(bytes - lastSampleBytes) / dt)
         speedSamples.append(ExtractionSpeedSample(
             elapsed: date.timeIntervalSince(startedAt),
+            completedBytes: bytes,
             bytesPerSecond: speed
         ))
         lastSampleAt = date
@@ -99,6 +104,7 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
             speedSamples = stride(from: 0, to: speedSamples.count - 1, by: 2).map { i in
                 ExtractionSpeedSample(
                     elapsed: speedSamples[i + 1].elapsed,
+                    completedBytes: speedSamples[i + 1].completedBytes,
                     bytesPerSecond: (speedSamples[i].bytesPerSecond + speedSamples[i + 1].bytesPerSecond) / 2
                 )
             }

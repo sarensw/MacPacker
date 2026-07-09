@@ -9,10 +9,11 @@ import Charts
 import Core
 import SwiftUI
 
-/// Content of the extraction progress window: one card per extraction.
-/// Collapsed: name, progress bar, byte status, cancel. Expanded: a
-/// throughput chart with current/average speed and a time-remaining
-/// estimate — same idea as the Windows copy dialog.
+/// Content of the extraction progress window: one row per extraction.
+/// Collapsed: name, progress bar, byte status, cancel. Expanded: the bar is
+/// replaced by a throughput chart whose x-axis spans the whole transfer, so
+/// the filled area building up left to right *is* the progress — like the
+/// Windows copy dialog.
 struct ExtractionProgressView: View {
     @ObservedObject var center: ExtractionProgressCenter
     @State private var expandedJobs: Set<UUID> = []
@@ -29,7 +30,7 @@ struct ExtractionProgressView: View {
             // details expand, like the Windows copy dialog); the scroll
             // view only kicks in once many parallel extractions run.
             ScrollView {
-                VStack(spacing: 10) {
+                VStack(spacing: 0) {
                     ForEach(center.jobs) { job in
                         ExtractionProgressRowView(
                             job: job,
@@ -45,21 +46,26 @@ struct ExtractionProgressView: View {
                                 center.requestCancel(job.id)
                             }
                         )
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+
+                        if job.id != center.jobs.last?.id {
+                            Divider()
+                                .padding(.leading, 20)
+                        }
                     }
                 }
-                .padding(.horizontal, 14)
-                .padding(.bottom, 14)
+                .padding(.bottom, 8)
                 .onGeometryChange(for: CGFloat.self) { proxy in
                     proxy.size.height
                 } action: { height in
                     listHeight = height
                 }
             }
-            .frame(height: min(max(listHeight, 90), 480))
+            .frame(height: min(max(listHeight, 80), 480))
         }
         .animation(.easeInOut(duration: 0.15), value: expandedJobs)
         .frame(width: 500)
-        .background(.ultraThinMaterial)
 #if DEBUG
         // screenshot support for the headless e2e hook
         .onChange(of: center.jobs.count) {
@@ -92,24 +98,6 @@ struct ExtractionProgressView: View {
     }
 }
 
-/// Rounded card behind each extraction: Liquid Glass on macOS 26+,
-/// a regular material with a hairline on macOS 14/15.
-private struct CardSurface: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(macOS 26.0, *) {
-            content
-                .glassEffect(.regular, in: .rect(cornerRadius: 14))
-        } else {
-            content
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .strokeBorder(.quaternary, lineWidth: 1)
-                )
-        }
-    }
-}
-
 private struct ExtractionProgressRowView: View {
     let job: ExtractionJob
     let isExpanded: Bool
@@ -136,7 +124,13 @@ private struct ExtractionProgressRowView: View {
                     trailingControl
                 }
 
-                progressBar
+                // expanded: the chart replaces the bar — its filled area is
+                // the progress indicator
+                if isExpanded {
+                    ExtractionSpeedChartView(job: job)
+                } else {
+                    progressBar
+                }
 
                 HStack {
                     statusLine
@@ -159,13 +153,11 @@ private struct ExtractionProgressRowView: View {
                 }
 
                 if isExpanded {
-                    ExtractionSpeedChartView(job: job)
-                        .padding(.top, 6)
+                    expandedStats
+                        .padding(.top, 2)
                 }
             }
         }
-        .padding(12)
-        .modifier(CardSurface())
     }
 
     // MARK: Pieces
@@ -235,69 +227,61 @@ private struct ExtractionProgressRowView: View {
             Text("Cancelled", comment: "Status shown in the extraction window when an extraction was cancelled by the user.")
         }
     }
-}
 
-/// Windows-copy-dialog-style details: throughput area chart over the whole
-/// run, dashed average line, plus current/average speed and time remaining.
-private struct ExtractionSpeedChartView: View {
-    let job: ExtractionJob
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            chart
-
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Speed: \(formatSpeed(job.currentBytesPerSecond))",
-                         comment: "Current extraction speed below the chart, e.g. 'Speed: 40 MB/s'.")
-                    Text("Average: \(formatSpeed(job.averageBytesPerSecond))",
-                         comment: "Average extraction speed below the chart, e.g. 'Average: 38 MB/s'.")
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 2) {
-                    if job.state == .running, let remaining = job.estimatedSecondsRemaining {
-                        Text("About \(formatDuration(remaining)) remaining",
-                             comment: "Time-remaining estimate below the chart, e.g. 'About 12 sec remaining'.")
-                    }
-                    Text("Items: \(job.itemCount)", comment: "Number of items of this extraction, shown below the chart.")
-                        .foregroundStyle(.secondary)
-                }
+    @ViewBuilder
+    private var expandedStats: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if job.state == .running, let remaining = job.estimatedSecondsRemaining {
+                Text("Time remaining: about \(formatDuration(remaining))",
+                     comment: "Time-remaining estimate in the extraction details, e.g. 'Time remaining: about 12 sec'.")
             }
-            .font(.caption)
-
+            Text("Average: \(formatSpeed(job.averageBytesPerSecond)) · Items: \(job.itemCount)",
+                 comment: "Average speed and item count in the extraction details, e.g. 'Average: 38 MB/s · Items: 12'.")
+                .foregroundStyle(.secondary)
             if let destination = job.destination {
                 Text(verbatim: destination.path)
-                    .font(.caption)
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .help(destination.path)
             }
         }
+        .font(.caption)
+    }
+}
+
+/// Speed-over-progress chart: x spans the whole transfer (0…total), so the
+/// area builds up left to right and the empty grid on the right is the work
+/// still to do — chart and progress bar in one, like the Windows copy
+/// dialog. Current speed is overlaid in the plot.
+private struct ExtractionSpeedChartView: View {
+    let job: ExtractionJob
+
+    /// x position of a sample: transfer fraction when the total is known,
+    /// elapsed seconds otherwise.
+    private func xValue(_ sample: ExtractionSpeedSample) -> Double {
+        if let total = job.totalBytes, total > 0 {
+            return min(1.0, Double(sample.completedBytes) / Double(total))
+        }
+        return sample.elapsed
     }
 
-    @ViewBuilder
-    private var chart: some View {
-        Chart {
+    private var hasKnownTotal: Bool {
+        (job.totalBytes ?? 0) > 0
+    }
+
+    var body: some View {
+        let base = Chart {
             ForEach(Array(job.speedSamples.enumerated()), id: \.offset) { _, sample in
                 AreaMark(
-                    x: .value("Time", sample.elapsed),
+                    x: .value("Progress", xValue(sample)),
                     y: .value("Speed", sample.bytesPerSecond)
                 )
                 .interpolationMethod(.monotone)
-                .foregroundStyle(
-                    .linearGradient(
-                        colors: [Color.accentColor.opacity(0.35), Color.accentColor.opacity(0.03)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                .foregroundStyle(Color.accentColor.opacity(0.2))
 
                 LineMark(
-                    x: .value("Time", sample.elapsed),
+                    x: .value("Progress", xValue(sample)),
                     y: .value("Speed", sample.bytesPerSecond)
                 )
                 .interpolationMethod(.monotone)
@@ -307,11 +291,32 @@ private struct ExtractionSpeedChartView: View {
 
             if job.averageBytesPerSecond > 0 {
                 RuleMark(y: .value("Average", job.averageBytesPerSecond))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.tertiary)
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
             }
         }
-        .chartXAxis(.hidden)
+
+        Group {
+            if hasKnownTotal {
+                base.chartXScale(domain: 0.0...1.0)
+            } else {
+                base
+            }
+        }
+        .chartYScale(domain: .automatic(includesZero: true))
+        .chartXAxis {
+            // gridlines only — they make the remaining part of the transfer
+            // visible on the right, no labels needed
+            if hasKnownTotal {
+                AxisMarks(values: [0, 0.25, 0.5, 0.75, 1.0]) { _ in
+                    AxisGridLine()
+                }
+            } else {
+                AxisMarks(values: .automatic(desiredCount: 5)) { _ in
+                    AxisGridLine()
+                }
+            }
+        }
         .chartYAxis {
             AxisMarks(position: .trailing, values: .automatic(desiredCount: 3)) { value in
                 AxisGridLine()
@@ -324,8 +329,29 @@ private struct ExtractionSpeedChartView: View {
                 }
             }
         }
-        .chartYScale(domain: .automatic(includesZero: true))
-        .frame(height: 88)
+        .chartPlotStyle { plot in
+            plot
+                .background(.quinary.opacity(0.5))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .strokeBorder(.quaternary, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+        }
+        .overlay(alignment: .topTrailing) {
+            if job.state == .running {
+                Text("Speed: \(formatSpeed(job.currentBytesPerSecond))",
+                     comment: "Current speed overlaid on the extraction chart, e.g. 'Speed: 40 MB/s'.")
+                    .font(.caption2)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(.thinMaterial, in: Capsule())
+                    .padding(.top, 4)
+                    .padding(.trailing, 44)
+            }
+        }
+        .frame(height: 92)
+        .padding(.vertical, 2)
     }
 }
 

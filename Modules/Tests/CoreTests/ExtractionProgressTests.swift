@@ -119,6 +119,10 @@ extension AllCoreTests {
             #expect(abs(samples[0].bytesPerSecond - 1000) < 1)
             #expect(abs(samples[1].bytesPerSecond - 1000) < 1)
             #expect(samples[0].elapsed < samples[1].elapsed)
+            // each sample carries the progress at sampling time so the
+            // chart can plot speed over transfer position
+            #expect(samples[0].completedBytes == 400)
+            #expect(samples[1].completedBytes == 800)
             #expect(abs(center.jobs[0].currentBytesPerSecond - 1000) < 1)
         }
 
@@ -146,9 +150,11 @@ extension AllCoreTests {
             let job = center.jobs[0]
             #expect(job.speedSamples.count <= 240)
             #expect(job.speedSamples.count > 60)
-            // elapsed stays strictly increasing after decimation
+            // elapsed and progress stay increasing after decimation
             let elapsed = job.speedSamples.map(\.elapsed)
             #expect(elapsed == elapsed.sorted())
+            let progress = job.speedSamples.map(\.completedBytes)
+            #expect(progress == progress.sorted())
         }
 
         @Test func remainingSecondsFromTotalAndSpeed() {
