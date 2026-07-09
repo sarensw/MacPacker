@@ -20,12 +20,7 @@ struct ExtractionProgressView: View {
     @State private var listHeight: CGFloat = 90
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            header
-                .padding(.horizontal, 20)
-                // room for the traffic lights of the hidden title bar
-                .padding(.top, 30)
-
+        VStack(alignment: .leading, spacing: 0) {
             // The window follows the content height (dialog grows when
             // details expand, like the Windows copy dialog); the scroll
             // view only kicks in once many parallel extractions run.
@@ -55,7 +50,8 @@ struct ExtractionProgressView: View {
                         }
                     }
                 }
-                .padding(.bottom, 8)
+                .padding(.top, 2)
+                .padding(.bottom, 6)
                 .onGeometryChange(for: CGFloat.self) { proxy in
                     proxy.size.height
                 } action: { height in
@@ -74,27 +70,6 @@ struct ExtractionProgressView: View {
             }
         }
 #endif
-    }
-
-    private var runningCount: Int {
-        center.jobs.count { !$0.isFinished }
-    }
-
-    @ViewBuilder
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text("Extracting", comment: "Headline of the extraction progress window.")
-                .font(.title3.weight(.semibold))
-            if runningCount > 0 {
-                Text("\(runningCount) in progress", comment: "Subtitle of the extraction progress window; placeholder is the number of running extractions.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } else {
-                Text("Finished", comment: "Subtitle of the extraction progress window when no extraction is running anymore.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
     }
 }
 
@@ -231,13 +206,19 @@ private struct ExtractionProgressRowView: View {
     @ViewBuilder
     private var expandedStats: some View {
         VStack(alignment: .leading, spacing: 2) {
-            if job.state == .running, let remaining = job.estimatedSecondsRemaining {
-                Text("Time remaining: about \(formatDuration(remaining))",
-                     comment: "Time-remaining estimate in the extraction details, e.g. 'Time remaining: about 12 sec'.")
+            HStack {
+                Text("Average: \(formatSpeed(job.averageBytesPerSecond)) · Items: \(job.itemCount)",
+                     comment: "Average speed and item count in the extraction details, e.g. 'Average: 38 MB/s · Items: 12'.")
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                if job.state == .running, let remaining = job.estimatedSecondsRemaining {
+                    Text("About \(formatDuration(remaining)) remaining",
+                         comment: "Time-remaining estimate in the extraction details, e.g. 'About 12 sec remaining'.")
+                        .foregroundStyle(.secondary)
+                }
             }
-            Text("Average: \(formatSpeed(job.averageBytesPerSecond)) · Items: \(job.itemCount)",
-                 comment: "Average speed and item count in the extraction details, e.g. 'Average: 38 MB/s · Items: 12'.")
-                .foregroundStyle(.secondary)
             if let destination = job.destination {
                 Text(verbatim: destination.path)
                     .foregroundStyle(.tertiary)
@@ -272,6 +253,17 @@ private struct ExtractionSpeedChartView: View {
 
     var body: some View {
         let base = Chart {
+            // progressed part of the transfer gets a tinted background —
+            // the boundary between tinted and plain grid is the progress,
+            // readable even where the speed line is low
+            if hasKnownTotal, let fraction = job.fractionCompleted {
+                RectangleMark(
+                    xStart: .value("Start", 0.0),
+                    xEnd: .value("Progress", fraction)
+                )
+                .foregroundStyle(Color.accentColor.opacity(0.12))
+            }
+
             ForEach(Array(job.speedSamples.enumerated()), id: \.offset) { _, sample in
                 AreaMark(
                     x: .value("Progress", xValue(sample)),
