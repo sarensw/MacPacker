@@ -29,6 +29,28 @@ public final class ExtractionCancelFlag: @unchecked Sendable {
     }
 }
 
+/// Collects the temp directories an extraction writes into, across threads —
+/// so a cancelled or failed run can hand its partial output to the regular
+/// cache cleanup.
+public final class ExtractionTempDirectories: @unchecked Sendable {
+    private let lock = NSLock()
+    private var urls: [URL] = []
+
+    public init() {}
+
+    public func add(_ url: URL) {
+        lock.lock()
+        defer { lock.unlock() }
+        urls.append(url)
+    }
+
+    public var all: [URL] {
+        lock.lock()
+        defer { lock.unlock() }
+        return urls
+    }
+}
+
 /// Rate limiter for engine progress callbacks: 7-Zip reports very often;
 /// forwarding every event to the main queue would flood it.
 final class ProgressThrottle: @unchecked Sendable {

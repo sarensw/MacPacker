@@ -41,9 +41,10 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     /// When present it supersedes `totalBytes` (same unit as the engine's
     /// completed counter, so fractions stay consistent).
     public internal(set) var engineTotalBytes: Int64?
-    /// True once the engine reported progress directly — directory sampling
-    /// is ignored from then on so the two sources can't fight.
-    var hasEngineProgress: Bool = false
+    /// True once the engine reported byte progress. Engines without a
+    /// progress callback (SWCompression) never set it — the UI shows an
+    /// indeterminate bar and an info text instead of numbers and the chart.
+    public internal(set) var hasEngineProgress: Bool = false
     public internal(set) var completedBytes: Int64 = 0
     public let startedAt: Date
     public internal(set) var finishedAt: Date?
@@ -74,8 +75,10 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
         engineTotalBytes ?? totalBytes
     }
 
-    /// 0...1 while the total is known, nil for indeterminate progress.
+    /// 0...1 while the engine reports progress and the total is known,
+    /// nil for indeterminate progress.
     public var fractionCompleted: Double? {
+        guard hasEngineProgress || isFinished else { return nil }
         guard let total = effectiveTotalBytes, total > 0 else { return nil }
         return min(1.0, Double(completedBytes) / Double(total))
     }
@@ -204,21 +207,11 @@ public final class ExtractionProgressCenter: ObservableObject {
         handler()
     }
 
-    /// Directory-sampled progress (fallback for engines without callbacks).
-    /// Ignored once the engine reports progress directly.
-    public func report(_ id: UUID, completedBytes: Int64, at date: Date = Date()) {
-        guard let index = jobs.firstIndex(where: { $0.id == id }),
-              !jobs[index].isFinished,
-              !jobs[index].hasEngineProgress else { return }
-        jobs[index].completedBytes = max(0, completedBytes)
-        jobs[index].recordSpeed(completedBytes: max(0, completedBytes), at: date)
-    }
-
     /// Byte progress reported by the extraction engine itself.
     /// `date` must be the time the engine emitted the values — reports may
     /// arrive on the main queue in bursts, and speed math needs the real
     /// emission spacing.
-    public func reportEngineProgress(_ id: UUID, completed: Int64, total: Int64, at date: Date) {
+    public func reportEngineProgress(_ id: UUID, completed: Int64, total: Int64, at date: Date = Date()) {
         guard let index = jobs.firstIndex(where: { $0.id == id }), !jobs[index].isFinished else { return }
         jobs[index].hasEngineProgress = true
         if total > 0 {

@@ -21,7 +21,7 @@ final actor ArchiveExtractor {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let passwordResolver: ArchivePasswordResolver
     /// Fired for every temp directory an extraction writes into, so callers
-    /// can watch it for progress (see `ExtractionProgressWatcher`).
+    /// can register it for cleanup if the run is cancelled or fails.
     private let onTempDirectoryCreated: (@Sendable (URL) -> Void)?
 
     init(

@@ -791,7 +791,7 @@ extension ArchiveState {
     ///   - item: item being dragged out
     ///   - url: full target url provided by the file promise
     public func fulfillDrag(item: ArchiveItem, to url: URL) async throws {
-        let watcher = ExtractionProgressWatcher()
+        let tempDirs = ExtractionTempDirectories()
         let jobId = progressCenter.begin(
             archiveName: name ?? self.url?.lastPathComponent ?? "Archive",
             destination: url.deletingLastPathComponent(),
@@ -810,7 +810,7 @@ extension ArchiveState {
                 archiveEngineSelector: archiveEngineSelector,
                 passwordResolver: makePasswordResolver(),
                 onTempDirectoryCreated: { tempUrl in
-                    watcher.watch(tempUrl)
+                    tempDirs.add(tempUrl)
                 }
             )
             let result = try await extractor.extract(
@@ -826,21 +826,18 @@ extension ArchiveState {
             work.cancel()
         }
 
-        let poll = watcher.startReporting(to: progressCenter, jobId: jobId)
-        defer { poll.cancel() }
-
         do {
             try await work.value
             progressCenter.finish(jobId, .done)
         } catch is CancellationError {
             // partial temp output of the aborted extraction must not
             // linger — register it for the regular cache cleanup
-            tempDirectories.append(contentsOf: watcher.watchedDirectories)
+            tempDirectories.append(contentsOf: tempDirs.all)
             progressCenter.finish(jobId, .cancelled)
             throw CancellationError()
         } catch {
             extractLog.error(error)
-            tempDirectories.append(contentsOf: watcher.watchedDirectories)
+            tempDirectories.append(contentsOf: tempDirs.all)
             progressCenter.finish(jobId, .failed(error.localizedDescription))
             throw error
         }
@@ -857,12 +854,12 @@ extension ArchiveState {
     ) {
         updateStatus(.processing)
 
-        let watcher = ExtractionProgressWatcher()
+        let tempDirs = ExtractionTempDirectories()
         let extractor = ArchiveExtractor(
             archiveEngineSelector: archiveEngineSelector,
             passwordResolver: makePasswordResolver(),
             onTempDirectoryCreated: { url in
-                watcher.watch(url)
+                tempDirs.add(url)
             }
         )
         let batchResolver = ArchiveBatchResolver()
@@ -876,8 +873,6 @@ extension ArchiveState {
 
         let cancelFlag = ExtractionCancelFlag()
         let task = Task {
-            let poll = watcher.startReporting(to: progressCenter, jobId: jobId)
-            defer { poll.cancel() }
             do {
                 let batches = try batchResolver.resolveBatches(for: items, in: entries, using: archiveEngineSelector)
                 let result = try await extractor.extract(
@@ -890,13 +885,13 @@ extension ArchiveState {
             } catch is CancellationError {
                 // partial temp output of the aborted extraction must not
                 // linger — register it for the regular cache cleanup
-                tempDirectories.append(contentsOf: watcher.watchedDirectories)
+                tempDirectories.append(contentsOf: tempDirs.all)
                 progressCenter.finish(jobId, .cancelled)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
                 self.isBusy = false
-                tempDirectories.append(contentsOf: watcher.watchedDirectories)
+                tempDirectories.append(contentsOf: tempDirs.all)
                 progressCenter.finish(jobId, .failed(error.localizedDescription))
             }
 
@@ -912,7 +907,6 @@ extension ArchiveState {
         isBusy = true
         updateStatus(.processing)
 
-        let watcher = ExtractionProgressWatcher()
         let jobId = progressCenter.begin(
             archiveName: name ?? url?.lastPathComponent ?? "Archive",
             destination: destination,
@@ -922,13 +916,6 @@ extension ArchiveState {
 
         let cancelFlag = ExtractionCancelFlag()
         let task = Task {
-            // Full archives extract straight into the destination; the
-            // watcher only counts files touched after the job started, so
-            // pre-existing folder content — including stale output of an
-            // earlier run — does not count.
-            watcher.watch(destination)
-            let poll = watcher.startReporting(to: progressCenter, jobId: jobId)
-            defer { poll.cancel() }
             do {
                 guard let root else {
                     throw ArchiveError.extractionFailed("No root item set")

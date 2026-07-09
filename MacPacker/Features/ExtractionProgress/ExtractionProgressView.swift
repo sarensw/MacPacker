@@ -119,7 +119,7 @@ private struct ExtractionProgressRowView: View {
                 // the progress indicator. The chart itself only re-renders
                 // when its (quantized) inputs change; the speed pill sits on
                 // top and updates with every report.
-                if isExpanded {
+                if isExpanded, job.hasEngineProgress {
                     ExtractionSpeedChartView(
                         samples: job.speedSamples,
                         totalBytes: job.effectiveTotalBytes,
@@ -164,6 +164,12 @@ private struct ExtractionProgressRowView: View {
                 }
 
                 if isExpanded {
+                    if !job.hasEngineProgress, job.state == .running {
+                        Text("Live progress is not available for this archive type.",
+                             comment: "Info text in the extraction details when the extraction engine cannot report progress.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     expandedStats
                         .padding(.top, 2)
                 }
@@ -221,7 +227,10 @@ private struct ExtractionProgressRowView: View {
     private var statusLine: some View {
         switch job.state {
         case .running:
-            if let total = job.effectiveTotalBytes {
+            if !job.hasEngineProgress {
+                // engine without a progress callback (e.g. SWCompression)
+                Text("Extracting…", comment: "Progress line in the extraction window when the engine cannot report byte progress.")
+            } else if let total = job.effectiveTotalBytes {
                 Text("\(formatBytes(job.completedBytes)) of \(formatBytes(total))",
                      comment: "Progress line in the extraction window, e.g. '12 MB of 87 MB'.")
             } else {

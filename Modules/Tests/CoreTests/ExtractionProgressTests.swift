@@ -39,7 +39,7 @@ extension AllCoreTests {
             let center = ExtractionProgressCenter()
             let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 200)
 
-            center.report(id, completedBytes: 50)
+            center.reportEngineProgress(id, completed: 50, total: 0)
 
             #expect(center.jobs[0].completedBytes == 50)
             #expect(center.jobs[0].fractionCompleted == 0.25)
@@ -49,7 +49,7 @@ extension AllCoreTests {
             let center = ExtractionProgressCenter()
             let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
 
-            center.report(id, completedBytes: 50)
+            center.reportEngineProgress(id, completed: 50, total: 0)
 
             #expect(center.jobs[0].fractionCompleted == nil)
         }
@@ -58,7 +58,7 @@ extension AllCoreTests {
             let center = ExtractionProgressCenter()
             let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 100)
 
-            center.report(id, completedBytes: 250)
+            center.reportEngineProgress(id, completed: 250, total: 0)
 
             #expect(center.jobs[0].fractionCompleted == 1.0)
         }
@@ -66,7 +66,7 @@ extension AllCoreTests {
         @Test func finishDoneSnapsCompletedToTotal() {
             let center = ExtractionProgressCenter()
             let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 100)
-            center.report(id, completedBytes: 10)
+            center.reportEngineProgress(id, completed: 10, total: 0)
 
             center.finish(id, .done)
 
@@ -81,7 +81,7 @@ extension AllCoreTests {
 
             center.finish(id, .done)
             center.finish(id, .failed("boom"))
-            center.report(id, completedBytes: 5)
+            center.reportEngineProgress(id, completed: 5, total: 0)
 
             #expect(center.jobs[0].state == .done)
             #expect(center.jobs[0].completedBytes == 100)
@@ -113,7 +113,7 @@ extension AllCoreTests {
             let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 1200)
             let start = center.jobs[0].startedAt
 
-            center.report(id, completedBytes: 400, at: start.addingTimeInterval(0.4))
+            center.reportEngineProgress(id, completed: 400, total: 1200, at: start.addingTimeInterval(0.4))
 
             let third = center.jobs[0].speedSamples
             // origin + every slot boundary up to 400/1200 of the transfer
@@ -126,7 +126,7 @@ extension AllCoreTests {
 
             // a second report at a different speed fills its slots with the
             // causally smoothed speed — earlier points stay untouched
-            center.report(id, completedBytes: 800, at: start.addingTimeInterval(1.2))
+            center.reportEngineProgress(id, completed: 800, total: 1200, at: start.addingTimeInterval(1.2))
             let twoThirds = center.jobs[0].speedSamples
             #expect(Array(twoThirds.prefix(third.count)) == third)
             let smoothed = 500 * ExtractionJob.speedSmoothing + 1000 * (1 - ExtractionJob.speedSmoothing)
@@ -141,7 +141,7 @@ extension AllCoreTests {
 
             var snapshots: [[ExtractionSpeedSample]] = []
             for i in 1...50 {
-                center.report(id, completedBytes: Int64(i) * 150, at: start.addingTimeInterval(Double(i) * 0.4))
+                center.reportEngineProgress(id, completed: Int64(i) * 150, total: 10_000, at: start.addingTimeInterval(Double(i) * 0.4))
                 snapshots.append(center.jobs[0].speedSamples)
             }
             // every earlier snapshot is a strict prefix of the final state
@@ -156,9 +156,9 @@ extension AllCoreTests {
             let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
             let start = center.jobs[0].startedAt
 
-            center.report(id, completedBytes: 500, at: start.addingTimeInterval(0.4))
+            center.reportEngineProgress(id, completed: 500, total: 0, at: start.addingTimeInterval(0.4))
             // byte count shrinks (e.g. temp files moved away) — clamp to 0
-            center.report(id, completedBytes: 100, at: start.addingTimeInterval(0.8))
+            center.reportEngineProgress(id, completed: 100, total: 0, at: start.addingTimeInterval(0.8))
 
             #expect(center.jobs[0].speedSamples.allSatisfy { $0.bytesPerSecond >= 0 })
         }
@@ -172,8 +172,8 @@ extension AllCoreTests {
             let start = center.jobs[0].startedAt
 
             for i in 1...1000 {
-                center.report(known, completedBytes: Int64(i) * 100, at: start.addingTimeInterval(Double(i) * 0.4))
-                center.report(unknown, completedBytes: Int64(i) * 100, at: start.addingTimeInterval(Double(i) * 0.4))
+                center.reportEngineProgress(known, completed: Int64(i) * 100, total: 10_000, at: start.addingTimeInterval(Double(i) * 0.4))
+                center.reportEngineProgress(unknown, completed: Int64(i) * 100, total: 0, at: start.addingTimeInterval(Double(i) * 0.4))
             }
 
             for job in center.jobs {
@@ -188,7 +188,7 @@ extension AllCoreTests {
             let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 1000)
             let start = center.jobs[0].startedAt
 
-            center.report(id, completedBytes: 500, at: start.addingTimeInterval(1.0))
+            center.reportEngineProgress(id, completed: 500, total: 1000, at: start.addingTimeInterval(1.0))
 
             // 500 bytes left at ~500 B/s current speed → about a second
             let remaining = center.jobs[0].estimatedSecondsRemaining
@@ -197,7 +197,7 @@ extension AllCoreTests {
 
             // unknown total → no estimate
             let id2 = center.begin(archiveName: "b.zip", destination: nil, itemCount: 1, totalBytes: nil)
-            center.report(id2, completedBytes: 500, at: Date())
+            center.reportEngineProgress(id2, completed: 500, total: 0, at: Date())
             #expect(center.jobs[1].estimatedSecondsRemaining == nil)
         }
 
@@ -211,90 +211,6 @@ extension AllCoreTests {
 
             #expect(center.jobs.count == 1)
             #expect(center.jobs[0].id == running)
-        }
-    }
-
-    // MARK: - ExtractionProgressWatcher
-
-    struct ExtractionProgressWatcherTests {
-
-        private func makeTempDir() throws -> URL {
-            let url = FileManager.default.temporaryDirectory
-                .appendingPathComponent("ExtractionProgressWatcherTests_\(UUID().uuidString)")
-            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-            return url
-        }
-
-        private func write(bytes: Int, to url: URL) throws {
-            try Data(repeating: 0x41, count: bytes).write(to: url)
-        }
-
-        @Test func ignoresFilesFromBeforeStart() async throws {
-            let dir = try makeTempDir()
-            defer { try? FileManager.default.removeItem(at: dir) }
-
-            // stale content (e.g. leftovers of a crashed previous run)
-            // must not count
-            try write(bytes: 10, to: dir.appendingPathComponent("existing.bin"))
-            try await Task.sleep(for: .milliseconds(50))
-
-            let watcher = ExtractionProgressWatcher(startedAt: Date())
-            watcher.watch(dir)
-            #expect(watcher.sampleCompletedBytes() == 0)
-
-            let sub = dir.appendingPathComponent("sub")
-            try FileManager.default.createDirectory(at: sub, withIntermediateDirectories: true)
-            try write(bytes: 15, to: dir.appendingPathComponent("new1.bin"))
-            try write(bytes: 10, to: sub.appendingPathComponent("new2.bin"))
-
-            let sampled = watcher.sampleCompletedBytes()
-            #expect(sampled == 25)
-        }
-
-        @Test func countsOverwrittenStaleFiles() async throws {
-            let dir = try makeTempDir()
-            defer { try? FileManager.default.removeItem(at: dir) }
-
-            // previous run's output sitting at the destination
-            try write(bytes: 100, to: dir.appendingPathComponent("big.bin"))
-            try await Task.sleep(for: .milliseconds(50))
-
-            let watcher = ExtractionProgressWatcher(startedAt: Date())
-            watcher.watch(dir)
-            #expect(watcher.sampleCompletedBytes() == 0)
-
-            // re-extraction overwrites the stale file in place — its full
-            // current size counts (a size delta would stay ≤ 0 here and
-            // pin the progress bar)
-            try write(bytes: 40, to: dir.appendingPathComponent("big.bin"))
-
-            let sampled = watcher.sampleCompletedBytes()
-            #expect(sampled == 40)
-        }
-
-        @Test func sampleSumsMultipleWatchedDirectories() async throws {
-            let dirA = try makeTempDir()
-            let dirB = try makeTempDir()
-            defer {
-                try? FileManager.default.removeItem(at: dirA)
-                try? FileManager.default.removeItem(at: dirB)
-            }
-
-            let watcher = ExtractionProgressWatcher()
-            watcher.watch(dirA)
-            watcher.watch(dirB)
-
-            try write(bytes: 7, to: dirA.appendingPathComponent("a.bin"))
-            try write(bytes: 5, to: dirB.appendingPathComponent("b.bin"))
-
-            let sampled = watcher.sampleCompletedBytes()
-            #expect(sampled == 12)
-        }
-
-        @Test func sampleIsZeroForEmptyWatcher() async {
-            let watcher = ExtractionProgressWatcher()
-            let sampled = watcher.sampleCompletedBytes()
-            #expect(sampled == 0)
         }
     }
 
