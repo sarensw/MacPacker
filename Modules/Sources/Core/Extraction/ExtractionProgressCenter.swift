@@ -34,6 +34,17 @@ public extension Array where Element == ExtractionSpeedSample {
     /// into; the samples are returned as-is.
     func bucketedForDisplay(maxCount: Int, progressDenominator: Int64?) -> [ExtractionSpeedSample] {
         guard count > maxCount, let total = progressDenominator, total > 0 else { return self }
+        var result = bucketed(maxCount: maxCount, total: total)
+        // the line must start at the origin: without this, activating the
+        // bucketing (or decimation) makes the first drawn point jump to the
+        // right and a gap opens at the chart's left edge
+        if let first = result.first, first.completedBytes > 0 {
+            result.insert(ExtractionSpeedSample(elapsed: 0, completedBytes: 0, bytesPerSecond: first.bytesPerSecond), at: 0)
+        }
+        return result
+    }
+
+    private func bucketed(maxCount: Int, total: Int64) -> [ExtractionSpeedSample] {
 
         var speedSums = [Double](repeating: 0, count: maxCount)
         var counts = [Int](repeating: 0, count: maxCount)

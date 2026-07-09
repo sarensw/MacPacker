@@ -117,9 +117,29 @@ private struct ExtractionProgressRowView: View {
                 }
 
                 // expanded: the chart replaces the bar — its filled area is
-                // the progress indicator
+                // the progress indicator. The chart itself only re-renders
+                // when its (quantized) inputs change; the speed pill sits on
+                // top and updates with every report.
                 if isExpanded {
-                    ExtractionSpeedChartView(job: job)
+                    ExtractionSpeedChartView(
+                        samples: job.speedSamples.bucketedForDisplay(maxCount: 60, progressDenominator: job.effectiveTotalBytes),
+                        totalBytes: job.effectiveTotalBytes,
+                        fractionCompleted: job.fractionCompleted.map { (($0 * 200).rounded()) / 200 },
+                        averageBytesPerSecond: quantized(job.averageBytesPerSecond)
+                    )
+                    .equatable()
+                    .overlay(alignment: .topTrailing) {
+                        if job.state == .running {
+                            Text("Speed: \(formatSpeed(job.currentBytesPerSecond))",
+                                 comment: "Current speed overlaid on the extraction chart, e.g. 'Speed: 40 MB/s'.")
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(.thinMaterial, in: Capsule())
+                                .padding(.top, 6)
+                                .padding(.trailing, 44)
+                        }
+                    }
                 } else {
                     progressBar
                 }
@@ -251,28 +271,40 @@ private struct ExtractionProgressRowView: View {
 /// Speed-over-progress chart: x spans the whole transfer (0…total), so the
 /// area builds up left to right and the empty grid on the right is the work
 /// still to do — chart and progress bar in one, like the Windows copy
-/// dialog. Current speed is overlaid in the plot.
-private struct ExtractionSpeedChartView: View {
-    let job: ExtractionJob
+/// dialog.
+///
+/// Equatable and used via `.equatable()`: the ~120 marks plus axes are
+/// expensive to rebuild, and reports arrive several times per second while
+/// the *displayed* buckets change far less often. SwiftUI skips the chart's
+/// body whenever the bucketed samples, the progress fraction (quantized),
+/// and the average (quantized) are unchanged. The live speed pill lives in
+/// the row, outside this view, so it can tick freely.
+private struct ExtractionSpeedChartView: View, Equatable {
+    /// Already bucketed for display.
+    let samples: [ExtractionSpeedSample]
+    let totalBytes: Int64?
+    /// Quantized by the caller so tiny changes don't defeat Equatable.
+    let fractionCompleted: Double?
+    let averageBytesPerSecond: Double
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.samples == rhs.samples
+            && lhs.totalBytes == rhs.totalBytes
+            && lhs.fractionCompleted == rhs.fractionCompleted
+            && lhs.averageBytesPerSecond == rhs.averageBytesPerSecond
+    }
 
     /// x position of a sample: transfer fraction when the total is known,
     /// elapsed seconds otherwise.
     private func xValue(_ sample: ExtractionSpeedSample) -> Double {
-        if let total = job.effectiveTotalBytes, total > 0 {
+        if let total = totalBytes, total > 0 {
             return min(1.0, Double(sample.completedBytes) / Double(total))
         }
         return sample.elapsed
     }
 
     private var hasKnownTotal: Bool {
-        (job.effectiveTotalBytes ?? 0) > 0
-    }
-
-    /// The chart never needs more than ~60 points across 500 pt. Bucketed
-    /// by progress position so already drawn history never changes shape
-    /// while new samples arrive.
-    private var displaySamples: [ExtractionSpeedSample] {
-        job.speedSamples.bucketedForDisplay(maxCount: 60, progressDenominator: job.effectiveTotalBytes)
+        (totalBytes ?? 0) > 0
     }
 
     var body: some View {
@@ -280,7 +312,7 @@ private struct ExtractionSpeedChartView: View {
             // progressed part of the transfer gets a tinted background —
             // the boundary between tinted and plain grid is the progress,
             // readable even where the speed line is low
-            if hasKnownTotal, let fraction = job.fractionCompleted {
+            if hasKnownTotal, let fraction = fractionCompleted {
                 RectangleMark(
                     xStart: .value("Start", 0.0),
                     xEnd: .value("Progress", fraction)
@@ -288,7 +320,7 @@ private struct ExtractionSpeedChartView: View {
                 .foregroundStyle(Color.accentColor.opacity(0.12))
             }
 
-            ForEach(Array(displaySamples.enumerated()), id: \.offset) { _, sample in
+            ForEach(Array(samples.enumerated()), id: \.offset) { _, sample in
                 AreaMark(
                     x: .value("Progress", xValue(sample)),
                     y: .value("Speed", sample.bytesPerSecond)
@@ -305,8 +337,8 @@ private struct ExtractionSpeedChartView: View {
                 .lineStyle(StrokeStyle(lineWidth: 1.5))
             }
 
-            if job.averageBytesPerSecond > 0 {
-                RuleMark(y: .value("Average", job.averageBytesPerSecond))
+            if averageBytesPerSecond > 0 {
+                RuleMark(y: .value("Average", averageBytesPerSecond))
                     .foregroundStyle(.tertiary)
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
             }
@@ -354,24 +386,23 @@ private struct ExtractionSpeedChartView: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 4))
         }
-        .overlay(alignment: .topTrailing) {
-            if job.state == .running {
-                Text("Speed: \(formatSpeed(job.currentBytesPerSecond))",
-                     comment: "Current speed overlaid on the extraction chart, e.g. 'Speed: 40 MB/s'.")
-                    .font(.caption2)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(.thinMaterial, in: Capsule())
-                    .padding(.top, 4)
-                    .padding(.trailing, 44)
-            }
-        }
+        // no implicit animations: at several data updates per second,
+        // piled-up transitions only burn CPU
+        .transaction { $0.animation = nil }
         .frame(height: 92)
         .padding(.vertical, 2)
     }
 }
 
 // MARK: - Formatting
+
+/// Rounds to two significant digits — stable enough for Equatable checks,
+/// indistinguishable on a 92 pt tall chart.
+private func quantized(_ value: Double) -> Double {
+    guard value > 0 else { return 0 }
+    let magnitude = pow(10, floor(log10(value)) - 1)
+    return (value / magnitude).rounded() * magnitude
+}
 
 private func formatBytes(_ bytes: Int64) -> String {
     bytes.formatted(.byteCount(style: .file))
