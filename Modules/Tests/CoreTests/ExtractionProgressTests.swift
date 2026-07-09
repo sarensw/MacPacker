@@ -105,25 +105,49 @@ extension AllCoreTests {
             #expect(center.jobs[0].state == .cancelled)
         }
 
-        @Test func reportRecordsSpeedSamples() {
+        @Test func reportFillsUniformSlotPoints() {
+            // 120 fixed positions across the transfer; crossing a slot
+            // records the instantaneous speed at that moment — raw values,
+            // no averaging or normalization
             let center = ExtractionProgressCenter()
-            let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 1000)
+            let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 1200)
             let start = center.jobs[0].startedAt
 
             center.report(id, completedBytes: 400, at: start.addingTimeInterval(0.4))
-            center.report(id, completedBytes: 800, at: start.addingTimeInterval(0.8))
 
-            let samples = center.jobs[0].speedSamples
-            #expect(samples.count == 2)
-            // 400 bytes over 0.4s each
-            #expect(abs(samples[0].bytesPerSecond - 1000) < 1)
-            #expect(abs(samples[1].bytesPerSecond - 1000) < 1)
-            #expect(samples[0].elapsed < samples[1].elapsed)
-            // each sample carries the progress at sampling time so the
-            // chart can plot speed over transfer position
-            #expect(samples[0].completedBytes == 400)
-            #expect(samples[1].completedBytes == 800)
-            #expect(abs(center.jobs[0].currentBytesPerSecond - 1000) < 1)
+            let third = center.jobs[0].speedSamples
+            // origin + every slot boundary up to 400/1200 of the transfer
+            #expect(third.count == 1 + ExtractionJob.maxSpeedSamples / 3)
+            #expect(third.allSatisfy { abs($0.bytesPerSecond - 1000) < 1 })
+            // slot positions are uniform and monotonic
+            let positions = third.map(\.completedBytes)
+            #expect(positions == positions.sorted())
+            #expect(positions.first == 0)
+
+            // a second report at a different speed fills its slots with the
+            // new raw speed — earlier points stay untouched
+            center.report(id, completedBytes: 800, at: start.addingTimeInterval(1.2))
+            let twoThirds = center.jobs[0].speedSamples
+            #expect(Array(twoThirds.prefix(third.count)) == third)
+            #expect(abs(twoThirds.last!.bytesPerSecond - 500) < 1)
+            #expect(abs(center.jobs[0].currentBytesPerSecond - 500) < 1)
+        }
+
+        @Test func slotPointsAreImmutableOnceRecorded() {
+            let center = ExtractionProgressCenter()
+            let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 10_000)
+            let start = center.jobs[0].startedAt
+
+            var snapshots: [[ExtractionSpeedSample]] = []
+            for i in 1...50 {
+                center.report(id, completedBytes: Int64(i) * 150, at: start.addingTimeInterval(Double(i) * 0.4))
+                snapshots.append(center.jobs[0].speedSamples)
+            }
+            // every earlier snapshot is a strict prefix of the final state
+            let final = snapshots.last!
+            for snapshot in snapshots {
+                #expect(Array(final.prefix(snapshot.count)) == snapshot)
+            }
         }
 
         @Test func speedSamplesNeverNegative() {
@@ -139,22 +163,23 @@ extension AllCoreTests {
         }
 
         @Test func speedSamplesStayBounded() {
+            // with a known total the slot construction caps the points;
+            // without one, points append per report up to the same cap
             let center = ExtractionProgressCenter()
-            let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
+            let known = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 10_000)
+            let unknown = center.begin(archiveName: "b.zip", destination: nil, itemCount: 1, totalBytes: nil)
             let start = center.jobs[0].startedAt
 
             for i in 1...1000 {
-                center.report(id, completedBytes: Int64(i) * 100, at: start.addingTimeInterval(Double(i) * 0.4))
+                center.report(known, completedBytes: Int64(i) * 100, at: start.addingTimeInterval(Double(i) * 0.4))
+                center.report(unknown, completedBytes: Int64(i) * 100, at: start.addingTimeInterval(Double(i) * 0.4))
             }
 
-            let job = center.jobs[0]
-            #expect(job.speedSamples.count <= 240)
-            #expect(job.speedSamples.count > 60)
-            // elapsed and progress stay increasing after decimation
-            let elapsed = job.speedSamples.map(\.elapsed)
-            #expect(elapsed == elapsed.sorted())
-            let progress = job.speedSamples.map(\.completedBytes)
-            #expect(progress == progress.sorted())
+            for job in center.jobs {
+                #expect(job.speedSamples.count <= ExtractionJob.maxSpeedSamples + 1)
+                let progress = job.speedSamples.map(\.completedBytes)
+                #expect(progress == progress.sorted())
+            }
         }
 
         @Test func remainingSecondsFromTotalAndSpeed() {
@@ -173,41 +198,6 @@ extension AllCoreTests {
             let id2 = center.begin(archiveName: "b.zip", destination: nil, itemCount: 1, totalBytes: nil)
             center.report(id2, completedBytes: 500, at: Date())
             #expect(center.jobs[1].estimatedSecondsRemaining == nil)
-        }
-
-        @Test func bucketedDisplaySamplesAreStableUnderAppends() {
-            // index-stride subsampling redrew history with a different
-            // subset every tick — the chart visibly flickered between
-            // shapes. Bucketing by progress position must keep already
-            // drawn buckets identical when new samples arrive.
-            func sample(_ i: Int) -> ExtractionSpeedSample {
-                ExtractionSpeedSample(
-                    elapsed: Double(i) * 0.4,
-                    completedBytes: Int64(i) * 10,
-                    bytesPerSecond: Double(100 + (i % 7))
-                )
-            }
-            let total: Int64 = 4000
-
-            let first = (0..<200).map(sample(_:))
-            let more = (0..<240).map(sample(_:))
-
-            let a = first.bucketedForDisplay(maxCount: 60, progressDenominator: total)
-            let b = more.bucketedForDisplay(maxCount: 60, progressDenominator: total)
-
-            #expect(a.count <= 60)
-            #expect(b.count <= 60)
-            // every bucket fully covered by the first batch is identical
-            // in the second result
-            let sharedPrefix = a.dropLast(1)
-            #expect(Array(b.prefix(sharedPrefix.count)) == Array(sharedPrefix))
-        }
-
-        @Test func bucketedDisplayWithoutTotalKeepsSamples() {
-            let samples = (0..<30).map {
-                ExtractionSpeedSample(elapsed: Double($0), completedBytes: Int64($0), bytesPerSecond: 1)
-            }
-            #expect(samples.bucketedForDisplay(maxCount: 60, progressDenominator: nil) == samples)
         }
 
         @Test func clearFinishedKeepsRunningJobs() {

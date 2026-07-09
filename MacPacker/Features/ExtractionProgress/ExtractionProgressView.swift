@@ -5,7 +5,6 @@
 //  Created by Claude on 09.07.26.
 //
 
-import Charts
 import Core
 import SwiftUI
 
@@ -122,7 +121,7 @@ private struct ExtractionProgressRowView: View {
                 // top and updates with every report.
                 if isExpanded {
                     ExtractionSpeedChartView(
-                        samples: job.speedSamples.bucketedForDisplay(maxCount: 60, progressDenominator: job.effectiveTotalBytes),
+                        samples: job.speedSamples,
                         totalBytes: job.effectiveTotalBytes,
                         fractionCompleted: job.fractionCompleted.map { (($0 * 200).rounded()) / 200 },
                         averageBytesPerSecond: quantized(job.averageBytesPerSecond)
@@ -137,7 +136,7 @@ private struct ExtractionProgressRowView: View {
                                 .padding(.vertical, 2)
                                 .background(.thinMaterial, in: Capsule())
                                 .padding(.top, 6)
-                                .padding(.trailing, 44)
+                                .padding(.trailing, 60)
                         }
                     }
                 } else {
@@ -268,19 +267,22 @@ private struct ExtractionProgressRowView: View {
     }
 }
 
-/// Speed-over-progress chart: x spans the whole transfer (0…total), so the
-/// area builds up left to right and the empty grid on the right is the work
-/// still to do — chart and progress bar in one, like the Windows copy
-/// dialog.
+/// Speed-over-progress graph: x spans the whole transfer (0…total), so the
+/// line building up left to right and the tinted region are the progress —
+/// chart and progress bar in one, like the Windows copy dialog.
 ///
-/// Equatable and used via `.equatable()`: the ~120 marks plus axes are
-/// expensive to rebuild, and reports arrive several times per second while
-/// the *displayed* buckets change far less often. SwiftUI skips the chart's
-/// body whenever the bucketed samples, the progress fraction (quantized),
-/// and the average (quantized) are unchanged. The live speed pill lives in
-/// the row, outside this view, so it can tick freely.
+/// Deliberately NOT Swift Charts: this is a plain `Canvas` — a pure draw
+/// function over immutable slot points. No internal state, no display link,
+/// no implicit animations, nothing a window capture or occlusion change can
+/// wedge; it redraws exactly when SwiftUI invalidates it. Points are drawn
+/// raw with straight segments — no smoothing, no normalization, and history
+/// never changes shape (the points themselves are append-only).
+///
+/// Equatable and used via `.equatable()`: reports arrive several times per
+/// second, but the drawn inputs only change when a new slot point lands.
+/// The live speed pill lives in the row, outside this view.
 private struct ExtractionSpeedChartView: View, Equatable {
-    /// Already bucketed for display.
+    /// Append-only slot points from the job.
     let samples: [ExtractionSpeedSample]
     let totalBytes: Int64?
     /// Quantized by the caller so tiny changes don't defeat Equatable.
@@ -294,104 +296,107 @@ private struct ExtractionSpeedChartView: View, Equatable {
             && lhs.averageBytesPerSecond == rhs.averageBytesPerSecond
     }
 
-    /// x position of a sample: transfer fraction when the total is known,
-    /// elapsed seconds otherwise.
-    private func xValue(_ sample: ExtractionSpeedSample) -> Double {
+    /// Top of the y scale: a "nice" 1/2/5×10ⁿ value above the data.
+    private var yMax: Double {
+        let peak = max(samples.map(\.bytesPerSecond).max() ?? 0, averageBytesPerSecond, 1)
+        return niceCeil(peak)
+    }
+
+    /// x position of a sample in 0…1.
+    private func xFraction(_ sample: ExtractionSpeedSample) -> Double {
         if let total = totalBytes, total > 0 {
             return min(1.0, Double(sample.completedBytes) / Double(total))
         }
-        return sample.elapsed
-    }
-
-    private var hasKnownTotal: Bool {
-        (totalBytes ?? 0) > 0
+        // no total: normalize over the observed time range
+        guard let last = samples.last, last.elapsed > 0 else { return 0 }
+        return sample.elapsed / last.elapsed
     }
 
     var body: some View {
-        let base = Chart {
-            // progressed part of the transfer gets a tinted background —
-            // the boundary between tinted and plain grid is the progress,
-            // readable even where the speed line is low
-            if hasKnownTotal, let fraction = fractionCompleted {
-                RectangleMark(
-                    xStart: .value("Start", 0.0),
-                    xEnd: .value("Progress", fraction)
-                )
-                .foregroundStyle(Color.accentColor.opacity(0.12))
-            }
-
-            ForEach(Array(samples.enumerated()), id: \.offset) { _, sample in
-                AreaMark(
-                    x: .value("Progress", xValue(sample)),
-                    y: .value("Speed", sample.bytesPerSecond)
-                )
-                .interpolationMethod(.monotone)
-                .foregroundStyle(Color.accentColor.opacity(0.2))
-
-                LineMark(
-                    x: .value("Progress", xValue(sample)),
-                    y: .value("Speed", sample.bytesPerSecond)
-                )
-                .interpolationMethod(.monotone)
-                .foregroundStyle(Color.accentColor)
-                .lineStyle(StrokeStyle(lineWidth: 1.5))
-            }
-
-            if averageBytesPerSecond > 0 {
-                RuleMark(y: .value("Average", averageBytesPerSecond))
-                    .foregroundStyle(.tertiary)
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
-            }
-        }
-
-        Group {
-            if hasKnownTotal {
-                base.chartXScale(domain: 0.0...1.0)
-            } else {
-                base
-            }
-        }
-        .chartYScale(domain: .automatic(includesZero: true))
-        .chartXAxis {
-            // gridlines only — they make the remaining part of the transfer
-            // visible on the right, no labels needed
-            if hasKnownTotal {
-                AxisMarks(values: [0, 0.25, 0.5, 0.75, 1.0]) { _ in
-                    AxisGridLine()
+        HStack(alignment: .top, spacing: 6) {
+            Canvas { context, size in
+                let width = size.width
+                let height = size.height
+                let top = yMax
+                func yPosition(_ value: Double) -> CGFloat {
+                    height - CGFloat(min(value, top) / top) * height
                 }
-            } else {
-                AxisMarks(values: .automatic(desiredCount: 5)) { _ in
-                    AxisGridLine()
+
+                // progressed part of the transfer gets a tinted background —
+                // the boundary between tinted and plain grid is the
+                // progress, readable even where the speed line is low
+                if let fraction = fractionCompleted {
+                    let tinted = CGRect(x: 0, y: 0, width: width * CGFloat(fraction), height: height)
+                    context.fill(Path(tinted), with: .color(.accentColor.opacity(0.12)))
                 }
-            }
-        }
-        .chartYAxis {
-            AxisMarks(position: .trailing, values: .automatic(desiredCount: 3)) { value in
-                AxisGridLine()
-                AxisValueLabel {
-                    if let speed = value.as(Double.self) {
-                        // plain "0" instead of byteCount's "Zero kB/s"
-                        Text(verbatim: speed > 0 ? formatSpeed(speed) : "0")
-                            .font(.system(size: 9))
+
+                // grid: quarter verticals, half horizontal
+                var grid = Path()
+                for fraction in [0.25, 0.5, 0.75] {
+                    grid.move(to: CGPoint(x: width * fraction, y: 0))
+                    grid.addLine(to: CGPoint(x: width * fraction, y: height))
+                }
+                grid.move(to: CGPoint(x: 0, y: height / 2))
+                grid.addLine(to: CGPoint(x: width, y: height / 2))
+                context.stroke(grid, with: .color(.secondary.opacity(0.2)), style: StrokeStyle(lineWidth: 1, dash: [2, 3]))
+
+                // raw polyline + fill underneath — straight segments only
+                if samples.count > 1 {
+                    var line = Path()
+                    line.move(to: CGPoint(x: CGFloat(xFraction(samples[0])) * width, y: yPosition(samples[0].bytesPerSecond)))
+                    for sample in samples.dropFirst() {
+                        line.addLine(to: CGPoint(x: CGFloat(xFraction(sample)) * width, y: yPosition(sample.bytesPerSecond)))
                     }
+
+                    var area = line
+                    area.addLine(to: CGPoint(x: CGFloat(xFraction(samples[samples.count - 1])) * width, y: height))
+                    area.addLine(to: CGPoint(x: CGFloat(xFraction(samples[0])) * width, y: height))
+                    area.closeSubpath()
+
+                    context.fill(area, with: .color(.accentColor.opacity(0.2)))
+                    context.stroke(line, with: .color(.accentColor), style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                }
+
+                // dashed average line
+                if averageBytesPerSecond > 0 {
+                    let averageY = yPosition(averageBytesPerSecond)
+                    var average = Path()
+                    average.move(to: CGPoint(x: 0, y: averageY))
+                    average.addLine(to: CGPoint(x: width, y: averageY))
+                    context.stroke(average, with: .color(.secondary.opacity(0.6)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
                 }
             }
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .strokeBorder(.quaternary, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+
+            // y-axis labels: top, middle, zero
+            VStack(alignment: .leading, spacing: 0) {
+                Text(verbatim: formatSpeed(yMax))
+                Spacer()
+                Text(verbatim: formatSpeed(yMax / 2))
+                Spacer()
+                Text(verbatim: "0")
+            }
+            .font(.system(size: 9))
+            .foregroundStyle(.secondary)
+            .frame(width: 48, alignment: .leading)
         }
-        .chartPlotStyle { plot in
-            // no plot fill — only the progressed part is tinted (RectangleMark)
-            plot
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .strokeBorder(.quaternary, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 4))
-        }
-        // no implicit animations: at several data updates per second,
-        // piled-up transitions only burn CPU
-        .transaction { $0.animation = nil }
         .frame(height: 92)
         .padding(.vertical, 2)
     }
+}
+
+/// Smallest "nice" chart ceiling (1, 2, or 5 times a power of ten) at or
+/// above the value.
+private func niceCeil(_ value: Double) -> Double {
+    guard value > 0 else { return 1 }
+    let magnitude = pow(10, floor(log10(value)))
+    let normalized = value / magnitude
+    let factor: Double = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10
+    return factor * magnitude
 }
 
 // MARK: - Formatting

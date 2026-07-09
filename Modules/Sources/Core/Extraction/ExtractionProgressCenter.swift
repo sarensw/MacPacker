@@ -21,57 +21,6 @@ public struct ExtractionSpeedSample: Equatable, Sendable {
     public let bytesPerSecond: Double
 }
 
-public extension Array where Element == ExtractionSpeedSample {
-    /// Stable display reduction for the speed chart.
-    ///
-    /// Samples land in fixed buckets keyed by their progress position and
-    /// each bucket is averaged, so appending new samples only affects the
-    /// newest bucket — already drawn history never changes. (Index-stride
-    /// subsampling picked a different subset on every render as the sample
-    /// count grew; the line visibly flickered between shapes.)
-    ///
-    /// Without a progress denominator there is no fixed domain to bucket
-    /// into; the samples are returned as-is.
-    func bucketedForDisplay(maxCount: Int, progressDenominator: Int64?) -> [ExtractionSpeedSample] {
-        guard count > maxCount, let total = progressDenominator, total > 0 else { return self }
-        var result = bucketed(maxCount: maxCount, total: total)
-        // the line must start at the origin: without this, activating the
-        // bucketing (or decimation) makes the first drawn point jump to the
-        // right and a gap opens at the chart's left edge
-        if let first = result.first, first.completedBytes > 0 {
-            result.insert(ExtractionSpeedSample(elapsed: 0, completedBytes: 0, bytesPerSecond: first.bytesPerSecond), at: 0)
-        }
-        return result
-    }
-
-    private func bucketed(maxCount: Int, total: Int64) -> [ExtractionSpeedSample] {
-
-        var speedSums = [Double](repeating: 0, count: maxCount)
-        var counts = [Int](repeating: 0, count: maxCount)
-        var lastSample = [ExtractionSpeedSample?](repeating: nil, count: maxCount)
-
-        for sample in self {
-            let position = Double(sample.completedBytes) * Double(maxCount) / Double(total)
-            let bucket = Swift.min(maxCount - 1, Swift.max(0, Int(position)))
-            speedSums[bucket] += sample.bytesPerSecond
-            counts[bucket] += 1
-            lastSample[bucket] = sample
-        }
-
-        var result: [ExtractionSpeedSample] = []
-        result.reserveCapacity(maxCount)
-        for bucket in 0..<maxCount {
-            guard counts[bucket] > 0, let last = lastSample[bucket] else { continue }
-            result.append(ExtractionSpeedSample(
-                elapsed: last.elapsed,
-                completedBytes: last.completedBytes,
-                bytesPerSecond: speedSums[bucket] / Double(counts[bucket])
-            ))
-        }
-        return result
-    }
-}
-
 /// One user-visible extraction run (e.g. "extract selected items to folder X").
 public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public enum State: Equatable, Sendable {
@@ -100,16 +49,16 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public internal(set) var finishedAt: Date?
     public internal(set) var state: State = .running
 
-    /// Throughput history for the details chart, whole-run coverage with
-    /// bounded memory: when the buffer is full it is decimated by averaging
-    /// neighbours and further samples are taken at double the stride —
-    /// same idea as the Windows copy dialog's full-transfer graph.
+    /// Speed points for the details graph: the transfer is divided into
+    /// `maxSpeedSamples` uniform slots, and crossing a slot boundary records
+    /// the instantaneous speed at that moment. Points are append-only — raw
+    /// values, nothing averaged, normalized, or rewritten, so drawn history
+    /// is immutable by construction. Without a known total, one point per
+    /// report up to the same cap.
     public internal(set) var speedSamples: [ExtractionSpeedSample] = []
-    static let maxSpeedSamples = 240
-    var sampleStride: Int = 1
-    var reportsSinceLastSample: Int = 0
-    var lastSampleAt: Date?
-    var lastSampleBytes: Int64 = 0
+    public static let maxSpeedSamples = 120
+    var lastReportAt: Date?
+    var lastReportBytes: Int64 = 0
 
     public var isFinished: Bool { state != .running }
 
@@ -147,32 +96,41 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     }
 
     mutating func recordSpeed(completedBytes bytes: Int64, at date: Date) {
-        reportsSinceLastSample += 1
-        guard reportsSinceLastSample >= sampleStride else { return }
-        reportsSinceLastSample = 0
-
-        let previousAt = lastSampleAt ?? startedAt
+        let previousAt = lastReportAt ?? startedAt
         let dt = date.timeIntervalSince(previousAt)
         guard dt > 0 else { return }
 
-        let speed = max(0, Double(bytes - lastSampleBytes) / dt)
-        speedSamples.append(ExtractionSpeedSample(
-            elapsed: date.timeIntervalSince(startedAt),
-            completedBytes: bytes,
-            bytesPerSecond: speed
-        ))
-        lastSampleAt = date
-        lastSampleBytes = bytes
+        let clamped = max(0, bytes)
+        let speed = max(0, Double(clamped - lastReportBytes) / dt)
+        let elapsed = date.timeIntervalSince(startedAt)
+        lastReportAt = date
+        lastReportBytes = clamped
 
-        if speedSamples.count > Self.maxSpeedSamples {
-            speedSamples = stride(from: 0, to: speedSamples.count - 1, by: 2).map { i in
-                ExtractionSpeedSample(
-                    elapsed: speedSamples[i + 1].elapsed,
-                    completedBytes: speedSamples[i + 1].completedBytes,
-                    bytesPerSecond: (speedSamples[i].bytesPerSecond + speedSamples[i + 1].bytesPerSecond) / 2
-                )
+        guard let total = effectiveTotalBytes, total > 0 else {
+            // ponytail: indeterminate totals are rare — one raw point per
+            // report, hard-capped; the graph is secondary there anyway
+            if speedSamples.count <= Self.maxSpeedSamples {
+                speedSamples.append(ExtractionSpeedSample(
+                    elapsed: elapsed, completedBytes: clamped, bytesPerSecond: speed
+                ))
             }
-            sampleStride *= 2
+            return
+        }
+
+        // anchor the graph at the origin with the first observed speed
+        if speedSamples.isEmpty {
+            speedSamples.append(ExtractionSpeedSample(elapsed: 0, completedBytes: 0, bytesPerSecond: speed))
+        }
+
+        // fill every slot whose boundary this report crossed with the
+        // current raw speed
+        while speedSamples.count - 1 < Self.maxSpeedSamples {
+            let nextSlot = Int64(speedSamples.count)
+            let boundary = total * nextSlot / Int64(Self.maxSpeedSamples)
+            guard clamped >= boundary else { break }
+            speedSamples.append(ExtractionSpeedSample(
+                elapsed: elapsed, completedBytes: boundary, bytesPerSecond: speed
+            ))
         }
     }
 }
@@ -268,6 +226,18 @@ public final class ExtractionProgressCenter: ObservableObject {
         jobs[index].finishedAt = Date()
         if state == .done, let total = jobs[index].effectiveTotalBytes {
             jobs[index].completedBytes = total
+            // complete the graph to the right edge at the last known speed
+            // (the final slots may not have seen a report before finishing)
+            let lastSpeed = jobs[index].speedSamples.last?.bytesPerSecond ?? 0
+            let elapsed = jobs[index].finishedAt?.timeIntervalSince(jobs[index].startedAt) ?? 0
+            while jobs[index].speedSamples.count - 1 < ExtractionJob.maxSpeedSamples,
+                  !jobs[index].speedSamples.isEmpty {
+                let nextSlot = Int64(jobs[index].speedSamples.count)
+                let boundary = total * nextSlot / Int64(ExtractionJob.maxSpeedSamples)
+                jobs[index].speedSamples.append(ExtractionSpeedSample(
+                    elapsed: elapsed, completedBytes: boundary, bytesPerSecond: lastSpeed
+                ))
+            }
         }
         cancelHandlers[id] = nil
 
