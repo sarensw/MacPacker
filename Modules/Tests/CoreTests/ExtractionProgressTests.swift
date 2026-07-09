@@ -105,6 +105,70 @@ extension AllCoreTests {
             #expect(center.jobs[0].state == .cancelled)
         }
 
+        @Test func reportRecordsSpeedSamples() {
+            let center = ExtractionProgressCenter()
+            let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 1000)
+            let start = center.jobs[0].startedAt
+
+            center.report(id, completedBytes: 400, at: start.addingTimeInterval(0.4))
+            center.report(id, completedBytes: 800, at: start.addingTimeInterval(0.8))
+
+            let samples = center.jobs[0].speedSamples
+            #expect(samples.count == 2)
+            // 400 bytes over 0.4s each
+            #expect(abs(samples[0].bytesPerSecond - 1000) < 1)
+            #expect(abs(samples[1].bytesPerSecond - 1000) < 1)
+            #expect(samples[0].elapsed < samples[1].elapsed)
+            #expect(abs(center.jobs[0].currentBytesPerSecond - 1000) < 1)
+        }
+
+        @Test func speedSamplesNeverNegative() {
+            let center = ExtractionProgressCenter()
+            let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
+            let start = center.jobs[0].startedAt
+
+            center.report(id, completedBytes: 500, at: start.addingTimeInterval(0.4))
+            // byte count shrinks (e.g. temp files moved away) — clamp to 0
+            center.report(id, completedBytes: 100, at: start.addingTimeInterval(0.8))
+
+            #expect(center.jobs[0].speedSamples.allSatisfy { $0.bytesPerSecond >= 0 })
+        }
+
+        @Test func speedSamplesStayBounded() {
+            let center = ExtractionProgressCenter()
+            let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
+            let start = center.jobs[0].startedAt
+
+            for i in 1...1000 {
+                center.report(id, completedBytes: Int64(i) * 100, at: start.addingTimeInterval(Double(i) * 0.4))
+            }
+
+            let job = center.jobs[0]
+            #expect(job.speedSamples.count <= 240)
+            #expect(job.speedSamples.count > 60)
+            // elapsed stays strictly increasing after decimation
+            let elapsed = job.speedSamples.map(\.elapsed)
+            #expect(elapsed == elapsed.sorted())
+        }
+
+        @Test func remainingSecondsFromTotalAndSpeed() {
+            let center = ExtractionProgressCenter()
+            let id = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: 1000)
+            let start = center.jobs[0].startedAt
+
+            center.report(id, completedBytes: 500, at: start.addingTimeInterval(1.0))
+
+            // 500 bytes left at ~500 B/s current speed → about a second
+            let remaining = center.jobs[0].estimatedSecondsRemaining
+            #expect(remaining != nil)
+            #expect(remaining! > 0 && remaining! < 5)
+
+            // unknown total → no estimate
+            let id2 = center.begin(archiveName: "b.zip", destination: nil, itemCount: 1, totalBytes: nil)
+            center.report(id2, completedBytes: 500, at: Date())
+            #expect(center.jobs[1].estimatedSecondsRemaining == nil)
+        }
+
         @Test func clearFinishedKeepsRunningJobs() {
             let center = ExtractionProgressCenter()
             let done = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)

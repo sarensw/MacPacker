@@ -10,6 +10,13 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 
+/// One point of the throughput history shown in the details chart.
+public struct ExtractionSpeedSample: Equatable, Sendable {
+    /// Seconds since the job started.
+    public let elapsed: TimeInterval
+    public let bytesPerSecond: Double
+}
+
 /// One user-visible extraction run (e.g. "extract selected items to folder X").
 public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public enum State: Equatable, Sendable {
@@ -31,12 +38,72 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public internal(set) var finishedAt: Date?
     public internal(set) var state: State = .running
 
+    /// Throughput history for the details chart, whole-run coverage with
+    /// bounded memory: when the buffer is full it is decimated by averaging
+    /// neighbours and further samples are taken at double the stride —
+    /// same idea as the Windows copy dialog's full-transfer graph.
+    public internal(set) var speedSamples: [ExtractionSpeedSample] = []
+    static let maxSpeedSamples = 240
+    var sampleStride: Int = 1
+    var reportsSinceLastSample: Int = 0
+    var lastSampleAt: Date?
+    var lastSampleBytes: Int64 = 0
+
     public var isFinished: Bool { state != .running }
 
     /// 0...1 while the total is known, nil for indeterminate progress.
     public var fractionCompleted: Double? {
         guard let totalBytes, totalBytes > 0 else { return nil }
         return min(1.0, Double(completedBytes) / Double(totalBytes))
+    }
+
+    /// Most recent throughput sample.
+    public var currentBytesPerSecond: Double {
+        speedSamples.last?.bytesPerSecond ?? 0
+    }
+
+    /// Bytes per second averaged over the whole run so far.
+    public var averageBytesPerSecond: Double {
+        let elapsed = (finishedAt ?? Date()).timeIntervalSince(startedAt)
+        guard elapsed > 0 else { return 0 }
+        return Double(completedBytes) / elapsed
+    }
+
+    /// Rough time-to-finish estimate from the current speed (falls back to
+    /// the average). nil when the total or the speed is unknown.
+    public var estimatedSecondsRemaining: TimeInterval? {
+        guard state == .running, let totalBytes, totalBytes > 0 else { return nil }
+        let speed = currentBytesPerSecond > 0 ? currentBytesPerSecond : averageBytesPerSecond
+        guard speed > 0 else { return nil }
+        return max(0, Double(totalBytes - completedBytes)) / speed
+    }
+
+    mutating func recordSpeed(completedBytes bytes: Int64, at date: Date) {
+        reportsSinceLastSample += 1
+        guard reportsSinceLastSample >= sampleStride else { return }
+        reportsSinceLastSample = 0
+
+        let previousAt = lastSampleAt ?? startedAt
+        let dt = date.timeIntervalSince(previousAt)
+        guard dt > 0 else { return }
+
+        let speed = max(0, Double(bytes - lastSampleBytes) / dt)
+        speedSamples.append(ExtractionSpeedSample(
+            elapsed: date.timeIntervalSince(startedAt),
+            bytesPerSecond: speed
+        ))
+        lastSampleAt = date
+        lastSampleBytes = bytes
+
+        if speedSamples.count > Self.maxSpeedSamples {
+            speedSamples = stride(from: 0, to: speedSamples.count - 1, by: 2).map { i in
+                ExtractionSpeedSample(
+                    elapsed: speedSamples[i + 1].elapsed,
+                    bytesPerSecond: (speedSamples[i].bytesPerSecond + speedSamples[i + 1].bytesPerSecond) / 2
+                )
+            }
+            sampleStride *= 2
+        }
     }
 }
 
@@ -99,9 +166,10 @@ public final class ExtractionProgressCenter: ObservableObject {
         handler()
     }
 
-    public func report(_ id: UUID, completedBytes: Int64) {
+    public func report(_ id: UUID, completedBytes: Int64, at date: Date = Date()) {
         guard let index = jobs.firstIndex(where: { $0.id == id }), !jobs[index].isFinished else { return }
         jobs[index].completedBytes = max(0, completedBytes)
+        jobs[index].recordSpeed(completedBytes: max(0, completedBytes), at: date)
     }
 
     /// Moves a job into a terminal state. Later calls for the same job are ignored.

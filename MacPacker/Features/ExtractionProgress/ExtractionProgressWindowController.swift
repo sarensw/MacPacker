@@ -30,17 +30,20 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         self.center = center
 
         let hosting = NSHostingController(rootView: ExtractionProgressView(center: center))
+        // the content view drives the window size (dialog grows when
+        // details expand), so the window itself is not user-resizable
+        hosting.sizingOptions = .preferredContentSize
         let window = NSWindow(contentViewController: hosting)
+        // accessibility/dock name; the visible headline lives in the content
         window.title = String(localized: "Extracting", comment: "Title of the extraction progress window.")
-        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
-        window.setContentSize(NSSize(width: 480, height: 160))
+        window.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        if !window.setFrameUsingName("ExtractionProgress") {
-            window.center()
-        }
+        window.center()
 
         super.init(window: window)
-        windowFrameAutosaveName = "ExtractionProgress"
         window.delegate = self
 
         jobsSubscription = center.$jobs
