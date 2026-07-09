@@ -23,6 +23,7 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 final class ExtractionProgressWindowController: NSWindowController, NSWindowDelegate {
     private let center: ExtractionProgressCenter
     private var jobsSubscription: AnyCancellable?
+    private var scheduledShow: DispatchWorkItem?
     private var scheduledClose: DispatchWorkItem?
 
     init(center: ExtractionProgressCenter) {
@@ -34,8 +35,12 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.setContentSize(NSSize(width: 480, height: 160))
         window.isReleasedWhenClosed = false
+        if !window.setFrameUsingName("ExtractionProgress") {
+            window.center()
+        }
 
         super.init(window: window)
+        windowFrameAutosaveName = "ExtractionProgress"
         window.delegate = self
 
         jobsSubscription = center.$jobs
@@ -56,25 +61,35 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         if hasActive {
             scheduledClose?.cancel()
             scheduledClose = nil
-
-            if window?.isVisible != true {
-                log.notice("Extraction progress window shown", context: ["jobs": "\(jobs.count)"])
-                window?.center()
-                showWindow(nil)
-                NSApp.activate(ignoringOtherApps: true)
-            }
+            scheduleShowIfNeeded()
             return
         }
 
-        // no active jobs (list may also be empty after clearFinished)
-        guard !jobs.isEmpty, window?.isVisible == true, scheduledClose == nil else { return }
+        scheduledShow?.cancel()
+        scheduledShow = nil
+
+        // list may also be empty after clearFinished
+        guard !jobs.isEmpty else { return }
 
         let anyFailed = jobs.contains {
             if case .failed = $0.state { return true }
             return false
         }
-        // a failure stays on screen until the user closes the window
-        guard !anyFailed else { return }
+        if anyFailed {
+            // an error must be seen — show even if the job died before the
+            // show delay, and never auto-close
+            if window?.isVisible != true {
+                presentWindow(reason: "failure")
+            }
+            return
+        }
+
+        guard window?.isVisible == true else {
+            // finished before the show delay fired — never flash the window
+            center.clearFinished()
+            return
+        }
+        guard scheduledClose == nil else { return }
 
         let work = DispatchWorkItem { [weak self] in
             guard let self else { return }
@@ -85,6 +100,27 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         scheduledClose = work
         // short linger so the user sees the bar complete
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2, execute: work)
+    }
+
+    /// Waits briefly before showing so short extractions (small drag-outs,
+    /// tiny archives) finish without a window flashing up — same behavior
+    /// as the Windows copy dialog.
+    private func scheduleShowIfNeeded() {
+        guard window?.isVisible != true, scheduledShow == nil else { return }
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.scheduledShow = nil
+            guard self.center.hasActiveJobs else { return }
+            self.presentWindow(reason: "active jobs")
+        }
+        scheduledShow = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: work)
+    }
+
+    private func presentWindow(reason: String) {
+        log.notice("Extraction progress window shown", context: ["reason": reason, "jobs": "\(center.jobs.count)"])
+        showWindow(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     func windowWillClose(_ notification: Notification) {

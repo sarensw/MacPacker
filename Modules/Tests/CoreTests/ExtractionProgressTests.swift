@@ -224,6 +224,29 @@ extension AllCoreTests {
             #expect(center.hasActiveJobs == false)
         }
 
+        @Test func dragOutTracksJobAndDeliversFile() async throws {
+            let state = try await openedState()
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+
+            let dest = try makeDest()
+            defer { try? FileManager.default.removeItem(at: dest) }
+
+            let fileItem = state.entries.values.first(where: { $0.type == .file && $0.uncompressedSize > 0 })!
+            let target = dest.appendingPathComponent(fileItem.name)
+
+            try await state.fulfillDrag(item: fileItem, to: target)
+
+            #expect(FileManager.default.fileExists(atPath: target.path))
+            #expect(center.jobs.count == 1)
+            let job = center.jobs[0]
+            #expect(job.state == .done)
+            #expect(job.archiveName == "defaultArchive.zip")
+            #expect(job.destination?.path == dest.path)
+            #expect(job.itemCount == 1)
+            #expect(job.totalBytes == Int64(fileItem.uncompressedSize))
+        }
+
         @Test func extractFullArchiveTracksJobAndProducesFiles() async throws {
             let state = try await openedState()
             let center = ExtractionProgressCenter()

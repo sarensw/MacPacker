@@ -761,6 +761,58 @@ extension ArchiveState {
         return known.reduce(0, +)
     }
 
+    /// Fulfills a drag-out file promise: extracts the item and moves it to
+    /// the location the drop target chose. Reported to the progress center
+    /// like every other user-visible extraction, so dragging a large file
+    /// out to Finder shows the extraction window too.
+    /// - Parameters:
+    ///   - item: item being dragged out
+    ///   - url: full target url provided by the file promise
+    public func fulfillDrag(item: ArchiveItem, to url: URL) async throws {
+        let watcher = ExtractionProgressWatcher()
+        let jobId = progressCenter.begin(
+            archiveName: name ?? self.url?.lastPathComponent ?? "Archive",
+            destination: url.deletingLastPathComponent(),
+            itemCount: 1,
+            totalBytes: Self.plannedBytes(of: [item])
+        )
+
+        // own task so the window's cancel button can stop the extraction
+        let work = Task {
+            let batchResolver = ArchiveBatchResolver()
+            guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: archiveEngineSelector).first else {
+                throw ArchiveError.extractionFailed("Could not resolve batch")
+            }
+            let extractor = ArchiveExtractor(
+                archiveEngineSelector: archiveEngineSelector,
+                passwordResolver: makePasswordResolver(),
+                onTempDirectoryCreated: { tempUrl in
+                    Task { await watcher.watch(tempUrl) }
+                }
+            )
+            let result = try await extractor.extract(batch: batch)
+            tempDirectories.append(result.tempDir)
+            try Task.checkCancellation()
+            try FileManager.default.moveItem(at: result.url, to: url)
+        }
+        progressCenter.setOnCancel(jobId) { work.cancel() }
+
+        let pollTask = watcher.startReporting(to: progressCenter, jobId: jobId)
+        defer { pollTask.cancel() }
+
+        do {
+            try await work.value
+            progressCenter.finish(jobId, .done)
+        } catch is CancellationError {
+            progressCenter.finish(jobId, .cancelled)
+            throw CancellationError()
+        } catch {
+            extractLog.error(error)
+            progressCenter.finish(jobId, .failed(error.localizedDescription))
+            throw error
+        }
+    }
+
     /// Extracts the given set of items to the given destination. This is usually triggered by the
     /// user from within the UI
     /// - Parameters:
