@@ -56,7 +56,7 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     /// is immutable by construction. Without a known total, one point per
     /// report up to the same cap.
     public internal(set) var speedSamples: [ExtractionSpeedSample] = []
-    public static let maxSpeedSamples = 240
+    public static let maxSpeedSamples = 300
     var lastReportAt: Date?
     var lastReportBytes: Int64 = 0
 
