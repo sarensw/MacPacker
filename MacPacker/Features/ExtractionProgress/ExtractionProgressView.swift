@@ -97,183 +97,110 @@ private struct ExtractionProgressRowView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "shippingbox")
-                .font(.title2)
-                .foregroundStyle(.secondary)
-                .symbolEffect(.pulse, options: .repeating, isActive: job.state == .running)
-                .padding(.top, 2)
+            typeBadge
 
             VStack(alignment: .leading, spacing: 6) {
-                VStack(alignment: .leading, spacing: 1) {
+                HStack(spacing: 10) {
                     Text(verbatim: job.archiveName)
                         .fontWeight(.semibold)
                         .lineLimit(1)
                         .truncationMode(.middle)
 
-                    if isExpanded, job.state == .running {
-                        Text("Extracting \(job.itemCount) items",
-                             comment: "Caption under the archive name in the extraction window; the placeholder is the number of items being extracted.")
+                    Spacer()
+
+                    if isExpanded, let fraction = job.fractionCompleted {
+                        percentText(fraction)
+                    }
+
+                    trailingControl
+
+                    if job.hasEngineProgress {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                metricsLine
+                if isExpanded, job.hasEngineProgress {
+                    ExtractionSpeedChartView(
+                        samples: job.speedSamples,
+                        totalBytes: job.effectiveTotalBytes,
+                        fractionCompleted: job.fractionCompleted.map { (($0 * 200).rounded()) / 200 },
+                        averageBytesPerSecond: quantized(job.averageBytesPerSecond)
+                    )
+                    .equatable()
 
-                if isExpanded {
-                    if job.hasEngineProgress {
-                        ExtractionSpeedChartView(
-                            samples: job.speedSamples,
-                            totalBytes: job.effectiveTotalBytes,
-                            fractionCompleted: job.fractionCompleted.map { (($0 * 200).rounded()) / 200 },
-                            averageBytesPerSecond: quantized(job.averageBytesPerSecond)
-                        )
-                        .equatable()
-                    } else if job.state == .running {
-                        Text("Live progress is not available for this archive type.",
-                             comment: "Info text in the extraction details when the extraction engine cannot report progress.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    HStack(spacing: 16) {
+                        if let total = job.effectiveTotalBytes {
+                            Text(verbatim: "\(formatBytes(job.completedBytes)) / \(formatBytes(total))")
+                        }
+                        if job.state == .running {
+                            Text(verbatim: formatSpeed(job.currentBytesPerSecond))
+                        }
+
+                        Spacer()
+
+                        if job.state == .running, let remaining = job.estimatedSecondsRemaining {
+                            Text("\(formatDuration(remaining)) left",
+                                 comment: "Time remaining in the extraction row, e.g. '14 sec left'.")
+                                .foregroundStyle(.tertiary)
+                        }
                     }
-
-                    metadataRow
-                        .padding(.top, 2)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                } else {
+                    HStack(spacing: 10) {
+                        if case .failed(let message) = job.state {
+                            Text(verbatim: message)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        } else if let fraction = job.fractionCompleted {
+                            percentText(fraction)
+                            bar(value: fraction)
+                        } else if job.state == .running {
+                            bar(value: nil)
+                        }
+                    }
                 }
             }
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            onToggleExpanded()
+            if job.hasEngineProgress {
+                onToggleExpanded()
+            }
         }
     }
 
     // MARK: Pieces
 
-    /// One aligned line per row: percentage, bar, bytes, speed, ETA, cancel —
-    /// fixed column widths so parallel extractions line up.
+    private var typeBadge: some View {
+        Text(verbatim: String((job.archiveName as NSString).pathExtension.uppercased().prefix(4)))
+            .font(.caption2.weight(.bold))
+            .foregroundStyle(.secondary)
+            .frame(width: 40, height: 40)
+            .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    private func percentText(_ fraction: Double) -> some View {
+        Text(verbatim: fraction.formatted(.percent.precision(.fractionLength(0))))
+            .font(.title3.weight(.semibold))
+            .foregroundStyle(Color.accentColor)
+            .monospacedDigit()
+    }
+
     @ViewBuilder
-    private var metricsLine: some View {
-        HStack(spacing: 12) {
-            switch job.state {
-            case .running, .done:
-                if let fraction = job.fractionCompleted {
-                    Text(verbatim: fraction.formatted(.percent.precision(.fractionLength(0))))
-                        .font(.title3.weight(.semibold))
-                        .foregroundStyle(Color.accentColor)
-                        .monospacedDigit()
-                        .frame(width: 52, alignment: .leading)
-
-                    ProgressView(value: fraction)
-                        .progressViewStyle(.linear)
-                        .frame(maxWidth: .infinity)
-                } else {
-                    ProgressView()
-                        .progressViewStyle(.linear)
-                        .frame(maxWidth: .infinity)
-                }
-
-                if job.hasEngineProgress || job.isFinished, let total = job.effectiveTotalBytes {
-                    Text(verbatim: "\(formatBytes(job.completedBytes)) / \(formatBytes(total))")
-                        .frame(width: 128, alignment: .trailing)
-                }
-
-                if job.state == .running, job.hasEngineProgress {
-                    Text(verbatim: formatSpeed(job.currentBytesPerSecond))
-                        .frame(width: 76, alignment: .trailing)
-
-                    Group {
-                        if let remaining = job.estimatedSecondsRemaining {
-                            Text("About \(formatDuration(remaining))",
-                                 comment: "Time-remaining estimate in the extraction row, e.g. 'About 14 sec'.")
-                        } else {
-                            Text(verbatim: "")
-                        }
-                    }
-                    .frame(width: 96, alignment: .trailing)
-                }
-
-            case .failed(let message):
-                Text("Failed: \(message)", comment: "Status shown in the extraction window when an extraction failed. The placeholder is the error message.")
-                    .foregroundStyle(.red)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-            case .cancelled:
-                Text("Cancelled", comment: "Status shown in the extraction window when an extraction was cancelled by the user.")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            trailingControl
+    private func bar(value: Double?) -> some View {
+        if let value {
+            ProgressView(value: value)
+                .progressViewStyle(.linear)
+                .tint(job.isFinished ? .secondary : Color.accentColor)
+        } else {
+            ProgressView()
+                .progressViewStyle(.linear)
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
-    }
-
-    /// Expanded footer, Windows-copy-dialog style: icon + label + value
-    /// blocks, with the Details toggle at the trailing edge.
-    @ViewBuilder
-    private var metadataRow: some View {
-        HStack(alignment: .top, spacing: 20) {
-            if let destination = job.destination {
-                metadataItem(icon: "folder", title: Text("Destination", comment: "Label in the extraction details for the target folder.")) {
-                    Text(verbatim: destination.path)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                        .help(destination.path)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                Spacer()
-            }
-
-            if job.state == .running, job.hasEngineProgress {
-                metadataItem(icon: "speedometer", title: Text("Current speed", comment: "Label in the extraction details for the current speed.")) {
-                    Text(verbatim: formatSpeed(job.currentBytesPerSecond))
-                }
-
-                metadataItem(icon: "chart.bar", title: Text("Average speed", comment: "Label in the extraction details for the average speed.")) {
-                    Text(verbatim: formatSpeed(job.averageBytesPerSecond))
-                }
-            }
-
-            metadataItem(icon: "clock", title: Text("Elapsed time", comment: "Label in the extraction details for the elapsed time.")) {
-                Text(verbatim: elapsedText)
-            }
-
-            Button {
-                onToggleExpanded()
-            } label: {
-                HStack(spacing: 2) {
-                    Text("Details", comment: "Toggle in the extraction progress window that shows or hides the details of one extraction.")
-                    Image(systemName: "chevron.up")
-                }
-                .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 8)
-        }
-        .font(.caption)
-    }
-
-    private func metadataItem(icon: String, title: Text, @ViewBuilder value: () -> some View) -> some View {
-        HStack(alignment: .top, spacing: 6) {
-            Image(systemName: icon)
-                .foregroundStyle(.secondary)
-                .padding(.top, 2)
-            VStack(alignment: .leading, spacing: 1) {
-                title
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                value()
-            }
-        }
-    }
-
-    private var elapsedText: String {
-        let elapsed = (job.finishedAt ?? Date()).timeIntervalSince(job.startedAt)
-        return Duration.seconds(elapsed).formatted(.time(pattern: .hourMinuteSecond))
     }
 
     @ViewBuilder
@@ -281,24 +208,19 @@ private struct ExtractionProgressRowView: View {
         switch job.state {
         case .running:
             Button(action: onCancel) {
-                Image(systemName: "x.circle.fill")
+                Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(.secondary)
-                    .font(.body)
             }
             .buttonStyle(.plain)
-            .help(Text("Cancel extraction", comment: "Tooltip of the button that cancels a running extraction."))
         case .done:
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(.green)
-                .font(.body)
         case .failed:
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.red)
-                .font(.body)
         case .cancelled:
             Image(systemName: "slash.circle")
                 .foregroundStyle(.secondary)
-                .font(.body)
         }
     }
 }
@@ -408,18 +330,6 @@ private struct ExtractionSpeedChartView: View, Equatable {
                     .strokeBorder(.quaternary, lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 4))
-
-            // y-axis labels: top, middle, zero
-            VStack(alignment: .leading, spacing: 0) {
-                Text(verbatim: formatSpeed(yMax))
-                Spacer()
-                Text(verbatim: formatSpeed(yMax / 2))
-                Spacer()
-                Text(verbatim: "0")
-            }
-            .font(.system(size: 9))
-            .foregroundStyle(.secondary)
-            .frame(width: 48, alignment: .leading)
         }
         .frame(height: 92)
         .padding(.vertical, 2)
