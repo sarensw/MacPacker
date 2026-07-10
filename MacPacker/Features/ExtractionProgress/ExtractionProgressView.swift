@@ -64,12 +64,10 @@ struct ExtractionProgressView: View {
                     job: job,
                     isExpanded: expandedJobs.contains(job.id),
                     onToggleExpanded: {
-                        withAnimation(.easeOut(duration: 0.2)) {
-                            if expandedJobs.contains(job.id) {
-                                expandedJobs.remove(job.id)
-                            } else {
-                                expandedJobs.insert(job.id)
-                            }
+                        if expandedJobs.contains(job.id) {
+                            expandedJobs.remove(job.id)
+                        } else {
+                            expandedJobs.insert(job.id)
                         }
                     },
                     onCancel: {
@@ -89,6 +87,25 @@ struct ExtractionProgressView: View {
         .padding(.bottom, 6)
     }
 
+}
+
+/// Fades newly inserted content in without animating layout: the window's
+/// height is driven by the content size (preferredContentSize), and
+/// animating a size-driving layout change makes AppKit's constraint pass
+/// re-query SwiftUI mid-animation until it trips the update-pass limit
+/// (NSGenericException, crash under Xcode). Opacity is invisible to layout.
+private struct FadeInOnAppear: ViewModifier {
+    @State private var shown = false
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            .onAppear {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    shown = true
+                }
+            }
+    }
 }
 
 private struct ExtractionProgressRowView: View {
@@ -149,7 +166,7 @@ private struct ExtractionProgressRowView: View {
                         }
                         .font(.caption)
                     }
-                    .transition(.opacity)
+                    .modifier(FadeInOnAppear())
                 } else if !isExpanded {
                     HStack(spacing: 10) {
                         if case .failed(let message) = job.state {
