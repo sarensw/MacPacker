@@ -112,9 +112,7 @@ private struct ExtractionProgressRowView: View {
 
                     Spacer()
 
-                    if isExpanded {
-                        bytesText
-                    }
+                    bytesText
 
                     trailingControl
 
@@ -160,15 +158,10 @@ private struct ExtractionProgressRowView: View {
                                 .foregroundStyle(.red)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
-                        } else {
-                            if job.hasEngineProgress || job.isFinished {
-                                bytesText
-                            }
-                            if let fraction = job.fractionCompleted {
-                                bar(value: fraction)
-                            } else if job.state == .running {
-                                bar(value: nil)
-                            }
+                        } else if let fraction = job.fractionCompleted {
+                            bar(value: fraction)
+                        } else if job.state == .running {
+                            bar(value: nil)
                         }
                     }
                 }
@@ -197,7 +190,7 @@ private struct ExtractionProgressRowView: View {
         if let total = job.effectiveTotalBytes {
             Text(verbatim: "\(formatBytes(job.completedBytes)) / \(formatBytes(total))")
                 .font(.callout.weight(.semibold))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(.secondary)
                 .monospacedDigit()
                 .lineLimit(1)
                 .fixedSize()
