@@ -439,11 +439,9 @@ private func formatBytes(_ bytes: Int64) -> String {
     bytes.formatted(.byteCount(style: .file))
 }
 
+// "/s" stays literal in every locale — deliberately not localized
 private func formatSpeed(_ bytesPerSecond: Double) -> String {
-    String(
-        format: String(localized: "%@/s", comment: "Extraction speed, e.g. '8 MB/s'. The placeholder is a byte amount."),
-        Int64(bytesPerSecond).formatted(.byteCount(style: .file))
-    )
+    "\(Int64(bytesPerSecond).formatted(.byteCount(style: .file)))/s"
 }
 
 private func formatDuration(_ seconds: TimeInterval) -> String {
