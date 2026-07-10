@@ -87,7 +87,7 @@ final actor ArchiveSwcEngine: ArchiveEngine {
         let sourceFileName = url.lastPathComponent
         let extractedFileName = stripFileExtension(sourceFileName)
         let extractedFilePathName = destination.appendingPathComponent(extractedFileName, isDirectory: false)
-
+        
         do {
             // blocking decompression — keep it off the cooperative pool
             try await runBlocking {

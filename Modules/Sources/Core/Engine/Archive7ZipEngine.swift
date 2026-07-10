@@ -108,7 +108,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
         guard items.isEmpty == false else {
             throw ArchiveError.extractionFailed("No items to extract")
         }
-
+        
         // get the list of indices first
         var indices: [UInt32: UUID] = [:]
         for item in items {
@@ -117,9 +117,9 @@ final actor Archive7ZipEngine: ArchiveEngine {
             }
         }
         let sorted = indices.keys.sorted { $0 < $1 }
-
+        
         let szip = try SevenZipArchive(url: url)
-
+        
         var attempt = 0
         // The loop is used to allow multiple tries when there is no password
         // give or the password is wrong
@@ -137,23 +137,23 @@ final actor Archive7ZipEngine: ArchiveEngine {
                         return (uuid, url)
                     }
                 )
-
+                
                 let result = ArchiveExtractionResult(urlsByItemID: urlsByItemID)
-
+                
                 return result
-
+                
             } catch SevenZipError.passwordMissing {
                 attempt += 1
-
+                
                 let request = ArchivePasswordRequest(
                     url: url,
                     attempt: attempt
                 )
-
+                
                 guard let password = await passwordResolver(request) else {
                     throw ArchiveError.passwordCancelled
                 }
-
+                
                 szip.setPassword(password)
                 continue
             } catch SevenZipError.cancelled {
@@ -161,7 +161,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
             }
         }
     }
-
+    
     func extract(
         _ url: URL,
         to destination: URL,

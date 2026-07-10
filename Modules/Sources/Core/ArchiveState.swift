@@ -894,7 +894,7 @@ extension ArchiveState {
                 tempDirectories.append(contentsOf: tempDirs.all)
                 progressCenter.finish(jobId, .failed(error.localizedDescription))
             }
-
+            
             updateStatus(.done)
         }
         progressCenter.setOnCancel(jobId) {
@@ -902,7 +902,7 @@ extension ArchiveState {
             task.cancel()
         }
     }
-
+    
     public func extract(to destination: URL) {
         isBusy = true
         updateStatus(.processing)
@@ -951,7 +951,7 @@ extension ArchiveState {
             task.cancel()
         }
     }
-
+    
     /// Updates the quick look preview URL. The previewer we're using is the default systems
     /// preview that is called Quick Look and that can be reached via Space in Finder
     ///
