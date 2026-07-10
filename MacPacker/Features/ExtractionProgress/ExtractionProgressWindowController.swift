@@ -34,7 +34,10 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         // details expand), so the window itself is not user-resizable
         hosting.sizingOptions = .preferredContentSize
         let window = NSWindow(contentViewController: hosting)
+        // accessibility/Mission-Control name only — the visible title bar is
+        // compact: traffic lights, no text
         window.title = String(localized: "Extracting", comment: "Title of the extraction progress window.")
+        window.titleVisibility = .hidden
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false
         window.center()
@@ -57,10 +60,6 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
     private func jobsChanged(_ jobs: [ExtractionJob]) {
         let hasActive = jobs.contains { !$0.isFinished }
 
-        let running = jobs.count { !$0.isFinished }
-        window?.subtitle = running > 0
-            ? String(format: String(localized: "%lld in progress", comment: "Subtitle of the extraction progress window; the placeholder is the number of running extractions."), running)
-            : String(localized: "Finished", comment: "Subtitle of the extraction progress window when no extraction is running anymore.")
 
         if hasActive {
             scheduledClose?.cancel()

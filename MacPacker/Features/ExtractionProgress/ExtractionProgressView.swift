@@ -64,10 +64,12 @@ struct ExtractionProgressView: View {
                     job: job,
                     isExpanded: expandedJobs.contains(job.id),
                     onToggleExpanded: {
-                        if expandedJobs.contains(job.id) {
-                            expandedJobs.remove(job.id)
-                        } else {
-                            expandedJobs.insert(job.id)
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            if expandedJobs.contains(job.id) {
+                                expandedJobs.remove(job.id)
+                            } else {
+                                expandedJobs.insert(job.id)
+                            }
                         }
                     },
                     onCancel: {
@@ -96,7 +98,9 @@ private struct ExtractionProgressRowView: View {
     let onCancel: () -> Void
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        // collapsed: everything vertically centered on the badge line;
+        // expanded: header on line with the controls, details fade in
+        HStack(alignment: isExpanded ? .top : .center, spacing: 12) {
             typeBadge
 
             VStack(alignment: .leading, spacing: 6) {
@@ -108,8 +112,8 @@ private struct ExtractionProgressRowView: View {
 
                     Spacer()
 
-                    if isExpanded, let fraction = job.fractionCompleted {
-                        percentText(fraction)
+                    if isExpanded {
+                        bytesText
                     }
 
                     trailingControl
@@ -122,33 +126,33 @@ private struct ExtractionProgressRowView: View {
                 }
 
                 if isExpanded, job.hasEngineProgress {
-                    ExtractionSpeedChartView(
-                        samples: job.speedSamples,
-                        totalBytes: job.effectiveTotalBytes,
-                        fractionCompleted: job.fractionCompleted.map { (($0 * 200).rounded()) / 200 },
-                        averageBytesPerSecond: quantized(job.averageBytesPerSecond)
-                    )
-                    .equatable()
+                    Group {
+                        ExtractionSpeedChartView(
+                            samples: job.speedSamples,
+                            totalBytes: job.effectiveTotalBytes,
+                            fractionCompleted: job.fractionCompleted.map { (($0 * 200).rounded()) / 200 },
+                            averageBytesPerSecond: quantized(job.averageBytesPerSecond)
+                        )
+                        .equatable()
 
-                    HStack(spacing: 16) {
-                        if let total = job.effectiveTotalBytes {
-                            Text(verbatim: "\(formatBytes(job.completedBytes)) / \(formatBytes(total))")
-                        }
-                        if job.state == .running {
-                            Text(verbatim: formatSpeed(job.currentBytesPerSecond))
-                        }
+                        HStack {
+                            if job.state == .running {
+                                Text(verbatim: formatSpeed(job.currentBytesPerSecond))
+                                    .foregroundStyle(.secondary)
+                            }
 
-                        Spacer()
+                            Spacer()
 
-                        if job.state == .running, let remaining = job.estimatedSecondsRemaining {
-                            Text("\(formatDuration(remaining)) left",
-                                 comment: "Time remaining in the extraction row, e.g. '14 sec left'.")
-                                .foregroundStyle(.tertiary)
+                            if job.state == .running, let remaining = job.estimatedSecondsRemaining {
+                                Text("\(formatDuration(remaining)) left",
+                                     comment: "Time remaining in the extraction row, e.g. '14 sec left'.")
+                                    .foregroundStyle(.tertiary)
+                            }
                         }
+                        .font(.caption)
                     }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                } else {
+                    .transition(.opacity)
+                } else if !isExpanded {
                     HStack(spacing: 10) {
                         if case .failed(let message) = job.state {
                             Text(verbatim: message)
@@ -156,11 +160,15 @@ private struct ExtractionProgressRowView: View {
                                 .foregroundStyle(.red)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
-                        } else if let fraction = job.fractionCompleted {
-                            percentText(fraction)
-                            bar(value: fraction)
-                        } else if job.state == .running {
-                            bar(value: nil)
+                        } else {
+                            if job.hasEngineProgress || job.isFinished {
+                                bytesText
+                            }
+                            if let fraction = job.fractionCompleted {
+                                bar(value: fraction)
+                            } else if job.state == .running {
+                                bar(value: nil)
+                            }
                         }
                     }
                 }
@@ -184,11 +192,16 @@ private struct ExtractionProgressRowView: View {
             .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 10))
     }
 
-    private func percentText(_ fraction: Double) -> some View {
-        Text(verbatim: fraction.formatted(.percent.precision(.fractionLength(0))))
-            .font(.title3.weight(.semibold))
-            .foregroundStyle(Color.accentColor)
-            .monospacedDigit()
+    @ViewBuilder
+    private var bytesText: some View {
+        if let total = job.effectiveTotalBytes {
+            Text(verbatim: "\(formatBytes(job.completedBytes)) / \(formatBytes(total))")
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(Color.accentColor)
+                .monospacedDigit()
+                .lineLimit(1)
+                .fixedSize()
+        }
     }
 
     @ViewBuilder
