@@ -231,13 +231,28 @@ class CExtractCallback final :
 
 public:
     CExtractCallback(IInArchive *archive, const FString &destDir,
-                     const std::string &password, bool hasPassword)
+                     const std::string &password, bool hasPassword,
+                     sz_progress_callback progress = nullptr,
+                     void *progressContext = nullptr)
         : _archive(archive), _destDir(destDir), _outFileStream(nullptr),
-          _password(password), _hasPassword(hasPassword) {}
+          _password(password), _hasPassword(hasPassword),
+          _progress(progress), _progressContext(progressContext) {}
 
-    // IProgress
-    Z7_COM7F_IMF(SetTotal(UInt64 /* total */)) { return S_OK; }
-    Z7_COM7F_IMF(SetCompleted(const UInt64 * /* completeValue */)) { return S_OK; }
+    // IProgress — forwards 7-Zip's byte counters to the bridge consumer.
+    // Returning E_ABORT from SetCompleted cancels the whole extraction.
+    Z7_COM7F_IMF(SetTotal(UInt64 total)) {
+        _total = total;
+        return S_OK;
+    }
+    Z7_COM7F_IMF(SetCompleted(const UInt64 *completeValue)) {
+        if (_progress && completeValue) {
+            if (!_progress(*completeValue, _total, _progressContext)) {
+                aborted = true;
+                return E_ABORT;
+            }
+        }
+        return S_OK;
+    }
 
     // IArchiveExtractCallback
     Z7_COM7F_IMF(GetStream(UInt32 index, ISequentialOutStream **outStream, Int32 askExtractMode));
@@ -248,6 +263,7 @@ public:
     Z7_COM7F_IMF(CryptoGetTextPassword(BSTR *password));
 
     std::string errorMessage;
+    bool aborted = false;
 
 private:
     IInArchive *_archive;
@@ -256,6 +272,9 @@ private:
     FString _currentFilePath;
     std::string _password;
     bool _hasPassword;
+    sz_progress_callback _progress;
+    void *_progressContext;
+    UInt64 _total = 0;
 };
 
 Z7_COM7F_IMF(CExtractCallback::GetStream(
@@ -671,12 +690,13 @@ int sz_extract_entry(SZArchiveRef archive, uint32_t index,
 
 int sz_extract_entries(SZArchiveRef archive, const uint32_t *indices,
                        uint32_t count, const char *dest_dir,
+                       sz_progress_callback progress, void *progress_context,
                        char **error_out) {
     if (!archive || !dest_dir || (!indices && count > 0)) {
         if (error_out) *error_out = strdup("Invalid arguments");
-        return -1;
+        return SZ_EXTRACT_FAILED;
     }
-    if (count == 0) return 0;
+    if (count == 0) return SZ_EXTRACT_OK;
     try {
         auto *handle = static_cast<SZArchiveHandle *>(archive);
 
@@ -686,32 +706,37 @@ int sz_extract_entries(SZArchiveRef archive, const uint32_t *indices,
         FString fDest = us2fs(uDest);
 
         auto *callback = new CExtractCallback(handle->activeArchive(), fDest,
-                                                handle->password, handle->hasPassword);
+                                                handle->password, handle->hasPassword,
+                                                progress, progress_context);
         CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
 
         HRESULT hr = handle->activeArchive()->Extract(
             indices, count, 0, callback);
 
+        if (callback->aborted || hr == E_ABORT) {
+            return SZ_EXTRACT_ABORTED;
+        }
         if (hr != S_OK || !callback->errorMessage.empty()) {
             if (error_out) {
                 std::string msg = callback->errorMessage.empty()
                     ? "Extraction failed" : callback->errorMessage;
                 *error_out = strdup(msg.c_str());
             }
-            return -1;
+            return SZ_EXTRACT_FAILED;
         }
-        return 0;
+        return SZ_EXTRACT_OK;
     } catch (...) {
         if (error_out) *error_out = strdup("Internal error during extraction");
-        return -1;
+        return SZ_EXTRACT_FAILED;
     }
 }
 
 int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
+                   sz_progress_callback progress, void *progress_context,
                    char **error_out) {
     if (!archive || !dest_dir) {
         if (error_out) *error_out = strdup("Invalid arguments");
-        return -1;
+        return SZ_EXTRACT_FAILED;
     }
     try {
         auto *handle = static_cast<SZArchiveHandle *>(archive);
@@ -722,24 +747,28 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
         FString fDest = us2fs(uDest);
 
         auto *callback = new CExtractCallback(handle->activeArchive(), fDest,
-                                                handle->password, handle->hasPassword);
+                                                handle->password, handle->hasPassword,
+                                                progress, progress_context);
         CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
 
         HRESULT hr = handle->activeArchive()->Extract(
             nullptr, (UInt32)(Int32)-1, 0, callback);
 
+        if (callback->aborted || hr == E_ABORT) {
+            return SZ_EXTRACT_ABORTED;
+        }
         if (hr != S_OK || !callback->errorMessage.empty()) {
             if (error_out) {
                 std::string msg = callback->errorMessage.empty()
                     ? "Extraction failed" : callback->errorMessage;
                 *error_out = strdup(msg.c_str());
             }
-            return -1;
+            return SZ_EXTRACT_FAILED;
         }
-        return 0;
+        return SZ_EXTRACT_OK;
     } catch (...) {
         if (error_out) *error_out = strdup("Internal error during extraction");
-        return -1;
+        return SZ_EXTRACT_FAILED;
     }
 }
 

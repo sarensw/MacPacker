@@ -58,6 +58,11 @@ public struct ArchiveExtractionResult: Sendable {
     }
 }
 
+/// Byte-level progress reported by an engine during extraction. `completed`
+/// and `total` share the engine's own processed-bytes unit. Return `false`
+/// to abort the extraction. Called on the extraction thread.
+public typealias ArchiveExtractionProgress = @Sendable (_ completed: Int64, _ total: Int64) -> Bool
+
 /// An engine has the knowledge on how a library, CLI tool, or anything else
 /// can extract certain formats. Examples would be the `XADMaster` library
 /// that is included as an SPM package. Or the `7zip` CLI tool. An engine
@@ -111,6 +116,47 @@ public protocol ArchiveEngine: Sendable {
         to destination: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws
+
+    /// Extraction with engine byte progress. Engines that can't report
+    /// progress use the default implementation, which ignores the callback.
+    func extract(
+        items: [ArchiveItem],
+        from url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveExtractionResult
+
+    /// Full-archive extraction with engine byte progress. Engines that
+    /// can't report progress use the default implementation, which ignores
+    /// the callback.
+    func extract(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws
+}
+
+public extension ArchiveEngine {
+    func extract(
+        items: [ArchiveItem],
+        from url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveExtractionResult {
+        try await extract(items: items, from: url, to: destination, passwordResolver: passwordResolver)
+    }
+
+    func extract(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws {
+        try await extract(url, to: destination, passwordResolver: passwordResolver)
+    }
 }
 
 public extension ArchiveEngine {

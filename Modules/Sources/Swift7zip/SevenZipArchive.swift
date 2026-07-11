@@ -121,6 +121,24 @@ public class SevenZipArchive {
         return [index: destination.appendingPathComponent(entry.path)]
     }
 
+    /// Byte progress during extraction, as reported by 7-Zip itself.
+    /// `completed` and `total` share the handler's processed-bytes unit.
+    /// Return `false` to abort the extraction. Called on the extraction
+    /// thread.
+    public typealias ProgressHandler = (_ completed: UInt64, _ total: UInt64) -> Bool
+
+    /// Box that carries the progress closure through the C callback.
+    private final class ProgressBox {
+        let handler: ProgressHandler
+        init(_ handler: @escaping ProgressHandler) { self.handler = handler }
+    }
+
+    private static let progressThunk: sz_progress_callback = { completed, total, context in
+        guard let context else { return true }
+        let box = Unmanaged<ProgressBox>.fromOpaque(context).takeUnretainedValue()
+        return box.handler(completed, total)
+    }
+
     /// Extracts multiple entries by index to the given directory.
     ///
     /// This is more efficient than calling ``extract(index:to:)`` in a loop
@@ -130,15 +148,18 @@ public class SevenZipArchive {
     ///     in ascending order.
     ///   - destination: A file URL for the target directory
     ///     (must already exist).
+    ///   - progress: Optional byte-progress callback; return `false` to abort.
     /// - Returns: A dictionary mapping each entry index to its
     ///   extracted file URL on disk.
     /// - Throws: ``SevenZipError/passwordMissing`` if any entry is
-    ///   encrypted and no password was set,
+    ///   encrypted and no password was set, ``SevenZipError/cancelled``
+    ///   when the progress callback aborted,
     ///   ``SevenZipError/extractionFailed(_:)`` on failure.
     @discardableResult
     public func extract(
         indices: [UInt32],
-        to destination: URL
+        to destination: URL,
+        progress: ProgressHandler? = nil
     ) throws -> [UInt32: URL] {
         guard !indices.isEmpty else { return [:] }
         var indexPaths: [(UInt32, String)] = []
@@ -152,14 +173,24 @@ public class SevenZipArchive {
             }
             indexPaths.append((index, raw.path.map { String(cString: $0) } ?? ""))
         }
+
+        let box = progress.map(ProgressBox.init)
         var errorPtr: UnsafeMutablePointer<CChar>?
-        let result = indices.withUnsafeBufferPointer { buf in
-            sz_extract_entries(
-                handle.ref, buf.baseAddress,
-                UInt32(buf.count),
-                destination.path, &errorPtr)
+        let result = withExtendedLifetime(box) {
+            indices.withUnsafeBufferPointer { buf in
+                sz_extract_entries(
+                    handle.ref, buf.baseAddress,
+                    UInt32(buf.count),
+                    destination.path,
+                    box != nil ? Self.progressThunk : nil,
+                    box.map { Unmanaged.passUnretained($0).toOpaque() },
+                    &errorPtr)
+            }
         }
-        if result != 0 {
+        if result == SZ_EXTRACT_ABORTED {
+            throw SevenZipError.cancelled
+        }
+        if result != SZ_EXTRACT_OK {
             let msg = errorPtr.map { ptr -> String in
                 let str = String(cString: ptr)
                 free(ptr)
@@ -175,23 +206,38 @@ public class SevenZipArchive {
     }
 
     /// Extracts all entries to the given directory.
-    /// - Parameter destination: A file URL for the target directory
-    ///   (must already exist).
+    /// - Parameters:
+    ///   - destination: A file URL for the target directory
+    ///     (must already exist).
+    ///   - progress: Optional byte-progress callback; return `false` to abort.
     /// - Returns: A dictionary mapping each entry index to its
     ///   extracted file URL on disk.
     /// - Throws: ``SevenZipError/passwordMissing`` if any entry is
-    ///   encrypted and no password was set,
+    ///   encrypted and no password was set, ``SevenZipError/cancelled``
+    ///   when the progress callback aborted,
     ///   ``SevenZipError/extractionFailed(_:)`` on failure.
     @discardableResult
-    public func extractAll(to destination: URL) throws -> [UInt32: URL] {
+    public func extractAll(
+        to destination: URL,
+        progress: ProgressHandler? = nil
+    ) throws -> [UInt32: URL] {
         let allEntries = try entries
         if !hasPassword && allEntries.contains(where: \.isEncrypted) {
             throw SevenZipError.passwordMissing
         }
+        let box = progress.map(ProgressBox.init)
         var errorPtr: UnsafeMutablePointer<CChar>?
-        let result = sz_extract_all(
-            handle.ref, destination.path, &errorPtr)
-        if result != 0 {
+        let result = withExtendedLifetime(box) {
+            sz_extract_all(
+                handle.ref, destination.path,
+                box != nil ? Self.progressThunk : nil,
+                box.map { Unmanaged.passUnretained($0).toOpaque() },
+                &errorPtr)
+        }
+        if result == SZ_EXTRACT_ABORTED {
+            throw SevenZipError.cancelled
+        }
+        if result != SZ_EXTRACT_OK {
             let msg = errorPtr.map { ptr -> String in
                 let str = String(cString: ptr)
                 free(ptr)

@@ -95,6 +95,16 @@ final actor Archive7ZipEngine: ArchiveEngine {
         to destination: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws -> ArchiveExtractionResult {
+        try await extract(items: items, from: url, to: destination, passwordResolver: passwordResolver, onProgress: nil)
+    }
+
+    func extract(
+        items: [ArchiveItem],
+        from url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveExtractionResult {
         guard items.isEmpty == false else {
             throw ArchiveError.extractionFailed("No items to extract")
         }
@@ -116,8 +126,11 @@ final actor Archive7ZipEngine: ArchiveEngine {
         // TODO: Change from while true loop to a loop with a real end condition
         while true {
             do {
-                let extractedEntries: [UInt32: URL] = try szip.extract(indices: sorted, to: destination)
-                
+                // blocking C call — keep it off the cooperative pool
+                let extractedEntries: [UInt32: URL] = try await runBlocking {
+                    try szip.extract(indices: sorted, to: destination, progress: Self.bridgeProgress(onProgress))
+                }
+
                 let urlsByItemID: [UUID: URL] = Dictionary(
                     uniqueKeysWithValues: extractedEntries.compactMap { (index, url) in
                         guard let uuid = indices[index] else { return nil }
@@ -143,6 +156,8 @@ final actor Archive7ZipEngine: ArchiveEngine {
                 
                 szip.setPassword(password)
                 continue
+            } catch SevenZipError.cancelled {
+                throw CancellationError()
             }
         }
     }
@@ -152,6 +167,52 @@ final actor Archive7ZipEngine: ArchiveEngine {
         to destination: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws {
-        
+        try await extract(url, to: destination, passwordResolver: passwordResolver, onProgress: nil)
+    }
+
+    func extract(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws {
+        let szip = try SevenZipArchive(url: url)
+
+        var attempt = 0
+        // Same retry shape as extract(items:): loop until the archive
+        // extracts or the user cancels the password prompt.
+        while true {
+            do {
+                // blocking C call — keep it off the cooperative pool
+                try await runBlocking {
+                    try szip.extractAll(to: destination, progress: Self.bridgeProgress(onProgress))
+                }
+                return
+            } catch SevenZipError.passwordMissing {
+                attempt += 1
+
+                let request = ArchivePasswordRequest(
+                    url: url,
+                    attempt: attempt
+                )
+
+                guard let password = await passwordResolver(request) else {
+                    throw ArchiveError.passwordCancelled
+                }
+
+                szip.setPassword(password)
+                continue
+            } catch SevenZipError.cancelled {
+                throw CancellationError()
+            }
+        }
+    }
+
+    /// Adapts the engine-level progress closure to the bridge's handler.
+    private static func bridgeProgress(_ onProgress: ArchiveExtractionProgress?) -> SevenZipArchive.ProgressHandler? {
+        guard let onProgress else { return nil }
+        return { completed, total in
+            onProgress(Int64(clamping: completed), Int64(clamping: total))
+        }
     }
 }

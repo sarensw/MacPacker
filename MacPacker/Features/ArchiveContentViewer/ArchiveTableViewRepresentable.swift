@@ -382,8 +382,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             }
             Task {
                 do {
-                    let tempUrl = try await parent.archiveState.extractToTemp(item: item)
-                    try FileManager.default.moveItem(at: tempUrl, to: url)
+                    try await parent.archiveState.fulfillDrag(item: item, to: url)
                     completionHandler(nil)
                 } catch {
                     log.error("File promise extraction failed: \(error)")

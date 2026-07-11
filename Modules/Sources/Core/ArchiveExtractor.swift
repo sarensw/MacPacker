@@ -20,13 +20,18 @@ struct MultiExtractionResult {
 final actor ArchiveExtractor {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let passwordResolver: ArchivePasswordResolver
+    /// Fired for every temp directory an extraction writes into, so callers
+    /// can register it for cleanup if the run is cancelled or fails.
+    private let onTempDirectoryCreated: (@Sendable (URL) -> Void)?
 
     init(
         archiveEngineSelector: ArchiveEngineSelectorProtocol,
-        passwordResolver: @escaping ArchivePasswordResolver
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onTempDirectoryCreated: (@Sendable (URL) -> Void)? = nil
     ) {
         self.archiveEngineSelector = archiveEngineSelector
         self.passwordResolver = passwordResolver
+        self.onTempDirectoryCreated = onTempDirectoryCreated
     }
 
     /// Moves the given set of extracted temporary files to another destination.
@@ -59,16 +64,20 @@ final actor ArchiveExtractor {
 
     /// Extracts a single batch into a newly created temp directory.
     ///
-    /// - Parameter batch: The batch to extract.
+    /// - Parameters:
+    ///   - batch: The batch to extract.
+    ///   - onProgress: Engine byte progress, forwarded when the engine supports it.
     /// - Returns: The extracted urls keyed by item id and the temp directory used for extraction.
     private func extract(
-        batch: ResolvedBatch
+        batch: ResolvedBatch,
+        onProgress: ArchiveExtractionProgress? = nil
     ) async throws -> ([UUID: URL], URL) {
         let utilities = ArchiveSupportUtilities()
 
         guard let temp = utilities.createTempDirectory() else {
             throw ArchiveError.extractionFailed("Could not create temp directory")
         }
+        onTempDirectoryCreated?(temp.url)
 
         let engine = archiveEngineSelector.engine(for: batch.engineType)
 
@@ -77,7 +86,8 @@ final actor ArchiveExtractor {
                 items: batch.items,
                 from: batch.archiveURL,
                 to: temp.url,
-                passwordResolver: passwordResolver
+                passwordResolver: passwordResolver,
+                onProgress: onProgress
             )
         }
 
@@ -95,12 +105,13 @@ final actor ArchiveExtractor {
     /// - Returns: The extracted file URL and the temp directory used.
     public func extract(
         batch: ResolvedBatch,
-        to destination: URL? = nil
+        to destination: URL? = nil,
+        onProgress: ArchiveExtractionProgress? = nil
     ) async throws -> SingleExtractionResult {
         guard let item = batch.items.first else {
             throw ArchiveError.extractionFailed("Cannot extract: no items provided")
         }
-        let (extractedURLs, tempDirectory) = try await extract(batch: batch)
+        let (extractedURLs, tempDirectory) = try await extract(batch: batch, onProgress: onProgress)
 
         // For single-item extraction, we expect exactly one extracted result.
         guard let extractedURL = extractedURLs[item.id] ?? extractedURLs.values.first else {
@@ -130,13 +141,20 @@ final actor ArchiveExtractor {
     /// - Returns: All extracted file URLs keyed by item ID, and the temp directories used.
     public func extract(
         batches: [ResolvedBatch],
-        to destination: URL? = nil
+        to destination: URL? = nil,
+        onProgress: ArchiveExtractionProgress? = nil
     ) async throws -> MultiExtractionResult {
         var allExtractedURLs: [UUID: URL] = [:]
         var tempDirectories: [URL] = []
 
+        // Engine progress counters restart per batch, so a global byte
+        // callback is only meaningful for a single batch — the usual case.
+        // Multi-batch selections fall back to directory sampling.
+        let batchProgress = batches.count == 1 ? onProgress : nil
+
         for batch in batches {
-            let (extractedURLs, tempDirectory) = try await extract(batch: batch)
+            try Task.checkCancellation()
+            let (extractedURLs, tempDirectory) = try await extract(batch: batch, onProgress: batchProgress)
 
             tempDirectories.append(tempDirectory)
             allExtractedURLs.merge(extractedURLs) { current, _ in current }
@@ -162,7 +180,8 @@ final actor ArchiveExtractor {
     public func extractAll(
         _ url: URL,
         archiveTypeId: String,
-        to destination: URL
+        to destination: URL,
+        onProgress: ArchiveExtractionProgress? = nil
     ) async throws {
         _ = destination.startAccessingSecurityScopedResource()
         defer { destination.stopAccessingSecurityScopedResource() }
@@ -172,7 +191,7 @@ final actor ArchiveExtractor {
         }
 
         try await Sandbox.access(url: url) {
-            try await engine.extract(url, to: destination, passwordResolver: passwordResolver)
+            try await engine.extract(url, to: destination, passwordResolver: passwordResolver, onProgress: onProgress)
         }
     }
 }

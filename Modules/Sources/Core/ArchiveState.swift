@@ -94,6 +94,10 @@ public class ArchiveState: ObservableObject {
     
     public var passwordProvider: ArchivePasswordUserProvider?
     public var folderAccessProvider: ArchiveFolderAccessUserProvider?
+    /// Where user-triggered extractions report their progress. Defaults to
+    /// the app-wide center that feeds the extraction progress window;
+    /// tests inject their own instance.
+    public var progressCenter: ExtractionProgressCenter = .shared
     private var passwords: [URL: String] = [:]
     
     public private(set) var openTask: Task<Void, any Error>?
@@ -746,6 +750,99 @@ extension ArchiveState {
         return result.url
     }
     
+    /// Builds the engine byte-progress callback for a job: throttled,
+    /// timestamped-at-emission forwarding to the center, plus cooperative
+    /// abort through the cancel flag (stops the C extraction mid-flight).
+    private func makeEngineProgress(
+        jobId: UUID,
+        cancelFlag: ExtractionCancelFlag
+    ) -> ArchiveExtractionProgress {
+        let center = progressCenter
+        let throttle = ProgressThrottle()
+        return { completed, total in
+            let now = Date()
+            if throttle.shouldEmit(at: now) {
+                DispatchQueue.main.async {
+                    MainActor.assumeIsolated {
+                        center.reportEngineProgress(jobId, completed: completed, total: total, at: now)
+                    }
+                }
+            }
+            return !cancelFlag.isCancelled
+        }
+    }
+
+    /// Sum of the known uncompressed sizes of the given file items.
+    /// ponytail: folders are resolved during extraction, so folder-heavy
+    /// selections under-count and fall back to an indeterminate bar (nil).
+    private static func plannedBytes(of items: [ArchiveItem]) -> Int64? {
+        let known = items
+            .filter { $0.type == .file && $0.uncompressedSize > 0 }
+            .map { Int64($0.uncompressedSize) }
+        guard !known.isEmpty else { return nil }
+        return known.reduce(0, +)
+    }
+
+    /// Fulfills a drag-out file promise: extracts the item and moves it to
+    /// the location the drop target chose. Reported to the progress center
+    /// like every other user-visible extraction, so dragging a large file
+    /// out to Finder shows the extraction window too.
+    /// - Parameters:
+    ///   - item: item being dragged out
+    ///   - url: full target url provided by the file promise
+    public func fulfillDrag(item: ArchiveItem, to url: URL) async throws {
+        let tempDirs = ExtractionTempDirectories()
+        let jobId = progressCenter.begin(
+            archiveName: name ?? self.url?.lastPathComponent ?? "Archive",
+            destination: url.deletingLastPathComponent(),
+            itemCount: 1,
+            totalBytes: Self.plannedBytes(of: [item])
+        )
+
+        // own task so the window's cancel button can stop the extraction
+        let cancelFlag = ExtractionCancelFlag()
+        let work = Task {
+            let batchResolver = ArchiveBatchResolver()
+            guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: archiveEngineSelector).first else {
+                throw ArchiveError.extractionFailed("Could not resolve batch")
+            }
+            let extractor = ArchiveExtractor(
+                archiveEngineSelector: archiveEngineSelector,
+                passwordResolver: makePasswordResolver(),
+                onTempDirectoryCreated: { tempUrl in
+                    tempDirs.add(tempUrl)
+                }
+            )
+            let result = try await extractor.extract(
+                batch: batch,
+                onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
+            )
+            tempDirectories.append(result.tempDir)
+            try Task.checkCancellation()
+            try FileManager.default.moveItem(at: result.url, to: url)
+        }
+        progressCenter.setOnCancel(jobId) {
+            cancelFlag.cancel()
+            work.cancel()
+        }
+
+        do {
+            try await work.value
+            progressCenter.finish(jobId, .done)
+        } catch is CancellationError {
+            // partial temp output of the aborted extraction must not
+            // linger — register it for the regular cache cleanup
+            tempDirectories.append(contentsOf: tempDirs.all)
+            progressCenter.finish(jobId, .cancelled)
+            throw CancellationError()
+        } catch {
+            extractLog.error(error)
+            tempDirectories.append(contentsOf: tempDirs.all)
+            progressCenter.finish(jobId, .failed(error.localizedDescription))
+            throw error
+        }
+    }
+
     /// Extracts the given set of items to the given destination. This is usually triggered by the
     /// user from within the UI
     /// - Parameters:
@@ -756,56 +853,102 @@ extension ArchiveState {
         to destination: URL
     ) {
         updateStatus(.processing)
-        
+
+        let tempDirs = ExtractionTempDirectories()
         let extractor = ArchiveExtractor(
             archiveEngineSelector: archiveEngineSelector,
-            passwordResolver: makePasswordResolver()
+            passwordResolver: makePasswordResolver(),
+            onTempDirectoryCreated: { url in
+                tempDirs.add(url)
+            }
         )
         let batchResolver = ArchiveBatchResolver()
-        
-        Task {
+
+        let jobId = progressCenter.begin(
+            archiveName: name ?? url?.lastPathComponent ?? "Archive",
+            destination: destination,
+            itemCount: items.count,
+            totalBytes: Self.plannedBytes(of: items)
+        )
+
+        let cancelFlag = ExtractionCancelFlag()
+        let task = Task {
             do {
                 let batches = try batchResolver.resolveBatches(for: items, in: entries, using: archiveEngineSelector)
                 let result = try await extractor.extract(
                     batches: batches,
-                    to: destination
+                    to: destination,
+                    onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 tempDirectories.append(contentsOf: result.tempDirs)
+                progressCenter.finish(jobId, .done)
+            } catch is CancellationError {
+                // partial temp output of the aborted extraction must not
+                // linger — register it for the regular cache cleanup
+                tempDirectories.append(contentsOf: tempDirs.all)
+                progressCenter.finish(jobId, .cancelled)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
                 self.isBusy = false
+                tempDirectories.append(contentsOf: tempDirs.all)
+                progressCenter.finish(jobId, .failed(error.localizedDescription))
             }
             
             updateStatus(.done)
+        }
+        progressCenter.setOnCancel(jobId) {
+            cancelFlag.cancel()
+            task.cancel()
         }
     }
     
     public func extract(to destination: URL) {
         isBusy = true
         updateStatus(.processing)
-        
-        Task {
+
+        let jobId = progressCenter.begin(
+            archiveName: name ?? url?.lastPathComponent ?? "Archive",
+            destination: destination,
+            itemCount: entries.values.count(where: { $0.type == .file }),
+            totalBytes: (uncompressedSize ?? 0) > 0 ? uncompressedSize : nil
+        )
+
+        let cancelFlag = ExtractionCancelFlag()
+        let task = Task {
             do {
                 guard let root else {
-                    extractLog.error("No root item set")
-                    return
+                    throw ArchiveError.extractionFailed("No root item set")
                 }
-                
-                if let (archiveTypeId, archiveUrl) = ArchiveSupportUtilities().findHandlerAndUrl(for: root, in: entries) {
-                    let extractor = ArchiveExtractor(
-                        archiveEngineSelector: archiveEngineSelector,
-                        passwordResolver: makePasswordResolver()
-                    )
-                    try await extractor.extractAll(archiveUrl, archiveTypeId: archiveTypeId, to: destination)
+                guard let (archiveTypeId, archiveUrl) = ArchiveSupportUtilities().findHandlerAndUrl(for: root, in: entries) else {
+                    throw ArchiveError.extractionFailed("No archive handler found")
                 }
+
+                let extractor = ArchiveExtractor(
+                    archiveEngineSelector: archiveEngineSelector,
+                    passwordResolver: makePasswordResolver()
+                )
+                try await extractor.extractAll(
+                    archiveUrl,
+                    archiveTypeId: archiveTypeId,
+                    to: destination,
+                    onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
+                )
+                progressCenter.finish(jobId, .done)
+            } catch is CancellationError {
+                progressCenter.finish(jobId, .cancelled)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
-                self.isBusy = false
+                progressCenter.finish(jobId, .failed(error.localizedDescription))
             }
-            
+
+            self.isBusy = false
             updateStatus(.done)
+        }
+        progressCenter.setOnCancel(jobId) {
+            cancelFlag.cancel()
+            task.cancel()
         }
     }
     
