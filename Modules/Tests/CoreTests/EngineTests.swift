@@ -165,6 +165,53 @@ extension AllCoreTests {
             }
         }
 
+        // Regression for #121: a macOS `.app` extracted from a zip with the 7-Zip
+        // engine must keep its symbolic links and POSIX execute bit, otherwise the
+        // bundle won't launch. The fixture `zip/appbundle.zip` mimics a bundle:
+        // `payload/Contents/MacOS/bin` stored with mode 0755, and a symlink
+        // `payload/Contents/MacOS/link -> bin`. Before the fix the bridge wrote the
+        // symlink as a plain text file and dropped the exec bit.
+        @Test func extractionPreservesSymlinksAndExecBit() async throws {
+            let engine = Archive7ZipEngine()
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("appbundle.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: tempDir) }
+
+            _ = try await engine.extract(
+                items: items,
+                from: url,
+                to: tempDir,
+                passwordResolver: { _ in nil }
+            )
+
+            let macOSDir = tempDir.appendingPathComponent("payload/Contents/MacOS")
+            let binURL = macOSDir.appendingPathComponent("bin")
+            let linkURL = macOSDir.appendingPathComponent("link")
+
+            // 1. The symlink must be a real symlink pointing at "bin" (before the fix
+            //    it was a regular file whose contents were the string "bin", so
+            //    destinationOfSymbolicLink throws and this is nil).
+            let linkDestination = try? FileManager.default.destinationOfSymbolicLink(atPath: linkURL.path)
+            #expect(
+                linkDestination == "bin",
+                "link should be a symlink -> bin, got \(String(describing: linkDestination))"
+            )
+
+            // 2. The executable must keep its exec bit (fixture stores mode 0755).
+            let attrs = try FileManager.default.attributesOfItem(atPath: binURL.path)
+            let perms = (attrs[.posixPermissions] as? NSNumber)?.uint16Value ?? 0
+            #expect(
+                perms & 0o111 != 0,
+                "bin should keep an execute bit, got mode \(String(perms, radix: 8))"
+            )
+        }
+
         @Test func extractEmptyItemsThrows() async throws {
             let engine = Archive7ZipEngine()
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
@@ -272,6 +319,41 @@ extension AllCoreTests {
             #expect(extractResult.urls.count == 1)
             let extractedURL = try extractResult.singleURL
             #expect(FileManager.default.fileExists(atPath: extractedURL.path))
+        }
+
+        // Reference behavior for #121: the XAD engine already preserves symlinks +
+        // the exec bit. Locks that in so the 7-Zip fix has a matching baseline and
+        // XAD can't silently regress. Same fixture as the 7-Zip test.
+        @Test func extractionPreservesSymlinksAndExecBitViaXad() async throws {
+            let engine = ArchiveXadEngine()
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("appbundle.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: tempDir) }
+
+            _ = try await engine.extract(
+                items: items,
+                from: url,
+                to: tempDir,
+                passwordResolver: { _ in nil }
+            )
+
+            let macOSDir = tempDir.appendingPathComponent("payload/Contents/MacOS")
+            let linkDestination = try? FileManager.default.destinationOfSymbolicLink(
+                atPath: macOSDir.appendingPathComponent("link").path
+            )
+            #expect(linkDestination == "bin")
+
+            let attrs = try FileManager.default.attributesOfItem(
+                atPath: macOSDir.appendingPathComponent("bin").path
+            )
+            let perms = (attrs[.posixPermissions] as? NSNumber)?.uint16Value ?? 0
+            #expect(perms & 0o111 != 0)
         }
 
         @Test func extractDirectoryItemViaXad() async throws {
