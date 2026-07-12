@@ -11,6 +11,8 @@
 #include <deque>
 #include <vector>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "Common/MyWindows.h"
 #include "Common/MyCom.h"
@@ -257,7 +259,7 @@ public:
     // IArchiveExtractCallback
     Z7_COM7F_IMF(GetStream(UInt32 index, ISequentialOutStream **outStream, Int32 askExtractMode));
     Z7_COM7F_IMF(PrepareOperation(Int32 /* askExtractMode */)) { return S_OK; }
-    Z7_COM7F_IMF(SetOperationResult(Int32 /* opRes */)) { return S_OK; }
+    Z7_COM7F_IMF(SetOperationResult(Int32 opRes));
 
     // ICryptoGetTextPassword
     Z7_COM7F_IMF(CryptoGetTextPassword(BSTR *password));
@@ -270,6 +272,8 @@ private:
     FString _destDir;
     CMyComPtr<ISequentialOutStream> _outFileStream;
     FString _currentFilePath;
+    UInt32 _currentMode = 0;         // POSIX mode from kpidPosixAttrib; 0 if unknown
+    bool _currentIsSymlink = false;  // entry is a Unix symlink (S_IFLNK)
     std::string _password;
     bool _hasPassword;
     sz_progress_callback _progress;
@@ -281,6 +285,13 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     UInt32 index, ISequentialOutStream **outStream, Int32 askExtractMode))
 {
     *outStream = nullptr;
+
+    // Reset per-entry POSIX state. SetOperationResult only acts when GetStream
+    // fills these in below for an actually-extracted file.
+    _currentFilePath.Empty();
+    _currentMode = 0;
+    _currentIsSymlink = false;
+
     if (askExtractMode != NArchive::NExtract::NAskMode::kExtract)
         return S_OK;
 
@@ -345,8 +356,71 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
         return E_FAIL;
     }
 
+    // Capture the entry's POSIX mode so SetOperationResult can restore the exec
+    // bit and turn symlink entries (7-Zip writes them as a regular file whose
+    // contents are the link target) into real symlinks. Absent on non-Unix zips.
+    NWindows::NCOM::CPropVariant propPosix;
+    _archive->GetProperty(index, kpidPosixAttrib, &propPosix);
+    _currentMode = (propPosix.vt == VT_UI4) ? propPosix.ulVal : 0;
+    _currentIsSymlink = S_ISLNK(_currentMode);
+    _currentFilePath = fullPath;
+
     _outFileStream = outStreamRef;
     *outStream = outStreamRef.Detach();
+    return S_OK;
+}
+
+// Runs once per entry after its stream is fully written. Restores POSIX metadata
+// that the plain file-write above drops: the execute bit (chmod) and symbolic
+// links (recreated from the target bytes 7-Zip wrote). Single choke point for all
+// three sz_extract_* paths. macOS-only bridge, so FChar == char (UTF-8 paths).
+Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
+{
+    // Drop our stream reference so the file is closed/flushed before we read it
+    // back, chmod it, or replace it with a symlink.
+    _outFileStream.Release();
+
+    if (opRes != NArchive::NExtract::NOperationResult::kOK ||
+        _currentFilePath.IsEmpty()) {
+        _currentIsSymlink = false;
+        _currentMode = 0;
+        _currentFilePath.Empty();
+        return S_OK;
+    }
+
+    const char *path = _currentFilePath.Ptr();
+
+    if (_currentIsSymlink) {
+        // 7-Zip wrote the link target as this file's contents; read it back and
+        // replace the file with a real symlink.
+        std::string target;
+        int fd = open(path, O_RDONLY | O_NOFOLLOW);
+        if (fd >= 0) {
+            char buf[4096];
+            ssize_t n;
+            while ((n = read(fd, buf, sizeof(buf))) > 0)
+                target.append(buf, (size_t)n);
+            close(fd);
+        }
+        while (!target.empty() &&
+               (target.back() == '\0' || target.back() == '\n' || target.back() == '\r'))
+            target.pop_back();
+
+        if (!target.empty()) {
+            unlink(path);
+            if (symlink(target.c_str(), path) != 0)
+                errorMessage = "Failed to create symbolic link";
+        }
+    } else if ((_currentMode & 07777) != 0) {
+        // Restore stored permissions (notably the exec bit). Only when the archive
+        // carried a mode; otherwise keep the default the file was created with.
+        if (chmod(path, (mode_t)(_currentMode & 07777)) != 0)
+            errorMessage = "Failed to set file permissions";
+    }
+
+    _currentIsSymlink = false;
+    _currentMode = 0;
+    _currentFilePath.Empty();
     return S_OK;
 }
 

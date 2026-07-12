@@ -55,6 +55,25 @@
                         "ko": "zip/7z 아카이브에서 \"아카이브 추출\"이 파일을 생성하지 않던 문제 수정"
                     },
                     "issues": []
+                },
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Apps extracted from ZIP archives with the 7-Zip engine wouldn't launch because symbolic links and file permissions were lost",
+                        "zh-Hans": "修复使用 7-Zip 引擎从 ZIP 压缩包解压的应用因符号链接和文件权限丢失而无法启动的问题",
+                        "fr": "Les apps extraites d’archives ZIP avec le moteur 7-Zip ne se lançaient pas car les liens symboliques et les permissions étaient perdus",
+                        "de": "Mit der 7-Zip-Engine aus ZIP-Archiven entpackte Apps ließen sich nicht starten, weil symbolische Links und Dateiberechtigungen verloren gingen",
+                        "it": "Le app estratte da archivi ZIP con il motore 7-Zip non si avviavano perché i collegamenti simbolici e i permessi andavano persi",
+                        "ja": "7-Zip エンジンで ZIP アーカイブから解凍したアプリが、シンボリックリンクとファイル権限の消失により起動できない問題を修正",
+                        "fa": "برنامه‌های استخراج‌شده از آرشیوهای ZIP با موتور 7-Zip به‌دلیل از دست رفتن پیوندهای نمادین و مجوزهای فایل اجرا نمی‌شدند",
+                        "pl": "Aplikacje wypakowane z archiwów ZIP silnikiem 7-Zip nie uruchamiały się z powodu utraty dowiązań symbolicznych i uprawnień plików",
+                        "pt-BR": "Aplicativos extraídos de arquivos ZIP com o mecanismo 7-Zip não abriam porque links simbólicos e permissões eram perdidos",
+                        "ru": "Приложения, извлечённые из ZIP-архивов с движком 7-Zip, не запускались из-за потери символических ссылок и прав доступа",
+                        "uk": "Застосунки, розпаковані із ZIP-архівів рушієм 7-Zip, не запускалися через втрату символьних посилань і прав доступу",
+                        "es-MX": "Las apps extraídas de archivos ZIP con el motor 7-Zip no se abrían porque se perdían los enlaces simbólicos y los permisos",
+                        "ko": "7-Zip 엔진으로 ZIP 아카이브에서 추출한 앱이 심볼릭 링크와 파일 권한 손실로 인해 실행되지 않던 문제 수정"
+                    },
+                    "issues": ["121"]
                 }
             ]
         },
