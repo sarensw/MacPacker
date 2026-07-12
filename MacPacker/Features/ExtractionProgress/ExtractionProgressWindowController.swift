@@ -23,16 +23,28 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 final class ExtractionProgressWindowController: NSWindowController, NSWindowDelegate {
     private let center: ExtractionProgressCenter
     private var jobsSubscription: AnyCancellable?
+    private var sizeSubscription: AnyCancellable?
     private var scheduledShow: DispatchWorkItem?
     private var scheduledClose: DispatchWorkItem?
 
     init(center: ExtractionProgressCenter) {
         self.center = center
 
-        let hosting = NSHostingController(rootView: ExtractionProgressView(center: center))
-        // the content view drives the window size (dialog grows when
-        // details expand), so the window itself is not user-resizable
-        hosting.sizingOptions = .preferredContentSize
+        // The window follows the SwiftUI content's height (dialog grows when
+        // details expand), but we drive that ourselves via `setContentSize`
+        // instead of `sizingOptions = .preferredContentSize`. AppKit re-reads
+        // `preferredContentSize` *inside* the window's constraint-update pass,
+        // and SwiftUI's measurement re-invalidates constraints from there —
+        // a re-entrant `_postWindowNeedsUpdateConstraints` that throws and
+        // crashes the app while progress ticks arrive. Measuring in SwiftUI
+        // and applying the size on the next runloop turn keeps the resize out
+        // of the constraint pass entirely.
+        let sizeRelay = PassthroughSubject<CGSize, Never>()
+        let hosting = NSHostingController(
+            rootView: ExtractionProgressView(center: center)
+                .modifier(ContentSizeReader { sizeRelay.send($0) })
+        )
+        hosting.sizingOptions = []
         let window = NSWindow(contentViewController: hosting)
         // accessibility/Mission-Control name only — the visible title bar is
         // compact: traffic lights, no text
@@ -40,16 +52,45 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         window.titleVisibility = .hidden
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false
+        // provisional size until the first measurement lands (before the
+        // 0.6s show delay fires, so the user never sees this size)
+        window.setContentSize(NSSize(width: 640, height: 180))
         window.center()
 
         super.init(window: window)
         window.delegate = self
+
+        sizeSubscription = sizeRelay
+            .removeDuplicates()
+            // next runloop turn: apply the resize between constraint passes,
+            // never inside one
+            .receive(on: RunLoop.main)
+            .sink { [weak self] size in
+                self?.applyContentSize(size)
+            }
 
         jobsSubscription = center.$jobs
             .receive(on: RunLoop.main)
             .sink { [weak self] jobs in
                 self?.jobsChanged(jobs)
             }
+    }
+
+    /// Resizes the window to the content's measured height, keeping the top
+    /// edge fixed so the dialog grows downward when details expand. Runs off
+    /// the constraint pass (see the sizing note in `init`).
+    private func applyContentSize(_ size: CGSize) {
+        guard let window, size.width > 0, size.height > 0 else { return }
+        let target = NSSize(width: size.width, height: size.height)
+        let current = window.contentRect(forFrameRect: window.frame).size
+        guard abs(current.width - target.width) > 0.5 || abs(current.height - target.height) > 0.5 else { return }
+
+        let newFrameSize = window.frameRect(forContentRect: NSRect(origin: .zero, size: target)).size
+        var frame = window.frame
+        let topEdge = frame.maxY
+        frame.size = newFrameSize
+        frame.origin.y = topEdge - newFrameSize.height
+        window.setFrame(frame, display: true)
     }
 
     @available(*, unavailable)
@@ -130,5 +171,26 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         scheduledClose?.cancel()
         scheduledClose = nil
         center.clearFinished()
+    }
+}
+
+/// Reports the content's ideal size to the window controller. `fixedSize`
+/// makes the content lay out at its natural height regardless of the height
+/// the window currently has, so the measurement is the *ideal* height and
+/// never feeds back on the window's own size — no measure/resize loop.
+private struct ContentSizeReader: ViewModifier {
+    let onChange: (CGSize) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .fixedSize(horizontal: false, vertical: true)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onChange(of: proxy.size, initial: true) { _, size in
+                            onChange(size)
+                        }
+                }
+            )
     }
 }
