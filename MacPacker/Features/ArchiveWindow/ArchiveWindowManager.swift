@@ -27,7 +27,10 @@ class ArchiveWindowManager {
     
     /// Creates a new archive window and loads the archive from the given url if available
     /// - Parameter url: url of the archive
-    fileprivate func createAndShowArchiveWindow(_ url: URL?) {
+    /// - Returns: the window's `ArchiveState`, so callers that need to drive it
+    ///   (e.g. the debug screenshot launcher) can navigate and select afterwards.
+    @discardableResult
+    fileprivate func createAndShowArchiveWindow(_ url: URL?) -> ArchiveState {
         log.notice("Creating window", context: ["url": url?.lastPathComponent ?? "(empty)"])
         // every window has an archive state which defines both empty
         // (not yet loaded archives) or loaded archives
@@ -57,7 +60,23 @@ class ArchiveWindowManager {
             self?.windowControllers.removeAll { $0 === archiveWindowController }
         }
         archiveWindowController.showWindow(nil)
+        return archiveState
     }
+
+#if DEBUG
+    /// Debug-only: open `url` in a controllable window and hand back its state.
+    /// Reuses the empty launch window when there is one, so the screenshot
+    /// launcher ends up with a single window instead of one empty + one loaded.
+    @discardableResult
+    func debugOpenControllableWindow(for url: URL) -> ArchiveState {
+        if let ewc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {
+            ewc.archiveState.open(url: url)
+            ewc.showWindow(nil)
+            return ewc.archiveState
+        }
+        return createAndShowArchiveWindow(url)
+    }
+#endif
     
     /// During launch two things might happen. Either the app is launched with a url (e.g. via the Open With... menu
     /// or without. The order of `application(_:open:)` and `applicationDidFinishLaunching` is not

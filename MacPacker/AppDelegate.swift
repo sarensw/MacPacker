@@ -41,8 +41,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         #if !STORE
         // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
         // This is where you can also pass an updater delegate if you need one
+        // Screenshot launches (debug) skip the updater so its check can't pop a
+        // dialog mid-automation across the many relaunches.
+        #if DEBUG
+        let startUpdater = !Self.isRunningInPreview && !ScreenshotLaunch.isActive
+        #else
+        let startUpdater = !Self.isRunningInPreview
+        #endif
         updaterController = SPUStandardUpdaterController(
-            startingUpdater: !Self.isRunningInPreview,
+            startingUpdater: startUpdater,
             updaterDelegate: updaterDelegate,
             userDriverDelegate: nil
         )
@@ -126,10 +133,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         archiveWindowManager = ArchiveWindowManager(appState: appState)
         extractionProgressWindowController = ExtractionProgressWindowController(center: .shared)
 
+#if DEBUG
+        // A screenshot launch owns its own single window (an archive window or
+        // the extraction window) — skip the empty launch window so the shot
+        // isn't cluttered with a second, stray window.
+        let screenshotLaunch = ScreenshotLaunch.isActive
+#else
+        let screenshotLaunch = false
+#endif
+
         // make sure that at least one window will be shown
         // even if it is empty
-        log.notice("Opening launch window (pending open urls: \(pendingOpenURLs.count))")
-        archiveWindowManager?.openLaunchArchiveWindow()
+        if !screenshotLaunch {
+            log.notice("Opening launch window (pending open urls: \(pendingOpenURLs.count))")
+            archiveWindowManager?.openLaunchArchiveWindow()
+        }
 
         // replay any open urls that arrived before the window manager existed
         if !pendingOpenURLs.isEmpty {
@@ -140,7 +158,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
 
         // opens the welcome window
-        if welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") {
+        if !screenshotLaunch,
+           welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") {
             log.notice("Showing welcome window")
             WelcomeWindowController().show()
             welcomeScreenShownInVersion = Bundle.main.appVersionLong
@@ -174,6 +193,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 }
             }
         }
+
+        // Debug-only screenshot hook: reads -SPArchivePath / -SPNavigatePath /
+        // -SPSelectItem / -SPExtractDemo (delivered via NSArgumentDomain when
+        // SandboxPilot relaunches the app) and drives the UI into the state.
+        if let archiveWindowManager {
+            ScreenshotLaunch.applyIfRequested(windowManager: archiveWindowManager)
+        }
 #endif
     }
     
@@ -197,6 +223,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     /// Asked for in #119: don't let the app quit silently while an
     /// extraction is running.
     public func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+#if DEBUG
+        // A screenshot launch (e.g. the extraction demo) keeps a job "active"
+        // on purpose; don't let the quit-guard alert block the relaunches that
+        // drive the screenshots.
+        if ScreenshotLaunch.isActive { return .terminateNow }
+#endif
         guard ExtractionProgressCenter.shared.hasActiveJobs else {
             return .terminateNow
         }
