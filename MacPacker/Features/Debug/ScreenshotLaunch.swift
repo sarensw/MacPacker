@@ -11,26 +11,27 @@ import Core
 import Foundation
 
 /// DEBUG-only: drives the app into a specific, screenshot-ready state from
-/// launch arguments so SandboxPilot can capture localized screenshots without
-/// UI scripting.
+/// launch parameters. These are generic, app-independent debug parameters — any
+/// screenshot tool or test harness (SandboxPilot is one) sets them so the app
+/// opens directly into a given state, no UI scripting required.
 ///
-/// Arguments arrive when SandboxPilot relaunches the app through
-/// SandboxPilotKit (`NSWorkspace.OpenConfiguration.arguments`) and land in the
-/// `NSArgumentDomain`, so they are read straight from `UserDefaults`:
+/// Read from `UserDefaults`, so they work both as `NSArgumentDomain`
+/// command-line arguments and as launch-time defaults a driver patches before
+/// relaunching:
 ///
-///   -SPArchivePath  <path>    open this archive in a window
-///   -SPNavigatePath a/b/c     navigate into these tree segments, in order
-///   -SPSelectItem   <name>    select this child of the final folder
-///   -SPExtractDemo  1         show the extraction window with mock progress
+///   -ArchivePath  <path>    open this archive in a window
+///   -NavigatePath a/b/c     navigate into these tree segments, in order
+///   -SelectItem   <name>    select this child of the final folder
+///   -ExtractDemo  1         show the extraction window with mock progress
 ///
-/// The UI language is applied by the system via `-AppleLanguages`; the
-/// appearance (light/dark) is set live by SandboxPilot after launch.
+/// Language is applied by the system via `-AppleLanguages`; appearance
+/// (light/dark) is applied by the driver after launch.
 @MainActor
 enum ScreenshotLaunch {
-    private static let archivePathKey = "SPArchivePath"
-    private static let navigatePathKey = "SPNavigatePath"
-    private static let selectItemKey = "SPSelectItem"
-    static let extractDemoKey = "SPExtractDemo"
+    private static let archivePathKey = "ArchivePath"
+    private static let navigatePathKey = "NavigatePath"
+    private static let selectItemKey = "SelectItem"
+    static let extractDemoKey = "ExtractDemo"
 
     /// True when the app was launched to produce a screenshot. Used to suppress
     /// the welcome window and other launch noise that would clutter the shot.

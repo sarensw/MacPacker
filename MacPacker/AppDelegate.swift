@@ -194,9 +194,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
 
-        // Debug-only screenshot hook: reads -SPArchivePath / -SPNavigatePath /
-        // -SPSelectItem / -SPExtractDemo (delivered via NSArgumentDomain when
-        // SandboxPilot relaunches the app) and drives the UI into the state.
+        // Debug-only screenshot hook: reads -ArchivePath / -NavigatePath /
+        // -SelectItem / -ExtractDemo (generic launch parameters, delivered as
+        // NSArgumentDomain args or patched launch defaults) and drives the UI.
         if let archiveWindowManager {
             ScreenshotLaunch.applyIfRequested(windowManager: archiveWindowManager)
         }
