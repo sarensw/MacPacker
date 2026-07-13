@@ -95,7 +95,6 @@ MacPacker is free and built in the open. If it saves you time, here are a few wa
 
 MacPacker is built by [Stephan Arenswald](https://x.com/sarensw). If you like it, take a look at the other apps:
 
-- **[TailBeat](https://tailbeat.app)** — A companion for macOS developers that improves logging and app release workflows.
 - **[FileFillet](https://www.filefillet.com)** — Organize files quickly on macOS.
 
 ## Contributing
