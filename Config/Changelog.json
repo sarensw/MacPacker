@@ -16,6 +16,30 @@
     },
     "versions": [
         {
+            "version": "0.18.0",
+            "items": [
+                {
+                    "type": "core",
+                    "title": {
+                        "en": "Debug launch parameters to drive the app for automated localized screenshots",
+                        "zh-Hans": "用于驱动应用生成自动化本地化截图的调试启动参数",
+                        "fr": "Paramètres de lancement de débogage pour piloter l’app pour des captures d’écran localisées automatisées",
+                        "de": "Debug-Startparameter, um die App für automatisierte lokalisierte Screenshots zu steuern",
+                        "it": "Parametri di avvio di debug per pilotare l’app per screenshot localizzati automatizzati",
+                        "ja": "アプリを操作して自動化されたローカライズ済みスクリーンショットを生成するためのデバッグ起動パラメータ",
+                        "fa": "پارامترهای راه‌اندازی اشکال‌زدایی برای هدایت برنامه جهت اسکرین‌شات‌های محلی‌سازی‌شده خودکار",
+                        "pl": "Parametry uruchamiania debugowania sterujące aplikacją do automatycznych zlokalizowanych zrzutów ekranu",
+                        "pt-BR": "Parâmetros de inicialização de depuração para controlar o app e gerar capturas de tela localizadas automatizadas",
+                        "ru": "Параметры запуска для отладки, управляющие приложением для автоматических локализованных снимков экрана",
+                        "uk": "Параметри запуску для налагодження, що керують застосунком для автоматичних локалізованих знімків екрана",
+                        "es-MX": "Parámetros de lanzamiento de depuración para controlar la app y generar capturas de pantalla localizadas automatizadas",
+                        "ko": "앱을 제어하여 자동화된 지역화 스크린샷을 생성하기 위한 디버그 실행 매개변수"
+                    },
+                    "issues": []
+                }
+            ]
+        },
+        {
             "version": "0.17.0",
             "items": [
                 {
