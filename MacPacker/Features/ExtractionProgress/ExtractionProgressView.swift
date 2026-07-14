@@ -40,13 +40,13 @@ struct ExtractionProgressView: View {
         .onAppear {
             // The demo job is created before this view appears, so onChange
             // never fires for it — expand on appear too.
-            if UserDefaults.standard.bool(forKey: ExtractionDemo.extractDemoKey) {
+            if ExtractionDemo.isRequested {
                 expandedJobs = Set(center.jobs.map(\.id))
             }
         }
         .onChange(of: center.jobs.count) {
             if ProcessInfo.processInfo.environment["MACPACKER_DEBUG_EXPAND"] != nil
-                || UserDefaults.standard.bool(forKey: ExtractionDemo.extractDemoKey) {
+                || ExtractionDemo.isRequested {
                 expandedJobs = Set(center.jobs.map(\.id))
             }
         }

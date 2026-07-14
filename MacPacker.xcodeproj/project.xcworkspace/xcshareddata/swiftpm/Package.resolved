@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/LeanBytes/SandboxPilotKit",
       "state" : {
-        "revision" : "4275c8b7e9b558f33713cda2212221cc423b4516",
-        "version" : "1.0.1"
+        "branch" : "feat/launch-parameters-suite",
+        "revision" : "19a744b94183da7eb08b64789c972dc52bd4ff3c"
       }
     },
     {

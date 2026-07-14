@@ -17,11 +17,9 @@ import Foundation
 ///   -ExtractDemo 1   show the extraction window sitting at 1/3 of a large file
 @MainActor
 enum ExtractionDemo {
-    static let extractDemoKey = "ExtractDemo"
-
-    static var isRequested: Bool {
-        UserDefaults.standard.bool(forKey: extractDemoKey)
-    }
+    /// Resolved through `LaunchParameters` so it honors both a real `-ExtractDemo`
+    /// argument and one set by SandboxPilot.
+    static var isRequested: Bool { LaunchParameters.isExtractDemo }
 
     /// One running job sitting at 1/3 of a large file, with enough throughput
     /// samples that the details chart draws a visible rising curve. The job is

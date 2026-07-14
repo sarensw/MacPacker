@@ -26,10 +26,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var extractionProgressWindowController: ExtractionProgressWindowController? = nil
     private var pendingOpenURLs: [URL] = []
 
-    /// Launch flag (`-DisableUpdateChecks YES`) that skips the automatic update
-    /// check — for scripted / automated launches.
-    static let disableUpdateChecksKey = "DisableUpdateChecks"
-
     private static var isRunningInPreview: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
     }
@@ -48,8 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // `-DisableUpdateChecks YES` suppresses the automatic check — useful for
         // scripted/automated launches (CI, screenshots) where a check dialog
         // would interrupt.
-        let startUpdater = !Self.isRunningInPreview
-            && !UserDefaults.standard.bool(forKey: Self.disableUpdateChecksKey)
+        let startUpdater = !Self.isRunningInPreview && !LaunchParameters.disableUpdateChecks
         updaterController = SPUStandardUpdaterController(
             startingUpdater: startUpdater,
             updaterDelegate: updaterDelegate,
