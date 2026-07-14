@@ -1,6 +1,11 @@
-# ── Per-app PR distribution shell ────────────────────────────────────────────
-# Copy into each app repo at .github/workflows/distribute-pr.yml.
-# Only the inputs marked "per-app" need adjusting; the rest stay as-is.
+# ── Per-app PR shell (workflows-macos v0.4.5, product-file model) ─────────────
+# Trigger-only: the orchestrator discovers every Config/products/<id>.json and
+# compiles each product (unsigned, fork-PR safe), then runs the Swift package
+# tests. Identity + channels live in the product files, not here.
+#
+# Runs on GitHub-hosted runners by design: MacPacker is a PUBLIC repo, and
+# pointing a public-repo PR build at a self-hosted runner would let fork PRs
+# execute arbitrary code on that machine.
 # ─────────────────────────────────────────────────────────────────────────────
 name: Distribute PR
 
@@ -13,12 +18,8 @@ permissions:
 
 jobs:
   pr:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.3.47
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.4.5
     with:
-      has-finder-extension: true
-      has-quicklook-extension: true
-      scheme-name: MacPacker
-
       # ── Test configuration ──
       run-tests: true
       test-runner: swift
