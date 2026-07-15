@@ -1263,8 +1263,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/LeanBytes/SandboxPilotKit";
 			requirement = {
-				branch = "feat/launch-parameters-suite";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
 			};
 		};
 		25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */ = {
