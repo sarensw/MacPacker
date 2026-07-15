@@ -70,7 +70,7 @@ enum LaunchParameters {
     /// and selects the requested item.
     static func applyIfNeeded(windowManager: ArchiveWindowManager) {
         guard let archivePath else { return }
-        let url = URL(fileURLWithPath: archivePath)
+        let url = resolveArchive(archivePath)
         let navigate = value(navigatePathKey)
         let select = value(selectItemKey)
 
@@ -83,6 +83,48 @@ enum LaunchParameters {
         let state = windowManager.openArchiveWindow(for: url)
         Task { await drive(state, navigate: navigate, select: select) }
     }
+
+    /// Resolves the archive URL, tolerating a path this process can't read.
+    ///
+    /// A genuine launch (`open --args -ArchivePath /some/file.zip`) passes a path
+    /// we can read, and we use it verbatim. But a sandboxed automation harness
+    /// (SandboxPilot) can't stage a file into *this* app's container, so its plan
+    /// may reference a test archive by a path outside our sandbox. In debug builds
+    /// we fall back to a bundled copy of the same-named archive so those runs still
+    /// open a real archive instead of an empty window.
+    private static func resolveArchive(_ path: String) -> URL {
+        if FileManager.default.isReadableFile(atPath: path) {
+            return URL(fileURLWithPath: path)
+        }
+        #if DEBUG
+        let filename = (path as NSString).lastPathComponent
+        if let bundled = bundledArchive(named: filename) {
+            log.info("Launch parameter archive not readable (\(path)); using bundled fallback")
+            return bundled
+        }
+        #endif
+        return URL(fileURLWithPath: path)   // let the loader surface the failure
+    }
+
+    #if DEBUG
+    /// The debug-only test archive, embedded as a base64 blob (see
+    /// `ScreenshotTestArchive`) so it's stripped from release. Materialised into
+    /// this app's container tmp dir — a readable URL for the archive loader.
+    /// Matched by basename so a plan's `{archive}` (e.g. `defaultArchive.zip`)
+    /// resolves even though its path lies outside our sandbox.
+    private static func bundledArchive(named filename: String) -> URL? {
+        guard (filename as NSString).deletingPathExtension == "defaultArchive",
+              let data = Data(base64Encoded: ScreenshotTestArchive.defaultArchiveBase64) else { return nil }
+        let dest = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+        do {
+            try data.write(to: dest)
+            return dest
+        } catch {
+            log.error("Failed to materialise bundled test archive: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    #endif
 
     /// Waits for the initial load, walks the requested path segment by segment
     /// (awaiting each nested-archive unfold), then selects the requested item.
