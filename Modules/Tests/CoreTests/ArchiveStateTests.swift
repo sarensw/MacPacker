@@ -162,6 +162,32 @@ extension AllCoreTests {
             #expect(items[1].type == .file)
         }
 
+        @Test func loadChildrenDefaultsToNameSortOnFirstLaunch() async throws {
+            // Regression for #126: simulate a first launch where no header click has
+            // ever persisted a sort — only the registration-domain defaults seeded at
+            // startup. The list must already be name-ascending with folders on top,
+            // matching the header arrow, instead of falling back to insertion order.
+            UserDefaults.standard.removeObject(forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.removeObject(forKey: Keys.defaultOrderColumnAscending)
+            Keys.registerDefaults()
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+
+            state.open(url: url)
+            try await state.openTask?.value
+
+            state.loadChildren()
+
+            let items = state.childItems!
+            #expect(items.count == 2)
+            #expect(items[0].type == .directory)
+            #expect(items[0].name == "folder")
+            #expect(items[1].type == .file)
+            #expect(items[1].name == "hello world.txt")
+        }
+
         @Test func directoriesBeforeFilesInSortedOrder() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
