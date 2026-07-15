@@ -25,6 +25,7 @@ struct MacPackerApp: App {
     
     init() {
         tb.start()
+        Keys.registerDefaults()
         log.notice("MacPackerApp.init — app process starting")
         
         #if DEBUG
