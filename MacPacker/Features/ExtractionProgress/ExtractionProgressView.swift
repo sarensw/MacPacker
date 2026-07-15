@@ -37,8 +37,16 @@ struct ExtractionProgressView: View {
         .frame(width: 640)
 #if DEBUG
         // screenshot support for the headless e2e hook
+        .onAppear {
+            // The demo job is created before this view appears, so onChange
+            // never fires for it — expand on appear too.
+            if ExtractionDemo.isRequested {
+                expandedJobs = Set(center.jobs.map(\.id))
+            }
+        }
         .onChange(of: center.jobs.count) {
-            if ProcessInfo.processInfo.environment["MACPACKER_DEBUG_EXPAND"] != nil {
+            if ProcessInfo.processInfo.environment["MACPACKER_DEBUG_EXPAND"] != nil
+                || ExtractionDemo.isRequested {
                 expandedJobs = Set(center.jobs.map(\.id))
             }
         }

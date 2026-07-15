@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var archiveWindowManager: ArchiveWindowManager? = nil
     private var extractionProgressWindowController: ExtractionProgressWindowController? = nil
     private var pendingOpenURLs: [URL] = []
-    
+
     private static var isRunningInPreview: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
     }
@@ -40,9 +40,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         log.notice("AppDelegate.init starting")
         #if !STORE
         // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
-        // This is where you can also pass an updater delegate if you need one
+        // This is where you can also pass an updater delegate if you need one.
+        // `-DisableUpdateChecks YES` suppresses the automatic check — useful for
+        // scripted/automated launches (CI, screenshots) where a check dialog
+        // would interrupt.
+        let startUpdater = !Self.isRunningInPreview && !LaunchParameters.disableUpdateChecks
         updaterController = SPUStandardUpdaterController(
-            startingUpdater: !Self.isRunningInPreview,
+            startingUpdater: startUpdater,
             updaterDelegate: updaterDelegate,
             userDriverDelegate: nil
         )
@@ -126,10 +130,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         archiveWindowManager = ArchiveWindowManager(appState: appState)
         extractionProgressWindowController = ExtractionProgressWindowController(center: .shared)
 
-        // make sure that at least one window will be shown
-        // even if it is empty
-        log.notice("Opening launch window (pending open urls: \(pendingOpenURLs.count))")
-        archiveWindowManager?.openLaunchArchiveWindow()
+        // When launched to open a specific archive (launch parameters) — or to
+        // show the debug extraction preview — MacPacker shows that one window
+        // instead of the empty launch window and the welcome screen.
+        let opensArchive = LaunchParameters.opensArchive
+#if DEBUG
+        let showsExtractionDemo = ExtractionDemo.isRequested
+#else
+        let showsExtractionDemo = false
+#endif
+        let launchedToOpenSomething = opensArchive || showsExtractionDemo
+
+        // make sure that at least one window will be shown even if it is empty
+        if !launchedToOpenSomething {
+            log.notice("Opening launch window (pending open urls: \(pendingOpenURLs.count))")
+            archiveWindowManager?.openLaunchArchiveWindow()
+        }
+
+        // Launch parameters: open the requested archive and (optionally)
+        // navigate to a path / select an item inside it.
+        if let archiveWindowManager {
+            LaunchParameters.applyIfNeeded(windowManager: archiveWindowManager)
+        }
 
         // replay any open urls that arrived before the window manager existed
         if !pendingOpenURLs.isEmpty {
@@ -140,7 +162,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
 
         // opens the welcome window
-        if welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") {
+        if !launchedToOpenSomething,
+           welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") {
             log.notice("Showing welcome window")
             WelcomeWindowController().show()
             welcomeScreenShownInVersion = Bundle.main.appVersionLong
@@ -174,6 +197,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 }
             }
         }
+
+        // Debug-only extraction preview: -ExtractDemo shows the extraction
+        // window with mock progress so that window can be screenshotted in a
+        // known state without running a real extraction.
+        ExtractionDemo.applyIfRequested()
 #endif
     }
     
@@ -197,6 +225,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     /// Asked for in #119: don't let the app quit silently while an
     /// extraction is running.
     public func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+#if DEBUG
+        // The extraction demo keeps a job "active" on purpose; don't let the
+        // quit-guard alert block the relaunches that drive its screenshots.
+        if ExtractionDemo.isRequested { return .terminateNow }
+#endif
         guard ExtractionProgressCenter.shared.hasActiveJobs else {
             return .terminateNow
         }

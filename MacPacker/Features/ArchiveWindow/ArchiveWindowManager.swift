@@ -27,7 +27,10 @@ class ArchiveWindowManager {
     
     /// Creates a new archive window and loads the archive from the given url if available
     /// - Parameter url: url of the archive
-    fileprivate func createAndShowArchiveWindow(_ url: URL?) {
+    /// - Returns: the window's `ArchiveState`, so callers that need to drive it
+    ///   (e.g. the debug screenshot launcher) can navigate and select afterwards.
+    @discardableResult
+    fileprivate func createAndShowArchiveWindow(_ url: URL?) -> ArchiveState {
         log.notice("Creating window", context: ["url": url?.lastPathComponent ?? "(empty)"])
         // every window has an archive state which defines both empty
         // (not yet loaded archives) or loaded archives
@@ -57,8 +60,9 @@ class ArchiveWindowManager {
             self?.windowControllers.removeAll { $0 === archiveWindowController }
         }
         archiveWindowController.showWindow(nil)
+        return archiveState
     }
-    
+
     /// During launch two things might happen. Either the app is launched with a url (e.g. via the Open With... menu
     /// or without. The order of `application(_:open:)` and `applicationDidFinishLaunching` is not
     /// guaranteed. That's why `openLaunchArchiveWindow` is only called once when the app launches
@@ -93,7 +97,12 @@ class ArchiveWindowManager {
     /// 1. archive already loaded: focus that window (don't reload)
     /// 2. an empty window exists: reuse it
     /// 3. otherwise: create a new window
-    func openArchiveWindow(for url: URL) {
+    ///
+    /// Returns the window's `ArchiveState`, so a caller that opened the archive
+    /// on purpose (e.g. via launch parameters) can drive it afterwards —
+    /// navigate to a path, select an item.
+    @discardableResult
+    func openArchiveWindow(for url: URL) -> ArchiveState {
         let key = windowKey(for: url)
         if let wc = windowControllers.first(where: {
             guard let existing = $0.archiveState.url else { return false }
@@ -102,13 +111,15 @@ class ArchiveWindowManager {
         }) {
             log.notice("Archive already open, focusing existing window for \(url.lastPathComponent)")
             wc.showWindow(nil)
+            return wc.archiveState
         } else if let ewc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {
             log.notice("Reusing empty window to open \(url.lastPathComponent)")
             ewc.archiveState.open(url: url)
             ewc.showWindow(nil)
+            return ewc.archiveState
         } else {
             log.notice("Opening a new window for \(url.lastPathComponent)")
-            createAndShowArchiveWindow(url)
+            return createAndShowArchiveWindow(url)
         }
     }
 
