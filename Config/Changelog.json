@@ -16,6 +16,30 @@
     },
     "versions": [
         {
+            "version": "0.18.0",
+            "items": [
+                {
+                    "type": "fix",
+                    "title": {
+                        "en": "Folders now stay on top by default when opening an archive",
+                        "zh-Hans": "打开压缩包时，文件夹现在默认显示在顶部",
+                        "fr": "Les dossiers restent désormais en haut par défaut à l’ouverture d’une archive",
+                        "de": "Ordner bleiben beim Öffnen eines Archivs jetzt standardmäßig oben",
+                        "it": "Le cartelle ora restano in cima per impostazione predefinita all’apertura di un archivio",
+                        "ja": "アーカイブを開いたとき、フォルダがデフォルトで先頭に表示されるようになりました",
+                        "fa": "هنگام باز کردن یک آرشیو، پوشه‌ها اکنون به‌طور پیش‌فرض در بالا می‌مانند",
+                        "pl": "Foldery są teraz domyślnie wyświetlane na górze po otwarciu archiwum",
+                        "pt-BR": "As pastas agora aparecem no topo por padrão ao abrir um arquivo",
+                        "ru": "Папки теперь по умолчанию отображаются сверху при открытии архива",
+                        "uk": "Теки тепер за замовчуванням відображаються зверху під час відкриття архіву",
+                        "es-MX": "Las carpetas ahora aparecen arriba de forma predeterminada al abrir un archivo",
+                        "ko": "이제 아카이브를 열 때 폴더가 기본적으로 맨 위에 표시됩니다"
+                    },
+                    "issues": ["126"]
+                }
+            ]
+        },
+        {
             "version": "0.17.0",
             "items": [
                 {
