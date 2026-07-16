@@ -1,15 +1,22 @@
-# ── Per-app release distribution shell ───────────────────────────────────────
-# Copy into each app repo at .github/workflows/distribute-release.yml.
-# Triggered by pushing a v*.*.* tag. Strict fail-safe order: GH Release is
-# only created after every other publish step succeeds.
+# ── Per-app release shell (workflows-macos v0.4.6, product-file model) ────────
+# Fires on a version tag. The orchestrator parses the tag → the target product,
+# validates the version against that product's inline changelog, then builds and
+# publishes just it. The GH Release is created last (fail-safe ordering).
+#
+# Cross-account (sarensw/MacPacker → LeanBytes/workflows-macos): `secrets: inherit`
+# forwards nothing across accounts, so the map stays explicit. No JIRA_API_TOKEN
+# here — the release orchestrator does not declare it (passing an undeclared
+# secret is a hard workflow error) and release runs no tests.
 # ─────────────────────────────────────────────────────────────────────────────
 name: Distribute Release
 
 on:
   push:
     tags:
-      - 'v*'
-      - '!v*-beta.*'
+      - 'v*'           # primary product (MacPacker): v0.17.0
+      - '*-v*'         # extra products:              <id>-v0.17.0
+      - '!*-beta.*'    # exclude the auto-pushed beta tags
+      - '!*-alpha.*'   # …and alpha tags
 
 permissions:
   contents: write    # for the GH Release
@@ -17,8 +24,8 @@ permissions:
 
 jobs:
   release:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.3.47
-    secrets: 
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.4.6
+    secrets:
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
       KEYCHAIN_PASSWORD:              ${{ secrets.KEYCHAIN_PASSWORD }}
@@ -40,20 +47,9 @@ jobs:
       SPARKLE_ED_PRIVATE_KEY:         ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
       SHARED_WORKFLOWS_TOKEN:         ${{ secrets.SHARED_WORKFLOWS_TOKEN }}
     with:
-      # ── Build toggles ─
-      build-direct: true
-      build-app-store: true
-
-      # ── Distribute toggles ──
-      distribute-app-store: true
-      distribute-stable-appcast: true
-
-      # ── Per-app build flags ──
-      has-finder-extension: true
-      has-quicklook-extension: true
-
-      # ── Build configuration ──
-      configuration-direct: Release
+      artifact-retention-days: 90   # CI artifacts kept 90 days
+      # The store leg MUST archive "Release Store" — the orchestrator default is
+      # "Release", which would build the wrong flavor.
       configuration-app-store: Release Store
 
       # ── Discussion configuration ──
