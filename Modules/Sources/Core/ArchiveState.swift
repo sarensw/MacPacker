@@ -327,20 +327,105 @@ extension ArchiveState {
     
     public func add(url: URL) {
         guard let selectedItem else { return }
-        let archivePath = selectedItem.virtualPath == nil ? url.lastPathComponent : "\(selectedItem.virtualPath!)/\(url.lastPathComponent)"
-        
-        diff.append(ArchiveUpdateItem.addFile(
-            archivePath: archivePath,
-            diskPath: url)
-        )
-        
-        let item = ArchiveItem(url: url)
-        item.parent = selectedItem.id
-        selectedItem.addChild(item.id)
-        entries[item.id] = item
-        
+        let base = (selectedItem.virtualPath?.isEmpty == false && selectedItem.virtualPath != "/")
+            ? selectedItem.virtualPath! + "/" : ""
+
+        if url.isDirectory {
+            // folders are added recursively so their contents end up in the archive
+            addFolder(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
+        } else {
+            addFile(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
+        }
+
         self.isReloadNeeded = true
         loadChildren()
+    }
+
+    private func addFile(url: URL, archivePath: String, under parent: ArchiveItem) {
+        diff.append(.addFile(archivePath: archivePath, diskPath: url))
+        let item = ArchiveItem(url: url, archivePath: archivePath)
+        item.parent = parent.id
+        parent.addChild(item.id)
+        entries[item.id] = item
+    }
+
+    private func addFolder(url: URL, archivePath: String, under parent: ArchiveItem) {
+        diff.append(.addDirectory(archivePath: archivePath))
+        let item = ArchiveItem(url: url, archivePath: archivePath)
+        item.parent = parent.id
+        parent.addChild(item.id)
+        entries[item.id] = item
+
+        let children = (try? FileManager.default.contentsOfDirectory(
+            at: url, includingPropertiesForKeys: nil)) ?? []
+        for child in children.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+            if child.isDirectory {
+                addFolder(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
+            } else {
+                addFile(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
+            }
+        }
+    }
+
+    /// Removes the given items (files or folders, including everything below
+    /// them) from the archive. The removal is recorded in the diff — `save()`
+    /// applies it to the file.
+    public func remove(items: [ArchiveItem]) {
+        guard canBeEdited else { return }
+
+        var removedIndices: Set<UInt32> = []
+        var droppedAddPaths: Set<String> = []
+        for item in items {
+            collectRemovals(item, indices: &removedIndices, pendingPaths: &droppedAddPaths)
+            if let parentId = item.parent {
+                entries[parentId]?.removeChild(item.id)
+            }
+        }
+
+        // pending (unsaved) additions are simply dropped from the diff
+        if !droppedAddPaths.isEmpty {
+            diff.removeAll { entry in
+                switch entry {
+                case .addFile(let p, _, _, _), .addDirectory(let p, _, _), .addData(let p, _, _, _):
+                    return droppedAddPaths.contains(p)
+                default:
+                    return false
+                }
+            }
+        }
+        // entries that exist in the archive on disk are removed on save
+        diff.append(contentsOf: removedIndices.sorted().map { .remove(sourceIndex: $0) })
+
+        log.notice("Marked items for removal", context: [
+            "items": "\(items.count)",
+            "archiveEntries": "\(removedIndices.count)",
+            "pendingAdds": "\(droppedAddPaths.count)"
+        ])
+
+        selectedItems = []
+        isReloadNeeded = true
+        loadChildren()
+    }
+
+    /// Depth-first: collects the source indices (real archive entries) and
+    /// pending-addition paths of the item and all of its descendants, and
+    /// drops them from `entries`.
+    private func collectRemovals(
+        _ item: ArchiveItem,
+        indices: inout Set<UInt32>,
+        pendingPaths: inout Set<String>
+    ) {
+        for childId in item.children ?? [] {
+            if let child = entries[childId] {
+                collectRemovals(child, indices: &indices, pendingPaths: &pendingPaths)
+            }
+        }
+        if let index = item.index {
+            indices.insert(index)
+        } else if let path = item.virtualPath, path != "/" {
+            pendingPaths.insert(path)
+        }
+        entries.removeValue(forKey: item.id)
     }
 
     /// Opens a dropped file in this window: a supported archive is opened directly;
@@ -355,29 +440,80 @@ extension ArchiveState {
         }
     }
 
-    /// Saves the current changes to the file
-    public func save() {
-        guard let url else { return }
-        guard diff.count > 0 else { return }
-        
-        Task {
+    /// Whether there are unsaved changes (pending additions/removals).
+    public var hasPendingChanges: Bool { !diff.isEmpty }
+
+    /// Saves the pending changes.
+    ///
+    /// - For an archive loaded from disk, the changes are applied in place
+    ///   (`destination` may override, "save as").
+    /// - For a new archive (never saved), `destination` is required — that's
+    ///   where the archive is created.
+    ///
+    /// After a successful write the archive is reloaded from disk so the
+    /// shown entries (and their source indices) match the file again.
+    @discardableResult
+    public func save(
+        to destination: URL? = nil,
+        options: SevenZipCompressionOptions? = nil
+    ) -> Task<Void, Never>? {
+        guard let target = destination ?? url else { return nil }
+        guard !diff.isEmpty else { return nil }
+
+        let source = url
+        let items = diff
+        // format follows the target extension; zip is the default
+        let format: SevenZipCompressionOptions.Format =
+            target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
+        let effectiveOptions = options ?? SevenZipCompressionOptions(format: format)
+
+        isBusy = true
+        updateStatus(.processing)
+        updateStatusText("saving...")
+        log.notice("Saving archive", context: [
+            "target": target.lastPathComponent,
+            "changes": "\(items.count)",
+            "new": "\(source == nil)"
+        ])
+
+        return Task {
             do {
-                _ = url.startAccessingSecurityScopedResource()
-                defer { url.stopAccessingSecurityScopedResource() }
-                
-                for case let .addFile(file) in diff {
-                    _ = file.diskPath.startAccessingSecurityScopedResource()
+                let targetAccessed = target.startAccessingSecurityScopedResource()
+                var accessedFiles: [URL] = []
+                for case let .addFile(_, diskPath, _, _) in items {
+                    if diskPath.startAccessingSecurityScopedResource() {
+                        accessedFiles.append(diskPath)
+                    }
                 }
-                
-                try SevenZipArchive.writeArchive(
-                    source: url,
-                    destination: url,
-                    items: diff
-                )
-                
+                defer {
+                    if targetAccessed { target.stopAccessingSecurityScopedResource() }
+                    for f in accessedFiles { f.stopAccessingSecurityScopedResource() }
+                }
+
+                // the write is a long synchronous C call — keep it off the
+                // cooperative pool
+                let work: @Sendable () throws -> Void = {
+                    try SevenZipArchive.writeArchive(
+                        source: source,
+                        destination: target,
+                        items: items,
+                        options: effectiveOptions
+                    )
+                }
+                try await runBlocking(work)
+
                 diff.removeAll()
+                log.notice("Archive saved", context: ["target": target.lastPathComponent])
+
+                // reload from disk so entries and indices reflect the file
+                open(url: target)
+                _ = try? await openTask?.value
             } catch {
                 log.error(error)
+                self.error = error.localizedDescription
+                self.isBusy = false
+                updateStatusText(nil)
+                updateStatus(.done)
             }
         }
     }

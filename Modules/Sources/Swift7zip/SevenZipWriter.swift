@@ -196,10 +196,12 @@ extension SevenZipArchive {
                     if let p { cItems[i].posix_permissions = UInt32(p) }
                 case .addData(_, _, let d, let p):
                     if let d { cItems[i].mtime = Int64(d.timeIntervalSince1970) }
-                    if let p { cItems[i].posix_permissions = UInt32(p) }
+                    // no permissions given: default to a regular 644 file —
+                    // leaving them unset stores mode 000, which extracts as unreadable
+                    cItems[i].posix_permissions = p.map(UInt32.init) ?? 0o100644
                 case .addDirectory(_, let d, let p):
                     if let d { cItems[i].mtime = Int64(d.timeIntervalSince1970) }
-                    if let p { cItems[i].posix_permissions = UInt32(p) }
+                    cItems[i].posix_permissions = p.map(UInt32.init) ?? 0o40755
                 }
             }
 
