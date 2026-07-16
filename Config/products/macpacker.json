@@ -33,6 +33,51 @@
     },
     "versions": [
       {
+        "version": "0.18.0",
+        "items": [
+          {
+            "type": "feat",
+            "title": {
+              "en": "Open an archive and jump straight to a file inside it with launch parameters",
+              "zh-Hans": "通过启动参数打开压缩包并直接跳转到其中的文件",
+              "fr": "Ouvrir une archive et accéder directement à un fichier qu’elle contient via des paramètres de lancement",
+              "de": "Ein Archiv öffnen und per Startparameter direkt zu einer Datei darin springen",
+              "it": "Apri un archivio e vai direttamente a un file al suo interno tramite parametri di avvio",
+              "ja": "起動パラメータでアーカイブを開き、その中のファイルに直接移動",
+              "fa": "باز کردن یک آرشیو و رفتن مستقیم به یک فایل درون آن با پارامترهای راه‌اندازی",
+              "pl": "Otwieranie archiwum i przechodzenie prosto do pliku w nim za pomocą parametrów uruchamiania",
+              "pt-BR": "Abra um arquivo compactado e vá direto para um arquivo dentro dele com parâmetros de inicialização",
+              "ru": "Открытие архива и переход сразу к файлу внутри него через параметры запуска",
+              "uk": "Відкриття архіву та перехід одразу до файлу в ньому через параметри запуску",
+              "es-MX": "Abre un archivo comprimido y ve directo a un archivo dentro de él mediante parámetros de lanzamiento",
+              "ko": "실행 매개변수로 아카이브를 열고 그 안의 파일로 바로 이동"
+            },
+            "issues": []
+          },
+          {
+            "type": "fix",
+            "title": {
+              "en": "Folders now stay on top by default when opening an archive",
+              "zh-Hans": "打开压缩包时，文件夹现在默认显示在顶部",
+              "fr": "Les dossiers restent désormais en haut par défaut à l’ouverture d’une archive",
+              "de": "Ordner bleiben beim Öffnen eines Archivs jetzt standardmäßig oben",
+              "it": "Le cartelle ora restano in cima per impostazione predefinita all’apertura di un archivio",
+              "ja": "アーカイブを開いたとき、フォルダがデフォルトで先頭に表示されるようになりました",
+              "fa": "هنگام باز کردن یک آرشیو، پوشه‌ها اکنون به‌طور پیش‌فرض در بالا می‌مانند",
+              "pl": "Foldery są teraz domyślnie wyświetlane na górze po otwarciu archiwum",
+              "pt-BR": "As pastas agora aparecem no topo por padrão ao abrir um arquivo",
+              "ru": "Папки теперь по умолчанию отображаются сверху при открытии архива",
+              "uk": "Теки тепер за замовчуванням відображаються зверху під час відкриття архіву",
+              "es-MX": "Las carpetas ahora aparecen arriba de forma predeterminada al abrir un archivo",
+              "ko": "이제 아카이브를 열 때 폴더가 기본적으로 맨 위에 표시됩니다"
+            },
+            "issues": [
+              "126"
+            ]
+          }
+        ]
+      },
+      {
         "version": "0.17.0",
         "items": [
           {

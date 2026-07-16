@@ -36,12 +36,17 @@ struct ChangelogItem: Decodable, Identifiable {
 
 final class ChangelogLoader {
     private static func loadChangelog() -> Changelog? {
-        guard let url = Bundle.main.url(forResource: "Changelog", withExtension: "json"),
+        // Source of truth is the bundled product file (Config/products/macpacker.json,
+        // flattened to macpacker.json in the app bundle), which nests the changelog
+        // under a `changelog` key alongside build identity. The old top-level
+        // Config/Changelog.json is gone.
+        struct ProductFile: Decodable { let changelog: Changelog }
+        guard let url = Bundle.main.url(forResource: "macpacker", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
             return nil
         }
-        let changelog = try? JSONDecoder().decode(Changelog.self, from: data)
-        return changelog
+        let product = try? JSONDecoder().decode(ProductFile.self, from: data)
+        return product?.changelog
     }
     
     static func loadComingNext() -> [String: String] {
