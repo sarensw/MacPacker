@@ -93,6 +93,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .extractToFolder:
                 handler = AppUrlExtractToFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+            case .compress:
+                handler = AppUrlCompressHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+            case .addToArchive:
+                handler = AppUrlAddToArchiveHandler()
             }
 
             guard let handler else {
@@ -274,5 +278,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     
     func openNewArchiveWindow() {
         self.archiveWindowManager?.openNewArchiveWindow()
+    }
+
+    func openCreateArchiveWindow() {
+        self.archiveWindowManager?.openCreateArchiveWindow()
     }
 }

@@ -55,6 +55,17 @@ struct MacPackerApp: App {
             
             CommandGroup(replacing: .newItem) {
                 Button {
+                    appDelegate.openCreateArchiveWindow()
+                } label: {
+                    Label {
+                        Text("New Archive", comment: "File menu entry that opens a window with a new, empty archive ready to be filled and saved")
+                    } icon: {
+                        Image(systemName: "doc.badge.plus")
+                    }
+                }
+                .keyboardShortcut("n", modifiers: [.command])
+
+                Button {
                     appDelegate.openNewArchiveWindow()
                 } label: {
                     Label {
@@ -63,6 +74,7 @@ struct MacPackerApp: App {
                         Image(systemName: "plus.rectangle")
                     }
                 }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
                 
                 Button {
                     appDelegate.openArchiveUsingOpenPanel()

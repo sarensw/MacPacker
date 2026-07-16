@@ -26,6 +26,25 @@ struct ArchiveContentToolbarView: ToolbarContent {
     let archiveState: ArchiveState
     let contentService: ArchiveContentService = ArchiveContentService()
     
+    /// Lets the user pick files/folders and adds them to the current
+    /// archive at the currently shown path.
+    private func addFilesViaOpenPanel() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = true
+        panel.prompt = String(localized: "Add", comment: "Prompt of the open panel used to add files to an archive")
+        let state = archiveState
+        panel.begin { response in
+            guard response == .OK else { return }
+            Task { @MainActor in
+                for url in panel.urls {
+                    state.add(url: url)
+                }
+            }
+        }
+    }
+
     private var moreAppsTitle: AttributedString {
         var title = AttributedString(localized: LocalizedStringResource("More Apps", comment: "Hint to the user that the submenu contains links for more apps that they might like."))
         title.append(AttributedString(stringLiteral: " "))
@@ -41,7 +60,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
     var body: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
             Button {
-                archiveState.save()
+                addFilesViaOpenPanel()
             } label: {
                 Label {
                     Text("Add", comment: "Button in the tooblar that allows the user to add a file to the current archive path.")
@@ -49,10 +68,28 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     Image(systemName: "plus")
                 }
             }
+            .help("Add files or folders to the archive")
             .disabled(!archiveState.canBeEdited)
-            
+
             Button {
-                archiveState.save()
+                archiveState.remove(items: archiveState.selectedItems)
+            } label: {
+                Label {
+                    Text("Delete", comment: "Button in the toolbar that deletes the selected files from the archive.")
+                } icon: {
+                    Image(systemName: "trash")
+                }
+            }
+            .help("Delete the selected items from the archive")
+            .disabled(!archiveState.canBeEdited || archiveState.selectedItems.isEmpty)
+
+            Button {
+                if archiveState.url == nil {
+                    // a new archive that never hit the disk — ask where to create it
+                    ArchiveSavePanel.runAndSave(state: archiveState, window: NSApp.keyWindow)
+                } else {
+                    archiveState.save()
+                }
             } label: {
                 Label {
                     Text("Save", comment: "Button in the tooblar that allows the user to save the current file after it was being edited.")
@@ -60,8 +97,9 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     Image(systemName: "square.and.arrow.down")
                 }
             }
-            .disabled(!archiveState.canBeEdited)
-            
+            .help("Save the changes to the archive")
+            .disabled(!archiveState.canBeEdited || !archiveState.hasPendingChanges)
+
             Spacer()
             
             Button {

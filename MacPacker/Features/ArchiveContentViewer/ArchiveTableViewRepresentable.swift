@@ -50,7 +50,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     
     /// Coordinator used to sync with the SwiftUI code portion
     @MainActor
-    final class Coordinator: NSObject, @MainActor NSTableViewDelegate, NSTableViewDataSource, @MainActor NSFilePromiseProviderDelegate {
+    final class Coordinator: NSObject, @MainActor NSTableViewDelegate, NSTableViewDataSource, @MainActor NSFilePromiseProviderDelegate, @MainActor NSMenuDelegate {
         var parent: ArchiveTableViewRepresentable
         
         var filePromiseQueue: OperationQueue = {
@@ -355,6 +355,95 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 parent.archiveState.changeSelection(selection: tableView.selectedRowIndexes)
             }
         }
+
+        //
+        // MARK: Context menu
+        //
+
+        /// Rebuilds the right-click menu each time it opens (7-Zip/NanaZip
+        /// style: Open, Quick Look, Extract, Delete).
+        @objc func menuNeedsUpdate(_ menu: NSMenu) {
+            menu.removeAllItems()
+            guard let tableView = contextTableView else { return }
+
+            // right-click on a row outside the selection acts on that row
+            let clicked = tableView.clickedRow
+            if clicked >= 0 && !tableView.selectedRowIndexes.contains(clicked) {
+                tableView.selectRowIndexes(IndexSet(integer: clicked), byExtendingSelection: false)
+            }
+
+            let state = parent.archiveState
+            let hasSelection = !state.selectedItems.isEmpty
+
+            let open = NSMenuItem(
+                title: String(localized: "Open", comment: "Context menu: open the clicked item"),
+                action: #selector(contextOpen(_:)), keyEquivalent: "")
+            open.target = self
+            open.isEnabled = hasSelection
+            menu.addItem(open)
+
+            let quickLook = NSMenuItem(
+                title: String(localized: "Quick Look", comment: "Context menu: preview the clicked item"),
+                action: #selector(contextQuickLook(_:)), keyEquivalent: " ")
+            quickLook.target = self
+            quickLook.isEnabled = hasSelection
+            menu.addItem(quickLook)
+
+            menu.addItem(.separator())
+
+            let extract = NSMenuItem(
+                title: String(localized: "Extract Selected…", comment: "Context menu: extract the selected items to a folder"),
+                action: #selector(contextExtract(_:)), keyEquivalent: "")
+            extract.target = self
+            extract.isEnabled = hasSelection
+            menu.addItem(extract)
+
+            menu.addItem(.separator())
+
+            let delete = NSMenuItem(
+                title: String(localized: "Delete", comment: "Context menu: delete the selected items from the archive"),
+                action: #selector(contextDelete(_:)), keyEquivalent: "\u{8}")
+            delete.keyEquivalentModifierMask = []
+            delete.target = self
+            delete.isEnabled = hasSelection && state.canBeEdited
+            menu.addItem(delete)
+        }
+
+        /// The table the context menu belongs to; set when the menu is attached.
+        weak var contextTableView: NSTableView?
+
+        @objc func contextOpen(_ sender: Any?) {
+            guard let item = parent.archiveState.selectedItems.first else { return }
+            parent.archiveState.open(item: item)
+        }
+
+        @objc func contextQuickLook(_ sender: Any?) {
+            parent.archiveState.updateSelectedItemForQuickLook()
+        }
+
+        @objc func contextExtract(_ sender: Any?) {
+            let state = parent.archiveState
+            let items = state.selectedItems
+            guard !items.isEmpty else { return }
+            let panel = NSOpenPanel()
+            panel.canChooseFiles = false
+            panel.canChooseDirectories = true
+            panel.canCreateDirectories = true
+            panel.allowsMultipleSelection = false
+            panel.prompt = String(localized: "Extract", comment: "Prompt of the folder picker used to extract items")
+            panel.begin { response in
+                guard response == .OK, let url = panel.url else { return }
+                Task { @MainActor in
+                    state.extract(items: items, to: url)
+                }
+            }
+        }
+
+        @objc func contextDelete(_ sender: Any?) {
+            let state = parent.archiveState
+            guard state.canBeEdited, !state.selectedItems.isEmpty else { return }
+            state.remove(items: state.selectedItems)
+        }
         
         //
         // MARK: File Promise
@@ -459,7 +548,18 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         tableView.columnAutoresizingStyle = .noColumnAutoresizing
         
         tableView.doubleAction = #selector(Coordinator.doubleClicked(_:))
-        
+
+        // right-click menu (Open / Quick Look / Extract / Delete)
+        let menu = NSMenu()
+        menu.delegate = context.coordinator
+        menu.autoenablesItems = false
+        context.coordinator.contextTableView = tableView
+        tableView.menu = menu
+
+        tableView.deleteSelected = { [coordinator = context.coordinator] in
+            coordinator.contextDelete(nil)
+        }
+
         return scrollView
     }
     
@@ -563,6 +663,7 @@ class ArchiveTableView: NSTableView {
     var openSelected: ((NSTableView) -> Void)?
     var openParent: ((NSTableView) -> Void)?
     var openPreview: (() -> Void)?
+    var deleteSelected: (() -> Void)?
     var state: ArchiveState?
     
     private var observerKeys: Any?
@@ -590,6 +691,9 @@ class ArchiveTableView: NSTableView {
         
         if event.keyCode == 49 {
             openPreview?()
+        } else if event.keyCode == 51 || event.keyCode == 117 {
+            // ⌫ / ⌦ delete the selected items from an editable archive
+            deleteSelected?()
         } else if event.keyCode == 125 && event.modifierFlags.contains(.command) {
             openSelected?(self)
         } else if event.keyCode == 126 && event.modifierFlags.contains(.command) {

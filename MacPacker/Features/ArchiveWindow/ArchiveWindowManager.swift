@@ -87,6 +87,19 @@ class ArchiveWindowManager {
     func openNewArchiveWindow() {
         createAndShowArchiveWindow(nil)
     }
+
+    /// Opens a window with a fresh, empty archive in edit mode — optionally
+    /// pre-filled with files (used by the Finder "Add to Archive…" action).
+    /// The archive gets its place on disk when the user saves.
+    @discardableResult
+    func openCreateArchiveWindow(with files: [URL] = []) -> ArchiveState {
+        let state = createAndShowArchiveWindow(nil)
+        state.create()
+        for file in files {
+            state.add(url: file)
+        }
+        return state
+    }
     
     /// Shows a window for `url`. Just window management — the loader resolves the
     /// real archive (unwrapping compounds, reducing a split to its first volume) and
