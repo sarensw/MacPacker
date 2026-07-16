@@ -16,6 +16,10 @@ enum AppUrlAction: String {
     case extractFiles
     case extractHere
     case extractToFolder
+    /// create a zip next to the selected files, silently
+    case compress
+    /// open a new-archive window pre-filled with the selected files
+    case addToArchive
 }
 
 struct AppUrl {
