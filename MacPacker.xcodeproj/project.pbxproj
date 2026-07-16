@@ -25,8 +25,8 @@
 		25C69EAE2FE4969F002287A0 /* SandboxPilotKit in Frameworks */ = {isa = PBXBuildFile; productRef = 25C69EAD2FE4969F002287A0 /* SandboxPilotKit */; };
 		25C764252E6C6D5300464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764242E6C6D5300464CF5 /* XADMasterSwift */; };
 		25C764272E6C6D6200464CF5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25C764262E6C6D6200464CF5 /* XADMasterSwift */; };
-		25D7B4F12FBFB84700021B10 /* Changelog.json in Resources */ = {isa = PBXBuildFile; fileRef = 25D7B4F02FBFB82E00021B10 /* Changelog.json */; };
-		25D7B4F22FBFB84B00021B10 /* Changelog.json in Resources */ = {isa = PBXBuildFile; fileRef = 25D7B4F02FBFB82E00021B10 /* Changelog.json */; };
+		25D7B4F12FBFB84700021B10 /* macpacker.json in Resources */ = {isa = PBXBuildFile; fileRef = 25D7B4F02FBFB82E00021B10 /* macpacker.json */; };
+		25D7B4F22FBFB84B00021B10 /* macpacker.json in Resources */ = {isa = PBXBuildFile; fileRef = 25D7B4F02FBFB82E00021B10 /* macpacker.json */; };
 		25D80C9E2E80204A00A55040 /* FinderExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 252F12022E7ABDD9004CCEBE /* FinderExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25E426C92E6BEB3800F10BE5 /* XADMasterSwift */; };
 		25E6DA782FE5A6FC00AD47BB /* ArchivePreviewUI in Frameworks */ = {isa = PBXBuildFile; productRef = 25E6DA772FE5A6FC00AD47BB /* ArchivePreviewUI */; };
@@ -101,7 +101,7 @@
 		25CFF88D2F98BF5B003F064E /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		25CFF88E2F98BF5B003F064E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		25CFF88F2F98BF5B003F064E /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
-		25D7B4F02FBFB82E00021B10 /* Changelog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Changelog.json; sourceTree = "<group>"; };
+		25D7B4F02FBFB82E00021B10 /* macpacker.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = products/macpacker.json; sourceTree = "<group>"; };
 		25D7B5BC2FBFCCF000021B10 /* Release_Store.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release_Store.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -202,7 +202,7 @@
 		25AA00022F0000000000CC02 /* Config */ = {
 			isa = PBXGroup;
 			children = (
-				25D7B4F02FBFB82E00021B10 /* Changelog.json */,
+				25D7B4F02FBFB82E00021B10 /* macpacker.json */,
 				25CFF88D2F98BF5B003F064E /* Debug.xcconfig */,
 				25CFF88E2F98BF5B003F064E /* Release.xcconfig */,
 				25D7B5BC2FBFCCF000021B10 /* Release_Store.xcconfig */,
@@ -429,7 +429,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				25D7B4F22FBFB84B00021B10 /* Changelog.json in Resources */,
+				25D7B4F22FBFB84B00021B10 /* macpacker.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -444,7 +444,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				25D7B4F12FBFB84700021B10 /* Changelog.json in Resources */,
+				25D7B4F12FBFB84700021B10 /* macpacker.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
