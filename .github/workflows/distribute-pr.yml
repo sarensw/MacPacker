@@ -1,4 +1,4 @@
-# ── Per-app PR shell (workflows-macos v0.4.5, product-file model) ─────────────
+# ── Per-app PR shell (workflows-macos v0.4.6, product-file model) ─────────────
 # Trigger-only: the orchestrator discovers every Config/products/<id>.json and
 # compiles each product (unsigned, fork-PR safe), then runs the Swift package
 # tests. Identity + channels live in the product files, not here.
@@ -18,8 +18,9 @@ permissions:
 
 jobs:
   pr:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.4.5
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.4.6
     with:
+      artifact-retention-days: 90   # CI artifacts kept 90 days
       # ── Test configuration ──
       run-tests: true
       test-runner: swift

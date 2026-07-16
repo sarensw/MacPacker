@@ -1,4 +1,4 @@
-# ── Per-app release shell (workflows-macos v0.4.5, product-file model) ────────
+# ── Per-app release shell (workflows-macos v0.4.6, product-file model) ────────
 # Fires on a version tag. The orchestrator parses the tag → the target product,
 # validates the version against that product's inline changelog, then builds and
 # publishes just it. The GH Release is created last (fail-safe ordering).
@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   release:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.4.5
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.4.6
     secrets:
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
@@ -47,6 +47,7 @@ jobs:
       SPARKLE_ED_PRIVATE_KEY:         ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
       SHARED_WORKFLOWS_TOKEN:         ${{ secrets.SHARED_WORKFLOWS_TOKEN }}
     with:
+      artifact-retention-days: 90   # CI artifacts kept 90 days
       # The store leg MUST archive "Release Store" — the orchestrator default is
       # "Release", which would build the wrong flavor.
       configuration-app-store: Release Store
