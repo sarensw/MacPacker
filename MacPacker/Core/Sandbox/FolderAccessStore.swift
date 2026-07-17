@@ -86,7 +86,7 @@ final class FolderAccessStore {
             panel.allowsMultipleSelection = false
             panel.directoryURL = seed
             panel.prompt = "Grant Access"
-            panel.message = "MacPacker needs access to \u{201C}\(seed.lastPathComponent)\u{201D} to read every part of this split archive. This is remembered so you won't be asked again for this folder."
+            panel.message = "MacPacker needs access to \u{201C}\(seed.lastPathComponent)\u{201D} to work with the archive there. This is remembered so you won't be asked again for this folder."
             panel.level = .floating
             panel.begin { response in
                 continuation.resume(returning: response == .OK ? panel.url : nil)

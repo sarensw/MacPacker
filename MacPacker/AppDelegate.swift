@@ -202,6 +202,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
 
+        // Debug-only end-to-end hook: MACPACKER_DEBUG_ZIPDELETE="<archive>|<entryName>"
+        // opens the archive headless, removes the first entry with that name
+        // and saves in place — the zip edit path without UI scripting.
+        if let spec = ProcessInfo.processInfo.environment["MACPACKER_DEBUG_ZIPDELETE"] {
+            let parts = spec.split(separator: "|").map(String.init)
+            if parts.count == 2 {
+                let archiveURL = URL(fileURLWithPath: parts[0])
+                let entryName = parts[1]
+                log.notice("DEBUG zip-delete hook starting", context: ["archive": archiveURL.path, "entry": entryName])
+                let state = ArchiveState(catalog: appState.catalog, engineSelector: appState.engineSelector)
+                Task {
+                    state.open(url: archiveURL)
+                    try? await state.openTask?.value
+                    if let item = state.entries.values.first(where: { $0.name == entryName }) {
+                        state.remove(items: [item])
+                        await state.save()?.value
+                        log.notice("DEBUG zip-delete hook done", context: ["error": state.error ?? "none"])
+                    } else {
+                        log.error("DEBUG zip-delete hook: entry not found", context: ["entry": entryName])
+                    }
+                }
+            }
+        }
+
         // Debug-only extraction preview: -ExtractDemo shows the extraction
         // window with mock progress so that window can be screenshotted in a
         // known state without running a real extraction.

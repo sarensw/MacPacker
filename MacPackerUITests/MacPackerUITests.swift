@@ -18,11 +18,24 @@ final class MacPackerUITests: XCTestCase {
     private let appBundleId = "com.sarensx.MacPacker.debug"
     private let appUrlScheme = "app.macpacker.debug"
 
-    /// tmp dir INSIDE the app's sandbox container — the only place both the
-    /// (unsandboxed) test runner and the sandboxed app can read and write.
-    private var containerTmp: URL {
+    /// Fixture area: the runner's home (its own container under XCUITest).
+    /// The app under test can READ here but not write — saving triggers the
+    /// folder-access prompt, which the tests confirm like a user would. That
+    /// also exercises the read-only-archive save recovery on purpose.
+    private var fixtureBase: URL {
         FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Containers/\(appBundleId)/Data/tmp")
+            .appendingPathComponent("Library/Application Support/MacPackerUITests")
+    }
+
+    /// Confirms a powerbox folder-access panel when it appears: the panel's
+    /// default button carries the given title, Return triggers it. Scoped to
+    /// windows — a bare `buttons[...]` query can resolve to an unclickable
+    /// Touch Bar element.
+    private func confirmAccessPanel(_ app: XCUIApplication, button: String, timeout: TimeInterval = 10) {
+        let grant = app.windows.buttons[button].firstMatch
+        if grant.waitForExistence(timeout: timeout) {
+            app.typeKey(.return, modifierFlags: [])
+        }
     }
 
     override func setUpWithError() throws {
@@ -48,9 +61,9 @@ final class MacPackerUITests: XCTestCase {
         return text
     }
 
-    /// Fresh work dir in the app container for one test.
+    /// Fresh work dir for one test.
     private func makeWorkDir(_ name: String) throws -> URL {
-        let dir = containerTmp.appendingPathComponent("uitests-\(name)-\(UUID().uuidString)")
+        let dir = fixtureBase.appendingPathComponent("macpacker-uitests-\(name)-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }
@@ -97,8 +110,11 @@ final class MacPackerUITests: XCTestCase {
         // the row disappears from the table immediately
         XCTAssertTrue(victim.waitForNonExistence(timeout: 5), "deleted row still shown")
 
-        // ⌘S (File > Save Archive) applies the change to the file
+        // ⌘S (File > Save Archive) applies the change to the file; the
+        // archive was opened without a write grant, so the app asks for
+        // folder access first — confirm it
         app.typeKey("s", modifierFlags: .command)
+        confirmAccessPanel(app, button: "Grant Access")
 
         // poll the file until the entry is gone (save is async)
         let deadline = Date().addingTimeInterval(15)
@@ -135,6 +151,7 @@ final class MacPackerUITests: XCTestCase {
         app.buttons["Delete"].firstMatch.click()
         XCTAssertTrue(folderRow.waitForNonExistence(timeout: 5))
         app.typeKey("s", modifierFlags: .command)
+        confirmAccessPanel(app, button: "Grant Access")
 
         let deadline = Date().addingTimeInterval(15)
         var entries = try zipEntries(zip)
@@ -171,12 +188,8 @@ final class MacPackerUITests: XCTestCase {
         ]
         NSWorkspace.shared.open(comps.url!)
 
-        // the sandbox asks once for folder access — confirm the prompt.
-        // scope to windows (a bare buttons query can resolve to a Touch Bar
-        // element that cannot be clicked); Return triggers the default button.
-        let grantButton = app.windows.buttons["Give access to MacPacker"].firstMatch
-        XCTAssertTrue(grantButton.waitForExistence(timeout: 10), "folder access prompt did not appear")
-        app.typeKey(.return, modifierFlags: [])
+        // the sandbox asks once for folder access — confirm the prompt
+        confirmAccessPanel(app, button: "Give access to MacPacker")
 
         // the zip appears next to the file and contains it
         let created = dir.appendingPathComponent("hello.zip")

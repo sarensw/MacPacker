@@ -476,31 +476,57 @@ extension ArchiveState {
             "new": "\(source == nil)"
         ])
 
+        // the write is a long synchronous C call — keep it off the
+        // cooperative pool; bracket any stored security-scoped grant
+        let performWrite: @MainActor () async throws -> Void = {
+            var accessedFiles: [URL] = []
+            for case let .addFile(_, diskPath, _, _) in items {
+                if diskPath.startAccessingSecurityScopedResource() {
+                    accessedFiles.append(diskPath)
+                }
+            }
+            defer { for f in accessedFiles { f.stopAccessingSecurityScopedResource() } }
+
+            let work: @Sendable () throws -> Void = {
+                try SevenZipArchive.writeArchive(
+                    source: source,
+                    destination: target,
+                    items: items,
+                    options: effectiveOptions
+                )
+            }
+            try await Sandbox.access(url: target) {
+                try await runBlocking(work)
+            }
+        }
+
+        /// The archive may have been opened with a read-only grant (e.g. a
+        /// path handed over without a powerbox grant). Then the write fails
+        /// with a no-permission error — ask for folder access exactly like
+        /// the split-volume loader does, and retry once.
+        let isPermissionError: (Error) -> Bool = { error in
+            let ns = error as NSError
+            if ns.domain == NSCocoaErrorDomain,
+               ns.code == NSFileWriteNoPermissionError || ns.code == NSFileReadNoPermissionError {
+                return true
+            }
+            if case SevenZipError.writeFailed(let msg) = error {
+                return msg.contains("Cannot create output file") || msg.contains("Cannot open")
+            }
+            return false
+        }
+
         return Task {
             do {
-                let targetAccessed = target.startAccessingSecurityScopedResource()
-                var accessedFiles: [URL] = []
-                for case let .addFile(_, diskPath, _, _) in items {
-                    if diskPath.startAccessingSecurityScopedResource() {
-                        accessedFiles.append(diskPath)
+                do {
+                    try await performWrite()
+                } catch where isPermissionError(error) {
+                    log.notice("Save hit a permission error — asking for folder access", context: ["target": target.lastPathComponent])
+                    guard let provider = folderAccessProvider, await provider(target) else {
+                        throw error
                     }
+                    try await performWrite()
                 }
-                defer {
-                    if targetAccessed { target.stopAccessingSecurityScopedResource() }
-                    for f in accessedFiles { f.stopAccessingSecurityScopedResource() }
-                }
-
-                // the write is a long synchronous C call — keep it off the
-                // cooperative pool
-                let work: @Sendable () throws -> Void = {
-                    try SevenZipArchive.writeArchive(
-                        source: source,
-                        destination: target,
-                        items: items,
-                        options: effectiveOptions
-                    )
-                }
-                try await runBlocking(work)
 
                 diff.removeAll()
                 log.notice("Archive saved", context: ["target": target.lastPathComponent])
@@ -509,7 +535,10 @@ extension ArchiveState {
                 open(url: target)
                 _ = try? await openTask?.value
             } catch {
-                log.error(error)
+                log.error("Archive save failed", context: [
+                    "target": target.lastPathComponent,
+                    "error": String(describing: error)
+                ])
                 self.error = error.localizedDescription
                 self.isBusy = false
                 updateStatusText(nil)

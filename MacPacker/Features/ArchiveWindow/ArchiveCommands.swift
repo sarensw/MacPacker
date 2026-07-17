@@ -8,49 +8,47 @@
 import Core
 import SwiftUI
 
-/// The archive state of the key window, published by `ContentView` so the
-/// main-menu commands can act on whatever window is in front.
-struct FocusedArchiveStateKey: FocusedValueKey {
-    typealias Value = ArchiveState
-}
-
-extension FocusedValues {
-    var archiveState: ArchiveState? {
-        get { self[FocusedArchiveStateKey.self] }
-        set { self[FocusedArchiveStateKey.self] = newValue }
-    }
-}
-
 /// File-menu commands for editing the front archive (7-Zip parity: the
 /// toolbar actions are reachable from the menu bar and by shortcut too).
+///
+/// The archive windows are plain NSWindows hosting SwiftUI content — no
+/// SwiftUI scene — so `@FocusedValue` never reaches these commands. The
+/// front window's state is resolved through its window controller instead,
+/// and the actions validate themselves (no-op when nothing applies).
 struct ArchiveCommands: Commands {
-    @FocusedValue(\.archiveState) private var archiveState
+
+    @MainActor
+    private static func frontArchiveState() -> ArchiveState? {
+        let controller = NSApp.keyWindow?.windowController as? ArchiveWindowController
+            ?? NSApp.mainWindow?.windowController as? ArchiveWindowController
+        return controller?.archiveState
+    }
 
     var body: some Commands {
         CommandGroup(after: .newItem) {
             Divider()
 
             Button {
-                guard let archiveState else { return }
-                if archiveState.url == nil {
-                    ArchiveSavePanel.runAndSave(state: archiveState, window: NSApp.keyWindow)
+                guard let state = Self.frontArchiveState(),
+                      state.canBeEdited, state.hasPendingChanges else { return }
+                if state.url == nil {
+                    ArchiveSavePanel.runAndSave(state: state, window: NSApp.keyWindow)
                 } else {
-                    archiveState.save()
+                    state.save()
                 }
             } label: {
                 Text("Save Archive", comment: "File menu entry that saves the pending changes of the front archive window")
             }
             .keyboardShortcut("s", modifiers: [.command])
-            .disabled(archiveState == nil || archiveState?.canBeEdited != true || archiveState?.hasPendingChanges != true)
 
             Button {
-                guard let archiveState else { return }
-                archiveState.remove(items: archiveState.selectedItems)
+                guard let state = Self.frontArchiveState(),
+                      state.canBeEdited, !state.selectedItems.isEmpty else { return }
+                state.remove(items: state.selectedItems)
             } label: {
                 Text("Delete Selected", comment: "File menu entry that deletes the selected items from the front archive window")
             }
             .keyboardShortcut(.delete, modifiers: [.command])
-            .disabled(archiveState == nil || archiveState?.canBeEdited != true || archiveState?.selectedItems.isEmpty != false)
         }
     }
 }
