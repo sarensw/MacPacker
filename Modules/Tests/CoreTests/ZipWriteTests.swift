@@ -154,6 +154,42 @@ extension AllCoreTests {
             try run("/usr/bin/unzip", ["-t", zip.path])
         }
 
+        @Test func reportsProgressWhileWriting() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            // a few MB of incompressible data so the writer actually spends
+            // time and 7-Zip emits progress checkpoints
+            var big = Data(count: 4 * 1024 * 1024)
+            for i in stride(from: 0, to: big.count, by: 977) { big[i] = UInt8(i & 0xFF) }
+            let payload = dir.appendingPathComponent("big.bin")
+            try big.write(to: payload)
+
+            final class Sink: @unchecked Sendable {
+                var samples: [(UInt64, UInt64)] = []
+            }
+            let sink = Sink()
+
+            let dest = dir.appendingPathComponent("prog.zip")
+            try SevenZipArchive.writeArchive(
+                destination: dest,
+                items: [.addFile(archivePath: "big.bin", diskPath: payload)],
+                options: .init(format: .zip, level: 1),
+                progress: { completed, total in
+                    sink.samples.append((completed, total))
+                    return true
+                }
+            )
+
+            // callback fired, total was known, and completion reached it
+            #expect(!sink.samples.isEmpty, "no progress callbacks")
+            let total = sink.samples.map(\.1).max() ?? 0
+            #expect(total > 0, "total bytes never reported")
+            let maxCompleted = sink.samples.map(\.0).max() ?? 0
+            #expect(maxCompleted == total, "did not reach 100% (\(maxCompleted)/\(total))")
+            try run("/usr/bin/unzip", ["-t", dest.path])
+        }
+
         @Test func addFileToExistingZip() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
@@ -243,6 +279,14 @@ extension AllCoreTests {
             try run("/usr/bin/unzip", ["-t", zip.path])
             #expect(item("folder/one.txt", in: state) == nil)
             #expect(item("folder/two.txt", in: state) != nil)
+
+            // The reopen after saving must not leave the previous load's
+            // entries behind: the reloaded count matches a fresh open.
+            let fresh = makeState()
+            fresh.open(url: zip)
+            try await fresh.openTask?.value
+            #expect(state.itemCount == fresh.itemCount,
+                    "stale entries after save-reload: \(state.itemCount) vs \(fresh.itemCount)")
         }
 
         @Test func deleteFolderViaState() async throws {

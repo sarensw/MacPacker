@@ -101,6 +101,10 @@ final class MacPackerUITests: XCTestCase {
         XCTAssertTrue(victim.waitForExistence(timeout: 10), "archive did not load")
         XCTAssertTrue(app.staticTexts["two.txt"].exists)
 
+        // status bar counts the two real entries (not the synthetic root)
+        XCTAssertTrue(app.staticTexts["2 items"].waitForExistence(timeout: 5),
+                      "expected '2 items' in the status bar")
+
         // select + delete
         victim.click()
         let deleteButton = app.buttons["Delete"].firstMatch
@@ -125,6 +129,10 @@ final class MacPackerUITests: XCTestCase {
         }
         XCTAssertFalse(entries.contains("one.txt"), "one.txt still in zip: \(entries)")
         XCTAssertTrue(entries.contains("two.txt"), "two.txt lost: \(entries)")
+
+        // after the reload the count reflects the single remaining entry
+        XCTAssertTrue(app.staticTexts["1 item"].waitForExistence(timeout: 10),
+                      "expected '1 item' in the status bar after delete+save")
 
         // archive is still valid
         try run("/usr/bin/unzip", ["-t", zip.path])

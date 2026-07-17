@@ -55,6 +55,14 @@ public class ArchiveState: ObservableObject {
     // Full list of entries
     @Published private(set) public var entries: [UUID: ArchiveItem] = [:]
     @Published private(set) public var diff: [ArchiveUpdateItem] = []
+
+    /// Number of real items in the archive (files + directories across all
+    /// levels), excluding the synthetic `<root>` node that `entries` also holds.
+    public var itemCount: Int {
+        entries.values.reduce(into: 0) { count, item in
+            if item.type != .root { count += 1 }
+        }
+    }
     
     // Root item
     @Published private(set) public var root: ArchiveItem?
@@ -169,9 +177,13 @@ extension ArchiveState {
         self.uncompressedSize = nil
         self.isEncrypted = nil
         self.diff = []
-        
+
         self.root = nil
-        
+        // A reopen (e.g. after saving) reloads with fresh UUID-keyed entries.
+        // Without clearing here the previous load's entries linger and merge
+        // in, inflating counts and the tree — reset is a full teardown.
+        self.entries = [:]
+
         updateStatusText(nil)
         
         self.isBusy = false
@@ -468,6 +480,7 @@ extension ArchiveState {
         let effectiveOptions = options ?? SevenZipCompressionOptions(format: format)
 
         isBusy = true
+        progress = 0
         updateStatus(.processing)
         updateStatusText("saving...")
         log.notice("Saving archive", context: [
@@ -475,6 +488,20 @@ extension ArchiveState {
             "changes": "\(items.count)",
             "new": "\(source == nil)"
         ])
+
+        // Forward 7-Zip's byte progress to the status bar. The callback fires
+        // on the writing (GCD) thread — throttle, then hop to the main actor.
+        let throttle = ProgressThrottle()
+        let onWriteProgress: @Sendable (UInt64, UInt64) -> Bool = { completed, total in
+            guard total > 0 else { return true }
+            let pct = Int((completed * 100) / total)
+            if throttle.shouldEmit(at: Date()) {
+                DispatchQueue.main.async {
+                    MainActor.assumeIsolated { self.progress = pct }
+                }
+            }
+            return true
+        }
 
         // the write is a long synchronous C call — keep it off the
         // cooperative pool; bracket any stored security-scoped grant
@@ -492,7 +519,8 @@ extension ArchiveState {
                     source: source,
                     destination: target,
                     items: items,
-                    options: effectiveOptions
+                    options: effectiveOptions,
+                    progress: onWriteProgress
                 )
             }
             try await Sandbox.access(url: target) {
@@ -529,6 +557,7 @@ extension ArchiveState {
                 }
 
                 diff.removeAll()
+                self.progress = nil
                 log.notice("Archive saved", context: ["target": target.lastPathComponent])
 
                 // reload from disk so entries and indices reflect the file
@@ -541,6 +570,7 @@ extension ArchiveState {
                 ])
                 self.error = error.localizedDescription
                 self.isBusy = false
+                self.progress = nil
                 updateStatusText(nil)
                 updateStatus(.done)
             }

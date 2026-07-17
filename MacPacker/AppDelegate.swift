@@ -226,6 +226,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
 
+        // Debug-only end-to-end hook: MACPACKER_DEBUG_ZIPCREATE="<file>|<destZip>"
+        // creates a new zip from the given file and saves it — the create +
+        // compress path, which reports real byte progress.
+        if let spec = ProcessInfo.processInfo.environment["MACPACKER_DEBUG_ZIPCREATE"] {
+            let parts = spec.split(separator: "|").map(String.init)
+            if parts.count == 2 {
+                let fileURL = URL(fileURLWithPath: parts[0])
+                let destURL = URL(fileURLWithPath: parts[1])
+                log.notice("DEBUG zip-create hook starting", context: ["file": fileURL.path, "dest": destURL.path])
+                let state = ArchiveState(catalog: appState.catalog, engineSelector: appState.engineSelector)
+                Task {
+                    state.create()
+                    state.add(url: fileURL)
+                    await state.save(to: destURL)?.value
+                    log.notice("DEBUG zip-create hook done", context: ["error": state.error ?? "none"])
+                }
+            }
+        }
+
         // Debug-only extraction preview: -ExtractDemo shows the extraction
         // window with mock progress so that window can be screenshotted in a
         // known state without running a real extraction.
