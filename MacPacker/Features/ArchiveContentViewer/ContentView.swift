@@ -85,6 +85,7 @@ struct ContentView: View {
             )
             .frame(width: 366)
         }
+        .focusedSceneValue(\.archiveState, archiveState)
         .navigationTitle(archiveState.hasArchive == false ? Bundle.main.displayName : archiveState.name!)
         .navigationSubtitle(Text(verbatim: "\(archiveState.diff.count > 0 ? "Edited • " : "")\(archiveState.url == nil ? "" : archiveState.url!.deletingLastPathComponent().path + "/")"))
         .environmentObject(archiveState)

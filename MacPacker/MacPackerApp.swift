@@ -75,6 +75,11 @@ struct MacPackerApp: App {
                     }
                 }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
+            }
+
+            ArchiveCommands()
+
+            CommandGroup(after: .newItem) {
                 
                 Button {
                     appDelegate.openArchiveUsingOpenPanel()
