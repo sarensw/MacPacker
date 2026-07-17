@@ -30,7 +30,7 @@ struct ArchiveCommands: Commands {
 
             Button {
                 guard let state = Self.frontArchiveState(),
-                      state.canBeEdited, state.hasPendingChanges else { return }
+                      state.canBeEdited, state.hasPendingChanges, !state.isSaving else { return }
                 if state.url == nil {
                     ArchiveSavePanel.runAndSave(state: state, window: NSApp.keyWindow)
                 } else {
@@ -43,7 +43,7 @@ struct ArchiveCommands: Commands {
 
             Button {
                 guard let state = Self.frontArchiveState(),
-                      state.canBeEdited, !state.selectedItems.isEmpty else { return }
+                      state.canBeEdited, !state.selectedItems.isEmpty, !state.isSaving else { return }
                 state.remove(items: state.selectedItems)
             } label: {
                 Text("Delete Selected", comment: "File menu entry that deletes the selected items from the front archive window")

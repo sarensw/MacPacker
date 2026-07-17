@@ -69,7 +69,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .help("Add files or folders to the archive")
-            .disabled(!archiveState.canBeEdited)
+            .disabled(!archiveState.canBeEdited || archiveState.isSaving)
 
             Button {
                 archiveState.remove(items: archiveState.selectedItems)
@@ -81,7 +81,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .help("Delete the selected items from the archive")
-            .disabled(!archiveState.canBeEdited || archiveState.selectedItems.isEmpty)
+            .disabled(!archiveState.canBeEdited || archiveState.selectedItems.isEmpty || archiveState.isSaving)
 
             Button {
                 if archiveState.url == nil {
@@ -98,7 +98,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .help("Save the changes to the archive")
-            .disabled(!archiveState.canBeEdited || !archiveState.hasPendingChanges)
+            .disabled(!archiveState.canBeEdited || !archiveState.hasPendingChanges || archiveState.isSaving)
 
             Spacer()
             

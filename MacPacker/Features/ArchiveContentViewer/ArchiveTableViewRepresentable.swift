@@ -405,7 +405,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 action: #selector(contextDelete(_:)), keyEquivalent: "\u{8}")
             delete.keyEquivalentModifierMask = []
             delete.target = self
-            delete.isEnabled = hasSelection && state.canBeEdited
+            delete.isEnabled = hasSelection && state.canBeEdited && !state.isSaving
             menu.addItem(delete)
         }
 

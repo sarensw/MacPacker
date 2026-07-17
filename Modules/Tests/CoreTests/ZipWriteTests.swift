@@ -310,6 +310,44 @@ extension AllCoreTests {
             try run("/usr/bin/unzip", ["-t", zip.path])
         }
 
+        @Test func mutationsRefusedWhileSaving() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let fileA = dir.appendingPathComponent("a.txt")
+            try "a".write(to: fileA, atomically: true, encoding: .utf8)
+            let extra = dir.appendingPathComponent("extra.txt")
+            try "extra".write(to: extra, atomically: true, encoding: .utf8)
+
+            let state = makeState()
+            state.create()
+            state.add(url: fileA)
+            let pendingBefore = state.diff.count
+
+            // save() flips isSaving synchronously before handing back its Task,
+            // so the window between here and awaiting is a real "saving" state.
+            let dest = dir.appendingPathComponent("out.zip")
+            let saveTask = try #require(state.save(to: dest))
+            #expect(state.isSaving)
+
+            // every mutating entry point must refuse while a save is running
+            state.add(url: extra)
+            #expect(state.diff.count == pendingBefore, "add slipped in during save")
+
+            if let victim = state.entries.values.first(where: { $0.name == "a.txt" }) {
+                state.remove(items: [victim])
+            }
+            #expect(state.diff.count == pendingBefore, "delete slipped in during save")
+
+            #expect(state.save(to: dest) == nil, "re-entrant save was allowed")
+
+            await saveTask.value
+            #expect(!state.isSaving)
+
+            // the archive holds exactly what was pending when the save started
+            let listed = try systemZipList(dest)
+            #expect(listed == ["a.txt"], "unexpected contents: \(listed)")
+        }
+
         @Test func removePendingAdditionBeforeSave() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }

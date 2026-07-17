@@ -245,6 +245,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
         }
 
+        // Debug-only end-to-end hook: MACPACKER_DEBUG_SAVELOCK="<file>|<destZip>"
+        // starts a save of a new archive and, while it runs, fires add / delete
+        // / save again — each must be refused. Logs the outcome for TailBeat.
+        if let spec = ProcessInfo.processInfo.environment["MACPACKER_DEBUG_SAVELOCK"] {
+            let parts = spec.split(separator: "|").map(String.init)
+            if parts.count == 2 {
+                let fileURL = URL(fileURLWithPath: parts[0])
+                let destURL = URL(fileURLWithPath: parts[1])
+                let state = ArchiveState(catalog: appState.catalog, engineSelector: appState.engineSelector)
+                Task {
+                    state.create()
+                    state.add(url: fileURL)
+                    let pendingBeforeSave = state.diff.count
+                    let saveTask = state.save(to: destURL)   // does not await
+                    log.notice("DEBUG save-lock: save started", context: ["isSaving": "\(state.isSaving)"])
+
+                    // attempt mutations while the save is in flight
+                    state.add(url: fileURL)
+                    state.remove(items: Array(state.entries.values))
+                    let reentrant = state.save(to: destURL)
+                    log.notice("DEBUG save-lock: mutations attempted", context: [
+                        "diffUnchanged": "\(state.diff.count == pendingBeforeSave)",
+                        "reentrantSaveRefused": "\(reentrant == nil)"
+                    ])
+
+                    await saveTask?.value
+                    log.notice("DEBUG save-lock done", context: ["isSaving": "\(state.isSaving)", "error": state.error ?? "none"])
+                }
+            }
+        }
+
         // Debug-only extraction preview: -ExtractDemo shows the extraction
         // window with mock progress so that window can be screenshotted in a
         // known state without running a real extraction.

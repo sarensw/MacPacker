@@ -42,6 +42,10 @@ public enum ArchiveDropHint: Equatable, Sendable {
 public class ArchiveState: ObservableObject {
     @Published private(set) public var hasArchive: Bool = false
     @Published private(set) public var canBeEdited: Bool = false
+    /// True from the moment a save starts until the archive has been rewritten
+    /// and reloaded. While set, all mutating actions (add / delete / save) are
+    /// refused so the archive can't change under the in-flight write.
+    @Published private(set) public var isSaving: Bool = false
     // MARK: UI
     // Basic archive metadata
     @Published private(set) public var url: URL?
@@ -338,6 +342,10 @@ extension ArchiveState {
     }
     
     public func add(url: URL) {
+        guard !isSaving else {
+            log.notice("Ignoring add — a save is in progress", context: ["file": url.lastPathComponent])
+            return
+        }
         guard let selectedItem else { return }
         let base = (selectedItem.virtualPath?.isEmpty == false && selectedItem.virtualPath != "/")
             ? selectedItem.virtualPath! + "/" : ""
@@ -384,6 +392,10 @@ extension ArchiveState {
     /// applies it to the file.
     public func remove(items: [ArchiveItem]) {
         guard canBeEdited else { return }
+        guard !isSaving else {
+            log.notice("Ignoring delete — a save is in progress", context: ["items": "\(items.count)"])
+            return
+        }
 
         var removedIndices: Set<UInt32> = []
         var droppedAddPaths: Set<String> = []
@@ -469,6 +481,10 @@ extension ArchiveState {
         to destination: URL? = nil,
         options: SevenZipCompressionOptions? = nil
     ) -> Task<Void, Never>? {
+        guard !isSaving else {
+            log.notice("Ignoring save — a save is already in progress")
+            return nil
+        }
         guard let target = destination ?? url else { return nil }
         guard !diff.isEmpty else { return nil }
 
@@ -479,6 +495,7 @@ extension ArchiveState {
             target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
         let effectiveOptions = options ?? SevenZipCompressionOptions(format: format)
 
+        isSaving = true
         isBusy = true
         progress = 0
         updateStatus(.processing)
@@ -563,6 +580,7 @@ extension ArchiveState {
                 // reload from disk so entries and indices reflect the file
                 open(url: target)
                 _ = try? await openTask?.value
+                self.isSaving = false
             } catch {
                 log.error("Archive save failed", context: [
                     "target": target.lastPathComponent,
@@ -570,6 +588,7 @@ extension ArchiveState {
                 ])
                 self.error = error.localizedDescription
                 self.isBusy = false
+                self.isSaving = false
                 self.progress = nil
                 updateStatusText(nil)
                 updateStatus(.done)
