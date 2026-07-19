@@ -54,7 +54,14 @@ struct ArchiveSavePanelAccessoryView: View {
 /// archive) and applies the state's pending changes to the picked location.
 @MainActor
 enum ArchiveSavePanel {
-    static func runAndSave(state: ArchiveState, window: NSWindow? = nil) {
+    /// - Parameter onSave: called with the running save `Task` once the user
+    ///   confirms the panel, or `nil` if they cancel it. Lets callers (e.g. the
+    ///   save-on-close prompt) wait for the write before acting.
+    static func runAndSave(
+        state: ArchiveState,
+        window: NSWindow? = nil,
+        onSave: ((Task<Void, Never>?) -> Void)? = nil
+    ) {
         let options = ArchiveSavePanelOptions()
         let panel = NSSavePanel()
         panel.canCreateDirectories = true
@@ -72,11 +79,15 @@ enum ArchiveSavePanel {
         panel.accessoryView = accessory
 
         let completion: (NSApplication.ModalResponse) -> Void = { response in
-            guard response == .OK, let url = panel.url else { return }
-            state.save(
+            guard response == .OK, let url = panel.url else {
+                onSave?(nil)
+                return
+            }
+            let task = state.save(
                 to: url,
                 options: SevenZipCompressionOptions(format: options.format, level: options.level)
             )
+            onSave?(task)
         }
         if let window {
             panel.beginSheetModal(for: window, completionHandler: completion)

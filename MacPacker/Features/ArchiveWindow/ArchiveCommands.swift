@@ -32,14 +32,26 @@ struct ArchiveCommands: Commands {
                 guard let state = Self.frontArchiveState(),
                       state.canBeEdited, state.hasPendingChanges, !state.isSaving else { return }
                 if state.url == nil {
+                    // never saved — Save behaves like Save As (asks for a location)
                     ArchiveSavePanel.runAndSave(state: state, window: NSApp.keyWindow)
                 } else {
                     state.save()
                 }
             } label: {
-                Text("Save Archive", comment: "File menu entry that saves the pending changes of the front archive window")
+                Text("Save", comment: "File menu entry that saves the pending changes of the front archive window")
             }
             .keyboardShortcut("s", modifiers: [.command])
+
+            Button {
+                // Save As… always asks for a new location and writes the current
+                // content (with pending edits) there; the window then tracks it.
+                guard let state = Self.frontArchiveState(),
+                      state.canBeEdited, state.hasPendingChanges, !state.isSaving else { return }
+                ArchiveSavePanel.runAndSave(state: state, window: NSApp.keyWindow)
+            } label: {
+                Text("Save As…", comment: "File menu entry that saves the front archive to a new location")
+            }
+            .keyboardShortcut("s", modifiers: [.command, .shift])
 
             Button {
                 guard let state = Self.frontArchiveState(),

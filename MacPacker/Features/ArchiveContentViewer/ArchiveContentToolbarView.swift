@@ -83,22 +83,8 @@ struct ArchiveContentToolbarView: ToolbarContent {
             .help("Delete the selected items from the archive")
             .disabled(!archiveState.canBeEdited || archiveState.selectedItems.isEmpty || archiveState.isSaving)
 
-            Button {
-                if archiveState.url == nil {
-                    // a new archive that never hit the disk — ask where to create it
-                    ArchiveSavePanel.runAndSave(state: archiveState, window: NSApp.keyWindow)
-                } else {
-                    archiveState.save()
-                }
-            } label: {
-                Label {
-                    Text("Save", comment: "Button in the tooblar that allows the user to save the current file after it was being edited.")
-                } icon: {
-                    Image(systemName: "square.and.arrow.down")
-                }
-            }
-            .help("Save the changes to the archive")
-            .disabled(!archiveState.canBeEdited || !archiveState.hasPendingChanges || archiveState.isSaving)
+            // ponytail: no toolbar Save — not macOS-like; saving lives in the
+            // File menu (Save ⌘S / Save As… ⇧⌘S), see ArchiveCommands.
 
             Spacer()
             

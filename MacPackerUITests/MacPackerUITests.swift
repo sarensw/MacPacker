@@ -84,7 +84,7 @@ final class MacPackerUITests: XCTestCase {
     // MARK: - Tests
 
     /// A file can be deleted from an existing zip through the UI:
-    /// select row → toolbar Delete → toolbar Save → zip on disk updated.
+    /// select row → toolbar Delete → ⌘S Save → zip on disk updated.
     func testDeleteFileFromZip() throws {
         // fixture zip built with the system tool
         let dir = try makeWorkDir("delete")
@@ -114,7 +114,7 @@ final class MacPackerUITests: XCTestCase {
         // the row disappears from the table immediately
         XCTAssertTrue(victim.waitForNonExistence(timeout: 5), "deleted row still shown")
 
-        // ⌘S (File > Save Archive) applies the change to the file; the
+        // ⌘S (File > Save) applies the change to the file; the
         // archive was opened without a write grant, so the app asks for
         // folder access first — confirm it
         app.typeKey("s", modifierFlags: .command)
