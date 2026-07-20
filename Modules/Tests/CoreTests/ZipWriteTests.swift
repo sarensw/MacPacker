@@ -154,6 +154,41 @@ extension AllCoreTests {
             try run("/usr/bin/unzip", ["-t", zip.path])
         }
 
+        /// A moved (renamed) entry keeps its original POSIX mode: the writer
+        /// recovers it from the source archive rather than storing mode 000.
+        @Test func moveKeepsPosixMode() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            // a file with a distinctive, non-default mode
+            let src = dir.appendingPathComponent("src")
+            try FileManager.default.createDirectory(at: src, withIntermediateDirectories: true)
+            let file = src.appendingPathComponent("orig.txt")
+            try "hi".write(to: file, atomically: true, encoding: .utf8)
+            try FileManager.default.setAttributes([.posixPermissions: 0o750], ofItemAtPath: file.path)
+
+            let zip = dir.appendingPathComponent("fixture.zip")
+            try run("/usr/bin/zip", [zip.path, "orig.txt"], cwd: src)
+
+            // sanity: the source entry carries 0o750
+            let source = try SevenZipArchive(url: zip)
+            let orig = try #require(try source.entries.first { $0.path == "orig.txt" })
+            #expect(orig.posixPermissions == 0o750)
+
+            // rename it into a new archive
+            let dest = dir.appendingPathComponent("out.zip")
+            try SevenZipArchive.writeArchive(
+                source: zip,
+                destination: dest,
+                items: [.move(sourceIndex: orig.index, newPath: "renamed.txt")]
+            )
+
+            // the renamed entry must still carry 0o750, not 000
+            let result = try SevenZipArchive(url: dest)
+            let moved = try #require(try result.entries.first { $0.path == "renamed.txt" })
+            #expect(moved.posixPermissions == 0o750)
+        }
+
         @Test func reportsProgressWhileWriting() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
