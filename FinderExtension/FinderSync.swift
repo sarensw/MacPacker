@@ -98,10 +98,17 @@ class FinderSync: FIFinderSync {
         return img
     }
     
+    /// Whether the URL points at a directory. Uses the file system's
+    /// `isDirectoryKey` rather than `hasDirectoryPath`, which only checks for a
+    /// trailing slash and misclassifies folder URLs that lack one.
+    private func isDirectory(_ url: URL) -> Bool {
+        (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory ?? false
+    }
+
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
         let allItems = FIFinderSyncController.default().selectedItemURLs() ?? []
         // archive actions only make sense for files; compression takes everything
-        let fileItems = allItems.filter { !$0.hasDirectoryPath }
+        let fileItems = allItems.filter { !isDirectory($0) }
         log.debug("menu for \(allItems.count) item(s), \(fileItems.count) file(s)")
 
         guard !allItems.isEmpty else {
