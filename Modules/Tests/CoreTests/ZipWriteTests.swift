@@ -189,6 +189,28 @@ extension AllCoreTests {
             #expect(moved.posixPermissions == 0o750)
         }
 
+        /// Save As on a clean (unedited) archive writes a full copy to the new
+        /// destination, even with no pending changes.
+        @MainActor @Test func saveAsCopiesCleanArchive() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try makeSystemZipFixture(in: dir)
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: zip)
+            try await state.openTask?.value
+            #expect(!state.hasPendingChanges)   // nothing edited
+
+            let dest = dir.appendingPathComponent("copy.zip")
+            await state.save(to: dest)?.value
+
+            // the copy exists and carries the same entries as the source
+            let listed = try systemZipList(dest)
+            #expect(listed.contains("root.txt"))
+            #expect(listed.contains("folder/one.txt"))
+            #expect(listed.contains("other/keep.txt"))
+        }
+
         @Test func reportsProgressWhileWriting() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }

@@ -44,9 +44,10 @@ struct ArchiveCommands: Commands {
 
             Button {
                 // Save As… always asks for a new location and writes the current
-                // content (with pending edits) there; the window then tracks it.
+                // content (with any pending edits) there; the window then tracks
+                // it. Works on a clean archive too — then it just saves a copy.
                 guard let state = Self.frontArchiveState(),
-                      state.canBeEdited, state.hasPendingChanges, !state.isSaving else { return }
+                      state.canBeEdited, !state.isSaving else { return }
                 ArchiveSavePanel.runAndSave(state: state, window: NSApp.keyWindow)
             } label: {
                 Text("Save As…", comment: "File menu entry that saves the front archive to a new location")

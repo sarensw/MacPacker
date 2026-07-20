@@ -504,7 +504,9 @@ extension ArchiveState {
             return nil
         }
         guard let target = destination ?? url else { return nil }
-        guard !diff.isEmpty else { return nil }
+        // An empty diff is a no-op in place, but writing to a *different* target
+        // is a "save a copy" (Save As of a clean archive) — allow that.
+        guard !diff.isEmpty || target != url else { return nil }
 
         let source = url
         let items = diff
