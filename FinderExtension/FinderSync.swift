@@ -118,9 +118,14 @@ class FinderSync: FIFinderSync {
         let menu = NSMenu(title: "")
 
         // Submenu for MacPacker
-        let macPackerItem = NSMenuItem(title: "MacPacker", action: nil, keyEquivalent: "")
-        let macPackerSubmenu = NSMenu(title: "MacPacker")
-
+#if DEBUG
+        let title: String = "MacPacker Debug"
+#else
+        let title: String = "MacPacker"
+#endif
+        let macPackerItem = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        let macPackerSubmenu = NSMenu(title: title)
+        
         // Archive section (files only)
         if !fileItems.isEmpty {
             let count = fileItems.count

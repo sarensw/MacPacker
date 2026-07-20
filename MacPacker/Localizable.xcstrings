@@ -2076,9 +2076,6 @@
     "Delete" : {
       "comment" : "Button in the toolbar that deletes the selected files from the archive.\nContext menu: delete the selected items from the archive"
     },
-    "Delete Selected" : {
-      "comment" : "File menu entry that deletes the selected items from the front archive window"
-    },
     "Delete the selected items from the archive" : {
 
     },

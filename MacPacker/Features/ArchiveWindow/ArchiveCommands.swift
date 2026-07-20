@@ -53,14 +53,8 @@ struct ArchiveCommands: Commands {
             }
             .keyboardShortcut("s", modifiers: [.command, .shift])
 
-            Button {
-                guard let state = Self.frontArchiveState(),
-                      state.canBeEdited, !state.selectedItems.isEmpty, !state.isSaving else { return }
-                state.remove(items: state.selectedItems)
-            } label: {
-                Text("Delete Selected", comment: "File menu entry that deletes the selected items from the front archive window")
-            }
-            .keyboardShortcut(.delete, modifiers: [.command])
+            // Deletion is the standard Edit ▸ Delete menu item, handled by the
+            // archive table (ArchiveTableView.delete(_:)) — not a File command.
         }
     }
 }

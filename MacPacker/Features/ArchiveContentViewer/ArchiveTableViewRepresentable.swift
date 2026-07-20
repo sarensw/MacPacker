@@ -659,7 +659,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     //
 }
 
-class ArchiveTableView: NSTableView {
+class ArchiveTableView: NSTableView, NSMenuItemValidation {
     var openSelected: ((NSTableView) -> Void)?
     var openParent: ((NSTableView) -> Void)?
     var openPreview: (() -> Void)?
@@ -688,7 +688,7 @@ class ArchiveTableView: NSTableView {
     }
     
     override func keyDown(with event: NSEvent) {
-        
+
         if event.keyCode == 49 {
             openPreview?()
         } else if event.keyCode == 51 || event.keyCode == 117 {
@@ -701,5 +701,23 @@ class ArchiveTableView: NSTableView {
         } else {
             super.keyDown(with: event)
         }
+    }
+
+    /// The standard Edit ▸ Delete menu item sends `delete:` down the responder
+    /// chain — handle it here (same path as the ⌫ key) so the native menu entry
+    /// drives archive deletion instead of a custom File-menu command.
+    @objc func delete(_ sender: Any?) {
+        deleteSelected?()
+    }
+
+    /// Enables Edit ▸ Delete only when the front archive is editable and has a
+    /// selection; every other item keeps the default "enabled if the responder
+    /// handles it" behavior.
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(delete(_:)) {
+            guard let state else { return false }
+            return state.canBeEdited && !state.selectedItems.isEmpty && !state.isSaving
+        }
+        return true
     }
 }
