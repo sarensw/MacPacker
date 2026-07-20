@@ -38,6 +38,68 @@
           {
             "type": "feat",
             "title": {
+              "en": "Create new zip archives from scratch",
+              "zh-Hans": "从零开始创建新的 zip 压缩包",
+              "fr": "Créer de nouvelles archives zip à partir de zéro",
+              "de": "Neue Zip-Archive von Grund auf erstellen",
+              "it": "Crea nuovi archivi zip da zero",
+              "ja": "新しい zip アーカイブをゼロから作成",
+              "fa": "ساخت آرشیوهای zip جدید از ابتدا",
+              "pl": "Tworzenie nowych archiwów zip od podstaw",
+              "pt-BR": "Crie novos arquivos zip do zero",
+              "ru": "Создание новых zip-архивов с нуля",
+              "uk": "Створення нових zip-архівів з нуля",
+              "es-MX": "Crea nuevos archivos zip desde cero",
+              "ko": "새 zip 아카이브를 처음부터 만들기"
+            },
+            "issues": [
+              "5"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+              "en": "Edit existing zip archives: add or delete files and save",
+              "zh-Hans": "编辑现有 zip 压缩包：添加或删除文件并保存",
+              "fr": "Modifier des archives zip existantes : ajouter ou supprimer des fichiers, puis enregistrer",
+              "de": "Vorhandene Zip-Archive bearbeiten: Dateien hinzufügen oder löschen und speichern",
+              "it": "Modifica archivi zip esistenti: aggiungi o elimina file e salva",
+              "ja": "既存の zip アーカイブを編集：ファイルの追加や削除をして保存",
+              "fa": "ویرایش آرشیوهای zip موجود: افزودن یا حذف فایل‌ها و ذخیره",
+              "pl": "Edytowanie istniejących archiwów zip: dodawaj lub usuwaj pliki i zapisuj",
+              "pt-BR": "Edite arquivos zip existentes: adicione ou exclua arquivos e salve",
+              "ru": "Редактирование существующих zip-архивов: добавляйте или удаляйте файлы и сохраняйте",
+              "uk": "Редагування наявних zip-архівів: додавайте або видаляйте файли та зберігайте",
+              "es-MX": "Edita archivos zip existentes: agrega o elimina archivos y guarda",
+              "ko": "기존 zip 아카이브 편집: 파일을 추가하거나 삭제하고 저장"
+            },
+            "issues": [
+              "5",
+              "88"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+              "en": "Compress files and folders to zip straight from Finder",
+              "zh-Hans": "直接在访达中将文件和文件夹压缩为 zip",
+              "fr": "Compresser des fichiers et des dossiers en zip directement depuis le Finder",
+              "de": "Dateien und Ordner direkt im Finder als Zip komprimieren",
+              "it": "Comprimi file e cartelle in zip direttamente dal Finder",
+              "ja": "Finder から直接ファイルやフォルダを zip に圧縮",
+              "fa": "فشرده‌سازی فایل‌ها و پوشه‌ها به zip مستقیماً از Finder",
+              "pl": "Kompresowanie plików i folderów do zip bezpośrednio z Findera",
+              "pt-BR": "Comprima arquivos e pastas em zip direto do Finder",
+              "ru": "Сжатие файлов и папок в zip прямо из Finder",
+              "uk": "Стиснення файлів і тек у zip прямо з Finder",
+              "es-MX": "Comprime archivos y carpetas a zip directo desde el Finder",
+              "ko": "Finder에서 바로 파일과 폴더를 zip으로 압축"
+            },
+            "issues": []
+          },
+          {
+            "type": "feat",
+            "title": {
               "en": "Open an archive and jump straight to a file inside it with launch parameters",
               "zh-Hans": "通过启动参数打开压缩包并直接跳转到其中的文件",
               "fr": "Ouvrir une archive et accéder directement à un fichier qu’elle contient via des paramètres de lancement",
