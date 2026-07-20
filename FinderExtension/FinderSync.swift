@@ -163,8 +163,6 @@ class FinderSync: FIFinderSync {
             macPackerSubmenu.addItem(withTitle: String(localized: "Extract to \"\(folderName)\"", comment: "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to."),
                                      action: #selector(extractToFolder(_:)),
                                      keyEquivalent: "")
-
-            macPackerSubmenu.addItem(.separator())
         }
 
         // Compression section (7-Zip/NanaZip style, works for files and folders)
