@@ -22,11 +22,17 @@ extension SevenZipArchive {
     ///   - items: The diff to apply (removals, moves, additions).
     ///   - options: Compression options. Defaults to 7z format, level 5.
     /// - Throws: ``SevenZipError/writeFailed(_:)`` on failure.
+    /// Byte progress during an archive write, as reported by 7-Zip.
+    /// `completed`/`total` share the handler's processed-bytes unit. Return
+    /// `false` to abort the write. Called on the writing thread.
+    public typealias WriteProgressHandler = (_ completed: UInt64, _ total: UInt64) -> Bool
+
     public static func writeArchive(
         source: URL? = nil,
         destination: URL,
         items: [ArchiveUpdateItem],
-        options: SevenZipCompressionOptions = .init()
+        options: SevenZipCompressionOptions = .init(),
+        progress: WriteProgressHandler? = nil
     ) throws {
         let inPlace = source != nil
             && source!.standardizedFileURL == destination.standardizedFileURL
@@ -48,7 +54,8 @@ extension SevenZipArchive {
             source: source,
             destination: actualDest,
             resolvedItems: resolved,
-            options: options
+            options: options,
+            progress: progress
         )
 
         if inPlace {
@@ -134,11 +141,24 @@ extension SevenZipArchive {
 
     // MARK: - Bridge Call
 
+    /// Box that carries the write-progress closure through the C callback.
+    private final class WriteProgressBox {
+        let handler: WriteProgressHandler
+        init(_ handler: @escaping WriteProgressHandler) { self.handler = handler }
+    }
+
+    private static let writeProgressThunk: sz_progress_callback = { completed, total, context in
+        guard let context else { return true }
+        let box = Unmanaged<WriteProgressBox>.fromOpaque(context).takeUnretainedValue()
+        return box.handler(completed, total)
+    }
+
     private static func performUpdate(
         source: URL?,
         destination: URL,
         resolvedItems: [ResolvedItem],
-        options: SevenZipCompressionOptions
+        options: SevenZipCompressionOptions,
+        progress: WriteProgressHandler? = nil
     ) throws {
         var cItems: [SZUpdateItem] = []
         cItems.reserveCapacity(resolvedItems.count)
@@ -185,7 +205,10 @@ extension SevenZipArchive {
             return nil
         }
 
+        let progressBox = progress.map(WriteProgressBox.init)
+
         try withExtendedLifetime(dataRefs) {
+        try withExtendedLifetime(progressBox) {
             for i in 0..<cItems.count {
                 cItems[i].mtime = -1
                 switch resolvedItems[i] {
@@ -196,10 +219,12 @@ extension SevenZipArchive {
                     if let p { cItems[i].posix_permissions = UInt32(p) }
                 case .addData(_, _, let d, let p):
                     if let d { cItems[i].mtime = Int64(d.timeIntervalSince1970) }
-                    if let p { cItems[i].posix_permissions = UInt32(p) }
+                    // no permissions given: default to a regular 644 file —
+                    // leaving them unset stores mode 000, which extracts as unreadable
+                    cItems[i].posix_permissions = p.map(UInt32.init) ?? 0o100644
                 case .addDirectory(_, let d, let p):
                     if let d { cItems[i].mtime = Int64(d.timeIntervalSince1970) }
-                    if let p { cItems[i].posix_permissions = UInt32(p) }
+                    cItems[i].posix_permissions = p.map(UInt32.init) ?? 0o40755
                 }
             }
 
@@ -239,8 +264,13 @@ extension SevenZipArchive {
                                 &cItems,
                                 UInt32(cItems.count),
                                 &cOptions,
+                                progressBox != nil ? Self.writeProgressThunk : nil,
+                                progressBox.map { Unmanaged.passUnretained($0).toOpaque() },
                                 &errorPtr
                             )
+                            if result == 2 {
+                                throw SevenZipError.cancelled
+                            }
                             if result != 0 {
                                 let msg = errorPtr.map { ptr -> String in
                                     let str = String(cString: ptr)
@@ -261,6 +291,7 @@ extension SevenZipArchive {
                     }
                 }
             }
+        }
         }
     }
 }

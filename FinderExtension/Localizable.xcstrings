@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Add to Archive…" : {
+      "comment" : "Finder context menu: open a new-archive window pre-filled with the selection so name, format and compression can be picked"
+    },
+    "Compress to \"%@\"" : {
+      "comment" : "Finder context menu: compress the selection directly to the named zip in the current directory"
+    },
     "Extract Here" : {
       "comment" : "Tell the user in the Finder context menu to extract the archive in the current directory as is",
       "localizations" : {

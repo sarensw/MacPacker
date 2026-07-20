@@ -41,6 +41,8 @@ class ArchiveWindowManager {
         // The loader asks for folder access through this when it hits a split
         // archive — exactly like it asks for a password. The app fulfills it.
         archiveState.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
+        // Opening a plain (non-archive) entry hands it to the system editor.
+        archiveState.openFileExternally = { NSWorkspace.shared.open($0) }
         if let url {
             archiveState.open(url: url)
         }
@@ -86,6 +88,19 @@ class ArchiveWindowManager {
     /// Opens a new empty window, regardless of whether there is any other window open right now
     func openNewArchiveWindow() {
         createAndShowArchiveWindow(nil)
+    }
+
+    /// Opens a window with a fresh, empty archive in edit mode — optionally
+    /// pre-filled with files (used by the Finder "Add to Archive…" action).
+    /// The archive gets its place on disk when the user saves.
+    @discardableResult
+    func openCreateArchiveWindow(with files: [URL] = []) -> ArchiveState {
+        let state = createAndShowArchiveWindow(nil)
+        state.create()
+        for file in files {
+            state.add(url: file)
+        }
+        return state
     }
     
     /// Shows a window for `url`. Just window management — the loader resolves the

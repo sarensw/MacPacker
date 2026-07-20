@@ -98,48 +98,57 @@ class FinderSync: FIFinderSync {
         return img
     }
     
+    /// Whether the URL points at a directory. Uses the file system's
+    /// `isDirectoryKey` rather than `hasDirectoryPath`, which only checks for a
+    /// trailing slash and misclassifies folder URLs that lack one.
+    private func isDirectory(_ url: URL) -> Bool {
+        (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory ?? false
+    }
+
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
-        // we're removing all urls that are folders until we support compression
-        log.debug(String(describing: FIFinderSyncController.default().selectedItemURLs()))
-        for item in FIFinderSyncController.default().selectedItemURLs() ?? [] {
-            if item.hasDirectoryPath {
-                log.debug("Removing \(item.absoluteString)")
+        let allItems = FIFinderSyncController.default().selectedItemURLs() ?? []
+        // archive actions only make sense for files; compression takes everything
+        let fileItems = allItems.filter { !isDirectory($0) }
+        log.debug("menu for \(allItems.count) item(s), \(fileItems.count) file(s)")
+
+        guard !allItems.isEmpty else {
+            if menuKind == .toolbarItemMenu {
+                let menu = NSMenu(title: "??")
+                let item = NSMenuItem(title: "..nothing selected..", action: nil, keyEquivalent: "")
+                item.isEnabled = false
+                menu.addItem(item)
+                return menu
             }
+            return NSMenu()
         }
-        let selecteditems = FIFinderSyncController.default().selectedItemURLs()?.filter({ !$0.hasDirectoryPath }) ?? []
-        log.debug(String(describing: selecteditems))
+
+        let menu = NSMenu(title: "")
+
+        // Submenu for MacPacker
+#if DEBUG
+        let title: String = "MacPacker Debug"
+#else
+        let title: String = "MacPacker"
+#endif
+        let macPackerItem = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        let macPackerSubmenu = NSMenu(title: title)
         
-        if selecteditems.count > 0 // let selecteditems = FIFinderSyncController.default().selectedItemURLs()?.filter({ !$0.hasDirectoryPath })
-        {
-            log.debug("Creating menu for \(selecteditems[0].absoluteString), isDir? \(selecteditems[0].hasDirectoryPath)")
-            // if all items are folders then ignore for now until we
-            // actually support compression
-            
-            
-            let count = selecteditems.count
-            
-            let menu = NSMenu(title: "")
-            
-            // Submenu for MacPacker
-            let macPackerItem = NSMenuItem(title: "MacPacker", action: nil, keyEquivalent: "")
-            let macPackerSubmenu = NSMenu(title: "MacPacker")
-            
-            // Open
+        // Archive section (files only)
+        if !fileItems.isEmpty {
+            let count = fileItems.count
+
             macPackerSubmenu.addItem(withTitle: String(localized: "Open \(count) Archive", comment: "Opens the archive in an archive window"),
                                      action: #selector(openArchive(_:)),
                                      keyEquivalent: "")
-            
-//            macPackerSubmenu.addItem(withTitle: "Extract files…",
-//                                     action: #selector(extractFiles(_:)),
-//                                     keyEquivalent: "")
+
             macPackerSubmenu.addItem(withTitle: NSLocalizedString("Extract Here", comment: "Tell the user in the Finder context menu to extract the archive in the current directory as is"),
                                      action: #selector(extractHere(_:)),
                                      keyEquivalent: "")
-            
+
             // "Extract to "*\"" > if multiple archives files are selected
             // "Extract to defaultArchive\"" > if one archive is selected
             var folderName: String = ""
-            if selecteditems.count == 1 {
+            if fileItems.count == 1 {
                 // We're deleting the path extension here twice by purpose because compound archives
                 // will be extracted twice. First decompressed, then extracted. And we need to show
                 // the correct folder name
@@ -147,59 +156,43 @@ class FinderSync: FIFinderSync {
                 // Examples:
                 // - archive.zip > archive
                 // - archive.tar.gz > archive
-                folderName = selecteditems[0].deletingPathExtension().deletingPathExtension().lastPathComponent
-            } else if selecteditems.count > 1 {
+                folderName = fileItems[0].deletingPathExtension().deletingPathExtension().lastPathComponent
+            } else if fileItems.count > 1 {
                 folderName = "*/"
             }
             macPackerSubmenu.addItem(withTitle: String(localized: "Extract to \"\(folderName)\"", comment: "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to."),
                                      action: #selector(extractToFolder(_:)),
                                      keyEquivalent: "")
-            
-            
-            //        // Compression section
-            //        let compressionHeader = NSMenuItem(title: "Compression", action: nil, keyEquivalent: "")
-            //        compressionHeader.isEnabled = false
-            //        macPackerSubmenu.addItem(compressionHeader)
-            //
-            //        macPackerSubmenu.addItem(withTitle: "Add to Archive…",
-            //                                 action: #selector(addToArchive(_:)),
-            //                                 keyEquivalent: "")
-            //        macPackerSubmenu.addItem(withTitle: "Add to “%FILENAME%.7z”",
-            //                                 action: #selector(addTo7z(_:)),
-            //                                 keyEquivalent: "")
-            //        macPackerSubmenu.addItem(withTitle: "Add to “%FILENAME%.zip”",
-            //                                 action: #selector(addToZip(_:)),
-            //                                 keyEquivalent: "")
-            //
-            //        // Extra section
-            //        let extraHeader = NSMenuItem(title: "Other", action: nil, keyEquivalent: "")
-            //        extraHeader.isEnabled = false
-            //        macPackerSubmenu.addItem(extraHeader)
-            //
-            //        macPackerSubmenu.addItem(withTitle: "Test Archive",
-            //                                 action: #selector(testArchive(_:)),
-            //                                 keyEquivalent: "")
-            
-            // Attach submenu
-            if menuKind == .toolbarItemMenu {
-                return macPackerSubmenu
-            }
-            
-            menu.setSubmenu(macPackerSubmenu, for: macPackerItem)
-            menu.addItem(macPackerItem)
-            
-            return menu
         }
-        
+
+        // Compression section (7-Zip/NanaZip style, works for files and folders)
+        macPackerSubmenu.addItem(withTitle: String(localized: "Add to Archive…", comment: "Finder context menu: open a new-archive window pre-filled with the selection so name, format and compression can be picked"),
+                                 action: #selector(addToArchive(_:)),
+                                 keyEquivalent: "")
+
+        macPackerSubmenu.addItem(withTitle: String(localized: "Compress to \"\(compressedZipName(for: allItems))\"", comment: "Finder context menu: compress the selection directly to the named zip in the current directory"),
+                                 action: #selector(compressToZip(_:)),
+                                 keyEquivalent: "")
+
+        // Attach submenu
         if menuKind == .toolbarItemMenu {
-            let menu = NSMenu(title: "??")
-            let item = NSMenuItem(title: "..no archive(s) selected..", action: nil, keyEquivalent: "")
-            item.isEnabled = false
-            menu.addItem(item)
-            return menu
+            return macPackerSubmenu
         }
-        
-        return NSMenu()
+
+        menu.setSubmenu(macPackerSubmenu, for: macPackerItem)
+        menu.addItem(macPackerItem)
+
+        return menu
+    }
+
+    /// Same naming rule as the main app's compress handler: one item → its
+    /// stem, several → the surrounding folder's name.
+    private func compressedZipName(for items: [URL]) -> String {
+        if items.count == 1, let only = items.first {
+            return only.deletingPathExtension().lastPathComponent + ".zip"
+        }
+        let target = FIFinderSyncController.default().targetedURL()
+        return (target?.lastPathComponent ?? "Archive") + ".zip"
     }
 
     
@@ -281,19 +274,13 @@ class FinderSync: FIFinderSync {
     }
 
     @objc func addToArchive(_ sender: Any?) {
-        log.debug("Add to Archive…")
+        log.notice("Finder menu: Add to Archive…")
+        communicateWithMainApp(action: "addToArchive")
     }
 
-    @objc func addTo7z(_ sender: Any?) {
-        log.debug("Add to “%FILENAME%.7z”")
-    }
-
-    @objc func addToZip(_ sender: Any?) {
-        log.debug("Add to “%FILENAME%.zip”")
-    }
-
-    @objc func testArchive(_ sender: Any?) {
-        log.debug("Test Archive")
+    @objc func compressToZip(_ sender: Any?) {
+        log.notice("Finder menu: Compress to zip")
+        communicateWithMainApp(action: "compress")
     }
 
 }

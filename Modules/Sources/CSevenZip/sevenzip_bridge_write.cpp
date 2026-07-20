@@ -69,6 +69,19 @@ static UString UTF8ToUString(const char *utf8) {
     return result;
 }
 
+// Effective posix mode of an update item: the explicit value, or the on-disk
+// mode for ADD_FILE items, or 0 when unknown.
+static UInt32 EffectivePosixMode(const SZUpdateItem &item) {
+    if (item.posix_permissions != 0)
+        return (UInt32)item.posix_permissions;
+    if (item.op == SZ_UPDATE_ADD_FILE && item.disk_path) {
+        struct stat st;
+        if (stat(item.disk_path, &st) == 0)
+            return (UInt32)(st.st_mode & 0xFFFF);
+    }
+    return 0;
+}
+
 static FILETIME UnixEpochToFileTime(int64_t unixTime) {
     FILETIME ft;
     if (unixTime < 0) {
@@ -130,12 +143,34 @@ public:
     UInt32 itemCount;
     std::string errorMessage;
 
+    // Progress forwarding (optional). aborted is set when the callback
+    // asks to stop, so UpdateItems bails out with E_ABORT.
+    sz_progress_callback progressCallback = nullptr;
+    void *progressContext = nullptr;
+    UInt64 progressTotal = 0;
+    bool aborted = false;
+
     CUpdateCallback(const SZUpdateItem *items_, UInt32 count)
         : items(items_), itemCount(count) {}
 
     // IProgress
-    Z7_COM7F_IMF(SetTotal(UInt64)) { return S_OK; }
-    Z7_COM7F_IMF(SetCompleted(const UInt64 *)) { return S_OK; }
+    Z7_COM7F_IMF(SetTotal(UInt64 total)) {
+        progressTotal = total;
+        if (progressCallback && !progressCallback(0, total, progressContext)) {
+            aborted = true;
+            return E_ABORT;
+        }
+        return S_OK;
+    }
+    Z7_COM7F_IMF(SetCompleted(const UInt64 *completeValue)) {
+        if (progressCallback && completeValue) {
+            if (!progressCallback(*completeValue, progressTotal, progressContext)) {
+                aborted = true;
+                return E_ABORT;
+            }
+        }
+        return S_OK;
+    }
 
     // IArchiveUpdateCallback
     Z7_COM7F_IMF(GetUpdateItemInfo(UInt32 index,
@@ -227,17 +262,19 @@ Z7_COM7F_IMF(CUpdateCallback::GetProperty(UInt32 index, PROPID propID, PROPVARIA
             UInt32 attr = 0;
             if (item.is_directory)
                 attr = 0x10; // FILE_ATTRIBUTE_DIRECTORY
+            // The zip writer only reads kpidAttrib. Posix mode travels in the
+            // high 16 bits, flagged by FILE_ATTRIBUTE_UNIX_EXTENSION (7-Zip
+            // convention) — without it new entries extract with mode 000.
+            UInt32 posix = EffectivePosixMode(item);
+            if (posix != 0)
+                attr |= 0x8000u | (posix << 16);
             prop = attr;
             break;
         }
         case kpidPosixAttrib: {
-            if (item.posix_permissions != 0) {
-                prop = (UInt32)item.posix_permissions;
-            } else if (item.op == SZ_UPDATE_ADD_FILE && item.disk_path) {
-                struct stat st;
-                if (stat(item.disk_path, &st) == 0)
-                    prop = (UInt32)(st.st_mode & 0xFFFF);
-            }
+            UInt32 posix = EffectivePosixMode(item);
+            if (posix != 0)
+                prop = posix;
             break;
         }
     }
@@ -299,6 +336,8 @@ int sz_update_archive(
     const SZUpdateItem *items,
     uint32_t item_count,
     const SZCompressionOptions *options,
+    sz_progress_callback progress,
+    void *progress_context,
     char **error_out)
 {
     if (error_out) *error_out = nullptr;
@@ -432,10 +471,16 @@ int sz_update_archive(
 
         // 6. Create callback and run update
         CUpdateCallback *callbackSpec = new CUpdateCallback(items, item_count);
+        callbackSpec->progressCallback = progress;
+        callbackSpec->progressContext = progress_context;
         CMyComPtr<IArchiveUpdateCallback> callback(callbackSpec);
 
         HRESULT hr = outArchive->UpdateItems(outStreamLoc, item_count, callback);
         if (hr != S_OK) {
+            if (callbackSpec->aborted) {
+                if (error_out) *error_out = makeCError("Aborted by progress callback");
+                return 2;
+            }
             std::string msg = "UpdateItems failed";
             if (!callbackSpec->errorMessage.empty())
                 msg += ": " + callbackSpec->errorMessage;

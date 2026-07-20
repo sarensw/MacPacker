@@ -47,11 +47,14 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     public private(set) var archiveTypeId: String? = nil
     
     /// Creates an archive item from an existing real file (used for create/edit mode)
-    /// - Parameter url: real file / folder
-    public init(url: URL) {
+    /// - Parameters:
+    ///   - url: real file / folder
+    ///   - archivePath: path this item will have inside the archive — kept so a
+    ///     pending (unsaved) addition can be matched to its diff entry again
+    public init(url: URL, archivePath: String? = nil) {
         self.name = url.lastPathComponent
         self.type = url.isDirectory ? .directory : .file
-        self.virtualPath = nil
+        self.virtualPath = archivePath
         self.compressedSize = -1
         self.uncompressedSize = url.fileSize ?? -1
         self.modificationDate = url.modificationDate
@@ -115,6 +118,10 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
             children = []
         }
         children!.append(id)
+    }
+
+    func removeChild(_ id: UUID) {
+        children?.removeAll { $0 == id }
     }
     
     public static func == (lhs: ArchiveItem, rhs: ArchiveItem) -> Bool {

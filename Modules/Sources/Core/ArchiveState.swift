@@ -42,6 +42,10 @@ public enum ArchiveDropHint: Equatable, Sendable {
 public class ArchiveState: ObservableObject {
     @Published private(set) public var hasArchive: Bool = false
     @Published private(set) public var canBeEdited: Bool = false
+    /// True from the moment a save starts until the archive has been rewritten
+    /// and reloaded. While set, all mutating actions (add / delete / save) are
+    /// refused so the archive can't change under the in-flight write.
+    @Published private(set) public var isSaving: Bool = false
     // MARK: UI
     // Basic archive metadata
     @Published private(set) public var url: URL?
@@ -55,6 +59,14 @@ public class ArchiveState: ObservableObject {
     // Full list of entries
     @Published private(set) public var entries: [UUID: ArchiveItem] = [:]
     @Published private(set) public var diff: [ArchiveUpdateItem] = []
+
+    /// Number of real items in the archive (files + directories across all
+    /// levels), excluding the synthetic `<root>` node that `entries` also holds.
+    public var itemCount: Int {
+        entries.values.reduce(into: 0) { count, item in
+            if item.type != .root { count += 1 }
+        }
+    }
     
     // Root item
     @Published private(set) public var root: ArchiveItem?
@@ -94,6 +106,10 @@ public class ArchiveState: ObservableObject {
     
     public var passwordProvider: ArchivePasswordUserProvider?
     public var folderAccessProvider: ArchiveFolderAccessUserProvider?
+    /// Hands a plain (non-archive) file to the system after extraction. The app
+    /// wires this to `NSWorkspace.shared.open`; the default is a no-op so Core
+    /// carries no AppKit dependency and unit tests never launch an external app.
+    public var openFileExternally: (URL) -> Void = { _ in }
     /// Where user-triggered extractions report their progress. Defaults to
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
@@ -169,9 +185,13 @@ extension ArchiveState {
         self.uncompressedSize = nil
         self.isEncrypted = nil
         self.diff = []
-        
+
         self.root = nil
-        
+        // A reopen (e.g. after saving) reloads with fresh UUID-keyed entries.
+        // Without clearing here the previous load's entries linger and merge
+        // in, inflating counts and the tree — reset is a full teardown.
+        self.entries = [:]
+
         updateStatusText(nil)
         
         self.isBusy = false
@@ -326,21 +346,128 @@ extension ArchiveState {
     }
     
     public func add(url: URL) {
+        guard !isSaving else {
+            log.notice("Ignoring add — a save is in progress", context: ["file": url.lastPathComponent])
+            return
+        }
         guard let selectedItem else { return }
-        let archivePath = selectedItem.virtualPath == nil ? url.lastPathComponent : "\(selectedItem.virtualPath!)/\(url.lastPathComponent)"
-        
-        diff.append(ArchiveUpdateItem.addFile(
-            archivePath: archivePath,
-            diskPath: url)
-        )
-        
-        let item = ArchiveItem(url: url)
-        item.parent = selectedItem.id
-        selectedItem.addChild(item.id)
-        entries[item.id] = item
-        
+        let base = (selectedItem.virtualPath?.isEmpty == false && selectedItem.virtualPath != "/")
+            ? selectedItem.virtualPath! + "/" : ""
+
+        if url.isDirectory {
+            // folders are added recursively so their contents end up in the archive
+            addFolder(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
+        } else {
+            addFile(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
+        }
+
         self.isReloadNeeded = true
         loadChildren()
+    }
+
+    private func addFile(url: URL, archivePath: String, under parent: ArchiveItem) {
+        diff.append(.addFile(archivePath: archivePath, diskPath: url))
+        let item = ArchiveItem(url: url, archivePath: archivePath)
+        item.parent = parent.id
+        parent.addChild(item.id)
+        entries[item.id] = item
+    }
+
+    private func addFolder(url: URL, archivePath: String, under parent: ArchiveItem) {
+        // Read the contents first: if the folder can't be enumerated we must not
+        // add it as an empty directory (that would silently drop its real
+        // contents on save). Skip it and surface the error instead.
+        let children: [URL]
+        do {
+            children = try FileManager.default.contentsOfDirectory(
+                at: url, includingPropertiesForKeys: nil)
+        } catch {
+            log.error("Failed to read folder for add — skipping", context: [
+                "path": url.path,
+                "error": String(describing: error)
+            ])
+            self.error = error.localizedDescription
+            return
+        }
+
+        diff.append(.addDirectory(archivePath: archivePath))
+        let item = ArchiveItem(url: url, archivePath: archivePath)
+        item.parent = parent.id
+        parent.addChild(item.id)
+        entries[item.id] = item
+
+        for child in children.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+            if child.isDirectory {
+                addFolder(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
+            } else {
+                addFile(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
+            }
+        }
+    }
+
+    /// Removes the given items (files or folders, including everything below
+    /// them) from the archive. The removal is recorded in the diff — `save()`
+    /// applies it to the file.
+    public func remove(items: [ArchiveItem]) {
+        guard canBeEdited else { return }
+        guard !isSaving else {
+            log.notice("Ignoring delete — a save is in progress", context: ["items": "\(items.count)"])
+            return
+        }
+
+        var removedIndices: Set<UInt32> = []
+        var droppedAddPaths: Set<String> = []
+        for item in items {
+            collectRemovals(item, indices: &removedIndices, pendingPaths: &droppedAddPaths)
+            if let parentId = item.parent {
+                entries[parentId]?.removeChild(item.id)
+            }
+        }
+
+        // pending (unsaved) additions are simply dropped from the diff
+        if !droppedAddPaths.isEmpty {
+            diff.removeAll { entry in
+                switch entry {
+                case .addFile(let p, _, _, _), .addDirectory(let p, _, _), .addData(let p, _, _, _):
+                    return droppedAddPaths.contains(p)
+                default:
+                    return false
+                }
+            }
+        }
+        // entries that exist in the archive on disk are removed on save
+        diff.append(contentsOf: removedIndices.sorted().map { .remove(sourceIndex: $0) })
+
+        log.notice("Marked items for removal", context: [
+            "items": "\(items.count)",
+            "archiveEntries": "\(removedIndices.count)",
+            "pendingAdds": "\(droppedAddPaths.count)"
+        ])
+
+        selectedItems = []
+        isReloadNeeded = true
+        loadChildren()
+    }
+
+    /// Depth-first: collects the source indices (real archive entries) and
+    /// pending-addition paths of the item and all of its descendants, and
+    /// drops them from `entries`.
+    private func collectRemovals(
+        _ item: ArchiveItem,
+        indices: inout Set<UInt32>,
+        pendingPaths: inout Set<String>
+    ) {
+        for childId in item.children ?? [] {
+            if let child = entries[childId] {
+                collectRemovals(child, indices: &indices, pendingPaths: &pendingPaths)
+            }
+        }
+        if let index = item.index {
+            indices.insert(index)
+        } else if let path = item.virtualPath, path != "/" {
+            pendingPaths.insert(path)
+        }
+        entries.removeValue(forKey: item.id)
     }
 
     /// Opens a dropped file in this window: a supported archive is opened directly;
@@ -355,29 +482,136 @@ extension ArchiveState {
         }
     }
 
-    /// Saves the current changes to the file
-    public func save() {
-        guard let url else { return }
-        guard diff.count > 0 else { return }
-        
-        Task {
-            do {
-                _ = url.startAccessingSecurityScopedResource()
-                defer { url.stopAccessingSecurityScopedResource() }
-                
-                for case let .addFile(file) in diff {
-                    _ = file.diskPath.startAccessingSecurityScopedResource()
+    /// Whether there are unsaved changes (pending additions/removals).
+    public var hasPendingChanges: Bool { !diff.isEmpty }
+
+    /// Saves the pending changes.
+    ///
+    /// - For an archive loaded from disk, the changes are applied in place
+    ///   (`destination` may override, "save as").
+    /// - For a new archive (never saved), `destination` is required — that's
+    ///   where the archive is created.
+    ///
+    /// After a successful write the archive is reloaded from disk so the
+    /// shown entries (and their source indices) match the file again.
+    @discardableResult
+    public func save(
+        to destination: URL? = nil,
+        options: SevenZipCompressionOptions? = nil
+    ) -> Task<Void, Never>? {
+        guard !isSaving else {
+            log.notice("Ignoring save — a save is already in progress")
+            return nil
+        }
+        guard let target = destination ?? url else { return nil }
+        // An empty diff is a no-op in place, but writing to a *different* target
+        // is a "save a copy" (Save As of a clean archive) — allow that.
+        guard !diff.isEmpty || target != url else { return nil }
+
+        let source = url
+        let items = diff
+        // format follows the target extension; zip is the default
+        let format: SevenZipCompressionOptions.Format =
+            target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
+        let effectiveOptions = options ?? SevenZipCompressionOptions(format: format)
+
+        isSaving = true
+        isBusy = true
+        progress = 0
+        updateStatus(.processing)
+        updateStatusText("saving...")
+        log.notice("Saving archive", context: [
+            "target": target.lastPathComponent,
+            "changes": "\(items.count)",
+            "new": "\(source == nil)"
+        ])
+
+        // Forward 7-Zip's byte progress to the status bar. The callback fires
+        // on the writing (GCD) thread — throttle, then hop to the main actor.
+        let throttle = ProgressThrottle()
+        let onWriteProgress: @Sendable (UInt64, UInt64) -> Bool = { completed, total in
+            guard total > 0 else { return true }
+            let pct = Int((completed * 100) / total)
+            if throttle.shouldEmit(at: Date()) {
+                DispatchQueue.main.async {
+                    MainActor.assumeIsolated { self.progress = pct }
                 }
-                
+            }
+            return true
+        }
+
+        // the write is a long synchronous C call — keep it off the
+        // cooperative pool; bracket any stored security-scoped grant
+        let performWrite: @MainActor () async throws -> Void = {
+            var accessedFiles: [URL] = []
+            for case let .addFile(_, diskPath, _, _) in items {
+                if diskPath.startAccessingSecurityScopedResource() {
+                    accessedFiles.append(diskPath)
+                }
+            }
+            defer { for f in accessedFiles { f.stopAccessingSecurityScopedResource() } }
+
+            let work: @Sendable () throws -> Void = {
                 try SevenZipArchive.writeArchive(
-                    source: url,
-                    destination: url,
-                    items: diff
+                    source: source,
+                    destination: target,
+                    items: items,
+                    options: effectiveOptions,
+                    progress: onWriteProgress
                 )
-                
+            }
+            try await Sandbox.access(url: target) {
+                try await runBlocking(work)
+            }
+        }
+
+        /// The archive may have been opened with a read-only grant (e.g. a
+        /// path handed over without a powerbox grant). Then the write fails
+        /// with a no-permission error — ask for folder access exactly like
+        /// the split-volume loader does, and retry once.
+        let isPermissionError: (Error) -> Bool = { error in
+            let ns = error as NSError
+            if ns.domain == NSCocoaErrorDomain,
+               ns.code == NSFileWriteNoPermissionError || ns.code == NSFileReadNoPermissionError {
+                return true
+            }
+            if case SevenZipError.writeFailed(let msg) = error {
+                return msg.contains("Cannot create output file") || msg.contains("Cannot open")
+            }
+            return false
+        }
+
+        return Task {
+            do {
+                do {
+                    try await performWrite()
+                } catch where isPermissionError(error) {
+                    log.notice("Save hit a permission error — asking for folder access", context: ["target": target.lastPathComponent])
+                    guard let provider = folderAccessProvider, await provider(target) else {
+                        throw error
+                    }
+                    try await performWrite()
+                }
+
                 diff.removeAll()
+                self.progress = nil
+                log.notice("Archive saved", context: ["target": target.lastPathComponent])
+
+                // reload from disk so entries and indices reflect the file
+                open(url: target)
+                _ = try? await openTask?.value
+                self.isSaving = false
             } catch {
-                log.error(error)
+                log.error("Archive save failed", context: [
+                    "target": target.lastPathComponent,
+                    "error": String(describing: error)
+                ])
+                self.error = error.localizedDescription
+                self.isBusy = false
+                self.isSaving = false
+                self.progress = nil
+                updateStatusText(nil)
+                updateStatus(.done)
             }
         }
     }
@@ -663,8 +897,9 @@ extension ArchiveState {
             selectedItem = item
             loadChildren()
         } else {
-            // Could not detect any archive, just open the file
-            NSWorkspace.shared.open(tempUrl)
+            // Could not detect any archive, just open the file in the system
+            // editor — via the app-injected opener (no-op under tests).
+            openFileExternally(tempUrl)
         }
     }
     

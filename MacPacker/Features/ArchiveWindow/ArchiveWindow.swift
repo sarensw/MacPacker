@@ -6,16 +6,19 @@
 //
 
 import AppKit
+import Combine
 import Core
 import SwiftUI
 
 class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     let archiveState: ArchiveState
-    
+
     let contentService: ArchiveContentService = ArchiveContentService()
-    
+
     var willCloseHandler: (() -> Void)?
     var didBecomeMain: (() -> Void)?
+
+    private var cancellables = Set<AnyCancellable>()
     
     init(
         archiveState: ArchiveState,
@@ -40,12 +43,64 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
             .environment(\.openArchiveInNewWindow, openArchiveInNewWindow)
 
         window.contentView = NSHostingView(rootView: contentView)
+
+        // native unsaved-changes affordance: the close button shows a dot while
+        // there are pending edits (mirrors NSDocument's isDocumentEdited)
+        archiveState.$diff
+            .map { !$0.isEmpty }
+            .removeDuplicates()
+            .sink { [weak window] edited in window?.isDocumentEdited = edited }
+            .store(in: &cancellables)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    /// Closing a window with unsaved edits asks to save first, like a document
+    /// (this is a plain NSWindow, not an NSDocument, so it's wired by hand).
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        guard archiveState.canBeEdited,
+              archiveState.hasPendingChanges,
+              !archiveState.isSaving else { return true }
+
+        let name = archiveState.name ?? String(localized: "the archive", comment: "Fallback name in the save-on-close prompt when the archive has no file name yet")
+        let alert = NSAlert()
+        alert.messageText = String(localized: "Do you want to save the changes you made to “\(name)”?", comment: "Title of the prompt shown when closing an archive window with unsaved changes")
+        alert.informativeText = String(localized: "Your changes will be lost if you don’t save them.", comment: "Explanation in the save-on-close prompt")
+        alert.addButton(withTitle: String(localized: "Save", comment: "Button in the save-on-close prompt that saves the archive"))
+        alert.addButton(withTitle: String(localized: "Cancel", comment: "Button in the save-on-close prompt that keeps the window open"))
+        alert.addButton(withTitle: String(localized: "Don’t Save", comment: "Button in the save-on-close prompt that discards the changes"))
+        alert.buttons[1].keyEquivalent = "\u{1b}"                                  // Esc = Cancel
+        alert.buttons[2].keyEquivalent = "d"; alert.buttons[2].keyEquivalentModifierMask = .command  // ⌘D = Don't Save
+
+        alert.beginSheetModal(for: sender) { [weak self] response in
+            switch response {
+            case .alertFirstButtonReturn: self?.saveThenClose(window: sender) // Save
+            case .alertThirdButtonReturn: sender.close()                      // Don't Save
+            default: break                                                     // Cancel
+            }
+        }
+        return false
+    }
+
+    /// Saves the pending changes and closes the window once the write finishes.
+    /// A cancelled save panel (new archive) or a failed write keeps it open.
+    private func saveThenClose(window: NSWindow) {
+        let closeWhenSaved: (Task<Void, Never>?) -> Void = { [weak self] task in
+            guard let self, let task else { return }
+            Task { @MainActor in
+                await task.value
+                if !self.archiveState.hasPendingChanges { window.close() }
+            }
+        }
+        if archiveState.url == nil {
+            ArchiveSavePanel.runAndSave(state: archiveState, window: window, onSave: closeWhenSaved)
+        } else {
+            closeWhenSaved(archiveState.save())
+        }
+    }
+
     func windowWillClose(_ notification: Notification) {
         archiveState.clean()
         willCloseHandler?()

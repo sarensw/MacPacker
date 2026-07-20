@@ -158,6 +158,9 @@ typedef struct {
 /// @param items        Array of update item descriptors.
 /// @param item_count   Number of items in the array.
 /// @param options      Compression options.
+/// @param progress     Optional byte-progress callback (NULL to skip). Return
+///                     false to abort — the write stops and returns non-zero.
+/// @param progress_context  Passed back to `progress`.
 /// @param error_out    On failure, receives a malloc'd UTF-8 error string (caller must free).
 /// @return 0 on success, non-zero on failure.
 int sz_update_archive(
@@ -166,6 +169,8 @@ int sz_update_archive(
     const SZUpdateItem *items,
     uint32_t item_count,
     const SZCompressionOptions *options,
+    sz_progress_callback progress,
+    void *progress_context,
     char **error_out
 );
 

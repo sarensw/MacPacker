@@ -99,7 +99,7 @@ struct StatusBarView: View {
                         
                         Spacer()
                     } else {
-                        Text("\(archiveState.entries.count) items")
+                        Text("\(archiveState.itemCount) items")
                         if let uncompressedSize = archiveState.uncompressedSize {
                             Text(verbatim: " • \(SystemHelper.shared.format(bytes: uncompressedSize))")
                         }

@@ -1,0 +1,25 @@
+{
+  "configurations" : [
+    {
+      "id" : "5A4C74F3-9F14-4E5C-9A5B-1D2E3F405060",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:MacPacker.xcodeproj",
+        "identifier" : "25B7C0DE2F0000000000A001",
+        "name" : "MacPackerUITests"
+      }
+    }
+  ],
+  "version" : 2
+}
