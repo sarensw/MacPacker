@@ -106,6 +106,10 @@ public class ArchiveState: ObservableObject {
     
     public var passwordProvider: ArchivePasswordUserProvider?
     public var folderAccessProvider: ArchiveFolderAccessUserProvider?
+    /// Hands a plain (non-archive) file to the system after extraction. The app
+    /// wires this to `NSWorkspace.shared.open`; the default is a no-op so Core
+    /// carries no AppKit dependency and unit tests never launch an external app.
+    public var openFileExternally: (URL) -> Void = { _ in }
     /// Where user-triggered extractions report their progress. Defaults to
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
@@ -370,14 +374,28 @@ extension ArchiveState {
     }
 
     private func addFolder(url: URL, archivePath: String, under parent: ArchiveItem) {
+        // Read the contents first: if the folder can't be enumerated we must not
+        // add it as an empty directory (that would silently drop its real
+        // contents on save). Skip it and surface the error instead.
+        let children: [URL]
+        do {
+            children = try FileManager.default.contentsOfDirectory(
+                at: url, includingPropertiesForKeys: nil)
+        } catch {
+            log.error("Failed to read folder for add — skipping", context: [
+                "path": url.path,
+                "error": String(describing: error)
+            ])
+            self.error = error.localizedDescription
+            return
+        }
+
         diff.append(.addDirectory(archivePath: archivePath))
         let item = ArchiveItem(url: url, archivePath: archivePath)
         item.parent = parent.id
         parent.addChild(item.id)
         entries[item.id] = item
 
-        let children = (try? FileManager.default.contentsOfDirectory(
-            at: url, includingPropertiesForKeys: nil)) ?? []
         for child in children.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
             if child.isDirectory {
                 addFolder(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
@@ -877,8 +895,9 @@ extension ArchiveState {
             selectedItem = item
             loadChildren()
         } else {
-            // Could not detect any archive, just open the file
-            NSWorkspace.shared.open(tempUrl)
+            // Could not detect any archive, just open the file in the system
+            // editor — via the app-injected opener (no-op under tests).
+            openFileExternally(tempUrl)
         }
     }
     
