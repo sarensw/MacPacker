@@ -385,6 +385,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let quickLook = NSMenuItem(
                 title: String(localized: "Quick Look", comment: "Context menu: preview the clicked item"),
                 action: #selector(contextQuickLook(_:)), keyEquivalent: " ")
+            quickLook.keyEquivalentModifierMask = []   // Space, not ⌘Space
             quickLook.target = self
             quickLook.isEnabled = hasSelection
             menu.addItem(quickLook)
