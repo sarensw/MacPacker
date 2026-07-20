@@ -379,6 +379,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 title: String(localized: "Open", comment: "Context menu: open the clicked item"),
                 action: #selector(contextOpen(_:)), keyEquivalent: "")
             open.target = self
+            open.image = NSImage(systemSymbolName: "arrow.up.forward.square", accessibilityDescription: nil)
             open.isEnabled = hasSelection
             menu.addItem(open)
 
@@ -387,6 +388,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 action: #selector(contextQuickLook(_:)), keyEquivalent: " ")
             quickLook.keyEquivalentModifierMask = []   // Space, not ⌘Space
             quickLook.target = self
+            quickLook.image = NSImage(named: "custom.document.badge.eye")
             quickLook.isEnabled = hasSelection
             menu.addItem(quickLook)
 
@@ -396,6 +398,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 title: String(localized: "Extract Selected…", comment: "Context menu: extract the selected items to a folder"),
                 action: #selector(contextExtract(_:)), keyEquivalent: "")
             extract.target = self
+            extract.image = NSImage(named: "custom.document.badge.arrow.down")
             extract.isEnabled = hasSelection
             menu.addItem(extract)
 
@@ -406,6 +409,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 action: #selector(contextDelete(_:)), keyEquivalent: "\u{8}")
             delete.keyEquivalentModifierMask = []
             delete.target = self
+            delete.image = NSImage(systemSymbolName: "trash", accessibilityDescription: nil)
             delete.isEnabled = hasSelection && state.canBeEdited && !state.isSaving
             menu.addItem(delete)
         }
