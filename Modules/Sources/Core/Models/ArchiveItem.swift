@@ -41,6 +41,10 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     /// we can easily distinguish if a nested archive still needs to be extracted or not.
     public private(set) var children: [UUID]? = nil
     
+    /// A real directory entry, or a folder `ArchiveLoader.buildTree` had to
+    /// synthesize because the archive carries no entry for it.
+    public var isFolder: Bool { type == .directory || type == .virtual }
+
     // The following are only relevant if this is a nested archive
     // that can be opened
     public private(set) var url: URL? = nil

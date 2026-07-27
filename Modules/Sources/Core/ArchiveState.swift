@@ -242,8 +242,8 @@ extension ArchiveState {
             childItems = children.sorted { a, b in
                 switch defaultOrderColumn {
                 case ArchiveSortOrder.name.rawValue:
-                    if a.type != b.type {
-                        return a.type == .directory
+                    if a.isFolder != b.isFolder {
+                        return a.isFolder
                     }
 
                     let cmp = a.name.localizedStandardCompare(b.name)
@@ -699,14 +699,19 @@ extension ArchiveState {
                 
                 try Task.checkCancellation()
                 
+                // buildTree synthesizes the directories the archive has no entry
+                // for, so its result carries the entries — loaderResult.entries
+                // is a snapshot from before and misses them.
+                var loadedEntries = loaderResult.entries
                 if !loaderResult.hasTree {
                     let builderResult = await archiveLoader.buildTree(at: loaderResult.root)
                     self.error = builderResult.error
+                    loadedEntries = builderResult.entries
                     if let treeError = builderResult.error {
                         log.error("Tree build failed", context: ["file": url.lastPathComponent, "error": treeError])
                     }
                 }
-                self.entries.merge(loaderResult.entries, uniquingKeysWith: { lhs, _ in lhs })
+                self.entries.merge(loadedEntries, uniquingKeysWith: { lhs, _ in lhs })
                 self.entries[loaderResult.root.id] = root
 
                 loadChildren()
@@ -943,11 +948,13 @@ extension ArchiveState {
                 
                 updateStatusText("building tree...")
                 
+                var loadedEntries = loaderResult.entries
                 if !loaderResult.hasTree {
                     let builderResult = await archiveLoader.buildTree(at: archiveItem)
                     self.error = builderResult.error
+                    loadedEntries = builderResult.entries
                 }
-                self.entries.merge(loaderResult.entries) { (current, _) in current }
+                self.entries.merge(loadedEntries) { (current, _) in current }
                 
                 loadChildren()
                 
