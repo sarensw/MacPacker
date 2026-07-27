@@ -137,9 +137,24 @@ struct FormatSettingsView: View {
                 }
                 .buttonStyle(.borderless)
                 .popover(isPresented: $showEngineInfo) {
-                    Text("MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format.", comment: "Help text to let users understand what the engine selection for each archive format is about")
-                        .frame(width: 160)
-                        .padding()
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format.", comment: "Help text to let users understand what the engine selection for each archive format is about")
+
+                        Divider()
+
+                        Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 2) {
+                            ForEach(ArchiveEngineType.allCases) { engine in
+                                GridRow {
+                                    Text(engine.rawValue)
+                                    Text(engine.libraryVersion)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .font(.footnote)
+                    }
+                    .frame(width: 260)
+                    .padding()
                 }
             }
         }

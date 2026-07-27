@@ -33,6 +33,7 @@
 
 #include "7zip/Archive/IArchive.h"
 #include "7zip/IPassword.h"
+#include "7zip/MyVersion.h"   // MY_VERSION -- tracks the vendored submodule
 
 static const GUID IID_IInArchive_Local = {
   0x23170F69, 0x40C1, 0x278A,
@@ -857,7 +858,7 @@ bool sz_is_tree(SZArchiveRef archive) {
 }
 
 const char* sz_version(void) {
-    return "Swift7zip bridge";
+    return MY_VERSION;
 }
 
 } // extern "C"

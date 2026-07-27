@@ -98,7 +98,8 @@ bool sz_is_tree(SZArchiveRef archive);
 
 // --- Utilities ---
 
-/// Statically allocated version string -- do not free.
+/// Version of the vendored 7-Zip sources, e.g. "26.02".
+/// Statically allocated -- do not free.
 const char* sz_version(void);
 
 // --- Archive Creation/Update ---
