@@ -155,7 +155,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                         image = cached
                     } else {
                         let computed: NSImage
-                        if item.type == .directory {
+                        if item.isFolder {
                             computed = NSWorkspace.shared.icon(for: .folder)
                         } else {
                             computed = NSWorkspace.shared.icon(forFileType: item.ext)

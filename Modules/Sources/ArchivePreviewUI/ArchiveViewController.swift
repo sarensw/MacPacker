@@ -145,7 +145,7 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
             iconView.setContentCompressionResistancePriority(.required, for: .horizontal)
 
             let icon: NSImage? = {
-                if archiveItem.type == .directory {
+                if archiveItem.isFolder {
                     return SystemHelper.shared.getNSImageForFolder()
                 } else {
                     return SystemHelper.shared.getNSImageByExtension(fileName: archiveItem.name)

@@ -23,6 +23,10 @@ struct ArchiveLoaderLoadResult: Sendable {
 
 struct ArchiveLoaderBuildTreeResult {
     let error: String?
+    /// The entries *after* the tree was built — including the directories
+    /// `buildTree` had to synthesize. `ArchiveLoaderLoadResult.entries` is a
+    /// snapshot taken before that and does not contain them.
+    let entries: [UUID: ArchiveItem]
 }
 
 final actor ArchiveLoader {
@@ -319,6 +323,6 @@ final actor ArchiveLoader {
             i += 1
         }
 
-        return ArchiveLoaderBuildTreeResult(error: nil)
+        return ArchiveLoaderBuildTreeResult(error: nil, entries: entries)
     }
 }

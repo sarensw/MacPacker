@@ -76,6 +76,27 @@
             "issues": [
               "142"
             ]
+          },
+          {
+            "type": "fix",
+            "title": {
+              "en": "Archives that don't store folder entries no longer appear empty",
+              "zh-Hans": "不存储文件夹条目的压缩包不再显示为空",
+              "fr": "Les archives qui n'enregistrent pas d'entrées de dossier n'apparaissent plus vides",
+              "de": "Archive ohne gespeicherte Ordnereinträge erscheinen nicht mehr leer",
+              "it": "Gli archivi che non memorizzano voci di cartella non appaiono più vuoti",
+              "ja": "フォルダのエントリを保存していないアーカイブが空と表示されなくなりました",
+              "fa": "آرشیوهایی که ورودی پوشه ذخیره نمی‌کنند دیگر خالی نمایش داده نمی‌شوند",
+              "pl": "Archiwa, które nie przechowują wpisów folderów, nie są już wyświetlane jako puste",
+              "pt-BR": "Arquivos compactados que não armazenam entradas de pasta não aparecem mais vazios",
+              "ru": "Архивы, не хранящие записи папок, больше не отображаются пустыми",
+              "uk": "Архіви, які не зберігають записи папок, більше не відображаються порожніми",
+              "es-MX": "Los archivos comprimidos que no almacenan entradas de carpeta ya no aparecen vacíos",
+              "ko": "폴더 항목을 저장하지 않는 아카이브가 더 이상 비어 있는 것으로 표시되지 않습니다"
+            },
+            "issues": [
+              "144"
+            ]
           }
         ]
       },

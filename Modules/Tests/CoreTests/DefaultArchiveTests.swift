@@ -35,13 +35,15 @@ extension AllCoreTests {
         }
         
         @Test("Test all defaultArchives on 7zip", arguments: [
-            // ext, id, folder entries
+            // ext, id, entries (incl. root), root children
             ("7z", "7zip", 5, 2),
-            ("arj", "arj", 4, 2),
+            // arj/cab/lzh store no folder entries — buildTree synthesizes the
+            // folder, so the entry count matches the formats that do store it
+            ("arj", "arj", 5, 2),
             ("ar", "ar", 4, 3), // `ar` archives do not store folders, only folder paths
-            ("cab", "cab", 4, 2),
+            ("cab", "cab", 5, 2),
             ("cpio", "cpio", 5, 2),
-            ("lzh", "lha", 4, 2),
+            ("lzh", "lha", 5, 2),
             ("rar", "rar", 5, 2),
             ("tar", "tar", 5, 2),
             ("xar", "xar", 6, 3), // additional `[TOC].xml`
@@ -91,17 +93,16 @@ extension AllCoreTests {
         }
         
         @Test("Test all defaultArchives on xad", arguments: [
-            ("zip", "zip", true),
-            ("7z", "7zip", true),
-            ("tbz2", "tar", true),
-            ("tar.bz2", "tar", true),
-            ("cab", "cab", false),
-            ("cpio", "cpio", true)
+            ("zip", "zip"),
+            ("7z", "7zip"),
+            ("tbz2", "tar"),
+            ("tar.bz2", "tar"),
+            ("cab", "cab"), // stores no folder entry — buildTree synthesizes it
+            ("cpio", "cpio")
         ])
-        func testAllXadEngine(arg: (String, String, Bool)) async throws {
+        func testAllXadEngine(arg: (String, String)) async throws {
             let ext = arg.0
             let id = arg.1
-            let folderEntries = arg.2
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorXad())
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
             
@@ -111,7 +112,7 @@ extension AllCoreTests {
             try await state.openTask?.value
             
             #expect(state.type?.id == id)
-            #expect(state.entries.count == (folderEntries ? 5 : 4))
+            #expect(state.entries.count == 5)
             #expect(state.root?.children?.count == 2)
             #expect(state.root === state.selectedItem)
         }
