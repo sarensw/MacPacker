@@ -55,6 +55,27 @@
             "issues": [
               "142"
             ]
+          },
+          {
+            "type": "feat",
+            "title": {
+              "en": "Show archive engine versions in Settings",
+              "zh-Hans": "在设置中显示压缩引擎版本",
+              "fr": "Afficher les versions des moteurs d'archive dans les Réglages",
+              "de": "Versionen der Archiv-Engines in den Einstellungen anzeigen",
+              "it": "Mostra le versioni dei motori di archivio nelle Impostazioni",
+              "ja": "設定でアーカイブエンジンのバージョンを表示",
+              "fa": "نمایش نسخه موتورهای بایگانی در تنظیمات",
+              "pl": "Wyświetlanie wersji silników archiwów w Ustawieniach",
+              "pt-BR": "Exibir as versões dos motores de arquivo nas Configurações",
+              "ru": "Отображение версий архивных движков в настройках",
+              "uk": "Відображення версій архівних рушіїв у налаштуваннях",
+              "es-MX": "Mostrar las versiones de los motores de archivo en Configuración",
+              "ko": "설정에서 아카이브 엔진 버전 표시"
+            },
+            "issues": [
+              "142"
+            ]
           }
         ]
       },
