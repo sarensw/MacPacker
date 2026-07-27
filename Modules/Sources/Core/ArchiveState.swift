@@ -705,7 +705,8 @@ extension ArchiveState {
                 var loadedEntries = loaderResult.entries
                 if !loaderResult.hasTree {
                     let builderResult = await archiveLoader.buildTree(at: loaderResult.root)
-                    self.error = builderResult.error
+                    // keep a load error — a clean tree build does not undo it
+                    self.error = builderResult.error ?? self.error
                     loadedEntries = builderResult.entries
                     if let treeError = builderResult.error {
                         log.error("Tree build failed", context: ["file": url.lastPathComponent, "error": treeError])
@@ -951,7 +952,8 @@ extension ArchiveState {
                 var loadedEntries = loaderResult.entries
                 if !loaderResult.hasTree {
                     let builderResult = await archiveLoader.buildTree(at: archiveItem)
-                    self.error = builderResult.error
+                    // keep a load error — a clean tree build does not undo it
+                    self.error = builderResult.error ?? self.error
                     loadedEntries = builderResult.entries
                 }
                 self.entries.merge(loadedEntries) { (current, _) in current }
