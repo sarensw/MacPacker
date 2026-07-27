@@ -36,7 +36,10 @@ public class SevenZipArchive {
 
     // MARK: - Inspection
 
-    /// Version string of the embedded 7-zip bridge.
+    /// Version of the embedded 7-Zip library, e.g. `26.02`.
+    ///
+    /// Read from the vendored sources at compile time, so it follows the
+    /// `Sources/CSevenZip/vendor/7zip` submodule automatically.
     public static var libraryVersion: String {
         String(cString: sz_version())
     }

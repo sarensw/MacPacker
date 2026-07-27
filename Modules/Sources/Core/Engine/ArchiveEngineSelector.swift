@@ -6,11 +6,13 @@
 //
 
 import Foundation
+import Swift7zip
+import XADMaster
 import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "engine")
 
-public enum ArchiveEngineType: String, Identifiable, Sendable, Codable {
+public enum ArchiveEngineType: String, CaseIterable, Identifiable, Sendable, Codable {
     case xad = "XAD (The Unarchiver)"
     case `7zip` = "7-Zip"
     case swc = "SWCompression"
@@ -34,6 +36,30 @@ extension ArchiveEngineType {
         case .xad:  "xad"
         case .`7zip`: "7zip"
         case .swc:  "swc"
+        }
+    }
+
+    /// Version of the underlying library, for display in the engine info popover.
+    ///
+    /// All three values are kept honest by `EngineVersionTests`.
+    public var libraryVersion: String {
+        switch self {
+        case .`7zip`:
+            // Compiled in from the vendored 7-Zip sources.
+            SevenZipArchive.libraryVersion
+        case .xad:
+            // CFBundleVersion of the embedded XADMaster.framework. Note this is
+            // upstream XADMaster's version -- it does not move when the fork's
+            // branch revision does. XADMasterVersionString from XADMaster.h is
+            // declared but never defined in the shipped binary, so it can't be used.
+            Bundle(for: XADArchive.self).infoDictionary?["CFBundleVersion"] as? String ?? "—"
+        case .swc:
+            // ponytail: hardcoded. SWCompression exposes no version at runtime --
+            // its _SWC_VERSION is internal and lives in the `swcomp` executable
+            // target, which the library target excludes. EngineVersionTests fails
+            // if this drifts from the pin in the workspace Package.resolved; bump
+            // it there and here together.
+            "4.9.1"
         }
     }
 }
