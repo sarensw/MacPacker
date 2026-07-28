@@ -108,6 +108,38 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
 }
 
 class ArchiveWindow: NSWindow {
+    /// SwiftUI builds the NSToolbar for `.toolbar {}` itself, leaves
+    /// `autosavesConfiguration` off, and its generated identifier isn't ours to
+    /// set, so "Icon and Text" is remembered by hand (issue #141).
+    private var displayModeObserver: NSKeyValueObservation?
+
+    override var toolbar: NSToolbar? {
+        didSet {
+            displayModeObserver = nil
+            guard let toolbar else { return }
+
+            let saved = UserDefaults.standard.integer(forKey: Keys.toolbarDisplayMode)
+            if saved > 0, let mode = NSToolbar.DisplayMode(rawValue: UInt(saved)) {
+                toolbar.displayMode = mode
+            }
+
+            // the change dictionary is read off the toolbar, not `change.newValue`:
+            // NSToolbar posts a correct KVO notification, but Swift can't bridge the
+            // boxed NSNumber back to DisplayMode, so newValue always arrives nil
+            displayModeObserver = toolbar.observe(\.displayMode) { toolbar, _ in
+                // KVO is delivered synchronously on whichever thread set the
+                // property, and only AppKit/SwiftUI set this one — always main
+                MainActor.assumeIsolated {
+                    let mode = toolbar.displayMode
+                    // .default never comes from the context menu — ignoring it stops a
+                    // SwiftUI toolbar rebuild from wiping the user's choice
+                    guard mode != .default else { return }
+                    UserDefaults.standard.set(mode.rawValue, forKey: Keys.toolbarDisplayMode)
+                }
+            }
+        }
+    }
+
     init() {
         super.init(
             contentRect: NSRect(x: 0, y: 0, width: 800, height: 500),

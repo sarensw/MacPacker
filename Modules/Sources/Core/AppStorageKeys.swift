@@ -21,6 +21,9 @@ public enum Keys {
     public static let defaultOrderColumn = "defaultOrderColum"
     public static let defaultOrderColumnAscending = "defaultOrderColumnAscending"
 
+    // window settings
+    public static let toolbarDisplayMode = "toolbarDisplayMode"
+
     // register defaults upon app start so that the archive table has a default it
     // can use when showing the table for the first time
     public static func registerDefaults() {
