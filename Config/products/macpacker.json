@@ -97,6 +97,27 @@
             "issues": [
               "144"
             ]
+          },
+          {
+            "type": "fix",
+            "title": {
+              "en": "Toolbar display mode is now remembered across restarts",
+              "zh-Hans": "工具栏显示方式现在会在重启后保留",
+              "fr": "Le mode d'affichage de la barre d'outils est désormais conservé après un redémarrage",
+              "de": "Die Anzeigeart der Symbolleiste bleibt jetzt nach einem Neustart erhalten",
+              "it": "La modalità di visualizzazione della barra degli strumenti viene ora mantenuta dopo il riavvio",
+              "ja": "ツールバーの表示方法が再起動後も保持されるようになりました",
+              "fa": "حالت نمایش نوار ابزار اکنون پس از راه‌اندازی مجدد حفظ می‌شود",
+              "pl": "Tryb wyświetlania paska narzędzi jest teraz zapamiętywany po ponownym uruchomieniu",
+              "pt-BR": "O modo de exibição da barra de ferramentas agora é mantido após reiniciar",
+              "ru": "Режим отображения панели инструментов теперь сохраняется после перезапуска",
+              "uk": "Режим відображення панелі інструментів тепер зберігається після перезапуску",
+              "es-MX": "El modo de visualización de la barra de herramientas ahora se conserva después de reiniciar",
+              "ko": "도구 모음 표시 방식이 이제 재시작 후에도 유지됩니다"
+            },
+            "issues": [
+              "141"
+            ]
           }
         ]
       },

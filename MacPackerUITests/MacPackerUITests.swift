@@ -212,4 +212,57 @@ final class MacPackerUITests: XCTestCase {
         try run("/usr/bin/unzip", ["-t", created.path])
         app.terminate()
     }
+
+    /// Issue #141: the toolbar display mode picked from the toolbar's context menu
+    /// survives a relaunch. Drives the reported repro in both directions, so the
+    /// result can't come from state a previous run left behind.
+    ///
+    /// `-ArchivePath` matters beyond loading a fixture: it suppresses the welcome
+    /// window, so the archive window is the one the right-click lands on.
+    func testToolbarDisplayModePersistsAcrossRelaunch() throws {
+        let dir = try makeWorkDir("toolbar")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        let zip = dir.appendingPathComponent("fixture.zip")
+        try run("/usr/bin/zip", [zip.path, "one.txt"], cwd: dir)
+
+        // the toolbar grows when it has to make room for the item titles — SwiftUI
+        // toolbar labels aren't exposed as their own AX text, so height is the signal
+        func launchAndMeasure() -> (XCUIApplication, CGFloat) {
+            let app = launchApp(arguments: ["-ArchivePath", zip.path])
+            XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
+            let toolbar = app.windows.toolbars.firstMatch
+            XCTAssertTrue(toolbar.waitForExistence(timeout: 5), "no toolbar")
+            return (app, toolbar.frame.height)
+        }
+        func chooseDisplayMode(_ app: XCUIApplication, _ item: String) -> CGFloat {
+            app.windows.firstMatch
+                .coordinate(withNormalizedOffset: CGVector(dx: 0.45, dy: 0.0))
+                .withOffset(CGVector(dx: 0, dy: 26))
+                .rightClick()
+            let menuItem = app.menuItems[item]
+            XCTAssertTrue(menuItem.waitForExistence(timeout: 5), "no “\(item)” in the toolbar context menu")
+            menuItem.click()
+            sleep(1)
+            return app.windows.toolbars.firstMatch.frame.height
+        }
+
+        // Icon Only first only to pin down a known starting point — the mode is then
+        // changed again before every relaunch, so each restore assertion below is
+        // preceded by a real change and can't pass on prefs a previous run left.
+        let (first, _) = launchAndMeasure()
+        let iconOnly = chooseDisplayMode(first, "Icon Only")
+        let iconAndText = chooseDisplayMode(first, "Icon and Text")
+        XCTAssertGreaterThan(iconAndText, iconOnly, "picking Icon and Text did not grow the toolbar")
+        first.terminate()
+
+        let (second, restoredIconAndText) = launchAndMeasure()
+        XCTAssertEqual(restoredIconAndText, iconAndText, "Icon and Text did not survive the relaunch")
+        XCTAssertEqual(chooseDisplayMode(second, "Icon Only"), iconOnly, "switching back to Icon Only did not shrink the toolbar")
+        second.terminate()
+
+        let (third, restoredIconOnly) = launchAndMeasure()
+        XCTAssertEqual(restoredIconOnly, iconOnly, "Icon Only did not survive the relaunch")
+        third.terminate()
+    }
 }
