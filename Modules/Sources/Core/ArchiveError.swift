@@ -5,7 +5,6 @@
 //  Created by Stephan Arenswald on 06.09.25.
 //
 
-
 import Foundation
 
 enum ArchiveError: Error, LocalizedError {

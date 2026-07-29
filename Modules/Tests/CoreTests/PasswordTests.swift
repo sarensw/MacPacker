@@ -104,7 +104,7 @@ extension AllCoreTests {
             ("zip_long_pw.zip", longPassword),
             ("7z_aes256.7z", correctPassword),
             ("7z_header_encrypted.7z", correctPassword),
-            ("7z_symbol_pw.7z", symbolPassword),
+            ("7z_symbol_pw.7z", symbolPassword)
         ])
         func extractsEncryptedEntryWithCorrectPassword(name: String, password: String) async throws {
             for (engineName, engine) in engines() {
@@ -397,7 +397,7 @@ extension AllCoreTests {
         /// zip and plain-header 7z keep their file names in the clear, so
         /// listing them must not prompt for anything.
         @Test(arguments: [
-            "zip_zipcrypto.zip", "zip_aes256.zip", "zip_aes128.zip", "7z_aes256.7z",
+            "zip_zipcrypto.zip", "zip_aes256.zip", "zip_aes128.zip", "7z_aes256.7z"
         ])
         func listsEncryptedArchiveWithoutPassword(name: String) async throws {
             for (engineName, engine) in engines() {
@@ -438,7 +438,7 @@ extension AllCoreTests {
             ("zip_zipcrypto.zip", true),
             ("zip_aes256.zip", true),
             ("zip_mixed.zip", true),
-            ("zip_nested_outer.zip", false),
+            ("zip_nested_outer.zip", false)
         ])
         func reportsWhetherArchiveIsEncrypted(name: String, expected: Bool) async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
@@ -634,11 +634,11 @@ extension AllCoreTests {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             let prompts = Counter()
             state.passwordProvider = { _ in
-                let n = await prompts.increment()
+                let attempt = await prompts.increment()
                 // Cancel after a few tries so a broken loop fails instead of
                 // hanging the suite.
-                if n > 3 { return nil }
-                return n == 1 ? "wrong-first-try" : correctPassword
+                if attempt > 3 { return nil }
+                return attempt == 1 ? "wrong-first-try" : correctPassword
             }
 
             state.open(url: fixture("zip_aes256.zip"))
