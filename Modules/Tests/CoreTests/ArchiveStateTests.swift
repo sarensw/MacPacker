@@ -668,8 +668,11 @@ extension AllCoreTests {
 
         @Test func openPasswordProtectedArchiveWithProvider() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent("defaultArchive_password.zip")
+            // defaultArchive_password.zip's password is lost to history; these
+            // tests only ever "passed" because a wrong password used to write
+            // empty files and report success.
+            let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
             state.passwordProvider = { _ in
                 return "password"
@@ -684,8 +687,11 @@ extension AllCoreTests {
 
         @Test func openPasswordProtectedArchiveWithoutProvider() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent("defaultArchive_password.zip")
+            // defaultArchive_password.zip's password is lost to history; these
+            // tests only ever "passed" because a wrong password used to write
+            // empty files and report success.
+            let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
             // No password provider set - should either error or have empty/partial entries
             state.open(url: url)

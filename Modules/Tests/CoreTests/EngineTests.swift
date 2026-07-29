@@ -746,8 +746,11 @@ extension AllCoreTests {
 
         @Test func loadPasswordProtectedZipWith7zip() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent("defaultArchive_password.zip")
+            // defaultArchive_password.zip's password is lost to history; these
+            // tests only ever "passed" because a wrong password used to write
+            // empty files and report success.
+            let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
             state.passwordProvider = { _ in
                 return "password"
@@ -762,8 +765,11 @@ extension AllCoreTests {
 
         @Test func extractPasswordProtectedFileWith7zip() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent("defaultArchive_password.zip")
+            // defaultArchive_password.zip's password is lost to history; these
+            // tests only ever "passed" because a wrong password used to write
+            // empty files and report success.
+            let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
             state.passwordProvider = { _ in
                 return "password"
@@ -783,8 +789,11 @@ extension AllCoreTests {
 
         @Test func loadPasswordProtectedZipWithXad() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorXad())
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent("defaultArchive_password.zip")
+            // defaultArchive_password.zip's password is lost to history; these
+            // tests only ever "passed" because a wrong password used to write
+            // empty files and report success.
+            let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
             state.passwordProvider = { _ in
                 return "password"
@@ -801,8 +810,11 @@ extension AllCoreTests {
 
         @Test func passwordCancelledThrows7zip() async throws {
             let engine = Archive7ZipEngine()
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent("defaultArchive_password.zip")
+            // defaultArchive_password.zip's password is lost to history; these
+            // tests only ever "passed" because a wrong password used to write
+            // empty files and report success.
+            let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
             // Load archive to get entries (loading does not need password for zip)
             let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
@@ -827,8 +839,11 @@ extension AllCoreTests {
 
         @Test func passwordCancelledThrowsXad() async throws {
             let engine = ArchiveXadEngine()
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent("defaultArchive_password.zip")
+            // defaultArchive_password.zip's password is lost to history; these
+            // tests only ever "passed" because a wrong password used to write
+            // empty files and report success.
+            let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
             let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
             let fileItem = loadResult.items.values.first(where: { $0.type == .file })!
