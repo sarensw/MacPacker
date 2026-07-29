@@ -33,8 +33,8 @@ final actor Archive7ZipEngine: ArchiveEngine {
         // canonical entry (`.zip` for spanned, `.001` for numeric) and holds a
         // security-scoped grant on the containing folder, so the C bridge's
         // volume callback opens sibling volumes directly — no staging needed.
-        let szip = try SevenZipArchive(url: url)
-        
+        let szip = try await Self.open(url: url, passwordResolver: passwordResolver)
+
         var items: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0
         var idToUUIDMap: [UInt32: UUID] = [:]
@@ -118,7 +118,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
         }
         let sorted = indices.keys.sorted { $0 < $1 }
         
-        let szip = try SevenZipArchive(url: url)
+        let szip = try await Self.open(url: url, passwordResolver: passwordResolver)
 
         var attempt = 0
         // Loops until the archive extracts, the user cancels the prompt, or the
@@ -170,7 +170,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
         passwordResolver: @escaping ArchivePasswordResolver,
         onProgress: ArchiveExtractionProgress?
     ) async throws {
-        let szip = try SevenZipArchive(url: url)
+        let szip = try await Self.open(url: url, passwordResolver: passwordResolver)
 
         var attempt = 0
         // Same retry shape as extract(items:): loop until the archive
@@ -193,6 +193,30 @@ final actor Archive7ZipEngine: ArchiveEngine {
                 continue
             } catch SevenZipError.cancelled {
                 throw CancellationError()
+            }
+        }
+    }
+
+    /// Opens the archive, prompting for a password when the format encrypts its
+    /// header (7z `-mhe=on`, RAR `-hp`) — those cannot even be listed without
+    /// one. Shared by listing and both extraction paths so the prompt behaves
+    /// the same wherever the archive is opened.
+    private static func open(
+        url: URL,
+        passwordResolver: ArchivePasswordResolver
+    ) async throws -> SevenZipArchive {
+        var password: String?
+        var attempt = 0
+        while true {
+            do {
+                return try SevenZipArchive(url: url, password: password)
+            } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
+                attempt += 1
+                password = try await nextPassword(
+                    for: url,
+                    attempt: attempt,
+                    resolver: passwordResolver
+                )
             }
         }
     }

@@ -132,14 +132,44 @@ struct SZArchiveHandle {
 class COpenVolumeCallback final :
     public IArchiveOpenVolumeCallback,
     public IArchiveOpenCallback,
+    public ICryptoGetTextPassword,
     public CMyUnknownImp
 {
-    Z7_COM_UNKNOWN_IMP_2(IArchiveOpenVolumeCallback, IArchiveOpenCallback)
+    Z7_COM_UNKNOWN_IMP_3(IArchiveOpenVolumeCallback, IArchiveOpenCallback, ICryptoGetTextPassword)
 
     FString _basePath;
     FString _fileName;
+    std::string _password;
+    bool _hasPassword = false;
 
 public:
+    /// Set when a handler asked for a password while opening. Formats that
+    /// encrypt their header (7z -mhe=on, RAR -hp) cannot even be listed
+    /// without one, and a failed open is otherwise indistinguishable from
+    /// "not an archive".
+    bool passwordRequested = false;
+
+    void SetPassword(const char *password) {
+        if (password) {
+            _password = password;
+            _hasPassword = true;
+        } else {
+            _password.clear();
+            _hasPassword = false;
+        }
+    }
+
+    Z7_COM7F_IMF(CryptoGetTextPassword(BSTR *password)) {
+        passwordRequested = true;
+        if (!_hasPassword)
+            return E_ABORT;
+        AString aPassword(_password.c_str());
+        UString uPassword;
+        ConvertUTF8ToUnicode(aPassword, uPassword);
+        *password = ::SysAllocString((const OLECHAR *)(const wchar_t *)uPassword);
+        return S_OK;
+    }
+
     void SetFilePath(const FString &path) {
         int pos = path.ReverseFind_PathSepar();
         if (pos >= 0) {
@@ -502,7 +532,9 @@ static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_ou
 
 extern "C" {
 
-SZArchiveRef sz_open(const char *path, char **error_out) {
+SZArchiveRef sz_open(const char *path, const char *password,
+                     bool *needs_password_out, char **error_out) {
+    if (needs_password_out) *needs_password_out = false;
     try {
         // Force 7-Zip to treat all narrow<->wide path conversions as UTF-8.
         // On macOS the filesystem encoding is always UTF-8, but 7-Zip's
@@ -513,6 +545,10 @@ SZArchiveRef sz_open(const char *path, char **error_out) {
         sz_force_utf8_paths();
 
         auto *handle = new SZArchiveHandle();
+        if (password) {
+            handle->password = password;
+            handle->hasPassword = true;
+        }
 
         // Open the file stream
         auto *fileStreamSpec = new CInFileStream;
@@ -533,17 +569,23 @@ SZArchiveRef sz_open(const char *path, char **error_out) {
         }
 
         // Create a volume callback so SplitHandler can discover sibling
-        // volume files (.002, .003, ...) by name-pattern probing.
+        // volume files (.002, .003, ...) by name-pattern probing. It also
+        // answers header-password requests (7z -mhe=on, RAR -hp).
         COpenVolumeCallback *volCallbackSpec = new COpenVolumeCallback;
         CMyComPtr<IArchiveOpenCallback> volCallback = volCallbackSpec;
         volCallbackSpec->SetFilePath(fpath);
+        volCallbackSpec->SetPassword(password);
 
         // Try each registered format on the file stream
         CMyComPtr<IInArchive> firstArchive;
         HRESULT hr = tryOpenStream(handle->fileStream, firstArchive, volCallback);
         if (hr != S_OK || !firstArchive) {
+            if (needs_password_out)
+                *needs_password_out = volCallbackSpec->passwordRequested;
             if (error_out)
-                *error_out = strdup("No suitable archive format found");
+                *error_out = strdup(volCallbackSpec->passwordRequested
+                    ? "The archive header is encrypted"
+                    : "No suitable archive format found");
             delete handle;
             return nullptr;
         }

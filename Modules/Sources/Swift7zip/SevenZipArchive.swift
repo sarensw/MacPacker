@@ -12,23 +12,36 @@ public class SevenZipArchive {
     // MARK: - Lifecycle
 
     /// Opens the archive at the given file URL.
-    /// - Parameter url: A file URL pointing to an archive.
-    /// - Throws: ``SevenZipError/openFailed(_:)`` if the file cannot
-    ///   be opened or no supported format is detected.
-    public init(url: URL) throws {
+    /// - Parameters:
+    ///   - url: A file URL pointing to an archive.
+    ///   - password: Password for formats that encrypt their header (7z
+    ///     `-mhe=on`, RAR `-hp`), which cannot even be listed without one.
+    ///     Also pre-sets the extraction password.
+    /// - Throws: ``SevenZipError/passwordMissing`` when the header is encrypted
+    ///   and no password was given, ``SevenZipError/passwordWrong`` when the
+    ///   given one did not decrypt it, ``SevenZipError/openFailed(_:)`` if the
+    ///   file cannot be opened or no supported format is detected.
+    public init(url: URL, password: String? = nil) throws {
         self.url = url
-        self.handle = try Self.openHandle(at: url)
+        self.handle = try Self.openHandle(at: url, password: password)
+        self.hasPassword = password != nil
     }
 
     /// Opens the C bridge handle at the given URL.
-    private static func openHandle(at url: URL) throws -> BridgeHandle {
+    private static func openHandle(at url: URL, password: String?) throws -> BridgeHandle {
         var errorPtr: UnsafeMutablePointer<CChar>?
-        guard let ref = sz_open(url.path, &errorPtr) else {
+        var needsPassword = false
+        guard let ref = sz_open(url.path, password, &needsPassword, &errorPtr) else {
             let msg = errorPtr.map { ptr -> String in
                 let str = String(cString: ptr)
                 free(ptr)
                 return str
             } ?? "Unknown error"
+            if needsPassword {
+                throw password == nil
+                    ? SevenZipError.passwordMissing
+                    : SevenZipError.passwordWrong
+            }
             throw SevenZipError.openFailed(msg)
         }
         return BridgeHandle(ref: ref)
