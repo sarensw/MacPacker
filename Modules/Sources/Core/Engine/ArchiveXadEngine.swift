@@ -362,9 +362,15 @@ final actor ArchiveXadEngine: ArchiveEngine {
                 throw ArchiveError.extractionFailed("Could not extract file: missing index")
             }
 
+            let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: item.type == .directory)
+
             do {
                 try await archive.extractEntry(Int32(itemIndex), to: destination.path)
             } catch {
+                // XAD creates the output file before it decodes, so a failure
+                // (wrong password, corrupt data) leaves a truncated or empty
+                // file that looks like a successful extraction. Remove it.
+                try? FileManager.default.removeItem(at: resultUrl)
                 // a should-stop answer makes XAD fail the entry — surface
                 // it as cancellation, not as an extraction error
                 if progressDelegate?.wasStopped == true {
@@ -377,7 +383,6 @@ final actor ArchiveXadEngine: ArchiveEngine {
             }
             progressDelegate?.advanceBase(by: Int64(Swift.max(0, item.uncompressedSize)))
 
-            let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: item.type == .directory)
             urlsByItemID[item.id] = resultUrl
         }
 
