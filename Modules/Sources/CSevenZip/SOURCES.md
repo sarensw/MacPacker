@@ -25,7 +25,8 @@ Update `Package.swift` `cSevenZipSources` array whenever this file changes.
 - `vendor/7zip/C/7zDec.c` -- 7z decoder
 - `vendor/7zip/C/7zFile.c` -- File I/O
 - `vendor/7zip/C/7zStream.c` -- Stream utilities
-- `vendor/7zip/C/Aes.c` -- AES encryption (software fallback; hw_stubs.c provides HW stubs)
+- `vendor/7zip/C/Aes.c` -- AES encryption
+- `vendor/7zip/C/AesOpt.c` -- AES hardware paths (AES-NI / ARMv8 crypto)
 - `vendor/7zip/C/Bcj2.c` -- BCJ2 filter
 - `vendor/7zip/C/Bcj2Enc.c` -- BCJ2 encoder
 - `vendor/7zip/C/Blake2s.c` -- BLAKE2s hash
@@ -48,10 +49,14 @@ Update `Package.swift` `cSevenZipSources` array whenever this file changes.
 - `vendor/7zip/C/Ppmd8.c` -- PPMd8 model
 - `vendor/7zip/C/Ppmd8Dec.c` -- PPMd8 decoder
 - `vendor/7zip/C/Ppmd8Enc.c` -- PPMd8 encoder
-- `vendor/7zip/C/Sha1.c` -- SHA1 hash (software fallback; hw_stubs.c provides HW stubs)
-- `vendor/7zip/C/Sha256.c` -- SHA256 hash (software fallback; hw_stubs.c provides HW stubs)
+- `vendor/7zip/C/Sha1.c` -- SHA1 hash
+- `vendor/7zip/C/Sha1Opt.c` -- SHA1 hardware paths
+- `vendor/7zip/C/Sha256.c` -- SHA256 hash
+- `vendor/7zip/C/Sha256Opt.c` -- SHA256 hardware paths
 - `vendor/7zip/C/Sha3.c` -- SHA3 hash
-- `vendor/7zip/C/Sha512.c` -- SHA512 hash (software fallback; hw_stubs.c provides HW stubs)
+- `vendor/7zip/C/Sha512.c` -- SHA512 hash
+- `vendor/7zip/C/Sha512Opt.c` -- SHA512 hardware paths
+- `vendor/7zip/C/SwapBytes.c` -- Vectorised byte swapping
 - `vendor/7zip/C/Sort.c` -- Sort utilities
 - `vendor/7zip/C/Threads.c` -- Threading stubs (no-op under _7ZIP_ST)
 - `vendor/7zip/C/Xxh64.c` -- XXH64 hash
@@ -344,7 +349,6 @@ Update `Package.swift` `cSevenZipSources` array whenever this file changes.
 ## Bridge files (Sources/CSevenZip/)
 
 - `Sources/CSevenZip/sevenzip_bridge.cpp` -- C bridge between 7-zip C++ internals and Swift
-- `Sources/CSevenZip/hw_stubs.c` -- Stub implementations for hardware-accelerated AES/SHA/SwapBytes functions
 
 ## Excluded directories
 
@@ -357,10 +361,5 @@ Update `Package.swift` `cSevenZipSources` array whenever this file changes.
 
 ## Excluded files (with rationale)
 
-- `vendor/7zip/C/AesOpt.c` -- Uses architecture-specific intrinsics (SSE/ARM NEON) that don't cross-compile under SPM; hw_stubs.c provides stub functions
-- `vendor/7zip/C/Sha1Opt.c` -- Same (architecture-specific intrinsics)
-- `vendor/7zip/C/Sha256Opt.c` -- Same (architecture-specific intrinsics)
-- `vendor/7zip/C/Sha512Opt.c` -- Same (architecture-specific intrinsics)
-- `vendor/7zip/C/SwapBytes.c` -- Same (architecture-specific intrinsics)
 - `vendor/7zip/CPP/Windows/MemoryLock.cpp` -- Uses Windows-only APIs (HANDLE, HMODULE)
 - `vendor/7zip/CPP/Windows/NationalTime.cpp` -- Uses Windows-only APIs (LCID)
