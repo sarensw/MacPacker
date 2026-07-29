@@ -652,8 +652,9 @@ extension AllCoreTests {
         }
     }
 
-    // NOTE: XAD password-protected archive tests removed — XAD library enters
-    // infinite retry loop with test archives, causing test hangs.
+    // NOTE: XAD password tests live in PasswordTests.swift. They used to hang —
+    // both engines retried a wrong password forever — which is fixed and guarded
+    // by AlwaysWrongPasswordTests there.
 
     // MARK: - ArchiveTypeDetector: magic number all-policy (ISO)
 

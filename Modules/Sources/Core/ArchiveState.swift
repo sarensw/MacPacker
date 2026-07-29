@@ -1089,6 +1089,12 @@ extension ArchiveState {
             tempDirectories.append(contentsOf: tempDirs.all)
             progressCenter.finish(jobId, .cancelled)
             throw CancellationError()
+        } catch ArchiveError.passwordCancelled {
+            // dismissing the password prompt is the user backing out, not a
+            // failure — do not put a red error in the progress window for it
+            tempDirectories.append(contentsOf: tempDirs.all)
+            progressCenter.finish(jobId, .cancelled)
+            throw ArchiveError.passwordCancelled
         } catch {
             extractLog.error(error)
             tempDirectories.append(contentsOf: tempDirs.all)
@@ -1141,6 +1147,9 @@ extension ArchiveState {
                 // linger — register it for the regular cache cleanup
                 tempDirectories.append(contentsOf: tempDirs.all)
                 progressCenter.finish(jobId, .cancelled)
+            } catch ArchiveError.passwordCancelled {
+                tempDirectories.append(contentsOf: tempDirs.all)
+                progressCenter.finish(jobId, .cancelled)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
@@ -1190,6 +1199,8 @@ extension ArchiveState {
                 )
                 progressCenter.finish(jobId, .done)
             } catch is CancellationError {
+                progressCenter.finish(jobId, .cancelled)
+            } catch ArchiveError.passwordCancelled {
                 progressCenter.finish(jobId, .cancelled)
             } catch {
                 extractLog.error(error)

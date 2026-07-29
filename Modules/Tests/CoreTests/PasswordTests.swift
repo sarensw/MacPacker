@@ -283,6 +283,71 @@ extension AllCoreTests {
         }
     }
 
+    // MARK: - A resolver that never gets it right
+
+    /// The hang guard. Both engines used to retry a wrong password forever, at
+    /// full CPU, with no prompt and no error — the XAD password tests were
+    /// deleted from CoverageGapTests because of it. A resolver that keeps
+    /// answering (as the ArchiveState cache effectively did) must not be able to
+    /// spin them.
+    ///
+    /// The time limit only reports a hang; the real guard is the engines'
+    /// attempt ceiling, which is why these finish in milliseconds.
+    @MainActor struct AlwaysWrongPasswordTests {
+
+        @Test(.timeLimit(.minutes(1)), arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
+        func alwaysWrongPasswordTerminatesWithAnError(name: String) async throws {
+            for (engineName, engine) in engines() {
+                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+
+                // Unbounded: answers "wrong" every single time, forever.
+                let answers = PasswordAnswers.always("definitely-not-the-password")
+                let url = fixture(name)
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+
+                await #expect(throws: (any Error).self, "\(engineName)/\(name)") {
+                    _ = try await engine.extract(
+                        items: [hello],
+                        from: url,
+                        to: destination,
+                        passwordResolver: answers.resolver
+                    )
+                }
+
+                let prompted = await answers.callCount
+                #expect(prompted <= 21, "\(engineName)/\(name): asked \(prompted) times before giving up")
+            }
+        }
+
+        /// Same guard one level up: a stale cached password must not spin the
+        /// engine either, and the user has to see the prompt again.
+        @Test(.timeLimit(.minutes(1)))
+        func alwaysWrongPasswordThroughArchiveStateTerminates() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let prompts = Counter()
+            state.passwordProvider = { _ in
+                _ = await prompts.increment()
+                return "definitely-not-the-password"
+            }
+
+            state.open(url: fixture("zip_aes256.zip"))
+            try await state.openTask?.value
+
+            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            await #expect(throws: (any Error).self) {
+                _ = try await state.extractToTemp(item: hello)
+            }
+
+            let count = await prompts.value
+            #expect(count > 1, "the cached wrong password was never re-asked")
+            #expect(count <= 21, "asked \(count) times before giving up")
+        }
+    }
+
     // MARK: - Cancelling the prompt
 
     @MainActor struct PasswordCancellationTests {
@@ -503,6 +568,50 @@ extension AllCoreTests {
             await #expect(throws: (any Error).self) {
                 _ = try await state.extractToTemp(item: hello)
             }
+        }
+
+        /// Dismissing the prompt is the user backing out, so the progress window
+        /// must report cancelled — not a red failure with a generic message.
+        @Test func cancellingThePromptReportsCancelledNotFailed() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+            state.passwordProvider = { _ in nil }
+
+            state.open(url: fixture("zip_aes256.zip"))
+            try await state.openTask?.value
+
+            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            state.extract(items: [hello], to: try tempDirectory())
+
+            try await Task.sleep(for: .milliseconds(400))
+            let job = try #require(center.jobs.first)
+            #expect(job.state == .cancelled, "got \(job.state)")
+        }
+
+        /// A wrong password that the user gives up on has to reach the progress
+        /// window as a readable message, not "The operation couldn't be
+        /// completed" — the customer's "there is no message".
+        @Test func exhaustedPasswordAttemptsReportAReadableMessage() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+            state.passwordProvider = { _ in "definitely-not-the-password" }
+
+            state.open(url: fixture("zip_aes256.zip"))
+            try await state.openTask?.value
+
+            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            state.extract(items: [hello], to: try tempDirectory())
+
+            try await Task.sleep(for: .milliseconds(600))
+            let job = try #require(center.jobs.first)
+            guard case .failed(let message) = job.state else {
+                Issue.record("expected a failed job, got \(job.state)")
+                return
+            }
+            #expect(message.localizedCaseInsensitiveContains("password"), "got \(message)")
+            #expect(state.error?.localizedCaseInsensitiveContains("password") == true, "got \(state.error ?? "nil")")
         }
 
         /// Opening a text file straight out of an encrypted archive — the
