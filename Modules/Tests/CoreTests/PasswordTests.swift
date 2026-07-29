@@ -507,6 +507,102 @@ extension AllCoreTests {
         }
     }
 
+    // MARK: - Progress and cancellation on encrypted archives
+
+    @MainActor struct EncryptedProgressTests {
+
+        /// Decryption sits between the archive and the progress counters, so
+        /// confirm the byte progress still arrives and still only moves forward.
+        @Test(arguments: ["zip_aes256.zip", "zip_zipcrypto.zip", "7z_aes256.7z"])
+        func reportsByteProgressWhileDecrypting(name: String) async throws {
+            let engine = Archive7ZipEngine()
+            let answers = PasswordAnswers.always(correctPassword)
+            let url = fixture(name)
+            let destination = try tempDirectory()
+            defer { try? FileManager.default.removeItem(at: destination) }
+
+            let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+            let files = load.items.values.filter { $0.type == .file }
+
+            let seen = ProgressLog()
+            _ = try await engine.extract(
+                items: Array(files),
+                from: url,
+                to: destination,
+                passwordResolver: answers.resolver,
+                onProgress: { completed, total in
+                    seen.add(completed, total)
+                    return true
+                }
+            )
+
+            let completed = seen.completedValues
+            #expect(!completed.isEmpty, "\(name): no progress reported")
+            #expect(completed == completed.sorted(), "\(name): progress went backwards")
+        }
+
+        /// Cancelling from the progress callback has to abort the extraction, not
+        /// get swallowed by the password retry loop.
+        @Test func cancellingFromProgressAbortsEncryptedExtraction() async throws {
+            let engine = Archive7ZipEngine()
+            let answers = PasswordAnswers.always(correctPassword)
+            let url = fixture("zip_aes256.zip")
+            let destination = try tempDirectory()
+            defer { try? FileManager.default.removeItem(at: destination) }
+
+            let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+            let files = load.items.values.filter { $0.type == .file }
+
+            await #expect(throws: CancellationError.self) {
+                _ = try await engine.extract(
+                    items: Array(files),
+                    from: url,
+                    to: destination,
+                    passwordResolver: answers.resolver,
+                    onProgress: { _, _ in false }
+                )
+            }
+        }
+    }
+
+    // MARK: - Editing an encrypted archive
+
+    @MainActor struct EncryptedEditTests {
+
+        /// Deleting an entry rewrites the archive by copying the other entries
+        /// through. Those entries are encrypted, so the rewrite must keep them
+        /// readable with the original password rather than corrupting or
+        /// silently decrypting them.
+        @Test func deletingAnEntryKeepsTheRestEncrypted() async throws {
+            let work = try tempDirectory()
+            defer { try? FileManager.default.removeItem(at: work) }
+            let archive = work.appendingPathComponent("edit_aes256.zip")
+            try FileManager.default.copyItem(at: fixture("zip_aes256.zip"), to: archive)
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.passwordProvider = { _ in correctPassword }
+            state.open(url: archive)
+            try await state.openTask?.value
+
+            let nested = try #require(state.entries.values.first { $0.virtualPath == "folder/nested.txt" })
+            state.remove(items: [nested])
+            await state.save()?.value
+            #expect(state.error == nil, "save reported \(state.error ?? "")")
+
+            // Reopen from scratch: hello.txt must still decrypt to its real
+            // contents and folder/nested.txt must be gone.
+            let reopened = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            reopened.passwordProvider = { _ in correctPassword }
+            reopened.open(url: archive)
+            try await reopened.openTask?.value
+
+            #expect(reopened.entries.values.contains { $0.virtualPath == "folder/nested.txt" } == false)
+            let hello = try #require(reopened.entries.values.first { $0.virtualPath == "hello.txt" })
+            #expect(contents(of: try await reopened.extractToTemp(item: hello)) == helloContents)
+            #expect(reopened.isEncrypted == true, "the rewrite dropped the encryption")
+        }
+    }
+
     // MARK: - ArchiveState: caching and re-prompting
 
     @MainActor struct ArchiveStatePasswordFlowTests {
@@ -689,6 +785,25 @@ private actor Counter {
     func increment() -> Int {
         value += 1
         return value
+    }
+}
+
+/// Records the byte-progress callbacks an extraction makes. Called on the
+/// extraction thread, hence the lock.
+private final class ProgressLog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var completed: [Int64] = []
+
+    func add(_ completed: Int64, _ total: Int64) {
+        lock.lock()
+        self.completed.append(completed)
+        lock.unlock()
+    }
+
+    var completedValues: [Int64] {
+        lock.lock()
+        defer { lock.unlock() }
+        return completed
     }
 }
 
