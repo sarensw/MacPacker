@@ -310,6 +310,7 @@ private:
     FString _currentFilePath;
     UInt32 _currentMode = 0;         // POSIX mode from kpidPosixAttrib; 0 if unknown
     bool _currentIsSymlink = false;  // entry is a Unix symlink (S_IFLNK)
+    bool _currentIsEncrypted = false; // entry is encrypted (kpidEncrypted)
     std::string _password;
     bool _hasPassword;
     sz_progress_callback _progress;
@@ -327,6 +328,14 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     _currentFilePath.Empty();
     _currentMode = 0;
     _currentIsSymlink = false;
+
+    // Remember whether this entry is encrypted: 7z AES carries no password
+    // verifier, so a bad password surfaces as a data/CRC error and
+    // SetOperationResult has to reinterpret it.
+    NWindows::NCOM::CPropVariant propEncrypted;
+    _archive->GetProperty(index, kpidEncrypted, &propEncrypted);
+    _currentIsEncrypted = (propEncrypted.vt == VT_BOOL
+        && propEncrypted.boolVal != VARIANT_FALSE);
 
     if (askExtractMode != NArchive::NExtract::NAskMode::kExtract)
         return S_OK;
@@ -422,6 +431,15 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
         // one that looks like a successful extraction.
         if (!_currentFilePath.IsEmpty())
             unlink(_currentFilePath.Ptr());
+
+        // 7z AES stores no password verifier, so the only sign of a bad
+        // password is that the plaintext fails its CRC. On an encrypted entry
+        // that is what a wrong password looks like, not a damaged archive.
+        if (_currentIsEncrypted &&
+            (opRes == NArchive::NExtract::NOperationResult::kDataError ||
+             opRes == NArchive::NExtract::NOperationResult::kCRCError))
+            opRes = NArchive::NExtract::NOperationResult::kWrongPassword;
+
         // kWrongPassword wins over any other failure: it is the one the user
         // can actually do something about.
         if (failedOpResult == NArchive::NExtract::NOperationResult::kOK ||
@@ -429,6 +447,7 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
             failedOpResult = opRes;
         _currentIsSymlink = false;
         _currentMode = 0;
+        _currentIsEncrypted = false;
         _currentFilePath.Empty();
         return S_OK;
     }

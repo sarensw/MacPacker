@@ -18,15 +18,30 @@ import Foundation
 /// much harder to read than a failed one.
 private actor PasswordAnswers {
     private var remaining: [String]
+    private let repeatsLast: Bool
     /// `attempt` of every request seen, in order.
     private(set) var attempts: [Int] = []
 
     init(_ answers: String...) {
         self.remaining = answers
+        self.repeatsLast = false
+    }
+
+    /// Answers with the same password every time. Safe only for a password that
+    /// actually works — listing and extracting each open the archive, so a
+    /// bounded list would run dry halfway through a test.
+    static func always(_ password: String) -> PasswordAnswers {
+        PasswordAnswers(password, repeatsLast: true)
+    }
+
+    private init(_ password: String, repeatsLast: Bool) {
+        self.remaining = [password]
+        self.repeatsLast = repeatsLast
     }
 
     private func next(attempt: Int) -> String? {
         attempts.append(attempt)
+        if repeatsLast { return remaining.first }
         return remaining.isEmpty ? nil : remaining.removeFirst()
     }
 
@@ -97,7 +112,7 @@ extension AllCoreTests {
                 // engine for that format either.
                 if engineName == "xad" && name.hasSuffix(".7z") { continue }
 
-                let answers = PasswordAnswers(password)
+                let answers = PasswordAnswers.always(password)
                 let url = fixture(name)
                 let destination = try tempDirectory()
                 defer { try? FileManager.default.removeItem(at: destination) }
@@ -129,7 +144,7 @@ extension AllCoreTests {
             for (engineName, engine) in engines() {
                 if engineName == "xad" && name.hasSuffix(".7z") { continue }
 
-                let answers = PasswordAnswers(correctPassword)
+                let answers = PasswordAnswers.always(correctPassword)
                 let destination = try tempDirectory()
                 defer { try? FileManager.default.removeItem(at: destination) }
 
@@ -154,7 +169,7 @@ extension AllCoreTests {
         /// single pass, so a per-entry password failure must not be swallowed.
         @Test func extractsMultipleEncryptedEntriesAtOnce() async throws {
             for (engineName, engine) in engines() {
-                let answers = PasswordAnswers(correctPassword)
+                let answers = PasswordAnswers.always(correctPassword)
                 let url = fixture("zip_aes256.zip")
                 let destination = try tempDirectory()
                 defer { try? FileManager.default.removeItem(at: destination) }
@@ -341,7 +356,7 @@ extension AllCoreTests {
         /// `-mhe=on` encrypts the header, so the entry list itself is behind
         /// the password.
         @Test func headerEncrypted7zListsOnlyWithPassword() async throws {
-            let answers = PasswordAnswers(correctPassword)
+            let answers = PasswordAnswers.always(correctPassword)
             let load = try await Archive7ZipEngine().loadArchive(
                 url: fixture("7z_header_encrypted.7z"),
                 passwordResolver: answers.resolver
@@ -404,7 +419,7 @@ extension AllCoreTests {
         /// exactly one password.
         @Test func mixedSelectionPromptsOnceAndExtractsBoth() async throws {
             let engine = Archive7ZipEngine()
-            let answers = PasswordAnswers(correctPassword)
+            let answers = PasswordAnswers.always(correctPassword)
             let url = fixture("zip_mixed.zip")
             let destination = try tempDirectory()
             defer { try? FileManager.default.removeItem(at: destination) }
