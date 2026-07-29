@@ -160,6 +160,18 @@ extension ArchiveState {
         }
     }
 
+    /// How a `passwordCancelled` should be reported.
+    ///
+    /// Dismissing the prompt is the user's own choice, so the job just ends as
+    /// cancelled. Having no prompt at all is different: Finder's "Extract Here"
+    /// and QuickLook build an ArchiveState with no `passwordProvider`, so an
+    /// encrypted archive used to fail there with nothing shown and nothing
+    /// extracted. That needs to be a failure with a message that says what to do.
+    private func passwordCancelledOutcome() -> ExtractionJob.State {
+        guard passwordProvider == nil else { return .cancelled }
+        return .failed("\(name ?? "The archive") is password protected. Open it in MacPacker to enter the password.")
+    }
+
     private func makeFolderAccessResolver() -> ArchiveFolderAccessResolver {
         return { @MainActor [weak self] fileURL in
             guard let self, let provider = self.folderAccessProvider else { return false }
@@ -1090,10 +1102,10 @@ extension ArchiveState {
             progressCenter.finish(jobId, .cancelled)
             throw CancellationError()
         } catch ArchiveError.passwordCancelled {
-            // dismissing the password prompt is the user backing out, not a
-            // failure — do not put a red error in the progress window for it
             tempDirectories.append(contentsOf: tempDirs.all)
-            progressCenter.finish(jobId, .cancelled)
+            let outcome = passwordCancelledOutcome()
+            if case .failed(let message) = outcome { self.error = message }
+            progressCenter.finish(jobId, outcome)
             throw ArchiveError.passwordCancelled
         } catch {
             extractLog.error(error)
@@ -1149,7 +1161,9 @@ extension ArchiveState {
                 progressCenter.finish(jobId, .cancelled)
             } catch ArchiveError.passwordCancelled {
                 tempDirectories.append(contentsOf: tempDirs.all)
-                progressCenter.finish(jobId, .cancelled)
+                let outcome = passwordCancelledOutcome()
+                if case .failed(let message) = outcome { self.error = message }
+                progressCenter.finish(jobId, outcome)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
@@ -1201,7 +1215,9 @@ extension ArchiveState {
             } catch is CancellationError {
                 progressCenter.finish(jobId, .cancelled)
             } catch ArchiveError.passwordCancelled {
-                progressCenter.finish(jobId, .cancelled)
+                let outcome = passwordCancelledOutcome()
+                if case .failed(let message) = outcome { self.error = message }
+                progressCenter.finish(jobId, outcome)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription

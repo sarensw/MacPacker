@@ -589,6 +589,30 @@ extension AllCoreTests {
             #expect(job.state == .cancelled, "got \(job.state)")
         }
 
+        /// Finder's "Extract Here" and QuickLook build an ArchiveState with no
+        /// passwordProvider — there is nowhere to show a prompt. That has to fail
+        /// with a message saying what to do, not vanish silently.
+        @Test func extractionWithNoPromptAvailableExplainsItself() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+            // deliberately no passwordProvider
+
+            state.open(url: fixture("zip_aes256.zip"))
+            try await state.openTask?.value
+
+            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            state.extract(items: [hello], to: try tempDirectory())
+
+            try await Task.sleep(for: .milliseconds(400))
+            let job = try #require(center.jobs.first)
+            guard case .failed(let message) = job.state else {
+                Issue.record("expected a failed job, got \(job.state)")
+                return
+            }
+            #expect(message.localizedCaseInsensitiveContains("password protected"), "got \(message)")
+        }
+
         /// A wrong password that the user gives up on has to reach the progress
         /// window as a readable message, not "The operation couldn't be
         /// completed" — the customer's "there is no message".
