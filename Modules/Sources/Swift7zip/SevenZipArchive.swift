@@ -86,6 +86,26 @@ public class SevenZipArchive {
 
     // MARK: - Extraction
 
+    /// Maps a bridge `SZ_EXTRACT_*` code to a typed error, consuming
+    /// `errorPtr`. Returns normally when the extraction succeeded.
+    private static func check(
+        _ result: Int32,
+        _ errorPtr: UnsafeMutablePointer<CChar>?
+    ) throws {
+        let message = errorPtr.map { ptr -> String in
+            let str = String(cString: ptr)
+            free(ptr)
+            return str
+        } ?? "Unknown error"
+
+        switch result {
+        case SZ_EXTRACT_OK: return
+        case SZ_EXTRACT_ABORTED: throw SevenZipError.cancelled
+        case SZ_EXTRACT_WRONG_PASSWORD: throw SevenZipError.passwordWrong
+        default: throw SevenZipError.extractionFailed(message)
+        }
+    }
+
     /// Extracts a single entry to the given directory.
     /// - Parameters:
     ///   - index: The index of the entry to extract.
@@ -113,14 +133,7 @@ public class SevenZipArchive {
         let result = sz_extract_entry(
             handle.ref, index,
             destination.path, &errorPtr)
-        if result != 0 {
-            let msg = errorPtr.map { ptr -> String in
-                let str = String(cString: ptr)
-                free(ptr)
-                return str
-            } ?? "Unknown error"
-            throw SevenZipError.extractionFailed(msg)
-        }
+        try Self.check(result, errorPtr)
         return [index: destination.appendingPathComponent(entry.path)]
     }
 
@@ -190,17 +203,7 @@ public class SevenZipArchive {
                     &errorPtr)
             }
         }
-        if result == SZ_EXTRACT_ABORTED {
-            throw SevenZipError.cancelled
-        }
-        if result != SZ_EXTRACT_OK {
-            let msg = errorPtr.map { ptr -> String in
-                let str = String(cString: ptr)
-                free(ptr)
-                return str
-            } ?? "Unknown error"
-            throw SevenZipError.extractionFailed(msg)
-        }
+        try Self.check(result, errorPtr)
         var result2: [UInt32: URL] = [:]
         for (idx, path) in indexPaths {
             result2[idx] = destination.appendingPathComponent(path)
@@ -237,17 +240,7 @@ public class SevenZipArchive {
                 box.map { Unmanaged.passUnretained($0).toOpaque() },
                 &errorPtr)
         }
-        if result == SZ_EXTRACT_ABORTED {
-            throw SevenZipError.cancelled
-        }
-        if result != SZ_EXTRACT_OK {
-            let msg = errorPtr.map { ptr -> String in
-                let str = String(cString: ptr)
-                free(ptr)
-                return str
-            } ?? "Unknown error"
-            throw SevenZipError.extractionFailed(msg)
-        }
+        try Self.check(result, errorPtr)
         var result2: [UInt32: URL] = [:]
         for entry in allEntries {
             result2[entry.index] = destination.appendingPathComponent(entry.path)

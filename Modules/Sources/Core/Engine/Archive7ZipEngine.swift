@@ -119,11 +119,10 @@ final actor Archive7ZipEngine: ArchiveEngine {
         let sorted = indices.keys.sorted { $0 < $1 }
         
         let szip = try SevenZipArchive(url: url)
-        
+
         var attempt = 0
-        // The loop is used to allow multiple tries when there is no password
-        // give or the password is wrong
-        // TODO: Change from while true loop to a loop with a real end condition
+        // Loops until the archive extracts, the user cancels the prompt, or the
+        // attempt budget runs out.
         while true {
             do {
                 // blocking C call — keep it off the cooperative pool
@@ -137,23 +136,18 @@ final actor Archive7ZipEngine: ArchiveEngine {
                         return (uuid, url)
                     }
                 )
-                
+
                 let result = ArchiveExtractionResult(urlsByItemID: urlsByItemID)
-                
+
                 return result
-                
-            } catch SevenZipError.passwordMissing {
+
+            } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
                 attempt += 1
-                
-                let request = ArchivePasswordRequest(
-                    url: url,
-                    attempt: attempt
+                let password = try await Self.nextPassword(
+                    for: url,
+                    attempt: attempt,
+                    resolver: passwordResolver
                 )
-                
-                guard let password = await passwordResolver(request) else {
-                    throw ArchiveError.passwordCancelled
-                }
-                
                 szip.setPassword(password)
                 continue
             } catch SevenZipError.cancelled {
@@ -188,24 +182,45 @@ final actor Archive7ZipEngine: ArchiveEngine {
                     try szip.extractAll(to: destination, progress: Self.bridgeProgress(onProgress))
                 }
                 return
-            } catch SevenZipError.passwordMissing {
+            } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
                 attempt += 1
-
-                let request = ArchivePasswordRequest(
-                    url: url,
-                    attempt: attempt
+                let password = try await Self.nextPassword(
+                    for: url,
+                    attempt: attempt,
+                    resolver: passwordResolver
                 )
-
-                guard let password = await passwordResolver(request) else {
-                    throw ArchiveError.passwordCancelled
-                }
-
                 szip.setPassword(password)
                 continue
             } catch SevenZipError.cancelled {
                 throw CancellationError()
             }
         }
+    }
+
+    /// How many passwords a single operation will ask for before giving up.
+    /// A resolver that keeps answering with the same wrong password (a stale
+    /// cache, a scripted caller) would otherwise spin forever.
+    private static let maxPasswordAttempts = 20
+
+    /// Asks the resolver for the next password to try.
+    /// - Throws: ``ArchiveError/passwordCancelled`` when the user dismisses the
+    ///   prompt, or ``ArchiveError/extractionFailed(_:)`` once the attempt
+    ///   budget is exhausted.
+    private static func nextPassword(
+        for url: URL,
+        attempt: Int,
+        resolver: ArchivePasswordResolver
+    ) async throws -> String {
+        guard attempt <= maxPasswordAttempts else {
+            throw ArchiveError.extractionFailed(
+                "The password is incorrect (\(maxPasswordAttempts) attempts)")
+        }
+        guard let password = await resolver(
+            ArchivePasswordRequest(url: url, attempt: attempt)
+        ) else {
+            throw ArchiveError.passwordCancelled
+        }
+        return password
     }
 
     /// Adapts the engine-level progress closure to the bridge's handler.

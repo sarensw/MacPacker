@@ -267,6 +267,11 @@ public:
 
     std::string errorMessage;
     bool aborted = false;
+    /// Worst NArchive::NExtract::NOperationResult seen across the entries of
+    /// this run, kOK when every entry decoded. 7-Zip reports per-entry failures
+    /// through SetOperationResult and *still* returns S_OK from Extract(), so
+    /// without this the caller cannot tell a wrong password from a success.
+    Int32 failedOpResult = NArchive::NExtract::NOperationResult::kOK;
 
 private:
     IInArchive *_archive;
@@ -381,11 +386,26 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
     // back, chmod it, or replace it with a symlink.
     _outFileStream.Release();
 
-    if (opRes != NArchive::NExtract::NOperationResult::kOK ||
-        _currentFilePath.IsEmpty()) {
+    if (opRes != NArchive::NExtract::NOperationResult::kOK) {
+        // The entry did not decode. Whatever bytes landed on disk are garbage —
+        // usually zero of them — so remove the file instead of leaving an empty
+        // one that looks like a successful extraction.
+        if (!_currentFilePath.IsEmpty())
+            unlink(_currentFilePath.Ptr());
+        // kWrongPassword wins over any other failure: it is the one the user
+        // can actually do something about.
+        if (failedOpResult == NArchive::NExtract::NOperationResult::kOK ||
+            opRes == NArchive::NExtract::NOperationResult::kWrongPassword)
+            failedOpResult = opRes;
         _currentIsSymlink = false;
         _currentMode = 0;
         _currentFilePath.Empty();
+        return S_OK;
+    }
+
+    if (_currentFilePath.IsEmpty()) {
+        _currentIsSymlink = false;
+        _currentMode = 0;
         return S_OK;
     }
 
@@ -435,6 +455,47 @@ Z7_COM7F_IMF(CExtractCallback::CryptoGetTextPassword(BSTR *password))
     ConvertUTF8ToUnicode(aPassword, uPassword);
     *password = ::SysAllocString((const OLECHAR *)(const wchar_t *)uPassword);
     return S_OK;
+}
+
+/// Human-readable name for a NArchive::NExtract::NOperationResult value.
+static const char *describeOpResult(Int32 opRes) {
+    using namespace NArchive::NExtract;
+    switch (opRes) {
+        case NOperationResult::kUnsupportedMethod: return "Unsupported compression or encryption method";
+        case NOperationResult::kDataError:         return "Data error";
+        case NOperationResult::kCRCError:          return "CRC error";
+        case NOperationResult::kUnavailable:       return "Entry data unavailable";
+        case NOperationResult::kUnexpectedEnd:     return "Unexpected end of archive";
+        case NOperationResult::kDataAfterEnd:      return "Unexpected data after the end of the archive";
+        case NOperationResult::kIsNotArc:          return "Not an archive";
+        case NOperationResult::kHeadersError:      return "Archive headers are damaged";
+        case NOperationResult::kWrongPassword:     return "Wrong password";
+        default:                                   return "Extraction failed";
+    }
+}
+
+/// Turns an Extract() call plus the callback's recorded per-entry result into a
+/// bridge result code. Shared by all three sz_extract_* entry points so none of
+/// them can forget to look at the per-entry failures.
+static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_out) {
+    if (callback->aborted || hr == E_ABORT)
+        return SZ_EXTRACT_ABORTED;
+
+    const Int32 opRes = callback->failedOpResult;
+    const bool entryFailed = opRes != NArchive::NExtract::NOperationResult::kOK;
+
+    if (hr == S_OK && !entryFailed && callback->errorMessage.empty())
+        return SZ_EXTRACT_OK;
+
+    if (error_out) {
+        std::string msg = entryFailed ? describeOpResult(opRes)
+            : (callback->errorMessage.empty() ? "Extraction failed"
+                                              : callback->errorMessage);
+        *error_out = strdup(msg.c_str());
+    }
+
+    return opRes == NArchive::NExtract::NOperationResult::kWrongPassword
+        ? SZ_EXTRACT_WRONG_PASSWORD : SZ_EXTRACT_FAILED;
 }
 
 // --- Bridge Implementation ---
@@ -748,15 +809,7 @@ int sz_extract_entry(SZArchiveRef archive, uint32_t index,
         const UInt32 indices[1] = { index };
         HRESULT hr = handle->activeArchive()->Extract(indices, 1, 0, callback);
 
-        if (hr != S_OK || !callback->errorMessage.empty()) {
-            if (error_out) {
-                std::string msg = callback->errorMessage.empty()
-                    ? "Extraction failed" : callback->errorMessage;
-                *error_out = strdup(msg.c_str());
-            }
-            return -1;
-        }
-        return 0;
+        return finishExtract(callback, hr, error_out);
     } catch (...) {
         if (error_out) *error_out = strdup("Internal error during extraction");
         return -1;
@@ -788,18 +841,7 @@ int sz_extract_entries(SZArchiveRef archive, const uint32_t *indices,
         HRESULT hr = handle->activeArchive()->Extract(
             indices, count, 0, callback);
 
-        if (callback->aborted || hr == E_ABORT) {
-            return SZ_EXTRACT_ABORTED;
-        }
-        if (hr != S_OK || !callback->errorMessage.empty()) {
-            if (error_out) {
-                std::string msg = callback->errorMessage.empty()
-                    ? "Extraction failed" : callback->errorMessage;
-                *error_out = strdup(msg.c_str());
-            }
-            return SZ_EXTRACT_FAILED;
-        }
-        return SZ_EXTRACT_OK;
+        return finishExtract(callback, hr, error_out);
     } catch (...) {
         if (error_out) *error_out = strdup("Internal error during extraction");
         return SZ_EXTRACT_FAILED;
@@ -829,18 +871,7 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
         HRESULT hr = handle->activeArchive()->Extract(
             nullptr, (UInt32)(Int32)-1, 0, callback);
 
-        if (callback->aborted || hr == E_ABORT) {
-            return SZ_EXTRACT_ABORTED;
-        }
-        if (hr != S_OK || !callback->errorMessage.empty()) {
-            if (error_out) {
-                std::string msg = callback->errorMessage.empty()
-                    ? "Extraction failed" : callback->errorMessage;
-                *error_out = strdup(msg.c_str());
-            }
-            return SZ_EXTRACT_FAILED;
-        }
-        return SZ_EXTRACT_OK;
+        return finishExtract(callback, hr, error_out);
     } catch (...) {
         if (error_out) *error_out = strdup("Internal error during extraction");
         return SZ_EXTRACT_FAILED;

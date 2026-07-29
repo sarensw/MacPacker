@@ -66,6 +66,10 @@ typedef bool (*sz_progress_callback)(uint64_t completed, uint64_t total,
 #define SZ_EXTRACT_OK 0
 #define SZ_EXTRACT_FAILED (-1)
 #define SZ_EXTRACT_ABORTED 2
+/// At least one entry could not be decrypted with the password that was set
+/// (or no password was set for an encrypted entry). Distinct from
+/// SZ_EXTRACT_FAILED so callers can re-prompt instead of giving up.
+#define SZ_EXTRACT_WRONG_PASSWORD 3
 
 /// Extract a single entry by index into dest_dir (which must already exist).
 /// Returns 0 on success. On failure, *error_out receives a malloc'd string.
