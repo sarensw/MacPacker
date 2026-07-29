@@ -38,8 +38,11 @@ final actor Archive7ZipEngine: ArchiveEngine {
         var items: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0
         var idToUUIDMap: [UInt32: UUID] = [:]
-        
+        var isEncrypted = false
+
         try szip.entries.forEach { entry in
+            if entry.isEncrypted { isEncrypted = true }
+
             var name = entry.path
             let parts = entry.path.split(separator: "/")
             if let last = parts.last {
@@ -85,7 +88,10 @@ final actor Archive7ZipEngine: ArchiveEngine {
         return ArchiveEngineLoadResult(
             items: items,
             hasTree: szip.isTree,
-            uncompressedSize: uncompressedSizeOverall
+            uncompressedSize: uncompressedSizeOverall,
+            // A header-encrypted archive needed the password just to list, so
+            // it counts as encrypted even if no entry flags itself.
+            isEncrypted: isEncrypted || szip.hasPassword
         )
     }
     

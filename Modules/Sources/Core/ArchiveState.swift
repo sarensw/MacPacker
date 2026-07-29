@@ -703,7 +703,8 @@ extension ArchiveState {
                 }
                 
                 self.uncompressedSize = loaderResult.uncompressedSize
-                
+                self.isEncrypted = loaderResult.isEncrypted
+
                 updateStatusText("building tree...")
                 
                 try Task.checkCancellation()

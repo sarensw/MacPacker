@@ -19,6 +19,9 @@ struct ContentView: View {
     
     @State private var showPasswordSheet: Bool = false
     @State private var passwordContinuation: CheckedContinuation<String?, Never>?
+    /// The request the sheet is currently answering, so it can name the archive
+    /// and say that the previous attempt was rejected.
+    @State private var passwordRequest: ArchivePasswordRequest?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -58,10 +61,11 @@ struct ContentView: View {
         .onAppear {
             if self.archiveState.passwordProvider == nil {
                 let passwordProvider: ArchivePasswordUserProvider = { request in
-                    
+
                     await withCheckedContinuation { continuation in
                         Task { @MainActor in
                             self.passwordContinuation = continuation
+                            self.passwordRequest = request
                             self.showPasswordSheet = true
                         }
                     }
@@ -72,6 +76,7 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showPasswordSheet) {
             PasswordView(
+                request: passwordRequest,
                 onSubmit: { password in
                     passwordContinuation?.resume(returning: password)
                     passwordContinuation = nil

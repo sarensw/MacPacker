@@ -21,6 +21,21 @@ public struct ArchiveEngineLoadResult: Sendable {
     let items: [UUID: ArchiveItem]
     let hasTree: Bool
     let uncompressedSize: Int64
+    /// True when at least one entry is encrypted, so the UI can show the lock
+    /// indicator before anything is extracted.
+    let isEncrypted: Bool
+
+    init(
+        items: [UUID: ArchiveItem],
+        hasTree: Bool,
+        uncompressedSize: Int64,
+        isEncrypted: Bool = false
+    ) {
+        self.items = items
+        self.hasTree = hasTree
+        self.uncompressedSize = uncompressedSize
+        self.isEncrypted = isEncrypted
+    }
 }
 
 public struct ArchiveExtractionResult: Sendable {

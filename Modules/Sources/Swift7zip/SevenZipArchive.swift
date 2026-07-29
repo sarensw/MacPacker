@@ -7,7 +7,8 @@ public class SevenZipArchive {
     let handle: BridgeHandle
     /// The URL of the archive file.
     public let url: URL
-    private var hasPassword = false
+    /// Whether a password has been supplied for this archive.
+    public private(set) var hasPassword = false
 
     // MARK: - Lifecycle
 

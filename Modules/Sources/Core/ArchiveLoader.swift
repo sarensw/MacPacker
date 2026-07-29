@@ -16,6 +16,8 @@ struct ArchiveLoaderLoadResult: Sendable {
     let tempDirectory: URL?
     let uncompressedSize: Int64?
     let hasTree: Bool
+    /// True when at least one entry in the archive is encrypted.
+    let isEncrypted: Bool
     /// For a split archive, the resolved first volume — so the window shows the
     /// canonical `.z01`/`.zip.001` regardless of which part was opened. nil otherwise.
     let firstVolumeURL: URL?
@@ -222,6 +224,7 @@ final actor ArchiveLoader {
             tempDirectory: compoundTempUrl,
             uncompressedSize: engineLoadResult.uncompressedSize,
             hasTree: engineLoadResult.hasTree,
+            isEncrypted: engineLoadResult.isEncrypted,
             firstVolumeURL: firstVolumeURL
         )
         return result

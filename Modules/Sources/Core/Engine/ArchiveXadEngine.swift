@@ -112,6 +112,12 @@ private final class XADArchiveWithPasswordSupport {
             return hasSize
         }
     }
+
+    public func entryIsEncrypted(_ n: Int32) async throws -> Bool {
+        try await performXADOperationWithPasswordRetry {
+            self.archive.entryIsEncrypted(n)
+        }
+    }
     
     public func compressedSize(ofEntry n: Int32) async throws -> Int {
         try await performXADOperationWithPasswordRetry {
@@ -273,11 +279,13 @@ final actor ArchiveXadEngine: ArchiveEngine {
 
         var entries: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0
+        var isEncrypted = false
         let numberOfEntries = try await archive.numberOfEntries()
         for index in 0..<numberOfEntries {
             // name
             let path = try await archive.name(ofEntry: index)
             let isDir = try await archive.entryIsDirectory(index)
+            if try await archive.entryIsEncrypted(index) { isEncrypted = true }
             
             // tar archives (and similar) don't have a compressed size as they
             // just package up files.
@@ -328,7 +336,8 @@ final actor ArchiveXadEngine: ArchiveEngine {
         return ArchiveEngineLoadResult(
             items: entries,
             hasTree: false,
-            uncompressedSize: uncompressedSizeOverall
+            uncompressedSize: uncompressedSizeOverall,
+            isEncrypted: isEncrypted
         )
     }
     
