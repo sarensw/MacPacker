@@ -25,6 +25,12 @@ private final class XADArchiveWithPasswordSupport {
         self.passwordResolver = passwordResolver
     }
     
+    /// How many passwords a single operation will ask for before giving up.
+    /// A resolver that keeps answering with the same wrong password (a stale
+    /// cache, a scripted caller) would otherwise spin this loop forever at full
+    /// CPU without ever surfacing an error.
+    private static let maxPasswordAttempts = 20
+
     func performXADOperationWithPasswordRetry<T>(
         operation: @escaping () -> T
     ) async throws -> T {
@@ -36,25 +42,30 @@ private final class XADArchiveWithPasswordSupport {
             // blocking XADMaster call — keep it off the cooperative pool
             let value = try await runBlocking { operation() }
             let error = archive.lastError()
-            
+
             // success
             if error == 0 {
                 return value
             }
-            
+
             // failed, but because password is wrong / needed > ask user
             if error == 15 {
                 attempt += 1
-                
+
+                guard attempt <= Self.maxPasswordAttempts else {
+                    throw ArchiveError.extractionFailed(
+                        "The password is incorrect (\(Self.maxPasswordAttempts) attempts)")
+                }
+
                 let request = ArchivePasswordRequest(
                     url: url,
                     attempt: attempt
                 )
-                
+
                 guard let password = await passwordResolver(request) else {
                     throw ArchiveError.passwordCancelled
                 }
-                
+
                 archive.setPassword(password)
                 continue
             }

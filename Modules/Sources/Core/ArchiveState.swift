@@ -131,14 +131,23 @@ extension ArchiveState {
     private func makePasswordResolver() -> ArchivePasswordResolver {
         return { @MainActor [weak self] request in
             guard let self else { return nil }
-            
-            // see if we have the password cached already
-            if let password = passwords[request.url] {
+
+            // A repeat request means the password we last handed out did not
+            // work, so the cached one is stale — drop it and ask again.
+            // Serving the cache unconditionally used to spin the engine's retry
+            // loop at full speed against the same wrong password, with no
+            // prompt and no error: the "stuck at 0%, 100% CPU" report.
+            if request.attempt > 1 {
+                self.passwords.removeValue(forKey: request.url)
+            } else if let password = passwords[request.url] {
                 return password
             }
-            
+
             // if not cached, ask the user to provide the password
-            passwordLog.info("Password requested", context: ["archive": request.url.lastPathComponent])
+            passwordLog.info("Password requested", context: [
+                "archive": request.url.lastPathComponent,
+                "attempt": String(request.attempt)
+            ])
             let password = await self.passwordProvider?(request)
             if let password {
                 self.passwords[request.url] = password
@@ -146,7 +155,7 @@ extension ArchiveState {
             } else {
                 passwordLog.notice("Password entry cancelled", context: ["archive": request.url.lastPathComponent])
             }
-            
+
             return password
         }
     }
