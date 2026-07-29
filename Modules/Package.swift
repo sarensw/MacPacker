@@ -446,7 +446,8 @@ let package = Package(
                 .copy("TestArchives/lha_lzh"),
                 .copy("TestArchives/lzx"),
                 .copy("TestArchives/stuffit"),
-                .copy("TestArchives/zip")
+                .copy("TestArchives/zip"),
+                .copy("Fixtures/password")
             ]
         )
     ]

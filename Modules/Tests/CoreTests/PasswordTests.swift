@@ -1,0 +1,552 @@
+//
+//  PasswordTests.swift
+//  Modules
+//
+//  Created by Stephan Arenswald on 29.07.26.
+//
+
+import Testing
+import Foundation
+@testable import Core
+
+// MARK: - Helpers
+
+/// Resolver that hands out `answers` in order and then cancels.
+///
+/// Cancelling once the answers run out is the point: an engine retry loop that
+/// ignores a wrong password would otherwise spin forever, and a hung test is
+/// much harder to read than a failed one.
+private actor PasswordAnswers {
+    private var remaining: [String]
+    /// `attempt` of every request seen, in order.
+    private(set) var attempts: [Int] = []
+
+    init(_ answers: String...) {
+        self.remaining = answers
+    }
+
+    private func next(attempt: Int) -> String? {
+        attempts.append(attempt)
+        return remaining.isEmpty ? nil : remaining.removeFirst()
+    }
+
+    nonisolated var resolver: ArchivePasswordResolver {
+        { [self] request in await next(attempt: request.attempt) }
+    }
+
+    var callCount: Int { attempts.count }
+}
+
+/// Resolver that never answers — extraction must fail, not stall.
+private let neverResolves: ArchivePasswordResolver = { _ in nil }
+
+private let helloContents = "encrypted hello\n"
+private let nestedContents = "nested secret\n"
+private let publicContents = "public data\n"
+
+private let correctPassword = "password"
+private let unicodePassword = "pässwörd"
+private let symbolPassword = "p@ss w'ord\"$x"
+private let longPassword = String(repeating: "a", count: 200)
+
+private func fixture(_ name: String) -> URL {
+    let folder = Bundle.module.url(forResource: "password", withExtension: nil)!
+    return folder.appendingPathComponent(name)
+}
+
+private func tempDirectory() throws -> URL {
+    let url = FileManager.default.temporaryDirectory
+        .appendingPathComponent("PasswordTests-\(UUID().uuidString)")
+    try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+    return url
+}
+
+/// Reads back an extracted file. Returns nil when it is missing.
+private func contents(of url: URL) -> String? {
+    try? String(contentsOf: url, encoding: .utf8)
+}
+
+private func engines() -> [(name: String, engine: any ArchiveEngine)] {
+    [("7zip", Archive7ZipEngine()), ("xad", ArchiveXadEngine())]
+}
+
+extension AllCoreTests {
+
+    // MARK: - Correct password produces real contents
+
+    /// The bug the customer hit: 7-Zip reported success but wrote 0-byte files.
+    /// Every one of these asserts the *contents*, never just `fileExists`.
+    @MainActor struct PasswordExtractionTests {
+
+        /// Every encrypted zip/7z variant, both engines, single-item extraction.
+        @Test(arguments: [
+            ("zip_zipcrypto.zip", correctPassword),
+            ("zip_aes256.zip", correctPassword),
+            ("zip_aes128.zip", correctPassword),
+            ("zip_mixed.zip", correctPassword),
+            ("zip_unicode_pw.zip", unicodePassword),
+            ("zip_symbol_pw.zip", symbolPassword),
+            ("zip_long_pw.zip", longPassword),
+            ("7z_aes256.7z", correctPassword),
+            ("7z_header_encrypted.7z", correctPassword),
+            ("7z_symbol_pw.7z", symbolPassword),
+        ])
+        func extractsEncryptedEntryWithCorrectPassword(name: String, password: String) async throws {
+            for (engineName, engine) in engines() {
+                // XAD does not implement 7z at all — it is not a registered
+                // engine for that format either.
+                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+
+                let answers = PasswordAnswers(password)
+                let url = fixture(name)
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+                let hello = try #require(
+                    load.items.values.first { $0.virtualPath == "hello.txt" },
+                    "\(engineName)/\(name): hello.txt missing from listing"
+                )
+
+                let result = try await engine.extract(
+                    items: [hello],
+                    from: url,
+                    to: destination,
+                    passwordResolver: answers.resolver
+                )
+
+                let extracted = try #require(result[hello], "\(engineName)/\(name): no url returned")
+                #expect(
+                    contents(of: extracted) == helloContents,
+                    "\(engineName)/\(name): extracted contents wrong or file empty"
+                )
+            }
+        }
+
+        /// Whole-archive extraction, the "Extract here" path.
+        @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
+        func extractsWholeArchiveWithCorrectPassword(name: String) async throws {
+            for (engineName, engine) in engines() {
+                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+
+                let answers = PasswordAnswers(correctPassword)
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                try await engine.extract(
+                    fixture(name),
+                    to: destination,
+                    passwordResolver: answers.resolver
+                )
+
+                #expect(
+                    contents(of: destination.appendingPathComponent("hello.txt")) == helloContents,
+                    "\(engineName)/\(name): hello.txt wrong"
+                )
+                #expect(
+                    contents(of: destination.appendingPathComponent("folder/nested.txt")) == nestedContents,
+                    "\(engineName)/\(name): folder/nested.txt wrong"
+                )
+            }
+        }
+
+        /// Multiple encrypted entries in one call — 7-Zip extracts them in a
+        /// single pass, so a per-entry password failure must not be swallowed.
+        @Test func extractsMultipleEncryptedEntriesAtOnce() async throws {
+            for (engineName, engine) in engines() {
+                let answers = PasswordAnswers(correctPassword)
+                let url = fixture("zip_aes256.zip")
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+                let files = load.items.values.filter { $0.type == .file }
+                #expect(files.count == 2, "\(engineName): expected 2 files")
+
+                let result = try await engine.extract(
+                    items: Array(files),
+                    from: url,
+                    to: destination,
+                    passwordResolver: answers.resolver
+                )
+
+                for file in files {
+                    let extracted = try #require(result[file], "\(engineName): no url for \(file.name)")
+                    let expected = file.name == "hello.txt" ? helloContents : nestedContents
+                    #expect(contents(of: extracted) == expected, "\(engineName): \(file.name) wrong")
+                }
+            }
+        }
+    }
+
+    // MARK: - Wrong password
+
+    @MainActor struct WrongPasswordTests {
+
+        /// A wrong password must surface as an error. Silently writing a 0-byte
+        /// file and reporting success is the worst possible outcome — the user
+        /// has no idea anything went wrong.
+        @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
+        func wrongPasswordThrowsInsteadOfWritingEmptyFile(name: String) async throws {
+            for (engineName, engine) in engines() {
+                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+
+                // One wrong answer, then cancel — bounded either way.
+                let answers = PasswordAnswers("definitely-not-the-password")
+                let url = fixture(name)
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+
+                await #expect(throws: (any Error).self, "\(engineName)/\(name): wrong password reported success") {
+                    _ = try await engine.extract(
+                        items: [hello],
+                        from: url,
+                        to: destination,
+                        passwordResolver: answers.resolver
+                    )
+                }
+
+                // No half-written garbage left where the user asked for a file.
+                let leftover = destination.appendingPathComponent("hello.txt")
+                #expect(
+                    FileManager.default.fileExists(atPath: leftover.path) == false,
+                    "\(engineName)/\(name): empty file left behind after failure"
+                )
+            }
+        }
+
+        /// A wrong password has to come back to the user, and the request must
+        /// say which attempt this is so the UI can show "wrong password".
+        @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
+        func wrongPasswordIsRepromptedThenSucceeds(name: String) async throws {
+            for (engineName, engine) in engines() {
+                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+
+                let answers = PasswordAnswers("wrong-first-try", correctPassword)
+                let url = fixture(name)
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+
+                let result = try await engine.extract(
+                    items: [hello],
+                    from: url,
+                    to: destination,
+                    passwordResolver: answers.resolver
+                )
+
+                let extracted = try #require(result[hello])
+                #expect(
+                    contents(of: extracted) == helloContents,
+                    "\(engineName)/\(name): retry with the right password did not recover"
+                )
+                let attempts = await answers.attempts
+                #expect(
+                    attempts.suffix(2) == [1, 2],
+                    "\(engineName)/\(name): attempt counter did not advance, got \(attempts)"
+                )
+            }
+        }
+
+        /// The listing of a header-encrypted 7z cannot be read at all without
+        /// the password, so the retry has to happen during load.
+        @Test func wrongPasswordOnHeaderEncrypted7zIsReprompted() async throws {
+            let answers = PasswordAnswers("wrong-first-try", correctPassword)
+            let load = try await Archive7ZipEngine().loadArchive(
+                url: fixture("7z_header_encrypted.7z"),
+                passwordResolver: answers.resolver
+            )
+
+            #expect(load.items.values.contains { $0.virtualPath == "hello.txt" })
+            let attempts = await answers.attempts
+            #expect(attempts == [1, 2], "got \(attempts)")
+        }
+    }
+
+    // MARK: - Cancelling the prompt
+
+    @MainActor struct PasswordCancellationTests {
+
+        @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
+        func cancellingThePromptThrows(name: String) async throws {
+            for (engineName, engine) in engines() {
+                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+
+                let url = fixture(name)
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                let load = try await engine.loadArchive(url: url, passwordResolver: neverResolves)
+                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+
+                do {
+                    _ = try await engine.extract(
+                        items: [hello],
+                        from: url,
+                        to: destination,
+                        passwordResolver: neverResolves
+                    )
+                    Issue.record("\(engineName)/\(name): cancelling the prompt still reported success")
+                } catch ArchiveError.passwordCancelled {
+                    // expected
+                } catch {
+                    Issue.record("\(engineName)/\(name): expected passwordCancelled, got \(error)")
+                }
+            }
+        }
+
+        @Test func cancellingHeaderEncrypted7zLoadThrows() async throws {
+            await #expect(throws: (any Error).self) {
+                _ = try await Archive7ZipEngine().loadArchive(
+                    url: fixture("7z_header_encrypted.7z"),
+                    passwordResolver: neverResolves
+                )
+            }
+        }
+    }
+
+    // MARK: - Listing
+
+    @MainActor struct PasswordListingTests {
+
+        /// zip and plain-header 7z keep their file names in the clear, so
+        /// listing them must not prompt for anything.
+        @Test(arguments: [
+            "zip_zipcrypto.zip", "zip_aes256.zip", "zip_aes128.zip", "7z_aes256.7z",
+        ])
+        func listsEncryptedArchiveWithoutPassword(name: String) async throws {
+            for (engineName, engine) in engines() {
+                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+
+                let answers = PasswordAnswers()
+                let load = try await engine.loadArchive(
+                    url: fixture(name),
+                    passwordResolver: answers.resolver
+                )
+
+                #expect(
+                    load.items.values.contains { $0.virtualPath == "hello.txt" },
+                    "\(engineName)/\(name): hello.txt not listed"
+                )
+                let prompted = await answers.callCount
+                #expect(prompted == 0, "\(engineName)/\(name): listing asked for a password")
+            }
+        }
+
+        /// `-mhe=on` encrypts the header, so the entry list itself is behind
+        /// the password.
+        @Test func headerEncrypted7zListsOnlyWithPassword() async throws {
+            let answers = PasswordAnswers(correctPassword)
+            let load = try await Archive7ZipEngine().loadArchive(
+                url: fixture("7z_header_encrypted.7z"),
+                passwordResolver: answers.resolver
+            )
+
+            #expect(load.items.values.contains { $0.virtualPath == "hello.txt" })
+            #expect(load.items.values.contains { $0.virtualPath == "folder/nested.txt" })
+            let prompted = await answers.callCount
+            #expect(prompted >= 1, "header-encrypted listing did not ask for a password")
+        }
+
+        /// The status bar has a lock indicator driven by `isEncrypted`.
+        @Test(arguments: [
+            ("zip_zipcrypto.zip", true),
+            ("zip_aes256.zip", true),
+            ("zip_mixed.zip", true),
+            ("zip_nested_outer.zip", false),
+        ])
+        func reportsWhetherArchiveIsEncrypted(name: String, expected: Bool) async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.passwordProvider = { _ in correctPassword }
+            state.open(url: fixture(name))
+            try await state.openTask?.value
+
+            #expect(state.isEncrypted == expected, "\(name)")
+        }
+    }
+
+    // MARK: - Partially encrypted archives
+
+    @MainActor struct MixedEncryptionTests {
+
+        /// `public.txt` is stored unencrypted next to encrypted entries.
+        /// Extracting it must not prompt at all.
+        @Test func plainEntryNeedsNoPassword() async throws {
+            for (engineName, engine) in engines() {
+                let answers = PasswordAnswers()
+                let url = fixture("zip_mixed.zip")
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+                let plain = try #require(load.items.values.first { $0.virtualPath == "public.txt" })
+
+                let result = try await engine.extract(
+                    items: [plain],
+                    from: url,
+                    to: destination,
+                    passwordResolver: answers.resolver
+                )
+
+                let extracted = try #require(result[plain])
+                #expect(contents(of: extracted) == publicContents, "\(engineName): public.txt wrong")
+                let prompted = await answers.callCount
+                #expect(prompted == 0, "\(engineName): plain entry asked for a password")
+            }
+        }
+
+        /// Selecting the plain *and* the encrypted entry together still needs
+        /// exactly one password.
+        @Test func mixedSelectionPromptsOnceAndExtractsBoth() async throws {
+            let engine = Archive7ZipEngine()
+            let answers = PasswordAnswers(correctPassword)
+            let url = fixture("zip_mixed.zip")
+            let destination = try tempDirectory()
+            defer { try? FileManager.default.removeItem(at: destination) }
+
+            let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+            let plain = try #require(load.items.values.first { $0.virtualPath == "public.txt" })
+            let secret = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+
+            let result = try await engine.extract(
+                items: [plain, secret],
+                from: url,
+                to: destination,
+                passwordResolver: answers.resolver
+            )
+
+            #expect(contents(of: try #require(result[plain])) == publicContents)
+            #expect(contents(of: try #require(result[secret])) == helloContents)
+            let prompted = await answers.callCount
+            #expect(prompted == 1, "prompted \(prompted) times")
+        }
+    }
+
+    // MARK: - ArchiveState: caching and re-prompting
+
+    @MainActor struct ArchiveStatePasswordFlowTests {
+
+        /// The password is cached per archive, so a second extraction is silent.
+        @Test func correctPasswordIsCachedAcrossExtractions() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let prompts = Counter()
+            state.passwordProvider = { _ in
+                _ = await prompts.increment()
+                return correctPassword
+            }
+
+            state.open(url: fixture("zip_aes256.zip"))
+            try await state.openTask?.value
+
+            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            #expect(contents(of: try await state.extractToTemp(item: hello)) == helloContents)
+            #expect(contents(of: try await state.extractToTemp(item: hello)) == helloContents)
+
+            let count = await prompts.value
+            #expect(count == 1, "prompted \(count) times, expected 1")
+        }
+
+        /// The bug behind "0% and 100% CPU": the cached password was handed back
+        /// on every retry, so a wrong one made the engine loop forever without
+        /// ever asking the user again.
+        @Test func wrongCachedPasswordIsDiscardedAndReprompted() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let prompts = Counter()
+            state.passwordProvider = { _ in
+                let n = await prompts.increment()
+                // Cancel after a few tries so a broken loop fails instead of
+                // hanging the suite.
+                if n > 3 { return nil }
+                return n == 1 ? "wrong-first-try" : correctPassword
+            }
+
+            state.open(url: fixture("zip_aes256.zip"))
+            try await state.openTask?.value
+
+            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            let extracted = try await state.extractToTemp(item: hello)
+
+            #expect(contents(of: extracted) == helloContents)
+            let count = await prompts.value
+            #expect(count == 2, "prompted \(count) times, expected 2")
+        }
+
+        /// Cancelling surfaces an error rather than an empty extraction.
+        @Test func cancellingThePromptSetsAnError() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.passwordProvider = { _ in nil }
+
+            state.open(url: fixture("zip_aes256.zip"))
+            try await state.openTask?.value
+
+            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            await #expect(throws: (any Error).self) {
+                _ = try await state.extractToTemp(item: hello)
+            }
+        }
+
+        /// Opening a text file straight out of an encrypted archive — the
+        /// customer's "text files are correctly opened directly from the
+        /// archive" case.
+        @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
+        func opensFileDirectlyFromEncryptedArchive(name: String) async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let opened = URLRecorder()
+            state.openFileExternally = { url in
+                MainActor.assumeIsolated { opened.record(url) }
+            }
+            state.passwordProvider = { _ in correctPassword }
+
+            state.open(url: fixture(name))
+            try await state.openTask?.value
+
+            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            try await state.openFile(hello)
+
+            let handed = try #require(opened.urls.first, "\(name): nothing handed to the system")
+            #expect(contents(of: handed) == helloContents, "\(name): opened an empty/wrong file")
+        }
+
+        /// An encrypted archive nested inside a plain one: the outer archive is
+        /// extracted first, so the prompt has to reach one level down.
+        @Test func opensEncryptedArchiveNestedInPlainArchive() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.passwordProvider = { _ in correctPassword }
+
+            state.open(url: fixture("zip_nested_outer.zip"))
+            try await state.openTask?.value
+
+            let inner = try #require(state.entries.values.first { $0.name == "inner_encrypted.zip" })
+            try await state.openAsync(item: inner)
+
+            let hello = try #require(
+                state.entries.values.first { $0.virtualPath == "hello.txt" },
+                "inner archive did not list"
+            )
+            #expect(contents(of: try await state.extractToTemp(item: hello)) == helloContents)
+        }
+    }
+}
+
+/// Counts prompt callbacks. An actor because `passwordProvider` is called
+/// from the engines' non-main executors.
+private actor Counter {
+    private(set) var value = 0
+
+    func increment() -> Int {
+        value += 1
+        return value
+    }
+}
+
+/// Collects the URLs `ArchiveState.openFileExternally` hands to the system.
+@MainActor
+private final class URLRecorder {
+    private(set) var urls: [URL] = []
+    func record(_ url: URL) { urls.append(url) }
+}
