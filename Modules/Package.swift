@@ -402,7 +402,11 @@ let package = Package(
                 .headerSearchPath("Sources/CSevenZip/vendor/7zip/CPP/7zip/Archive"),
                 .headerSearchPath("Sources/CSevenZip/vendor/7zip/C"),
                 .headerSearchPath("Sources/CSevenZip"),
-                .unsafeFlags(["-w"]),
+                // Xcode turns on CLANG_ENABLE_MODULES, under which the x86
+                // intrinsics headers stop exporting __m128i transitively and
+                // AesOpt.c/Sha*Opt.c fail to compile for the x86_64 slice of a
+                // Release build. Nothing vendored here wants modules.
+                .unsafeFlags(["-w", "-fno-modules"]),
             ],
             cxxSettings: [
                 .define("_7ZIP_ST"),
@@ -424,16 +428,8 @@ let package = Package(
             ]
         ),
         .target(
-            name: "CSevenZipPlatformStubs",
-            path: "Sources/CSevenZipPlatformStubs",
-            publicHeadersPath: "include",
-            cSettings: [
-                .unsafeFlags(["-w"])
-            ]
-        ),
-        .target(
             name: "Swift7zip",
-            dependencies: ["CSevenZip", "CSevenZipPlatformStubs"],
+            dependencies: ["CSevenZip"],
             path: "Sources/Swift7zip",
             swiftSettings: [
                 .swiftLanguageMode(.v6),
