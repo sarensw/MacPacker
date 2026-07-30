@@ -17,19 +17,19 @@
   "appcast-seed-path": "Config/appcast.xml",
   "changelog": {
     "comingNext": {
-      "en": "Support for deletion of files / folders from .zip archives",
-      "zh-Hans": "支持从 .zip 压缩包中删除文件 / 文件夹",
-      "fr": "Prise en charge de la suppression de fichiers / dossiers des archives .zip",
-      "de": "Unterstützung zum Löschen von Dateien / Ordnern aus .zip-Archiven",
-      "it": "Supporto per l’eliminazione di file / cartelle dagli archivi .zip",
-      "ja": ".zip アーカイブ内のファイル / フォルダ削除をサポート",
-      "fa": "پشتیبانی از حذف فایل‌ها / پوشه‌ها از آرشیوهای .zip",
-      "pl": "Obsługa usuwania plików / folderów z archiwów .zip",
-      "pt-BR": "Suporte para exclusão de arquivos / pastas de arquivos .zip",
-      "ru": "Поддержка удаления файлов / папок из архивов .zip",
-      "uk": "Підтримка видалення файлів / папок з архівів .zip",
-      "es-MX": "Compatibilidad con eliminación de archivos / carpetas de archivos .zip",
-      "ko": ".zip 아카이브에서 파일 / 폴더 삭제 지원"
+      "en": "Support for creating password-protected .zip archives",
+      "zh-Hans": "支持创建带密码保护的 .zip 压缩包",
+      "fr": "Prise en charge de la création d’archives .zip protégées par mot de passe",
+      "de": "Unterstützung zum Erstellen passwortgeschützter .zip-Archive",
+      "it": "Supporto per la creazione di archivi .zip protetti da password",
+      "ja": "パスワード保護された .zip アーカイブの作成をサポート",
+      "fa": "پشتیبانی از ساخت آرشیوهای .zip محافظت‌شده با رمز",
+      "pl": "Obsługa tworzenia archiwów .zip chronionych hasłem",
+      "pt-BR": "Suporte para criar arquivos .zip protegidos por senha",
+      "ru": "Поддержка создания .zip-архивов с паролем",
+      "uk": "Підтримка створення .zip-архівів із паролем",
+      "es-MX": "Compatibilidad para crear archivos .zip protegidos con contraseña",
+      "ko": "암호로 보호된 .zip 압축 파일 생성 지원"
     },
     "versions": [
       {
