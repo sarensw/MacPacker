@@ -276,10 +276,22 @@ extension ArchiveState {
     /// anything from the archive
     public func cancelCurrentOperation() {
         openTask?.cancel()
+
+        // Capture what is being cancelled before suspending. Awaiting the loader
+        // is a suspension point, and a new open can start during it — that open
+        // owns the state and has its own loader by the time this resumes, so
+        // clearing and resetting blindly would wipe an archive the user just
+        // opened successfully.
+        let cancelledLoader = archiveLoader
+        let generation = openGeneration
+
         Task {
-            await archiveLoader?.cancel()
+            await cancelledLoader?.cancel()
+
+            guard generation == openGeneration,
+                  archiveLoader === cancelledLoader else { return }
+
             archiveLoader = nil
-            
             reset()
         }
     }

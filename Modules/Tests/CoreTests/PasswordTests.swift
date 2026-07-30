@@ -962,6 +962,34 @@ extension AllCoreTests {
             #expect(state.openError == nil, "a stale failure survived the next open")
         }
 
+        /// Cancelling must not reach past the open that replaced it.
+        ///
+        /// cancelCurrentOperation() awaits the loader before clearing it and
+        /// calling reset(). A new open started during that await owns the state
+        /// and has its own loader by the time it resumes, so the stale cancel
+        /// would wipe an archive the user had just successfully opened.
+        @Test func cancelDoesNotWipeAnOpenThatReplacedIt() async throws {
+            let state = manualState(engine: .`7zip`)
+            state.passwordProvider = { _ in correctPassword }
+
+            state.open(url: fixture("zip_aes256.zip"))
+            state.cancelCurrentOperation()
+
+            // Replaces both the cancelled open and its loader.
+            state.open(url: fixture("zip_zipcrypto.zip"))
+            try await state.openTask?.value
+
+            // Give any in-flight cancel a chance to land late.
+            try await Task.sleep(for: .milliseconds(300))
+
+            #expect(state.hasArchive, "a stale cancel wiped the archive")
+            #expect(!state.entries.isEmpty, "a stale cancel cleared the entries")
+            #expect(
+                state.url?.lastPathComponent == "zip_zipcrypto.zip",
+                "wrong archive survived — got \(state.url?.lastPathComponent ?? "nothing")"
+            )
+        }
+
         /// A file the detector cannot place must say so, not fall through with a
         /// blank reason — the log line that started this was useless precisely
         /// because the message was thrown away.
