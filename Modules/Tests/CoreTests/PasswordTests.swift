@@ -939,6 +939,90 @@ extension AllCoreTests {
         }
     }
 
+    // MARK: - Cleanup after a failed extraction
+
+    @MainActor struct ExtractionCleanupSafetyTests {
+
+        /// The cleanup that removes a half-written file after a failed entry
+        /// built its path from the archive's own entry name — which the archive
+        /// controls. An entry called `../victim.txt` pointed that path outside
+        /// the destination, so a failed extraction deleted a file the user never
+        /// asked MacPacker to touch. A wrong password is enough to trigger it.
+        ///
+        /// Everything here lives in a directory the test creates and removes, so
+        /// the only file ever at risk is the test's own.
+        @Test func failedExtractionNeverDeletesOutsideTheDestination() async throws {
+            let root = try tempDirectory()
+            defer { try? FileManager.default.removeItem(at: root) }
+
+            let destination = root.appendingPathComponent("dest")
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+
+            // Outside `destination`, but still inside the test's own root.
+            let bystander = root.appendingPathComponent("victim.txt")
+            try "do not delete me\n".write(to: bystander, atomically: true, encoding: .utf8)
+
+            let url = fixture("zip_zipcrypto.zip")
+            let engine = ArchiveXadEngine()
+            let load = try await engine.loadArchive(url: url, passwordResolver: neverResolves)
+            let real = try #require(load.items.values.first { $0.virtualPath == helloPath })
+
+            // The same entry, but the archive claims a traversing path for it.
+            let hostile = ArchiveItem(
+                index: real.index,
+                name: "victim.txt",
+                virtualPath: "../victim.txt",
+                type: .file,
+                uncompressedSize: real.uncompressedSize
+            )
+
+            // No password, so the entry fails and the cleanup path runs.
+            await #expect(throws: (any Error).self) {
+                _ = try await engine.extract(
+                    items: [hostile],
+                    from: url,
+                    to: destination,
+                    passwordResolver: neverResolves
+                )
+            }
+
+            #expect(
+                FileManager.default.fileExists(atPath: bystander.path),
+                "cleanup deleted a file outside the destination"
+            )
+        }
+
+        /// The guard must not cost the cleanup its job: an ordinary failed entry
+        /// inside the destination still gets removed.
+        @Test func failedExtractionStillCleansUpInsideTheDestination() async throws {
+            let destination = try tempDirectory()
+            defer { try? FileManager.default.removeItem(at: destination) }
+
+            let url = fixture("zip_zipcrypto.zip")
+            let engine = ArchiveXadEngine()
+            let load = try await engine.loadArchive(url: url, passwordResolver: neverResolves)
+            let real = try #require(load.items.values.first { $0.virtualPath == helloPath })
+
+            // Stand in for the truncated file XAD leaves behind.
+            let leftover = destination.appendingPathComponent(helloPath)
+            try "partial".write(to: leftover, atomically: true, encoding: .utf8)
+
+            await #expect(throws: (any Error).self) {
+                _ = try await engine.extract(
+                    items: [real],
+                    from: url,
+                    to: destination,
+                    passwordResolver: neverResolves
+                )
+            }
+
+            #expect(
+                FileManager.default.fileExists(atPath: leftover.path) == false,
+                "the partial file inside the destination was left behind"
+            )
+        }
+    }
+
     // MARK: - Progress and cancellation on encrypted archives
 
     @MainActor struct EncryptedProgressTests {

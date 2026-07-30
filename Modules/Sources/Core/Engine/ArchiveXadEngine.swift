@@ -310,6 +310,21 @@ private final class XADExtractionProgressDelegate: NSObject, @unchecked Sendable
     }
 }
 
+/// Whether `url` really sits inside `directory`.
+///
+/// Both sides are standardized first, which is what collapses any `..` segments
+/// — an entry path like "../../etc/passwd" resolves out of the destination and is
+/// then plainly not a descendant. Symlinks are deliberately not resolved: the
+/// candidate is built by appending to `directory`, so both share the same symlink
+/// state, and resolving a path that does not exist yet would only desynchronise
+/// them (`/var` vs `/private/var`).
+private func isContained(_ url: URL, in directory: URL) -> Bool {
+    let base = directory.standardizedFileURL.path
+    let target = url.standardizedFileURL.path
+    let prefix = base.hasSuffix("/") ? base : base + "/"
+    return target != base && target.hasPrefix(prefix)
+}
+
 final actor ArchiveXadEngine: ArchiveEngine {
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
 
@@ -449,8 +464,14 @@ final actor ArchiveXadEngine: ArchiveEngine {
             } catch {
                 // XAD creates the output file before it decodes, so a failure
                 // (wrong password, corrupt data) leaves a truncated or empty
-                // file that looks like a successful extraction. Remove it.
-                try? FileManager.default.removeItem(at: resultUrl)
+                // file that looks like a successful extraction. Remove it — but
+                // only if it is actually inside the destination. `virtualPath`
+                // comes from the archive, so an entry named "../something" would
+                // otherwise aim this delete at a file the user never asked us to
+                // touch, and a wrong password is enough to trigger it.
+                if isContained(resultUrl, in: destination) {
+                    try? FileManager.default.removeItem(at: resultUrl)
+                }
                 // a should-stop answer makes XAD fail the entry — surface
                 // it as cancellation, not as an extraction error
                 if progressDelegate?.wasStopped == true {
