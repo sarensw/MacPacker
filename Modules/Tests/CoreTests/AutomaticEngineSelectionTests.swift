@@ -16,8 +16,6 @@ extension AllCoreTests {
     /// machine's settings nor disturb them, and cannot leak into each other.
     @MainActor struct AutomaticEngineSelectionTests {
 
-        private static let automaticKey = "automaticEngineSelection"
-
         /// A store as it would be on the very first launch of a build that has
         /// automatic mode, for a user who already picked engines in an older one.
         private func storeUpgradingFrom(
@@ -32,7 +30,7 @@ extension AllCoreTests {
             }
             // Drop only the flag: an upgrade from a build that had per-format
             // engines but had never heard of automatic mode.
-            defaults.removeObject(forKey: Self.automaticKey)
+            defaults.removeObject(forKey: ArchiveEngineConfigStore.automaticKey)
 
             return ArchiveEngineConfigStore(catalog: catalog, defaults: defaults)
         }

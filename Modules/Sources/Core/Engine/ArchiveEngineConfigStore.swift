@@ -21,7 +21,10 @@ private struct PersistedEngineConfig: Codable {
 /// Options + defaults come from ArchiveTypeCatalogProtocol (JSON-backed).
 public final class ArchiveEngineConfigStore: @unchecked Sendable {
     private static let overridesKey = "archiveEngineConfigs"
-    private static let automaticKey = "automaticEngineSelection"
+    /// Not private: the migration tests have to simulate an upgrade from a build
+    /// that predates this flag, which means removing exactly this key. Spelling
+    /// it out a second time over there would let a rename pass unnoticed.
+    static let automaticKey = "automaticEngineSelection"
 
     private let catalog: ArchiveTypeCatalogProtocol
     /// Where the settings live. Injectable so tests can hand in an isolated
