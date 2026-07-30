@@ -17,13 +17,43 @@ private final class XADArchiveWithPasswordSupport {
         url: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) throws {
-        guard let archive = XADArchive(file: url.path) else {
-            throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
+        // initWithFile:error: over initWithFile: so a failure carries a code
+        // instead of a bare nil.
+        var openError: XADError = 0
+        guard let archive = XADArchive(file: url.path, error: &openError) else {
+            // A header-encrypted archive (7z -mhe=on, RAR -hp) can't be opened
+            // here at all: the header has to be decrypted during init and
+            // XADArchive only accepts a password afterwards. XAD's own hook is
+            // the synchronous `archiveNeedsPassword:` delegate, which can't
+            // drive our async resolver.
+            //
+            // XAD reports that as a plain decrunch error, the same code a
+            // genuinely damaged archive gets, so we can't state the cause —
+            // only name it as the likely one. Either way 7-Zip is the engine
+            // that can read it, or say properly that it can't.
+            if openError == XADDecrunchError || openError == XADPasswordError {
+                throw ArchiveError.invalidArchive(
+                    "Could not open \(url.lastPathComponent) with the XAD engine. If the archive has an encrypted header, switch to 7-Zip in Settings.")
+            }
+            throw ArchiveError.invalidArchive(
+                "Could not open \(url.lastPathComponent) (XAD error \(openError))")
         }
         self.url = url
         self.archive = archive
         self.passwordResolver = passwordResolver
     }
+
+    /// Whether any entry is encrypted. Read straight off `archive` rather than
+    /// through `performXADOperationWithPasswordRetry`, which would recurse, and
+    /// cached because the answer cannot change for an open archive.
+    private var hasEncryptedEntry: Bool {
+        if let cachedHasEncryptedEntry { return cachedHasEncryptedEntry }
+        let count = archive.numberOfEntries()
+        let found = (0..<count).contains { archive.entryIsEncrypted($0) }
+        cachedHasEncryptedEntry = found
+        return found
+    }
+    private var cachedHasEncryptedEntry: Bool?
     
     /// How many passwords a single operation will ask for before giving up.
     /// A resolver that keeps answering with the same wrong password (a stale
@@ -48,13 +78,24 @@ private final class XADArchiveWithPasswordSupport {
                 return value
             }
 
+            // XADMaster only reports XADPasswordError for the formats whose
+            // decryptors check the password explicitly. On 7z it surfaces a
+            // missing or wrong password as a plain decrunch error, so the prompt
+            // below never ran and an encrypted 7z failed with "Error on
+            // decrunching" — even though XAD extracts it fine once the password
+            // is set. On an archive that has encrypted entries, a decrunch error
+            // is overwhelmingly a password problem, so treat it as one; the
+            // attempt ceiling stops a genuinely corrupt archive from looping.
+            let isPasswordError = error == XADPasswordError
+                || (error == XADDecrunchError && hasEncryptedEntry)
+
             // failed, but because password is wrong / needed > ask user
-            if error == 15 {
+            if isPasswordError {
                 attempt += 1
 
                 guard attempt <= Self.maxPasswordAttempts else {
                     throw ArchiveError.extractionFailed(
-                        "The password is incorrect (\(Self.maxPasswordAttempts) attempts)")
+                        "Could not decrypt \(url.lastPathComponent) after \(Self.maxPasswordAttempts) attempts. The password may be wrong, or the archive may be damaged.")
                 }
 
                 let request = ArchivePasswordRequest(
@@ -70,8 +111,7 @@ private final class XADArchiveWithPasswordSupport {
                 continue
             }
             
-            // Error code is not 0 (success) and 15 (password missing), therefore,
-            // throw for now. We might handle other error codes in future
+            // Anything else is a real failure, not something a password fixes.
             throw ArchiveError.xadError(
                 archive.lastError(),
                 archive.describeLastError()

@@ -746,9 +746,9 @@ extension AllCoreTests {
 
         @Test func loadPasswordProtectedZipWith7zip() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            // defaultArchive_password.zip's password is lost to history; these
-            // tests only ever "passed" because a wrong password used to write
-            // empty files and report success.
+            // Was defaultArchive_password.zip, whose password nobody knows —
+            // these tests only ever "passed" because a wrong password used to
+            // write empty files and report success. Fixture since deleted.
             let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
             let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
@@ -765,9 +765,9 @@ extension AllCoreTests {
 
         @Test func extractPasswordProtectedFileWith7zip() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            // defaultArchive_password.zip's password is lost to history; these
-            // tests only ever "passed" because a wrong password used to write
-            // empty files and report success.
+            // Was defaultArchive_password.zip, whose password nobody knows —
+            // these tests only ever "passed" because a wrong password used to
+            // write empty files and report success. Fixture since deleted.
             let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
             let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
@@ -789,9 +789,9 @@ extension AllCoreTests {
 
         @Test func loadPasswordProtectedZipWithXad() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorXad())
-            // defaultArchive_password.zip's password is lost to history; these
-            // tests only ever "passed" because a wrong password used to write
-            // empty files and report success.
+            // Was defaultArchive_password.zip, whose password nobody knows —
+            // these tests only ever "passed" because a wrong password used to
+            // write empty files and report success. Fixture since deleted.
             let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
             let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
@@ -810,9 +810,9 @@ extension AllCoreTests {
 
         @Test func passwordCancelledThrows7zip() async throws {
             let engine = Archive7ZipEngine()
-            // defaultArchive_password.zip's password is lost to history; these
-            // tests only ever "passed" because a wrong password used to write
-            // empty files and report success.
+            // Was defaultArchive_password.zip, whose password nobody knows —
+            // these tests only ever "passed" because a wrong password used to
+            // write empty files and report success. Fixture since deleted.
             let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
             let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
@@ -839,9 +839,9 @@ extension AllCoreTests {
 
         @Test func passwordCancelledThrowsXad() async throws {
             let engine = ArchiveXadEngine()
-            // defaultArchive_password.zip's password is lost to history; these
-            // tests only ever "passed" because a wrong password used to write
-            // empty files and report success.
+            // Was defaultArchive_password.zip, whose password nobody knows —
+            // these tests only ever "passed" because a wrong password used to
+            // write empty files and report success. Fixture since deleted.
             let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
             let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 

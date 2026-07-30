@@ -114,9 +114,10 @@ extension AllCoreTests {
         ])
         func extractsEncryptedEntryWithCorrectPassword(name: String, password: String) async throws {
             for (engineName, engine) in engines() {
-                // XAD does not implement 7z at all — it is not a registered
-                // engine for that format either.
-                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+                // XAD cannot open a header-encrypted archive: the header has to be
+                // decrypted during init and XADArchive only accepts a password
+                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
+                if engineName == "xad" && name.contains("header_encrypted") { continue }
 
                 let answers = PasswordAnswers.always(password)
                 let url = fixture(name)
@@ -148,7 +149,10 @@ extension AllCoreTests {
         @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
         func extractsWholeArchiveWithCorrectPassword(name: String) async throws {
             for (engineName, engine) in engines() {
-                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+                // XAD cannot open a header-encrypted archive: the header has to be
+                // decrypted during init and XADArchive only accepts a password
+                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
+                if engineName == "xad" && name.contains("header_encrypted") { continue }
 
                 let answers = PasswordAnswers.always(correctPassword)
                 let destination = try tempDirectory()
@@ -210,7 +214,10 @@ extension AllCoreTests {
         @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
         func wrongPasswordThrowsInsteadOfWritingEmptyFile(name: String) async throws {
             for (engineName, engine) in engines() {
-                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+                // XAD cannot open a header-encrypted archive: the header has to be
+                // decrypted during init and XADArchive only accepts a password
+                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
+                if engineName == "xad" && name.contains("header_encrypted") { continue }
 
                 // One wrong answer, then cancel — bounded either way.
                 let answers = PasswordAnswers("definitely-not-the-password")
@@ -244,7 +251,10 @@ extension AllCoreTests {
         @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
         func wrongPasswordIsRepromptedThenSucceeds(name: String) async throws {
             for (engineName, engine) in engines() {
-                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+                // XAD cannot open a header-encrypted archive: the header has to be
+                // decrypted during init and XADArchive only accepts a password
+                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
+                if engineName == "xad" && name.contains("header_encrypted") { continue }
 
                 let answers = PasswordAnswers("wrong-first-try", correctPassword)
                 let url = fixture(name)
@@ -304,7 +314,10 @@ extension AllCoreTests {
         @Test(.timeLimit(.minutes(1)), arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
         func alwaysWrongPasswordTerminatesWithAnError(name: String) async throws {
             for (engineName, engine) in engines() {
-                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+                // XAD cannot open a header-encrypted archive: the header has to be
+                // decrypted during init and XADArchive only accepts a password
+                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
+                if engineName == "xad" && name.contains("header_encrypted") { continue }
 
                 // Unbounded: answers "wrong" every single time, forever.
                 let answers = PasswordAnswers.always("definitely-not-the-password")
@@ -361,7 +374,10 @@ extension AllCoreTests {
         @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
         func cancellingThePromptThrows(name: String) async throws {
             for (engineName, engine) in engines() {
-                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+                // XAD cannot open a header-encrypted archive: the header has to be
+                // decrypted during init and XADArchive only accepts a password
+                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
+                if engineName == "xad" && name.contains("header_encrypted") { continue }
 
                 let url = fixture(name)
                 let destination = try tempDirectory()
@@ -407,7 +423,10 @@ extension AllCoreTests {
         ])
         func listsEncryptedArchiveWithoutPassword(name: String) async throws {
             for (engineName, engine) in engines() {
-                if engineName == "xad" && name.hasSuffix(".7z") { continue }
+                // XAD cannot open a header-encrypted archive: the header has to be
+                // decrypted during init and XADArchive only accepts a password
+                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
+                if engineName == "xad" && name.contains("header_encrypted") { continue }
 
                 let answers = PasswordAnswers()
                 let load = try await engine.loadArchive(
@@ -422,6 +441,40 @@ extension AllCoreTests {
                 let prompted = await answers.callCount
                 #expect(prompted == 0, "\(engineName)/\(name): listing asked for a password")
             }
+        }
+
+        /// XAD's one real limitation with encrypted archives: a header-encrypted
+        /// archive has to be decrypted during `XADArchive` init, and XADArchive
+        /// only accepts a password afterwards (its own hook is the synchronous
+        /// `archiveNeedsPassword:` delegate, which can't drive an async resolver).
+        /// XAD reports it as a plain decrunch error — the same code a damaged
+        /// archive gets — so the message can only name the likely cause and point
+        /// at 7-Zip. Either way it beats the old "Failed to create archive".
+        @Test func xadCannotOpenHeaderEncryptedArchives() async throws {
+            do {
+                _ = try await ArchiveXadEngine().loadArchive(
+                    url: fixture("7z_header_encrypted.7z"),
+                    passwordResolver: PasswordAnswers.always(correctPassword).resolver
+                )
+                Issue.record("XAD opened a header-encrypted archive — limitation lifted, drop the skips")
+            } catch ArchiveError.invalidArchive(let message) {
+                #expect(message.localizedCaseInsensitiveContains("encrypted header"), "got \(message)")
+                #expect(message.localizedCaseInsensitiveContains("7-zip"), "got \(message)")
+            }
+        }
+
+        /// Everything *except* a header-encrypted archive must list through XAD
+        /// without a password — including 7z, which XAD does support.
+        @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
+        func xadListsEncryptedArchivesWithoutPassword(name: String) async throws {
+            let answers = PasswordAnswers()
+            let load = try await ArchiveXadEngine().loadArchive(
+                url: fixture(name),
+                passwordResolver: answers.resolver
+            )
+            #expect(load.items.values.contains { $0.virtualPath == "hello.txt" }, "\(name)")
+            let prompted = await answers.callCount
+            #expect(prompted == 0, "\(name): listing asked for a password")
         }
 
         /// `-mhe=on` encrypts the header, so the entry list itself is behind
@@ -536,6 +589,11 @@ extension AllCoreTests {
         ])
         func extractsEncryptedRarEntryWithCorrectPassword(name: String) async throws {
             for (engineName, engine) in engines() {
+                // XAD cannot open a header-encrypted archive: the header has to be
+                // decrypted during init and XADArchive only accepts a password
+                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
+                if engineName == "xad" && name.contains("header_encrypted") { continue }
+
                 let answers = PasswordAnswers.always(correctPassword)
                 let url = fixture(name)
                 let destination = try tempDirectory()
@@ -565,6 +623,11 @@ extension AllCoreTests {
         @Test(arguments: ["rar5_aes.rar", "rar4_aes.rar"])
         func wrongPasswordOnRarIsRepromptedThenSucceeds(name: String) async throws {
             for (engineName, engine) in engines() {
+                // XAD cannot open a header-encrypted archive: the header has to be
+                // decrypted during init and XADArchive only accepts a password
+                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
+                if engineName == "xad" && name.contains("header_encrypted") { continue }
+
                 let answers = PasswordAnswers("wrong-first-try", correctPassword)
                 let url = fixture(name)
                 let destination = try tempDirectory()

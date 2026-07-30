@@ -241,9 +241,12 @@ final actor Archive7ZipEngine: ArchiveEngine {
         attempt: Int,
         resolver: ArchivePasswordResolver
     ) async throws -> String {
+        // 7z AES stores no password verifier, so a failed decrypt and a damaged
+        // encrypted entry are genuinely indistinguishable — say both rather than
+        // insist on the password when we cannot know.
         guard attempt <= maxPasswordAttempts else {
             throw ArchiveError.extractionFailed(
-                "The password is incorrect (\(maxPasswordAttempts) attempts)")
+                "Could not decrypt \(url.lastPathComponent) after \(maxPasswordAttempts) attempts. The password may be wrong, or the archive may be damaged.")
         }
         guard let password = await resolver(
             ArchivePasswordRequest(url: url, attempt: attempt)
