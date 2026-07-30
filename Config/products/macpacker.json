@@ -33,6 +33,74 @@
     },
     "versions": [
       {
+        "version": "0.19.0",
+        "items": [
+          {
+            "type": "fix",
+            "title": {
+              "en": "Password-protected archives no longer extract as empty files",
+              "zh-Hans": "受密码保护的压缩包不再解压为空文件",
+              "fr": "Les archives protégées par mot de passe ne s’extraient plus vides",
+              "de": "Passwortgeschützte Archive werden nicht mehr als leere Dateien entpackt",
+              "it": "Gli archivi protetti da password non vengono più estratti vuoti",
+              "ja": "パスワード保護されたアーカイブが空のファイルとして展開されなくなりました",
+              "fa": "آرشیوهای محافظت‌شده با رمز دیگر به‌صورت فایل خالی استخراج نمی‌شوند",
+              "pl": "Archiwa chronione hasłem nie są już wypakowywane jako puste pliki",
+              "pt-BR": "Arquivos protegidos por senha não são mais extraídos vazios",
+              "ru": "Архивы, защищённые паролем, больше не распаковываются пустыми",
+              "uk": "Архіви, захищені паролем, більше не розпаковуються порожніми",
+              "es-MX": "Los archivos protegidos con contraseña ya no se extraen vacíos",
+              "ko": "암호로 보호된 압축 파일이 더 이상 빈 파일로 압축 해제되지 않습니다"
+            },
+            "issues": [
+              "150"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+              "en": "Wrong passwords are now reported instead of hanging",
+              "zh-Hans": "密码错误时会给出提示，不再卡住",
+              "fr": "Un mot de passe incorrect est signalé au lieu de bloquer",
+              "de": "Falsche Passwörter werden gemeldet statt zu hängen",
+              "it": "Le password errate vengono segnalate invece di bloccarsi",
+              "ja": "パスワードが違う場合、固まらずにエラーを表示します",
+              "fa": "رمز نادرست اکنون گزارش می‌شود و برنامه متوقف نمی‌ماند",
+              "pl": "Błędne hasła są teraz zgłaszane, a nie zawieszają aplikację",
+              "pt-BR": "Senhas incorretas agora são informadas em vez de travar",
+              "ru": "Неверный пароль теперь сообщается, а не приводит к зависанию",
+              "uk": "Неправильний пароль тепер повідомляється, а не призводить до зависання",
+              "es-MX": "Las contraseñas incorrectas ahora se informan en vez de bloquearse",
+              "ko": "잘못된 암호는 멈추지 않고 오류로 표시됩니다"
+            },
+            "issues": [
+              "150"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+              "en": "Automatic engine selection",
+              "zh-Hans": "自动选择解压引擎",
+              "fr": "Sélection automatique du moteur",
+              "de": "Automatische Engine-Auswahl",
+              "it": "Selezione automatica del motore",
+              "ja": "エンジンの自動選択",
+              "fa": "انتخاب خودکار موتور",
+              "pl": "Automatyczny wybór silnika",
+              "pt-BR": "Seleção automática de motor",
+              "ru": "Автоматический выбор движка",
+              "uk": "Автоматичний вибір рушія",
+              "es-MX": "Selección automática de motor",
+              "ko": "엔진 자동 선택"
+            },
+            "issues": [
+              "151"
+            ]
+          }
+        ]
+      },
+      {
         "version": "0.18.1",
         "items": [
           {
