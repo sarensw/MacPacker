@@ -720,11 +720,25 @@ extension AllCoreTests {
             return ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: selector)
         }
 
-        /// Automatic mode: MacPacker chose `engine`, and may fall back.
-        private func automaticState(engine: ArchiveEngineType) -> ArchiveState {
-            ArchiveState(
+        /// Automatic mode, with the catalog default for `formatId` moved to
+        /// `engine`.
+        ///
+        /// This is the production selector and the production config store — the
+        /// only injected things are the catalog default and an isolated defaults
+        /// suite, so nothing here touches the real user's settings. Automatic
+        /// mode always uses the catalog default, so moving that default is the
+        /// only honest way to make MacPacker choose an engine that cannot read
+        /// the archive.
+        private func automaticState(
+            defaultEngine engine: ArchiveEngineType,
+            for formatId: String
+        ) -> ArchiveState {
+            let catalog = ArchiveTypeCatalogWithDefault([formatId: engine])
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
+            store.isAutomatic = true
+            return ArchiveState(
                 catalog: ArchiveTypeCatalog(),
-                engineSelector: ArchiveEngineSelectorAutomatic(engine)
+                engineSelector: ArchiveEngineSelector(catalog: ArchiveTypeCatalog(), configStore: store)
             )
         }
 
@@ -825,7 +839,7 @@ extension AllCoreTests {
             ("7z_encrypted_header.7z", "7zip")
         ])
         func fallsBackWhenTheChosenEngineCannotRead(name: String, formatId: String) async throws {
-            let state = automaticState(engine: .xad)
+            let state = automaticState(defaultEngine: .xad, for: formatId)
             state.passwordProvider = { _ in correctPassword }
             state.open(url: fixture(name))
             try await state.openTask?.value
@@ -846,7 +860,7 @@ extension AllCoreTests {
         /// extraction, which is worse than refusing outright.
         @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"))
         func extractsFromHeaderEncryptedArchiveWhenXadIsSelected() async throws {
-            let state = automaticState(engine: .xad)
+            let state = automaticState(defaultEngine: .xad, for: "rar")
             state.passwordProvider = { _ in correctPassword }
             state.open(url: fixture("rar5_encrypted_header.rar"))
             try await state.openTask?.value

@@ -9,57 +9,54 @@ import Testing
 import Foundation
 @testable import Core
 
-/// `ArchiveEngineConfigStore` persists to `UserDefaults.standard`, so these
-/// tests own that state explicitly: cleared before each case and restored after.
-/// Everything else in the suite avoids UserDefaults entirely by pinning engines
-/// through the test doubles — this is the one place the persistence itself is
-/// what's under test.
-private struct EngineDefaults {
-    static let overridesKey = "archiveEngineConfigs"
-    static let automaticKey = "automaticEngineSelection"
-
-    static func clear() {
-        UserDefaults.standard.removeObject(forKey: overridesKey)
-        UserDefaults.standard.removeObject(forKey: automaticKey)
-    }
-
-    /// Writes overrides the way a previous MacPacker version would have, i.e.
-    /// without ever having heard of the automatic flag.
-    static func seedLegacyOverride(_ engine: ArchiveEngineType, for formatId: String) {
-        clear()
-        let store = ArchiveEngineConfigStore(catalog: ArchiveTypeCatalog())
-        store.isAutomatic = false
-        store.setSelectedEngine(engine, for: formatId)
-        // Drop only the flag, leaving the overrides — an upgrade from a build
-        // that had per-format engines but no automatic mode.
-        UserDefaults.standard.removeObject(forKey: automaticKey)
-    }
-}
-
 extension AllCoreTests {
 
+    /// Every case here injects its own empty defaults suite. Nothing reads or
+    /// writes `UserDefaults.standard`, so these tests neither depend on the
+    /// machine's settings nor disturb them, and cannot leak into each other.
     @MainActor struct AutomaticEngineSelectionTests {
+
+        private static let automaticKey = "automaticEngineSelection"
+
+        /// A store as it would be on the very first launch of a build that has
+        /// automatic mode, for a user who already picked engines in an older one.
+        private func storeUpgradingFrom(
+            overrides: [String: ArchiveEngineType],
+            defaults: UserDefaults
+        ) -> ArchiveEngineConfigStore {
+            let catalog = ArchiveTypeCatalog()
+            let seed = ArchiveEngineConfigStore(catalog: catalog, defaults: defaults)
+            seed.isAutomatic = false
+            for (formatId, engine) in overrides {
+                seed.setSelectedEngine(engine, for: formatId)
+            }
+            // Drop only the flag: an upgrade from a build that had per-format
+            // engines but had never heard of automatic mode.
+            defaults.removeObject(forKey: Self.automaticKey)
+
+            return ArchiveEngineConfigStore(catalog: catalog, defaults: defaults)
+        }
 
         // MARK: - First launch after the feature ships
 
         /// Nobody has picked an engine, so MacPacker picks.
         @Test func defaultsToAutomaticForAFreshInstall() {
-            EngineDefaults.clear()
-            defer { EngineDefaults.clear() }
-
-            let store = ArchiveEngineConfigStore(catalog: ArchiveTypeCatalog())
+            let store = ArchiveEngineConfigStore(
+                catalog: ArchiveTypeCatalog(),
+                defaults: isolatedDefaults()
+            )
             #expect(store.isAutomatic)
             #expect(store.hasAnyOverride == false)
         }
 
-        /// Someone who already chose XAD for rar chose it deliberately. Their
-        /// setting must survive the upgrade rather than being overruled by a
-        /// feature that did not exist when they set it.
+        /// Someone who already chose XAD for rar chose it deliberately. That must
+        /// survive the upgrade rather than being overruled by a feature that did
+        /// not exist when they set it.
         @Test func staysManualWhenTheUserAlreadyPickedAnEngine() {
-            EngineDefaults.seedLegacyOverride(.xad, for: "rar")
-            defer { EngineDefaults.clear() }
-
-            let store = ArchiveEngineConfigStore(catalog: ArchiveTypeCatalog())
+            let store = storeUpgradingFrom(
+                overrides: ["rar": .xad],
+                defaults: isolatedDefaults()
+            )
             #expect(store.isAutomatic == false, "an existing choice was overruled")
             #expect(store.selectedEngine(for: "rar") == .xad, "the choice itself was lost")
         }
@@ -67,19 +64,18 @@ extension AllCoreTests {
         /// The migration decides once. Picking an engine later must not flip the
         /// mode, and neither must a restart.
         @Test func theMigrationDecisionIsMadeOnlyOnce() {
-            EngineDefaults.clear()
-            defer { EngineDefaults.clear() }
+            let defaults = isolatedDefaults()
+            let catalog = ArchiveTypeCatalog()
 
-            let first = ArchiveEngineConfigStore(catalog: ArchiveTypeCatalog())
+            let first = ArchiveEngineConfigStore(catalog: catalog, defaults: defaults)
             #expect(first.isAutomatic)
 
             first.isAutomatic = false
             first.setSelectedEngine(.xad, for: "rar")
 
-            // Restart.
-            let second = ArchiveEngineConfigStore(catalog: ArchiveTypeCatalog())
-            #expect(second.isAutomatic == false, "the mode did not survive a restart")
-            #expect(second.selectedEngine(for: "rar") == .xad)
+            let afterRestart = ArchiveEngineConfigStore(catalog: catalog, defaults: defaults)
+            #expect(afterRestart.isAutomatic == false, "the mode did not survive a restart")
+            #expect(afterRestart.selectedEngine(for: "rar") == .xad)
         }
 
         // MARK: - What each mode resolves to
@@ -87,11 +83,8 @@ extension AllCoreTests {
         /// Automatic ignores overrides without destroying them, so turning the
         /// toggle back off restores exactly what the user had.
         @Test func automaticIgnoresOverridesButKeepsThem() {
-            EngineDefaults.clear()
-            defer { EngineDefaults.clear() }
-
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             store.isAutomatic = false
             store.setSelectedEngine(.xad, for: "rar")
             #expect(store.selectedEngine(for: "rar") == .xad)
@@ -99,22 +92,28 @@ extension AllCoreTests {
             store.isAutomatic = true
             #expect(
                 store.selectedEngine(for: "rar") == catalog.defaultEngine(for: "rar"),
-                "automatic mode did not fall back to the catalog default"
+                "automatic mode did not use the catalog default"
             )
 
             store.isAutomatic = false
             #expect(store.selectedEngine(for: "rar") == .xad, "the override did not come back")
         }
 
+        /// Automatic mode follows the catalog default, so moving that default is
+        /// what changes which engine runs — the hook the fallback tests use.
+        @Test func automaticFollowsTheCatalogDefault() {
+            let catalog = ArchiveTypeCatalogWithDefault(["rar": .xad])
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
+            store.isAutomatic = true
+            #expect(store.selectedEngine(for: "rar") == .xad)
+        }
+
         // MARK: - Which mode allows a fallback
 
         /// The whole point of the toggle: only automatic mode may switch engines.
         @Test func onlyAutomaticModeAllowsFallback() {
-            EngineDefaults.clear()
-            defer { EngineDefaults.clear() }
-
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: store)
 
             store.isAutomatic = true
@@ -130,7 +129,6 @@ extension AllCoreTests {
             #expect(ArchiveEngineSelector7zip().allowsEngineFallback == false)
             #expect(ArchiveEngineSelectorXad().allowsEngineFallback == false)
             #expect(ArchiveEngineSelectorSwc().allowsEngineFallback == false)
-            #expect(ArchiveEngineSelectorAutomatic(.xad).allowsEngineFallback)
         }
     }
 }

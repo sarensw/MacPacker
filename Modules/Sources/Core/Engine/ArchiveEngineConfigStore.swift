@@ -24,6 +24,9 @@ public final class ArchiveEngineConfigStore: @unchecked Sendable {
     private static let automaticKey = "automaticEngineSelection"
 
     private let catalog: ArchiveTypeCatalogProtocol
+    /// Where the settings live. Injectable so tests can hand in an isolated
+    /// suite instead of mutating the real user's preferences.
+    private let defaults: UserDefaults
     /// formatId -> selected engine override
     private var overrides: [String: ArchiveEngineType] = [:]
 
@@ -39,12 +42,16 @@ public final class ArchiveEngineConfigStore: @unchecked Sendable {
     public var isAutomatic: Bool {
         didSet {
             guard isAutomatic != oldValue else { return }
-            UserDefaults.standard.set(isAutomatic, forKey: Self.automaticKey)
+            defaults.set(isAutomatic, forKey: Self.automaticKey)
         }
     }
 
-    public init(catalog: ArchiveTypeCatalogProtocol) {
+    public init(
+        catalog: ArchiveTypeCatalogProtocol,
+        defaults: UserDefaults = .standard
+    ) {
         self.catalog = catalog
+        self.defaults = defaults
         self.isAutomatic = true
         load()
     }
@@ -83,7 +90,7 @@ public final class ArchiveEngineConfigStore: @unchecked Sendable {
         let cfg = overrides.map { PersistedEngineConfig(formatId: $0.key, engineId: $0.value) }
         do {
             let data = try JSONEncoder().encode(cfg)
-            UserDefaults.standard.set(data, forKey: Self.overridesKey)
+            defaults.set(data, forKey: Self.overridesKey)
         } catch {
             // up to you how noisy this should be
             print("Failed to save archive engine overrides: \(error)")
@@ -91,8 +98,6 @@ public final class ArchiveEngineConfigStore: @unchecked Sendable {
     }
     
     private func load() {
-        let defaults = UserDefaults.standard
-
         if let data = defaults.data(forKey: Self.overridesKey),
            let decoded = try? JSONDecoder().decode([PersistedEngineConfig].self, from: data) {
             var result: [String: ArchiveEngineType] = [:]

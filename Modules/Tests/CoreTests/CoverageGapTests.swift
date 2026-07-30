@@ -499,7 +499,7 @@ extension AllCoreTests {
 
         @Test func setAndRetrieveOverride() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             // Overrides only apply when the user is choosing; automatic mode
             // deliberately ignores them (see AutomaticEngineSelectionTests).
             store.isAutomatic = false
@@ -515,7 +515,7 @@ extension AllCoreTests {
 
         @Test func engineOptionsReturnsFromCatalog() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let options = store.engineOptions(for: "zip")
             #expect(!options.isEmpty)
         }
@@ -800,7 +800,7 @@ extension AllCoreTests {
 
         @Test func engineForXadType() {
             let catalog = ArchiveTypeCatalog()
-            let configStore = ArchiveEngineConfigStore(catalog: catalog)
+            let configStore = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: configStore)
             let engine = selector.engine(for: .xad)
             #expect(engine is ArchiveXadEngine)
@@ -808,7 +808,7 @@ extension AllCoreTests {
 
         @Test func engineForSwcType() {
             let catalog = ArchiveTypeCatalog()
-            let configStore = ArchiveEngineConfigStore(catalog: catalog)
+            let configStore = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: configStore)
             let engine = selector.engine(for: .swc)
             #expect(engine is ArchiveSwcEngine)
@@ -989,7 +989,7 @@ extension AllCoreTests {
 
         @Test func engineTypeForNonexistentReturnsNil() {
             let catalog = ArchiveTypeCatalog()
-            let configStore = ArchiveEngineConfigStore(catalog: catalog)
+            let configStore = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: configStore)
             let result = selector.engineType(for: "completely_unknown_format_xyz")
             #expect(result == nil)
