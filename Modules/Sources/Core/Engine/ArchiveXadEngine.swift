@@ -34,7 +34,7 @@ private final class XADArchiveWithPasswordSupport {
             if openError == XADPasswordError
                 || Self.passwordSuspectErrors.contains(openError) {
                 throw ArchiveError.invalidArchive(
-                    "Could not open \(url.lastPathComponent) with the XAD engine. If the archive has an encrypted header, switch to 7-Zip in Settings.")
+                    "Could not open \(url.lastPathComponent) with the XAD engine. If the archive has an encrypted header, switch to 7-Zip in Settings \u{2192} Archive Formats, or turn on Automatic engine selection.")
             }
             throw ArchiveError.invalidArchive(
                 "Could not open \(url.lastPathComponent) (XAD error \(openError))")

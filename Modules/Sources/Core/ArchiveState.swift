@@ -89,6 +89,13 @@ public class ArchiveState: ObservableObject {
     @Published private(set) public var statusText: String? = nil
     @Published private(set) public var progress: Int? = nil
     @Published private(set) public var error: String? = nil
+    /// Why the last `open(url:)` failed, for the window to show.
+    ///
+    /// Separate from `error`, which extraction also sets — those already report
+    /// through the progress window, so alerting on them too would say everything
+    /// twice. A failed open has no other surface at all: it ends in `reset()`,
+    /// so the window goes back to its empty state and the user sees nothing.
+    @Published private(set) public var openError: String? = nil
     @Published public var isReloadNeeded: Bool = false
     /// Transient state shown in the status bar while a file is dragged over the
     /// window. nil when no drag is active — the normal status-bar info shows then.
@@ -258,6 +265,11 @@ extension ArchiveState {
     
     public func clean() {
         reset()
+    }
+
+    /// Dismisses the failed-open message once the user has seen it.
+    public func clearOpenError() {
+        openError = nil
     }
     
     /// Cancels the current operation which can be either loading the archive or extracting
@@ -688,6 +700,7 @@ extension ArchiveState {
         openTask?.cancel()
         openGeneration += 1
         let generation = openGeneration
+        openError = nil
 
         reset()
         updateStatus(.processing)
@@ -815,11 +828,13 @@ extension ArchiveState {
                 guard generation == self.openGeneration else { return }
                 reset()
                 self.error = message
+                self.openError = message
             } catch {
                 log.error("Failed to open archive", context: ["file": url.lastPathComponent, "error": error.localizedDescription])
                 guard generation == self.openGeneration else { return }
                 reset()
                 self.error = error.localizedDescription
+                self.openError = error.localizedDescription
             }
             
             updateStatus(.done)

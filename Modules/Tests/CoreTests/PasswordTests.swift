@@ -921,6 +921,47 @@ extension AllCoreTests {
             )
         }
 
+        /// A failed open has to leave something the window can show.
+        ///
+        /// With XAD picked by hand and a header-encrypted archive, the log said
+        /// exactly what went wrong and the UI said nothing: `open` ends in
+        /// `reset()`, so the window falls back to its empty state and the user
+        /// sees their drag do nothing at all. `error` was set, but the only thing
+        /// reading it was the Finder compress flow.
+        @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"))
+        func aFailedOpenLeavesSomethingToShowTheUser() async throws {
+            let state = manualState(engine: .xad)
+            state.passwordProvider = { _ in correctPassword }
+            state.open(url: fixture("rar5_encrypted_header.rar"))
+            try await state.openTask?.value
+
+            #expect(state.hasArchive == false)
+            let shown = try #require(state.openError, "nothing for the window to show")
+            #expect(
+                shown.localizedCaseInsensitiveContains("XAD"),
+                "does not name the engine that failed — \(shown)"
+            )
+            #expect(
+                shown.localizedCaseInsensitiveContains("7-Zip")
+                    || shown.localizedCaseInsensitiveContains("automatic"),
+                "does not tell the user what to do about it — \(shown)"
+            )
+        }
+
+        /// And it must not linger: the next open starts clean.
+        @Test func openErrorIsClearedByTheNextOpen() async throws {
+            let state = manualState(engine: .xad)
+            state.passwordProvider = { _ in correctPassword }
+
+            state.open(url: fixture("7z_encrypted_header.7z"))
+            try await state.openTask?.value
+            #expect(state.openError != nil, "expected the first open to fail")
+
+            state.open(url: fixture("zip_zipcrypto.zip"))
+            try await state.openTask?.value
+            #expect(state.openError == nil, "a stale failure survived the next open")
+        }
+
         /// A file the detector cannot place must say so, not fall through with a
         /// blank reason — the log line that started this was useless precisely
         /// because the message was thrown away.
