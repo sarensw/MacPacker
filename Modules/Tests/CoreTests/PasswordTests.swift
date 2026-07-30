@@ -707,13 +707,24 @@ extension AllCoreTests {
     /// archive" could be reported while every engine-level test passed.
     @MainActor struct ProductionOpenPathTests {
 
-        /// Never reads UserDefaults: the engine is a parameter, so the test says
-        /// which engine it is exercising instead of inheriting whatever the
-        /// machine happens to have configured.
-        private func state(engine: ArchiveEngineType) -> ArchiveState {
+        /// Manual mode: the chosen engine is the only engine, exactly as when a
+        /// user has picked one in Settings. These are the project's existing
+        /// single-engine doubles, which inherit `allowsEngineFallback == false`,
+        /// so nothing can silently answer for the engine under test.
+        private func manualState(engine: ArchiveEngineType) -> ArchiveState {
+            let selector: any ArchiveEngineSelectorProtocol = switch engine {
+            case .`7zip`: ArchiveEngineSelector7zip()
+            case .xad:    ArchiveEngineSelectorXad()
+            case .swc:    ArchiveEngineSelectorSwc()
+            }
+            return ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: selector)
+        }
+
+        /// Automatic mode: MacPacker chose `engine`, and may fall back.
+        private func automaticState(engine: ArchiveEngineType) -> ArchiveState {
             ArchiveState(
                 catalog: ArchiveTypeCatalog(),
-                engineSelector: ArchiveEngineSelectorPinned(engine)
+                engineSelector: ArchiveEngineSelectorAutomatic(engine)
             )
         }
 
@@ -738,7 +749,13 @@ extension AllCoreTests {
             // for zip too but only implements LZ4, so it is not an archive
             // reader — see swcCannotReadEncryptedZip.
             for engine in [ArchiveEngineType.`7zip`, .xad] {
-                let state = state(engine: engine)
+                // XAD cannot read a header-encrypted archive at all. Automatic
+                // mode is what rescues those, covered by
+                // fallsBackWhenTheSelectedEngineCannotRead. Asserting them here
+                // would let the fallback masquerade as "XAD works".
+                if engine == .xad && name.contains("encrypted_header") { continue }
+
+                let state = manualState(engine: engine)
                 state.passwordProvider = { _ in password }
                 state.open(url: fixture(name))
                 try await state.openTask?.value
@@ -746,6 +763,12 @@ extension AllCoreTests {
                 #expect(state.error == nil, "\(engine.configId)/\(name): \(state.error ?? "")")
                 #expect(state.hasArchive, "\(engine.configId)/\(name): archive did not open")
                 #expect(!state.entries.isEmpty, "\(engine.configId)/\(name): no entries")
+                // The engine under test must be the one that served it — a
+                // silent fallback has to fail this, not pass it.
+                #expect(
+                    state.activeEngine == engine,
+                    "\(engine.configId)/\(name): served by \(state.activeEngine?.configId ?? "nothing") instead"
+                )
             }
         }
 
@@ -758,7 +781,13 @@ extension AllCoreTests {
         ])
         func opensRarThroughTheProductionSelector(name: String) async throws {
             for engine in [ArchiveEngineType.`7zip`, .xad] {
-                let state = state(engine: engine)
+                // XAD cannot read a header-encrypted archive at all. Automatic
+                // mode is what rescues those, covered by
+                // fallsBackWhenTheSelectedEngineCannotRead. Asserting them here
+                // would let the fallback masquerade as "XAD works".
+                if engine == .xad && name.contains("encrypted_header") { continue }
+
+                let state = manualState(engine: engine)
                 state.passwordProvider = { _ in correctPassword }
                 state.open(url: fixture(name))
                 try await state.openTask?.value
@@ -768,6 +797,12 @@ extension AllCoreTests {
                 #expect(
                     state.entries.values.contains { $0.virtualPath == helloPath },
                     "\(engine.configId)/\(name): \(helloPath) missing after open"
+                )
+                // The engine under test must be the one that served it — a
+                // silent fallback has to fail this, not pass it.
+                #expect(
+                    state.activeEngine == engine,
+                    "\(engine.configId)/\(name): served by \(state.activeEngine?.configId ?? "nothing") instead"
                 )
             }
         }
@@ -789,8 +824,8 @@ extension AllCoreTests {
             ("rar4_encrypted_header.rar", "rar"),
             ("7z_encrypted_header.7z", "7zip")
         ])
-        func opensHeaderEncryptedArchiveWhenXadIsSelected(name: String, formatId: String) async throws {
-            let state = state(engine: .xad)
+        func fallsBackWhenTheChosenEngineCannotRead(name: String, formatId: String) async throws {
+            let state = automaticState(engine: .xad)
             state.passwordProvider = { _ in correctPassword }
             state.open(url: fixture(name))
             try await state.openTask?.value
@@ -801,6 +836,9 @@ extension AllCoreTests {
                 state.entries.values.contains { $0.virtualPath == helloPath },
                 "\(name): \(helloPath) missing after open"
             )
+            // It opened because MacPacker changed engine, not because XAD
+            // suddenly grew the capability.
+            #expect(state.activeEngine == .`7zip`, "\(name): expected the 7-Zip fallback")
         }
 
         /// …and the archive has to stay usable afterwards. Falling back only for
@@ -808,7 +846,7 @@ extension AllCoreTests {
         /// extraction, which is worse than refusing outright.
         @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"))
         func extractsFromHeaderEncryptedArchiveWhenXadIsSelected() async throws {
-            let state = state(engine: .xad)
+            let state = automaticState(engine: .xad)
             state.passwordProvider = { _ in correctPassword }
             state.open(url: fixture("rar5_encrypted_header.rar"))
             try await state.openTask?.value
@@ -816,6 +854,27 @@ extension AllCoreTests {
             let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
             let extracted = try await state.extractToTemp(item: hello)
             #expect(matchesPayload(extracted, helloPath), "extracted contents wrong or empty")
+        }
+
+        /// The other half of the toggle. Same archive, same engine, but the user
+        /// picked it — so MacPacker must report what XAD cannot do instead of
+        /// quietly using a different engine. If this ever starts passing, the
+        /// engine setting has stopped meaning anything.
+        @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"), arguments: [
+            "rar5_encrypted_header.rar", "rar4_encrypted_header.rar", "7z_encrypted_header.7z"
+        ])
+        func doesNotFallBackWhenTheUserPickedTheEngine(name: String) async throws {
+            let state = manualState(engine: .xad)
+            state.passwordProvider = { _ in correctPassword }
+            state.open(url: fixture(name))
+            try await state.openTask?.value
+
+            #expect(state.hasArchive == false, "\(name): opened despite manual XAD")
+            let message = try #require(state.error, "\(name): failed with no reason")
+            #expect(
+                message.localizedCaseInsensitiveContains("7-Zip"),
+                "\(name): message does not point anywhere useful — \(message)"
+            )
         }
 
         /// A file the detector cannot place must say so, not fall through with a
@@ -827,7 +886,7 @@ extension AllCoreTests {
             let bogus = dir.appendingPathComponent("not-an-archive.bin")
             try Data(repeating: 0x5A, count: 4096).write(to: bogus)
 
-            let state = state(engine: .`7zip`)
+            let state = manualState(engine: .`7zip`)
             state.open(url: bogus)
             try await state.openTask?.value
 

@@ -24,6 +24,8 @@ struct FormatSettingsView: View {
     @State private var selection: ArchiveFormatSettings.ID?
     
     @State private var showEngineInfo: Bool = false
+    /// Mirrors the store so the toggle and the picker enablement update together.
+    @State private var isAutomatic: Bool = true
     
     private func isDefaultHandler(forUTI uti: String, bundleID: String) -> Bool {
         guard let handler = LSCopyDefaultRoleHandlerForContentType(
@@ -88,10 +90,40 @@ struct FormatSettingsView: View {
         alert.runModal()
     }
     
+    /// Automatic engine selection. Most people neither know nor care which
+    /// engine opens their archive, so MacPacker picks — and can switch to
+    /// another engine when the preferred one can't read a particular file.
+    /// Turning this off hands the choice back and makes it binding.
+    private var automaticBinding: Binding<Bool> {
+        Binding<Bool>(
+            get: { isAutomatic },
+            set: { newValue in
+                isAutomatic = newValue
+                appState.archiveEngineConfigStore.isAutomatic = newValue
+                // The Engine column shows the catalog defaults again in
+                // automatic mode, so the table has to be re-read.
+                refreshFormatConfig()
+            }
+        )
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Toggle(isOn: automaticBinding) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Automatic engine selection")
+                    Text("MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself.", comment: "Explains the automatic engine selection toggle in the archive format settings")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .toggleStyle(.switch)
+            .padding(.bottom, 4)
+
+            Divider()
+
             Text("Default status & engine settings:")
-            
+
             Table(rows, selection: $selection) {
                 TableColumn(String("")) {
                     defaultToggle(identifier: $0.id, defaultOpen: $0.defaultOpen)
@@ -161,10 +193,12 @@ struct FormatSettingsView: View {
         .padding()
         .frame(minHeight: 400)
         .onAppear {
+            isAutomatic = appState.archiveEngineConfigStore.isAutomatic
+
             if !rows.isEmpty {
                 return
             }
-            
+
             refreshFormatConfig()
         }
     }
@@ -218,6 +252,9 @@ struct FormatSettingsView: View {
         .labelsHidden()
         .pickerStyle(.menu)
         .controlSize(.small)
+        // In automatic mode the column shows what MacPacker picked; editing it
+        // would imply a choice that is not being honoured.
+        .disabled(isAutomatic)
     }
 }
 

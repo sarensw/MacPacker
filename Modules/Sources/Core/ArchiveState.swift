@@ -55,6 +55,11 @@ public class ArchiveState: ObservableObject {
     @Published private(set) public var ext: String?
     @Published private(set) public var uncompressedSize: Int64?
     @Published private(set) public var isEncrypted: Bool? = false
+    /// The engine that actually read this archive. Usually the chosen one, but
+    /// not when automatic mode fell back because the chosen engine cannot read
+    /// this particular archive — so it is the honest answer to "which engine am
+    /// I looking at?", for the UI and for tests.
+    @Published private(set) public var activeEngine: ArchiveEngineType?
     
     // Full list of entries
     @Published private(set) public var entries: [UUID: ArchiveItem] = [:]
@@ -110,7 +115,7 @@ public class ArchiveState: ObservableObject {
     private var effectiveEngineSelector: ArchiveEngineSelectorProtocol {
         pinnedEngines.isEmpty
             ? archiveEngineSelector
-            : PinnedEngineSelector(base: archiveEngineSelector, pinned: pinnedEngines)
+            : AutomaticEngineSelector(base: archiveEngineSelector, pinned: pinnedEngines)
     }
     private let archiveTypeDetector: ArchiveTypeDetector
     
@@ -239,6 +244,7 @@ extension ArchiveState {
         
         self.passwords = [:]
         self.pinnedEngines = [:]
+        self.activeEngine = nil
         
         updateStatus(.idle)
         
@@ -732,6 +738,7 @@ extension ArchiveState {
                 // The loader may have fallen back to another engine because the
                 // configured one cannot read this archive. Pin it, or the first
                 // extraction would resolve the failing engine all over again.
+                self.activeEngine = loaderResult.engineType
                 if let used = loaderResult.engineType,
                    used != archiveEngineSelector.engineType(for: loaderResult.type.id) {
                     pinnedEngines[loaderResult.type.id] = used

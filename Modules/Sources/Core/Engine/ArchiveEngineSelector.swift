@@ -68,6 +68,20 @@ public protocol ArchiveEngineSelectorProtocol: Sendable {
     func engine(for id: String) -> ArchiveEngine?
     func engine(for type: ArchiveEngineType) -> ArchiveEngine
     func engineType(for id: String) -> ArchiveEngineType?
+
+    /// Whether the loader may try another engine when the selected one cannot
+    /// read an archive at all.
+    ///
+    /// Only true in automatic mode. When the user has picked engines themselves,
+    /// the pick is an instruction: the selected engine is the engine that runs,
+    /// and whatever it cannot do is reported rather than routed around.
+    var allowsEngineFallback: Bool { get }
+}
+
+public extension ArchiveEngineSelectorProtocol {
+    /// Defaults to off, so a selector that pins one engine — every test double
+    /// does — stays strict without having to say so.
+    var allowsEngineFallback: Bool { false }
 }
 
 public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
@@ -76,7 +90,13 @@ public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
     public init(catalog: ArchiveTypeCatalog, configStore: ArchiveEngineConfigStore) {
         archiveEngineConfigStore = configStore
     }
-    
+
+    /// Only when MacPacker is choosing the engine. If the user picked it, the
+    /// pick stands and its limits are reported instead of worked around.
+    public var allowsEngineFallback: Bool {
+        archiveEngineConfigStore.isAutomatic
+    }
+
     public func engine(for id: String) -> ArchiveEngine? {
         if let engineId = archiveEngineConfigStore.selectedEngine(for: id) {
             log.debug("Using engine: \(engineId)")

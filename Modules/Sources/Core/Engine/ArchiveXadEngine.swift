@@ -31,7 +31,8 @@ private final class XADArchiveWithPasswordSupport {
             // genuinely damaged archive gets, so we can't state the cause —
             // only name it as the likely one. Either way 7-Zip is the engine
             // that can read it, or say properly that it can't.
-            if openError == XADDecrunchError || openError == XADPasswordError {
+            if openError == XADPasswordError
+                || Self.passwordSuspectErrors.contains(openError) {
                 throw ArchiveError.invalidArchive(
                     "Could not open \(url.lastPathComponent) with the XAD engine. If the archive has an encrypted header, switch to 7-Zip in Settings.")
             }

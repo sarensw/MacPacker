@@ -565,6 +565,9 @@ extension AllCoreTests {
                 return
             }
 
+            // Overrides only apply when the user is choosing; automatic mode
+            // deliberately ignores them (see AutomaticEngineSelectionTests).
+            store.isAutomatic = false
             store.setSelectedEngine(engineType, for: "zip")
             let selected = store.selectedEngine(for: "zip")
             #expect(selected == engineType)

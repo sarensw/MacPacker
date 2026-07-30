@@ -286,6 +286,17 @@ final actor ArchiveLoader {
             }
             return (result, selectedType)
         } catch ArchiveError.invalidArchive(let reason) {
+            // Manual mode: the user chose this engine, so its limits are the
+            // answer, not something to route around.
+            guard archiveEngineSelector.allowsEngineFallback else {
+                log.notice("Engine cannot read archive, fallback disabled", context: [
+                    "file": url.lastPathComponent,
+                    "engine": selectedType?.configId ?? "unknown",
+                    "reason": reason
+                ])
+                throw ArchiveError.invalidArchive(reason)
+            }
+
             let alternatives = type.engines
                 .compactMap { ArchiveEngineType(configId: $0.id) }
                 .filter { $0 != selectedType }

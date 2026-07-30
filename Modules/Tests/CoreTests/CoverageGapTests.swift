@@ -500,6 +500,9 @@ extension AllCoreTests {
         @Test func setAndRetrieveOverride() {
             let catalog = ArchiveTypeCatalog()
             let store = ArchiveEngineConfigStore(catalog: catalog)
+            // Overrides only apply when the user is choosing; automatic mode
+            // deliberately ignores them (see AutomaticEngineSelectionTests).
+            store.isAutomatic = false
 
             // Set an override
             store.setSelectedEngine(.xad, for: "zip")
