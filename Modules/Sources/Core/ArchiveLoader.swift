@@ -25,6 +25,10 @@ struct ArchiveLoaderLoadResult: Sendable {
     let hasTree: Bool
     /// True when at least one entry in the archive is encrypted.
     let isEncrypted: Bool
+    /// The engine that actually read the archive. Differs from the configured
+    /// one when the loader had to fall back; the caller pins it so extraction
+    /// uses the same engine.
+    let engineType: ArchiveEngineType?
     /// For a split archive, the resolved first volume — so the window shows the
     /// canonical `.z01`/`.zip.001` regardless of which part was opened. nil otherwise.
     let firstVolumeURL: URL?
@@ -219,12 +223,11 @@ final actor ArchiveLoader {
         defer { forwardTask.cancel() }
         
         // set the entries
-        let engineLoadResult = try await Sandbox.access(url: archiveUrl) {
-            try await engine.loadArchive(
-                url: archiveUrl,
-                passwordResolver: passwordResolver
-            )
-        }
+        let (engineLoadResult, usedEngine) = try await loadArchiveWithFallback(
+            url: archiveUrl,
+            type: detectorResult.type,
+            selected: engine
+        )
         self.entries = engineLoadResult.items
         yield(.processing(progress: nil, message: "entries found: \(self.entries.count)"))
         
@@ -252,11 +255,63 @@ final actor ArchiveLoader {
             uncompressedSize: engineLoadResult.uncompressedSize,
             hasTree: engineLoadResult.hasTree,
             isEncrypted: engineLoadResult.isEncrypted,
+            engineType: usedEngine,
             firstVolumeURL: firstVolumeURL
         )
         return result
     }
     
+    /// Reads the archive with the configured engine, falling back to the other
+    /// engines the catalog lists for the format if that one simply cannot open
+    /// it.
+    ///
+    /// A format's engines are not interchangeable per archive: XAD is a valid
+    /// choice for `rar` and `7zip` but cannot open a header-encrypted archive of
+    /// either, so a user with XAD selected got "Unsupported or invalid archive"
+    /// for a file 7-Zip reads fine. Telling them to change a setting is a poor
+    /// answer when the app can just use the engine that works.
+    ///
+    /// Only `invalidArchive` triggers a retry — that is the engine saying "I
+    /// can't read this". A cancelled password prompt or a genuine extraction
+    /// error is final, so the user is never asked for a password twice.
+    private func loadArchiveWithFallback(
+        url: URL,
+        type: ArchiveTypeDto,
+        selected: any ArchiveEngine
+    ) async throws -> (ArchiveEngineLoadResult, ArchiveEngineType?) {
+        let selectedType = archiveEngineSelector.engineType(for: type.id)
+        do {
+            let result = try await Sandbox.access(url: url) {
+                try await selected.loadArchive(url: url, passwordResolver: passwordResolver)
+            }
+            return (result, selectedType)
+        } catch ArchiveError.invalidArchive(let reason) {
+            let alternatives = type.engines
+                .compactMap { ArchiveEngineType(configId: $0.id) }
+                .filter { $0 != selectedType }
+
+            for candidate in alternatives {
+                let engine = archiveEngineSelector.engine(for: candidate)
+                do {
+                    let result = try await Sandbox.access(url: url) {
+                        try await engine.loadArchive(url: url, passwordResolver: passwordResolver)
+                    }
+                    log.notice("Engine fallback", context: [
+                        "file": url.lastPathComponent,
+                        "from": selectedType?.configId ?? "unknown",
+                        "to": candidate.configId,
+                        "reason": reason
+                    ])
+                    self.engine = engine
+                    return (result, candidate)
+                } catch {
+                    continue
+                }
+            }
+            throw ArchiveError.invalidArchive(reason)
+        }
+    }
+
     /// Builds the hierarchy from the list of entries for the given root. The root can be the entry of the opened
     /// archive, or an item in the archive that is an archive itself
     /// - Parameter root: root to attache the tree to

@@ -100,6 +100,18 @@ public class ArchiveState: ObservableObject {
     
     private let catalog: ArchiveTypeCatalog
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
+    /// Formats whose configured engine could not open *this* archive, mapped to
+    /// the engine that could. Set by the loader's fallback and used for every
+    /// later lookup so extraction does not resolve back to the engine that
+    /// already failed. Cleared on reset with the rest of the archive state.
+    private var pinnedEngines: [String: ArchiveEngineType] = [:]
+
+    /// The selector everything downstream should use.
+    private var effectiveEngineSelector: ArchiveEngineSelectorProtocol {
+        pinnedEngines.isEmpty
+            ? archiveEngineSelector
+            : PinnedEngineSelector(base: archiveEngineSelector, pinned: pinnedEngines)
+    }
     private let archiveTypeDetector: ArchiveTypeDetector
     
     private var tempDirectories: [URL] = []
@@ -226,6 +238,7 @@ extension ArchiveState {
         self.archiveLoader = nil
         
         self.passwords = [:]
+        self.pinnedEngines = [:]
         
         updateStatus(.idle)
         
@@ -675,7 +688,7 @@ extension ArchiveState {
                 let passwordResolver = makePasswordResolver()
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: self.archiveTypeDetector,
-                    archiveEngineSelector: self.archiveEngineSelector,
+                    archiveEngineSelector: self.effectiveEngineSelector,
                     passwordResolver: passwordResolver,
                     folderAccessResolver: makeFolderAccessResolver()
                 )
@@ -716,6 +729,18 @@ extension ArchiveState {
                 
                 self.uncompressedSize = loaderResult.uncompressedSize
                 self.isEncrypted = loaderResult.isEncrypted
+                // The loader may have fallen back to another engine because the
+                // configured one cannot read this archive. Pin it, or the first
+                // extraction would resolve the failing engine all over again.
+                if let used = loaderResult.engineType,
+                   used != archiveEngineSelector.engineType(for: loaderResult.type.id) {
+                    pinnedEngines[loaderResult.type.id] = used
+                    log.notice("Engine pinned for this archive", context: [
+                        "file": url.lastPathComponent,
+                        "type": loaderResult.type.id,
+                        "engine": used.configId
+                    ])
+                }
 
                 updateStatusText("building tree...")
                 
@@ -888,11 +913,11 @@ extension ArchiveState {
         // default preview or treat it as an archive
         let passwordResolver = makePasswordResolver()
         let archiveExtractor = ArchiveExtractor(
-            archiveEngineSelector: self.archiveEngineSelector,
+            archiveEngineSelector: self.effectiveEngineSelector,
             passwordResolver: passwordResolver
         )
         let batchResolver = ArchiveBatchResolver()
-        guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: self.archiveEngineSelector).first else {
+        guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: self.effectiveEngineSelector).first else {
             throw ArchiveError.extractionFailed("Could not resolve batch for extraction")
         }
         let archiveExtractionResult = try await archiveExtractor.extract(
@@ -917,7 +942,7 @@ extension ArchiveState {
         if let detectionResult = (detectUsingExtensionOnly
             ? archiveTypeDetector.detectByExtension(for: tempUrl, considerComposition: true)
             : archiveTypeDetector.detect(for: tempUrl, considerComposition: true)),
-           let engine = archiveEngineSelector.engine(for: detectionResult.type.id) {
+           let engine = effectiveEngineSelector.engine(for: detectionResult.type.id) {
             
             // set the services required for this nested archive
             item.set(
@@ -954,7 +979,7 @@ extension ArchiveState {
                 let passwordResolver = makePasswordResolver()
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: self.archiveTypeDetector,
-                    archiveEngineSelector: self.archiveEngineSelector,
+                    archiveEngineSelector: self.effectiveEngineSelector,
                     passwordResolver: passwordResolver,
                     folderAccessResolver: makeFolderAccessResolver()
                 )
@@ -1010,12 +1035,12 @@ extension ArchiveState {
     /// - Returns: url of the extracted item in the temp location
     public func extractToTemp(item: ArchiveItem) async throws -> URL {
         let batchResolver = ArchiveBatchResolver()
-        let batches = try batchResolver.resolveBatches(for: [item], in: entries, using: archiveEngineSelector)
+        let batches = try batchResolver.resolveBatches(for: [item], in: entries, using: effectiveEngineSelector)
         guard let batch = batches.first else {
             throw ArchiveError.extractionFailed("Could not resolve batch")
         }
         let extractor = ArchiveExtractor(
-            archiveEngineSelector: archiveEngineSelector,
+            archiveEngineSelector: effectiveEngineSelector,
             passwordResolver: makePasswordResolver()
         )
         let result = try await extractor.extract(batch: batch)
@@ -1076,11 +1101,11 @@ extension ArchiveState {
         let cancelFlag = ExtractionCancelFlag()
         let work = Task {
             let batchResolver = ArchiveBatchResolver()
-            guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: archiveEngineSelector).first else {
+            guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: effectiveEngineSelector).first else {
                 throw ArchiveError.extractionFailed("Could not resolve batch")
             }
             let extractor = ArchiveExtractor(
-                archiveEngineSelector: archiveEngineSelector,
+                archiveEngineSelector: effectiveEngineSelector,
                 passwordResolver: makePasswordResolver(),
                 onTempDirectoryCreated: { tempUrl in
                     tempDirs.add(tempUrl)
@@ -1135,7 +1160,7 @@ extension ArchiveState {
 
         let tempDirs = ExtractionTempDirectories()
         let extractor = ArchiveExtractor(
-            archiveEngineSelector: archiveEngineSelector,
+            archiveEngineSelector: effectiveEngineSelector,
             passwordResolver: makePasswordResolver(),
             onTempDirectoryCreated: { url in
                 tempDirs.add(url)
@@ -1153,7 +1178,7 @@ extension ArchiveState {
         let cancelFlag = ExtractionCancelFlag()
         let task = Task {
             do {
-                let batches = try batchResolver.resolveBatches(for: items, in: entries, using: archiveEngineSelector)
+                let batches = try batchResolver.resolveBatches(for: items, in: entries, using: effectiveEngineSelector)
                 let result = try await extractor.extract(
                     batches: batches,
                     to: destination,
@@ -1209,7 +1234,7 @@ extension ArchiveState {
                 }
 
                 let extractor = ArchiveExtractor(
-                    archiveEngineSelector: archiveEngineSelector,
+                    archiveEngineSelector: effectiveEngineSelector,
                     passwordResolver: makePasswordResolver()
                 )
                 try await extractor.extractAll(
@@ -1252,7 +1277,7 @@ extension ArchiveState {
         updateStatus(.processing)
         
         let extractor = ArchiveExtractor(
-            archiveEngineSelector: archiveEngineSelector,
+            archiveEngineSelector: effectiveEngineSelector,
             passwordResolver: makePasswordResolver()
         )
         let batchResolver = ArchiveBatchResolver()
@@ -1263,7 +1288,7 @@ extension ArchiveState {
                     let batch = try batchResolver.resolveBatches(
                         for: [selectedItem],
                         in: entries,
-                        using: archiveEngineSelector
+                        using: effectiveEngineSelector
                     ).first
                 {
                     

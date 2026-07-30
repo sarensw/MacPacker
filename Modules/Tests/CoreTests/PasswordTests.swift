@@ -707,13 +707,14 @@ extension AllCoreTests {
     /// archive" could be reported while every engine-level test passed.
     @MainActor struct ProductionOpenPathTests {
 
-        private func productionState() -> ArchiveState {
-            let catalog = ArchiveTypeCatalog()
-            let selector = ArchiveEngineSelector(
-                catalog: catalog,
-                configStore: ArchiveEngineConfigStore(catalog: catalog)
+        /// Never reads UserDefaults: the engine is a parameter, so the test says
+        /// which engine it is exercising instead of inheriting whatever the
+        /// machine happens to have configured.
+        private func state(engine: ArchiveEngineType) -> ArchiveState {
+            ArchiveState(
+                catalog: ArchiveTypeCatalog(),
+                engineSelector: ArchiveEngineSelectorPinned(engine)
             )
-            return ArchiveState(catalog: catalog, engineSelector: selector)
         }
 
         /// Every encrypted fixture must open through the real selector — no
@@ -733,14 +734,19 @@ extension AllCoreTests {
             default: password = correctPassword
             }
 
-            let state = productionState()
-            state.passwordProvider = { _ in password }
-            state.open(url: fixture(name))
-            try await state.openTask?.value
+            // Both engines the catalog offers for these formats. SWC is listed
+            // for zip too but only implements LZ4, so it is not an archive
+            // reader — see swcCannotReadEncryptedZip.
+            for engine in [ArchiveEngineType.`7zip`, .xad] {
+                let state = state(engine: engine)
+                state.passwordProvider = { _ in password }
+                state.open(url: fixture(name))
+                try await state.openTask?.value
 
-            #expect(state.error == nil, "\(name): \(state.error ?? "")")
-            #expect(state.hasArchive, "\(name): archive did not open")
-            #expect(!state.entries.isEmpty, "\(name): no entries")
+                #expect(state.error == nil, "\(engine.configId)/\(name): \(state.error ?? "")")
+                #expect(state.hasArchive, "\(engine.configId)/\(name): archive did not open")
+                #expect(!state.entries.isEmpty, "\(engine.configId)/\(name): no entries")
+            }
         }
 
         /// Same, for RAR — the format the failure was reported against. RAR has
@@ -751,7 +757,40 @@ extension AllCoreTests {
             "rar4_aes.rar", "rar4_encrypted_header.rar"
         ])
         func opensRarThroughTheProductionSelector(name: String) async throws {
-            let state = productionState()
+            for engine in [ArchiveEngineType.`7zip`, .xad] {
+                let state = state(engine: engine)
+                state.passwordProvider = { _ in correctPassword }
+                state.open(url: fixture(name))
+                try await state.openTask?.value
+
+                #expect(state.error == nil, "\(engine.configId)/\(name): \(state.error ?? "")")
+                #expect(state.hasArchive, "\(engine.configId)/\(name): archive did not open")
+                #expect(
+                    state.entries.values.contains { $0.virtualPath == helloPath },
+                    "\(engine.configId)/\(name): \(helloPath) missing after open"
+                )
+            }
+        }
+
+        /// Reported from the app: dropping `rar5_encrypted_header.rar` in gave
+        /// "Unsupported or invalid archive". The logs showed why —
+        /// `Engine selected engine: xad` — because the user had XAD chosen for
+        /// RAR, and XAD cannot open a header-encrypted archive at all.
+        ///
+        /// The tests above missed it because a fresh test process has no
+        /// `archiveEngineConfigs` override, so the selector fell back to the
+        /// catalog default (7-Zip), which handles these fine. The override is
+        /// what makes it fail.
+        ///
+        /// 7-Zip is listed for both formats and can read them, so the app should
+        /// use it rather than dead-ending on a settings hint.
+        @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"), arguments: [
+            ("rar5_encrypted_header.rar", "rar"),
+            ("rar4_encrypted_header.rar", "rar"),
+            ("7z_encrypted_header.7z", "7zip")
+        ])
+        func opensHeaderEncryptedArchiveWhenXadIsSelected(name: String, formatId: String) async throws {
+            let state = state(engine: .xad)
             state.passwordProvider = { _ in correctPassword }
             state.open(url: fixture(name))
             try await state.openTask?.value
@@ -764,6 +803,21 @@ extension AllCoreTests {
             )
         }
 
+        /// …and the archive has to stay usable afterwards. Falling back only for
+        /// the listing would open the window and then fail on the first
+        /// extraction, which is worse than refusing outright.
+        @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"))
+        func extractsFromHeaderEncryptedArchiveWhenXadIsSelected() async throws {
+            let state = state(engine: .xad)
+            state.passwordProvider = { _ in correctPassword }
+            state.open(url: fixture("rar5_encrypted_header.rar"))
+            try await state.openTask?.value
+
+            let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
+            let extracted = try await state.extractToTemp(item: hello)
+            #expect(matchesPayload(extracted, helloPath), "extracted contents wrong or empty")
+        }
+
         /// A file the detector cannot place must say so, not fall through with a
         /// blank reason — the log line that started this was useless precisely
         /// because the message was thrown away.
@@ -773,7 +827,7 @@ extension AllCoreTests {
             let bogus = dir.appendingPathComponent("not-an-archive.bin")
             try Data(repeating: 0x5A, count: 4096).write(to: bogus)
 
-            let state = productionState()
+            let state = state(engine: .`7zip`)
             state.open(url: bogus)
             try await state.openTask?.value
 
