@@ -85,7 +85,13 @@ private final class XADArchiveWithPasswordSupport {
 
             // blocking XADMaster call — keep it off the cooperative pool
             let value = try await runBlocking { operation() }
+            // Captured together, before anything else touches the archive.
+            // `hasEncryptedEntry` below calls numberOfEntries()/entryIsEncrypted(),
+            // and if either of those fails it overwrites XAD's lastError — so
+            // re-reading it at the throw could report the probe's failure instead
+            // of the one that actually ended the operation.
             let error = archive.lastError()
+            let errorDescription = archive.describeLastError() ?? ""
 
             // success
             if error == 0 {
@@ -132,10 +138,7 @@ private final class XADArchiveWithPasswordSupport {
             }
             
             // Anything else is a real failure, not something a password fixes.
-            throw ArchiveError.xadError(
-                archive.lastError(),
-                archive.describeLastError()
-            )
+            throw ArchiveError.xadError(error, errorDescription)
         }
     }
     
