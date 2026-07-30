@@ -451,7 +451,7 @@ let package = Package(
                 .copy("TestArchives/lzx"),
                 .copy("TestArchives/stuffit"),
                 .copy("TestArchives/zip"),
-                .copy("Fixtures/password")
+                .copy("TestArchives/password")
             ]
         )
     ]

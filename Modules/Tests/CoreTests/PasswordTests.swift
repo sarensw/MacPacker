@@ -85,6 +85,12 @@ private func engines() -> [(name: String, engine: any ArchiveEngine)] {
     [("7zip", Archive7ZipEngine()), ("xad", ArchiveXadEngine())]
 }
 
+/// True once the RAR fixtures have been committed. They can only be built on a
+/// machine with `rar`, so the RAR suite skips rather than fails until then.
+private var rarFixturesAvailable: Bool {
+    FileManager.default.fileExists(atPath: fixture("rar5_aes.rar").path)
+}
+
 extension AllCoreTests {
 
     // MARK: - Correct password produces real contents
@@ -504,6 +510,103 @@ extension AllCoreTests {
             #expect(contents(of: try #require(result[secret])) == helloContents)
             let prompted = await answers.callCount
             #expect(prompted == 1, "prompted \(prompted) times")
+        }
+    }
+
+    // MARK: - RAR
+
+    /// Encrypted RAR, which neither engine has ever been tested against.
+    ///
+    /// RAR5 derives its key with PBKDF2-HMAC-SHA256 and RAR3/4 with SHA-1 — both
+    /// through the 7-Zip crypto that was silently broken until v0.18.2 — so this
+    /// is the one encrypted format still taken on faith.
+    ///
+    /// The fixtures cannot be built on macOS (`rar` is not redistributable);
+    /// `TestArchives/password/make_rar_fixtures.sh` creates them on a machine that
+    /// has it. Until they are committed these tests skip instead of failing, and
+    /// they have never been executed — treat a first failure as "the assertion
+    /// might be wrong", not only "the code is wrong".
+    @MainActor
+    @Suite(.enabled(if: rarFixturesAvailable, "RAR fixtures not committed yet — see make_rar_fixtures.sh"))
+    struct EncryptedRarTests {
+
+        @Test(arguments: [
+            "rar5_aes.rar", "rar5_header_encrypted.rar",
+            "rar4_aes.rar", "rar4_header_encrypted.rar"
+        ])
+        func extractsEncryptedRarEntryWithCorrectPassword(name: String) async throws {
+            for (engineName, engine) in engines() {
+                let answers = PasswordAnswers.always(correctPassword)
+                let url = fixture(name)
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+                let hello = try #require(
+                    load.items.values.first { $0.virtualPath == "hello.txt" },
+                    "\(engineName)/\(name): hello.txt missing from listing"
+                )
+
+                let result = try await engine.extract(
+                    items: [hello],
+                    from: url,
+                    to: destination,
+                    passwordResolver: answers.resolver
+                )
+
+                let extracted = try #require(result[hello], "\(engineName)/\(name): no url returned")
+                #expect(
+                    contents(of: extracted) == helloContents,
+                    "\(engineName)/\(name): extracted contents wrong or file empty"
+                )
+            }
+        }
+
+        @Test(arguments: ["rar5_aes.rar", "rar4_aes.rar"])
+        func wrongPasswordOnRarIsRepromptedThenSucceeds(name: String) async throws {
+            for (engineName, engine) in engines() {
+                let answers = PasswordAnswers("wrong-first-try", correctPassword)
+                let url = fixture(name)
+                let destination = try tempDirectory()
+                defer { try? FileManager.default.removeItem(at: destination) }
+
+                let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
+                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+
+                let result = try await engine.extract(
+                    items: [hello],
+                    from: url,
+                    to: destination,
+                    passwordResolver: answers.resolver
+                )
+
+                #expect(
+                    contents(of: try #require(result[hello])) == helloContents,
+                    "\(engineName)/\(name): retry with the right password did not recover"
+                )
+            }
+        }
+
+        /// `rar -hp` encrypts the header, so the listing itself needs the
+        /// password — the RAR equivalent of 7z `-mhe=on`.
+        @Test(arguments: ["rar5_header_encrypted.rar", "rar4_header_encrypted.rar"])
+        func headerEncryptedRarListsOnlyWithPassword(name: String) async throws {
+            let answers = PasswordAnswers.always(correctPassword)
+            let load = try await Archive7ZipEngine().loadArchive(
+                url: fixture(name),
+                passwordResolver: answers.resolver
+            )
+            #expect(load.items.values.contains { $0.virtualPath == "hello.txt" }, "\(name)")
+
+            let prompted = await answers.callCount
+            #expect(prompted >= 1, "\(name): header-encrypted listing did not ask for a password")
+
+            await #expect(throws: (any Error).self, "\(name): listed without a password") {
+                _ = try await Archive7ZipEngine().loadArchive(
+                    url: fixture(name),
+                    passwordResolver: neverResolves
+                )
+            }
         }
     }
 
