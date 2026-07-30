@@ -695,6 +695,93 @@ extension AllCoreTests {
         }
     }
 
+    // MARK: - The path the app actually takes
+
+    /// Everything else here pins an engine with a test-only selector. The app
+    /// does not: it runs `ArchiveState.open(url:)` against the production
+    /// `ArchiveEngineSelector`, which resolves the engine from the catalog and
+    /// the user's settings, after `ArchiveTypeDetector` has identified the file.
+    ///
+    /// That whole strip — detection, engine resolution, the loader — had no
+    /// coverage, which is how "rar4_encrypted_header.rar: Unsupported or invalid
+    /// archive" could be reported while every engine-level test passed.
+    @MainActor struct ProductionOpenPathTests {
+
+        private func productionState() -> ArchiveState {
+            let catalog = ArchiveTypeCatalog()
+            let selector = ArchiveEngineSelector(
+                catalog: catalog,
+                configStore: ArchiveEngineConfigStore(catalog: catalog)
+            )
+            return ArchiveState(catalog: catalog, engineSelector: selector)
+        }
+
+        /// Every encrypted fixture must open through the real selector — no
+        /// "unsupported or invalid archive", and the entries must actually land.
+        @Test(arguments: [
+            "zip_zipcrypto.zip", "zip_aes256.zip", "zip_aes128.zip", "zip_mixed.zip",
+            "zip_unicode_pw.zip", "zip_symbol_pw.zip", "zip_long_pw.zip",
+            "zip_nested_outer.zip",
+            "7z_aes256.7z", "7z_encrypted_header.7z", "7z_symbol_pw.7z"
+        ])
+        func opensThroughTheProductionSelector(name: String) async throws {
+            let password: String
+            switch name {
+            case "zip_unicode_pw.zip": password = unicodePassword
+            case "zip_symbol_pw.zip", "7z_symbol_pw.7z": password = symbolPassword
+            case "zip_long_pw.zip": password = longPassword
+            default: password = correctPassword
+            }
+
+            let state = productionState()
+            state.passwordProvider = { _ in password }
+            state.open(url: fixture(name))
+            try await state.openTask?.value
+
+            #expect(state.error == nil, "\(name): \(state.error ?? "")")
+            #expect(state.hasArchive, "\(name): archive did not open")
+            #expect(!state.entries.isEmpty, "\(name): no entries")
+        }
+
+        /// Same, for RAR — the format the failure was reported against. RAR has
+        /// no fallback engine in the catalog, so whichever engine the selector
+        /// picks has to cope with an encrypted header on its own.
+        @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"), arguments: [
+            "rar5_aes.rar", "rar5_encrypted_header.rar",
+            "rar4_aes.rar", "rar4_encrypted_header.rar"
+        ])
+        func opensRarThroughTheProductionSelector(name: String) async throws {
+            let state = productionState()
+            state.passwordProvider = { _ in correctPassword }
+            state.open(url: fixture(name))
+            try await state.openTask?.value
+
+            #expect(state.error == nil, "\(name): \(state.error ?? "")")
+            #expect(state.hasArchive, "\(name): archive did not open")
+            #expect(
+                state.entries.values.contains { $0.virtualPath == helloPath },
+                "\(name): \(helloPath) missing after open"
+            )
+        }
+
+        /// A file the detector cannot place must say so, not fall through with a
+        /// blank reason — the log line that started this was useless precisely
+        /// because the message was thrown away.
+        @Test func unrecognisedFileReportsWhy() async throws {
+            let dir = try tempDirectory()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let bogus = dir.appendingPathComponent("not-an-archive.bin")
+            try Data(repeating: 0x5A, count: 4096).write(to: bogus)
+
+            let state = productionState()
+            state.open(url: bogus)
+            try await state.openTask?.value
+
+            let message = try #require(state.error, "no reason reported")
+            #expect(message.localizedCaseInsensitiveContains("not-an-archive.bin"), "got \(message)")
+        }
+    }
+
     // MARK: - Progress and cancellation on encrypted archives
 
     @MainActor struct EncryptedProgressTests {

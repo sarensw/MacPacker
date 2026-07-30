@@ -756,10 +756,17 @@ extension ArchiveState {
                 try Task.checkCancellation()
             } catch is CancellationError {
                 reset()
-            } catch ArchiveError.invalidArchive {
-                // happens when the loaded archive is an unknown archive
-                log.notice("Unsupported or invalid archive", context: ["file": url.lastPathComponent])
+            } catch ArchiveError.invalidArchive(let message) {
+                // Half a dozen different failures land here — undetectable type,
+                // no engine for the type, an engine that can't read this variant,
+                // declined folder access. Logging just "unsupported" made them
+                // indistinguishable in a bug report, so carry the reason.
+                log.notice("Unsupported or invalid archive", context: [
+                    "file": url.lastPathComponent,
+                    "reason": message
+                ])
                 reset()
+                self.error = message
             } catch {
                 log.error("Failed to open archive", context: ["file": url.lastPathComponent, "error": error.localizedDescription])
                 reset()

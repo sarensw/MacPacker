@@ -6,6 +6,13 @@
 //
 
 import Foundation
+import tb
+
+/// The loader only ever reported through `yield(.processing(...))`, which lands
+/// in the UI status text and nowhere else — so a failed open left no trace of
+/// which type was detected or which engine ran. That is the first thing anyone
+/// needs from a bug report, hence a real logger.
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "loader")
 
 struct ArchiveLoaderLoadResult: Sendable {
     let type: ArchiveTypeDto
@@ -108,8 +115,19 @@ final actor ArchiveLoader {
         var compoundTempUrl: URL? = nil
         
         guard let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true) else {
-            throw ArchiveError.invalidArchive("Could not detect archive type")
+            log.notice("No archive type detected", context: [
+                "file": url.lastPathComponent,
+                "ext": url.pathExtension
+            ])
+            throw ArchiveError.invalidArchive(
+                "\(url.lastPathComponent) is not a recognised archive type.")
         }
+        log.info("Archive type detected", context: [
+            "file": url.lastPathComponent,
+            "type": detectorResult.type.id,
+            "composition": detectorResult.composition?.id ?? "none",
+            "split": detectorResult.split == nil ? "no" : "yes"
+        ])
         
         if let compound = detectorResult.composition {
             // this is a compound, in which case we decompress first,
@@ -182,9 +200,18 @@ final actor ArchiveLoader {
         yield(.processing(progress: nil, message: "loading engine for: \(detectorResult.type.id)"))
         guard let engine = archiveEngineSelector.engine(for: detectorResult.type.id) else {
             yield(.processing(progress: nil, message: "invalid archive type: \(detectorResult.type.id)"))
-            throw ArchiveError.invalidArchive("Could not find engine for detected archive type")
+            log.error("No engine for archive type", context: ["type": detectorResult.type.id])
+            throw ArchiveError.invalidArchive(
+                "No engine is configured for \(detectorResult.type.name).")
         }
         self.engine = engine
+        // Which engine actually ran is the single most useful fact when an open
+        // fails — the same archive behaves differently on 7-Zip and XAD.
+        log.info("Engine selected", context: [
+            "file": url.lastPathComponent,
+            "type": detectorResult.type.id,
+            "engine": archiveEngineSelector.engineType(for: detectorResult.type.id)?.configId ?? "unknown"
+        ])
         yield(.processing(progress: nil, message: "engine loaded: \(String(describing: type(of: engine))), for: \(detectorResult.type.id)"))
         
         // build the status stream to forward the engine status to the UI
