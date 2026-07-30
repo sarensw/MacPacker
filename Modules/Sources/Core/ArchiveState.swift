@@ -132,6 +132,11 @@ public class ArchiveState: ObservableObject {
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
     private var passwords: [URL: String] = [:]
+    /// Bumped by every `open(url:)`. A load whose generation is stale has been
+    /// superseded and must stop touching the state: two overlapping opens both
+    /// wrote to it, so which archive the window ended up showing depended on
+    /// which load happened to finish last.
+    private var openGeneration = 0
     
     public private(set) var openTask: Task<Void, any Error>?
     private var archiveLoader: ArchiveLoader?
@@ -678,6 +683,12 @@ extension ArchiveState {
     }
 
     public func open(url: URL) {
+        // A second open supersedes the first. Without cancelling, the earlier
+        // task keeps running against the same state.
+        openTask?.cancel()
+        openGeneration += 1
+        let generation = openGeneration
+
         reset()
         updateStatus(.processing)
         
@@ -712,7 +723,8 @@ extension ArchiveState {
                 }
                 
                 try Task.checkCancellation()
-                
+                guard generation == self.openGeneration else { return }
+
                 if loaderResult.error != nil {
                     updateStatusText("failed to load")
                     self.error = loaderResult.error
@@ -787,6 +799,9 @@ extension ArchiveState {
                 
                 try Task.checkCancellation()
             } catch is CancellationError {
+                // Cancelled because a newer open replaced this one: that open now
+                // owns the state, so leave it alone.
+                guard generation == self.openGeneration else { return }
                 reset()
             } catch ArchiveError.invalidArchive(let message) {
                 // Half a dozen different failures land here — undetectable type,
@@ -797,10 +812,12 @@ extension ArchiveState {
                     "file": url.lastPathComponent,
                     "reason": message
                 ])
+                guard generation == self.openGeneration else { return }
                 reset()
                 self.error = message
             } catch {
                 log.error("Failed to open archive", context: ["file": url.lastPathComponent, "error": error.localizedDescription])
+                guard generation == self.openGeneration else { return }
                 reset()
                 self.error = error.localizedDescription
             }
