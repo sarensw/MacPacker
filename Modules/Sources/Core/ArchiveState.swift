@@ -55,6 +55,11 @@ public class ArchiveState: ObservableObject {
     @Published private(set) public var ext: String?
     @Published private(set) public var uncompressedSize: Int64?
     @Published private(set) public var isEncrypted: Bool? = false
+    /// The engine that actually read this archive. Usually the chosen one, but
+    /// not when automatic mode fell back because the chosen engine cannot read
+    /// this particular archive — so it is the honest answer to "which engine am
+    /// I looking at?", for the UI and for tests.
+    @Published private(set) public var activeEngine: ArchiveEngineType?
     
     // Full list of entries
     @Published private(set) public var entries: [UUID: ArchiveItem] = [:]
@@ -84,6 +89,13 @@ public class ArchiveState: ObservableObject {
     @Published private(set) public var statusText: String? = nil
     @Published private(set) public var progress: Int? = nil
     @Published private(set) public var error: String? = nil
+    /// Why the last `open(url:)` failed, for the window to show.
+    ///
+    /// Separate from `error`, which extraction also sets — those already report
+    /// through the progress window, so alerting on them too would say everything
+    /// twice. A failed open has no other surface at all: it ends in `reset()`,
+    /// so the window goes back to its empty state and the user sees nothing.
+    @Published private(set) public var openError: String? = nil
     @Published public var isReloadNeeded: Bool = false
     /// Transient state shown in the status bar while a file is dragged over the
     /// window. nil when no drag is active — the normal status-bar info shows then.
@@ -100,6 +112,18 @@ public class ArchiveState: ObservableObject {
     
     private let catalog: ArchiveTypeCatalog
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
+    /// Formats whose configured engine could not open *this* archive, mapped to
+    /// the engine that could. Set by the loader's fallback and used for every
+    /// later lookup so extraction does not resolve back to the engine that
+    /// already failed. Cleared on reset with the rest of the archive state.
+    private var pinnedEngines: [String: ArchiveEngineType] = [:]
+
+    /// The selector everything downstream should use.
+    private var effectiveEngineSelector: ArchiveEngineSelectorProtocol {
+        pinnedEngines.isEmpty
+            ? archiveEngineSelector
+            : AutomaticEngineSelector(base: archiveEngineSelector, pinned: pinnedEngines)
+    }
     private let archiveTypeDetector: ArchiveTypeDetector
     
     private var tempDirectories: [URL] = []
@@ -115,6 +139,11 @@ public class ArchiveState: ObservableObject {
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
     private var passwords: [URL: String] = [:]
+    /// Bumped by every `open(url:)`. A load whose generation is stale has been
+    /// superseded and must stop touching the state: two overlapping opens both
+    /// wrote to it, so which archive the window ended up showing depended on
+    /// which load happened to finish last.
+    private var openGeneration = 0
     
     public private(set) var openTask: Task<Void, any Error>?
     private var archiveLoader: ArchiveLoader?
@@ -131,14 +160,23 @@ extension ArchiveState {
     private func makePasswordResolver() -> ArchivePasswordResolver {
         return { @MainActor [weak self] request in
             guard let self else { return nil }
-            
-            // see if we have the password cached already
-            if let password = passwords[request.url] {
+
+            // A repeat request means the password we last handed out did not
+            // work, so the cached one is stale — drop it and ask again.
+            // Serving the cache unconditionally used to spin the engine's retry
+            // loop at full speed against the same wrong password, with no
+            // prompt and no error: the "stuck at 0%, 100% CPU" report.
+            if request.attempt > 1 {
+                self.passwords.removeValue(forKey: request.url)
+            } else if let password = passwords[request.url] {
                 return password
             }
-            
+
             // if not cached, ask the user to provide the password
-            passwordLog.info("Password requested", context: ["archive": request.url.lastPathComponent])
+            passwordLog.info("Password requested", context: [
+                "archive": request.url.lastPathComponent,
+                "attempt": String(request.attempt)
+            ])
             let password = await self.passwordProvider?(request)
             if let password {
                 self.passwords[request.url] = password
@@ -146,9 +184,21 @@ extension ArchiveState {
             } else {
                 passwordLog.notice("Password entry cancelled", context: ["archive": request.url.lastPathComponent])
             }
-            
+
             return password
         }
+    }
+
+    /// How a `passwordCancelled` should be reported.
+    ///
+    /// Dismissing the prompt is the user's own choice, so the job just ends as
+    /// cancelled. Having no prompt at all is different: Finder's "Extract Here"
+    /// and QuickLook build an ArchiveState with no `passwordProvider`, so an
+    /// encrypted archive used to fail there with nothing shown and nothing
+    /// extracted. That needs to be a failure with a message that says what to do.
+    private func passwordCancelledOutcome() -> ExtractionJob.State {
+        guard passwordProvider == nil else { return .cancelled }
+        return .failed("\(name ?? "The archive") is password protected. Open it in MacPacker to enter the password.")
     }
 
     private func makeFolderAccessResolver() -> ArchiveFolderAccessResolver {
@@ -205,6 +255,8 @@ extension ArchiveState {
         self.archiveLoader = nil
         
         self.passwords = [:]
+        self.pinnedEngines = [:]
+        self.activeEngine = nil
         
         updateStatus(.idle)
         
@@ -214,15 +266,32 @@ extension ArchiveState {
     public func clean() {
         reset()
     }
+
+    /// Dismisses the failed-open message once the user has seen it.
+    public func clearOpenError() {
+        openError = nil
+    }
     
     /// Cancels the current operation which can be either loading the archive or extracting
     /// anything from the archive
     public func cancelCurrentOperation() {
         openTask?.cancel()
+
+        // Capture what is being cancelled before suspending. Awaiting the loader
+        // is a suspension point, and a new open can start during it — that open
+        // owns the state and has its own loader by the time this resumes, so
+        // clearing and resetting blindly would wipe an archive the user just
+        // opened successfully.
+        let cancelledLoader = archiveLoader
+        let generation = openGeneration
+
         Task {
-            await archiveLoader?.cancel()
+            await cancelledLoader?.cancel()
+
+            guard generation == openGeneration,
+                  archiveLoader === cancelledLoader else { return }
+
             archiveLoader = nil
-            
             reset()
         }
     }
@@ -638,6 +707,13 @@ extension ArchiveState {
     }
 
     public func open(url: URL) {
+        // A second open supersedes the first. Without cancelling, the earlier
+        // task keeps running against the same state.
+        openTask?.cancel()
+        openGeneration += 1
+        let generation = openGeneration
+        openError = nil
+
         reset()
         updateStatus(.processing)
         
@@ -654,7 +730,7 @@ extension ArchiveState {
                 let passwordResolver = makePasswordResolver()
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: self.archiveTypeDetector,
-                    archiveEngineSelector: self.archiveEngineSelector,
+                    archiveEngineSelector: self.effectiveEngineSelector,
                     passwordResolver: passwordResolver,
                     folderAccessResolver: makeFolderAccessResolver()
                 )
@@ -672,7 +748,8 @@ extension ArchiveState {
                 }
                 
                 try Task.checkCancellation()
-                
+                guard generation == self.openGeneration else { return }
+
                 if loaderResult.error != nil {
                     updateStatusText("failed to load")
                     self.error = loaderResult.error
@@ -694,7 +771,21 @@ extension ArchiveState {
                 }
                 
                 self.uncompressedSize = loaderResult.uncompressedSize
-                
+                self.isEncrypted = loaderResult.isEncrypted
+                // The loader may have fallen back to another engine because the
+                // configured one cannot read this archive. Pin it, or the first
+                // extraction would resolve the failing engine all over again.
+                self.activeEngine = loaderResult.engineType
+                if let used = loaderResult.engineType,
+                   used != archiveEngineSelector.engineType(for: loaderResult.type.id) {
+                    pinnedEngines[loaderResult.type.id] = used
+                    log.notice("Engine pinned for this archive", context: [
+                        "file": url.lastPathComponent,
+                        "type": loaderResult.type.id,
+                        "engine": used.configId
+                    ])
+                }
+
                 updateStatusText("building tree...")
                 
                 try Task.checkCancellation()
@@ -733,15 +824,29 @@ extension ArchiveState {
                 
                 try Task.checkCancellation()
             } catch is CancellationError {
+                // Cancelled because a newer open replaced this one: that open now
+                // owns the state, so leave it alone.
+                guard generation == self.openGeneration else { return }
                 reset()
-            } catch ArchiveError.invalidArchive {
-                // happens when the loaded archive is an unknown archive
-                log.notice("Unsupported or invalid archive", context: ["file": url.lastPathComponent])
+            } catch ArchiveError.invalidArchive(let message) {
+                // Half a dozen different failures land here — undetectable type,
+                // no engine for the type, an engine that can't read this variant,
+                // declined folder access. Logging just "unsupported" made them
+                // indistinguishable in a bug report, so carry the reason.
+                log.notice("Unsupported or invalid archive", context: [
+                    "file": url.lastPathComponent,
+                    "reason": message
+                ])
+                guard generation == self.openGeneration else { return }
                 reset()
+                self.error = message
+                self.openError = message
             } catch {
                 log.error("Failed to open archive", context: ["file": url.lastPathComponent, "error": error.localizedDescription])
+                guard generation == self.openGeneration else { return }
                 reset()
                 self.error = error.localizedDescription
+                self.openError = error.localizedDescription
             }
             
             updateStatus(.done)
@@ -859,11 +964,11 @@ extension ArchiveState {
         // default preview or treat it as an archive
         let passwordResolver = makePasswordResolver()
         let archiveExtractor = ArchiveExtractor(
-            archiveEngineSelector: self.archiveEngineSelector,
+            archiveEngineSelector: self.effectiveEngineSelector,
             passwordResolver: passwordResolver
         )
         let batchResolver = ArchiveBatchResolver()
-        guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: self.archiveEngineSelector).first else {
+        guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: self.effectiveEngineSelector).first else {
             throw ArchiveError.extractionFailed("Could not resolve batch for extraction")
         }
         let archiveExtractionResult = try await archiveExtractor.extract(
@@ -888,7 +993,7 @@ extension ArchiveState {
         if let detectionResult = (detectUsingExtensionOnly
             ? archiveTypeDetector.detectByExtension(for: tempUrl, considerComposition: true)
             : archiveTypeDetector.detect(for: tempUrl, considerComposition: true)),
-           let engine = archiveEngineSelector.engine(for: detectionResult.type.id) {
+           let engine = effectiveEngineSelector.engine(for: detectionResult.type.id) {
             
             // set the services required for this nested archive
             item.set(
@@ -925,7 +1030,7 @@ extension ArchiveState {
                 let passwordResolver = makePasswordResolver()
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: self.archiveTypeDetector,
-                    archiveEngineSelector: self.archiveEngineSelector,
+                    archiveEngineSelector: self.effectiveEngineSelector,
                     passwordResolver: passwordResolver,
                     folderAccessResolver: makeFolderAccessResolver()
                 )
@@ -981,12 +1086,12 @@ extension ArchiveState {
     /// - Returns: url of the extracted item in the temp location
     public func extractToTemp(item: ArchiveItem) async throws -> URL {
         let batchResolver = ArchiveBatchResolver()
-        let batches = try batchResolver.resolveBatches(for: [item], in: entries, using: archiveEngineSelector)
+        let batches = try batchResolver.resolveBatches(for: [item], in: entries, using: effectiveEngineSelector)
         guard let batch = batches.first else {
             throw ArchiveError.extractionFailed("Could not resolve batch")
         }
         let extractor = ArchiveExtractor(
-            archiveEngineSelector: archiveEngineSelector,
+            archiveEngineSelector: effectiveEngineSelector,
             passwordResolver: makePasswordResolver()
         )
         let result = try await extractor.extract(batch: batch)
@@ -1047,11 +1152,11 @@ extension ArchiveState {
         let cancelFlag = ExtractionCancelFlag()
         let work = Task {
             let batchResolver = ArchiveBatchResolver()
-            guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: archiveEngineSelector).first else {
+            guard let batch = try batchResolver.resolveBatches(for: [item], in: entries, using: effectiveEngineSelector).first else {
                 throw ArchiveError.extractionFailed("Could not resolve batch")
             }
             let extractor = ArchiveExtractor(
-                archiveEngineSelector: archiveEngineSelector,
+                archiveEngineSelector: effectiveEngineSelector,
                 passwordResolver: makePasswordResolver(),
                 onTempDirectoryCreated: { tempUrl in
                     tempDirs.add(tempUrl)
@@ -1079,6 +1184,12 @@ extension ArchiveState {
             tempDirectories.append(contentsOf: tempDirs.all)
             progressCenter.finish(jobId, .cancelled)
             throw CancellationError()
+        } catch ArchiveError.passwordCancelled {
+            tempDirectories.append(contentsOf: tempDirs.all)
+            let outcome = passwordCancelledOutcome()
+            if case .failed(let message) = outcome { self.error = message }
+            progressCenter.finish(jobId, outcome)
+            throw ArchiveError.passwordCancelled
         } catch {
             extractLog.error(error)
             tempDirectories.append(contentsOf: tempDirs.all)
@@ -1100,7 +1211,7 @@ extension ArchiveState {
 
         let tempDirs = ExtractionTempDirectories()
         let extractor = ArchiveExtractor(
-            archiveEngineSelector: archiveEngineSelector,
+            archiveEngineSelector: effectiveEngineSelector,
             passwordResolver: makePasswordResolver(),
             onTempDirectoryCreated: { url in
                 tempDirs.add(url)
@@ -1118,7 +1229,7 @@ extension ArchiveState {
         let cancelFlag = ExtractionCancelFlag()
         let task = Task {
             do {
-                let batches = try batchResolver.resolveBatches(for: items, in: entries, using: archiveEngineSelector)
+                let batches = try batchResolver.resolveBatches(for: items, in: entries, using: effectiveEngineSelector)
                 let result = try await extractor.extract(
                     batches: batches,
                     to: destination,
@@ -1131,6 +1242,11 @@ extension ArchiveState {
                 // linger — register it for the regular cache cleanup
                 tempDirectories.append(contentsOf: tempDirs.all)
                 progressCenter.finish(jobId, .cancelled)
+            } catch ArchiveError.passwordCancelled {
+                tempDirectories.append(contentsOf: tempDirs.all)
+                let outcome = passwordCancelledOutcome()
+                if case .failed(let message) = outcome { self.error = message }
+                progressCenter.finish(jobId, outcome)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
@@ -1169,7 +1285,7 @@ extension ArchiveState {
                 }
 
                 let extractor = ArchiveExtractor(
-                    archiveEngineSelector: archiveEngineSelector,
+                    archiveEngineSelector: effectiveEngineSelector,
                     passwordResolver: makePasswordResolver()
                 )
                 try await extractor.extractAll(
@@ -1181,6 +1297,10 @@ extension ArchiveState {
                 progressCenter.finish(jobId, .done)
             } catch is CancellationError {
                 progressCenter.finish(jobId, .cancelled)
+            } catch ArchiveError.passwordCancelled {
+                let outcome = passwordCancelledOutcome()
+                if case .failed(let message) = outcome { self.error = message }
+                progressCenter.finish(jobId, outcome)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
@@ -1208,7 +1328,7 @@ extension ArchiveState {
         updateStatus(.processing)
         
         let extractor = ArchiveExtractor(
-            archiveEngineSelector: archiveEngineSelector,
+            archiveEngineSelector: effectiveEngineSelector,
             passwordResolver: makePasswordResolver()
         )
         let batchResolver = ArchiveBatchResolver()
@@ -1219,7 +1339,7 @@ extension ArchiveState {
                     let batch = try batchResolver.resolveBatches(
                         for: [selectedItem],
                         in: entries,
-                        using: archiveEngineSelector
+                        using: effectiveEngineSelector
                     ).first
                 {
                     

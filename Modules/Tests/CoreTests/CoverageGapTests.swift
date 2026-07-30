@@ -200,8 +200,11 @@ extension AllCoreTests {
 
         @Test func passwordCachedAfterFirstUse() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent("defaultArchive_password.zip")
+            // Was defaultArchive_password.zip, whose password nobody knows —
+            // these tests only ever "passed" because a wrong password used to
+            // write empty files and report success. Fixture since deleted.
+            let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
             state.passwordProvider = { request in
                 return "password"
@@ -496,7 +499,10 @@ extension AllCoreTests {
 
         @Test func setAndRetrieveOverride() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
+            // Overrides only apply when the user is choosing; automatic mode
+            // deliberately ignores them (see AutomaticEngineSelectionTests).
+            store.isAutomatic = false
 
             // Set an override
             store.setSelectedEngine(.xad, for: "zip")
@@ -509,7 +515,7 @@ extension AllCoreTests {
 
         @Test func engineOptionsReturnsFromCatalog() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let options = store.engineOptions(for: "zip")
             #expect(!options.isEmpty)
         }
@@ -649,8 +655,9 @@ extension AllCoreTests {
         }
     }
 
-    // NOTE: XAD password-protected archive tests removed — XAD library enters
-    // infinite retry loop with test archives, causing test hangs.
+    // NOTE: XAD password tests live in PasswordTests.swift. They used to hang —
+    // both engines retried a wrong password forever — which is fixed and guarded
+    // by AlwaysWrongPasswordTests there.
 
     // MARK: - ArchiveTypeDetector: magic number all-policy (ISO)
 
@@ -793,7 +800,7 @@ extension AllCoreTests {
 
         @Test func engineForXadType() {
             let catalog = ArchiveTypeCatalog()
-            let configStore = ArchiveEngineConfigStore(catalog: catalog)
+            let configStore = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: configStore)
             let engine = selector.engine(for: .xad)
             #expect(engine is ArchiveXadEngine)
@@ -801,7 +808,7 @@ extension AllCoreTests {
 
         @Test func engineForSwcType() {
             let catalog = ArchiveTypeCatalog()
-            let configStore = ArchiveEngineConfigStore(catalog: catalog)
+            let configStore = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: configStore)
             let engine = selector.engine(for: .swc)
             #expect(engine is ArchiveSwcEngine)
@@ -814,8 +821,11 @@ extension AllCoreTests {
 
         @Test func extractTwiceFromPasswordArchiveUsesCache() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent("defaultArchive_password.zip")
+            // Was defaultArchive_password.zip, whose password nobody knows —
+            // these tests only ever "passed" because a wrong password used to
+            // write empty files and report success. Fixture since deleted.
+            let zipFolder = Bundle.module.url(forResource: "password", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("zip_zipcrypto.zip")
 
             state.passwordProvider = { request in
                 return "password"
@@ -979,7 +989,7 @@ extension AllCoreTests {
 
         @Test func engineTypeForNonexistentReturnsNil() {
             let catalog = ArchiveTypeCatalog()
-            let configStore = ArchiveEngineConfigStore(catalog: catalog)
+            let configStore = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: configStore)
             let result = selector.engineType(for: "completely_unknown_format_xyz")
             #expect(result == nil)

@@ -17,21 +17,89 @@
   "appcast-seed-path": "Config/appcast.xml",
   "changelog": {
     "comingNext": {
-      "en": "Support for deletion of files / folders from .zip archives",
-      "zh-Hans": "支持从 .zip 压缩包中删除文件 / 文件夹",
-      "fr": "Prise en charge de la suppression de fichiers / dossiers des archives .zip",
-      "de": "Unterstützung zum Löschen von Dateien / Ordnern aus .zip-Archiven",
-      "it": "Supporto per l’eliminazione di file / cartelle dagli archivi .zip",
-      "ja": ".zip アーカイブ内のファイル / フォルダ削除をサポート",
-      "fa": "پشتیبانی از حذف فایل‌ها / پوشه‌ها از آرشیوهای .zip",
-      "pl": "Obsługa usuwania plików / folderów z archiwów .zip",
-      "pt-BR": "Suporte para exclusão de arquivos / pastas de arquivos .zip",
-      "ru": "Поддержка удаления файлов / папок из архивов .zip",
-      "uk": "Підтримка видалення файлів / папок з архівів .zip",
-      "es-MX": "Compatibilidad con eliminación de archivos / carpetas de archivos .zip",
-      "ko": ".zip 아카이브에서 파일 / 폴더 삭제 지원"
+      "en": "Complete archive creation and editing",
+      "zh-Hans": "完善压缩包的创建与编辑",
+      "fr": "Création et modification d’archives complètes",
+      "de": "Vollständiges Erstellen und Bearbeiten von Archiven",
+      "it": "Creazione e modifica complete degli archivi",
+      "ja": "アーカイブの作成と編集を完成させる",
+      "fa": "ساخت و ویرایش کامل آرشیوها",
+      "pl": "Pełne tworzenie i edycja archiwów",
+      "pt-BR": "Criação e edição completas de arquivos",
+      "ru": "Полноценное создание и редактирование архивов",
+      "uk": "Повноцінне створення та редагування архівів",
+      "es-MX": "Creación y edición completas de archivos",
+      "ko": "압축 파일 생성 및 편집 완성"
     },
     "versions": [
+      {
+        "version": "0.19.0",
+        "items": [
+          {
+            "type": "fix",
+            "title": {
+              "en": "Password-protected archives no longer extract as empty files",
+              "zh-Hans": "受密码保护的压缩包不再解压为空文件",
+              "fr": "Les archives protégées par mot de passe ne s’extraient plus vides",
+              "de": "Passwortgeschützte Archive werden nicht mehr als leere Dateien entpackt",
+              "it": "Gli archivi protetti da password non vengono più estratti vuoti",
+              "ja": "パスワード保護されたアーカイブが空のファイルとして展開されなくなりました",
+              "fa": "آرشیوهای محافظت‌شده با رمز دیگر به‌صورت فایل خالی استخراج نمی‌شوند",
+              "pl": "Archiwa chronione hasłem nie są już wypakowywane jako puste pliki",
+              "pt-BR": "Arquivos protegidos por senha não são mais extraídos vazios",
+              "ru": "Архивы, защищённые паролем, больше не распаковываются пустыми",
+              "uk": "Архіви, захищені паролем, більше не розпаковуються порожніми",
+              "es-MX": "Los archivos protegidos con contraseña ya no se extraen vacíos",
+              "ko": "암호로 보호된 압축 파일이 더 이상 빈 파일로 압축 해제되지 않습니다"
+            },
+            "issues": [
+              "150"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+              "en": "Wrong passwords are now reported instead of hanging",
+              "zh-Hans": "密码错误时会给出提示，不再卡住",
+              "fr": "Un mot de passe incorrect est signalé au lieu de bloquer",
+              "de": "Falsche Passwörter werden gemeldet statt zu hängen",
+              "it": "Le password errate vengono segnalate invece di bloccarsi",
+              "ja": "パスワードが違う場合、固まらずにエラーを表示します",
+              "fa": "رمز نادرست اکنون گزارش می‌شود و برنامه متوقف نمی‌ماند",
+              "pl": "Błędne hasła są teraz zgłaszane, a nie zawieszają aplikację",
+              "pt-BR": "Senhas incorretas agora são informadas em vez de travar",
+              "ru": "Неверный пароль теперь сообщается, а не приводит к зависанию",
+              "uk": "Неправильний пароль тепер повідомляється, а не призводить до зависання",
+              "es-MX": "Las contraseñas incorrectas ahora se informan en vez de bloquearse",
+              "ko": "잘못된 암호는 멈추지 않고 오류로 표시됩니다"
+            },
+            "issues": [
+              "150"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+              "en": "Automatic engine selection",
+              "zh-Hans": "自动选择解压引擎",
+              "fr": "Sélection automatique du moteur",
+              "de": "Automatische Engine-Auswahl",
+              "it": "Selezione automatica del motore",
+              "ja": "エンジンの自動選択",
+              "fa": "انتخاب خودکار موتور",
+              "pl": "Automatyczny wybór silnika",
+              "pt-BR": "Seleção automática de motor",
+              "ru": "Автоматический выбор движка",
+              "uk": "Автоматичний вибір рушія",
+              "es-MX": "Selección automática de motor",
+              "ko": "엔진 자동 선택"
+            },
+            "issues": [
+              "151"
+            ]
+          }
+        ]
+      },
       {
         "version": "0.18.1",
         "items": [

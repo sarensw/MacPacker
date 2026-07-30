@@ -17,14 +17,64 @@ private final class XADArchiveWithPasswordSupport {
         url: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) throws {
-        guard let archive = XADArchive(file: url.path) else {
-            throw NSError(domain: "XADMasterSwift", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create archive"])
+        // initWithFile:error: over initWithFile: so a failure carries a code
+        // instead of a bare nil.
+        var openError: XADError = 0
+        guard let archive = XADArchive(file: url.path, error: &openError) else {
+            // A header-encrypted archive (7z -mhe=on, RAR -hp) can't be opened
+            // here at all: the header has to be decrypted during init and
+            // XADArchive only accepts a password afterwards. XAD's own hook is
+            // the synchronous `archiveNeedsPassword:` delegate, which can't
+            // drive our async resolver.
+            //
+            // XAD reports that as a plain decrunch error, the same code a
+            // genuinely damaged archive gets, so we can't state the cause —
+            // only name it as the likely one. Either way 7-Zip is the engine
+            // that can read it, or say properly that it can't.
+            if openError == XADPasswordError
+                || Self.passwordSuspectErrors.contains(openError) {
+                throw ArchiveError.invalidArchive(
+                    "Could not open \(url.lastPathComponent) with the XAD engine. If the archive has an encrypted header, switch to 7-Zip in Settings \u{2192} Archive Formats, or turn on Automatic engine selection.")
+            }
+            throw ArchiveError.invalidArchive(
+                "Could not open \(url.lastPathComponent) (XAD error \(openError))")
         }
         self.url = url
         self.archive = archive
         self.passwordResolver = passwordResolver
     }
+
+    /// Whether any entry is encrypted. Read straight off `archive` rather than
+    /// through `performXADOperationWithPasswordRetry`, which would recurse, and
+    /// cached because the answer cannot change for an open archive.
+    private var hasEncryptedEntry: Bool {
+        if let cachedHasEncryptedEntry { return cachedHasEncryptedEntry }
+        let count = archive.numberOfEntries()
+        let found = (0..<count).contains { archive.entryIsEncrypted($0) }
+        cachedHasEncryptedEntry = found
+        return found
+    }
+    private var cachedHasEncryptedEntry: Bool?
     
+    /// How many passwords a single operation will ask for before giving up.
+    /// A resolver that keeps answering with the same wrong password (a stale
+    /// cache, a scripted caller) would otherwise spin this loop forever at full
+    /// CPU without ever surfacing an error.
+    private static let maxPasswordAttempts = 20
+
+    /// Failures that mean "the bytes did not decode" — on an encrypted archive
+    /// that is a wrong or missing password far more often than a damaged file.
+    /// Deliberately excludes the unambiguous ones (write, open, out of memory,
+    /// skip, break) so a real I/O problem still surfaces as itself.
+    private static let passwordSuspectErrors: Set<XADError> = [
+        XADUnknownError,      // RAR3/4, wrong password
+        XADInputError,        // RAR3/4, wrong password mid-stream
+        XADIllegalDataError,
+        XADNotSupportedError, // RAR, no password set
+        XADDecrunchError,     // 7z
+        XADChecksumError
+    ]
+
     func performXADOperationWithPasswordRetry<T>(
         operation: @escaping () -> T
     ) async throws -> T {
@@ -35,36 +85,60 @@ private final class XADArchiveWithPasswordSupport {
 
             // blocking XADMaster call — keep it off the cooperative pool
             let value = try await runBlocking { operation() }
+            // Captured together, before anything else touches the archive.
+            // `hasEncryptedEntry` below calls numberOfEntries()/entryIsEncrypted(),
+            // and if either of those fails it overwrites XAD's lastError — so
+            // re-reading it at the throw could report the probe's failure instead
+            // of the one that actually ended the operation.
             let error = archive.lastError()
-            
+            let errorDescription = archive.describeLastError() ?? ""
+
             // success
             if error == 0 {
                 return value
             }
-            
+
+            // XADMaster only reports XADPasswordError for the formats whose
+            // decryptors check the password explicitly — zip, and RAR5 once it
+            // gets that far. Everywhere else a missing or wrong password
+            // surfaces as whatever the decoder happened to choke on: a decrunch
+            // error on 7z, "not fully supported" or an input/unknown error on
+            // RAR3/4. The prompt below never ran for those, so the archives
+            // failed outright even though XAD reads them fine once the password
+            // is set.
+            //
+            // So on an archive that *has* encrypted entries, treat any
+            // data-shaped failure as a possible password problem. Real I/O and
+            // resource errors are left alone, and the attempt ceiling stops a
+            // genuinely broken archive from looping. Same trade the 7-Zip engine
+            // makes for 7z AES, which has no password verifier either.
+            let isPasswordError = error == XADPasswordError
+                || (hasEncryptedEntry && Self.passwordSuspectErrors.contains(error))
+
             // failed, but because password is wrong / needed > ask user
-            if error == 15 {
+            if isPasswordError {
                 attempt += 1
-                
+
+                guard attempt <= Self.maxPasswordAttempts else {
+                    throw ArchiveError.extractionFailed(
+                        "Could not decrypt \(url.lastPathComponent) after \(Self.maxPasswordAttempts) attempts. The password may be wrong, or the archive may be damaged.")
+                }
+
                 let request = ArchivePasswordRequest(
                     url: url,
                     attempt: attempt
                 )
-                
+
                 guard let password = await passwordResolver(request) else {
                     throw ArchiveError.passwordCancelled
                 }
-                
+
                 archive.setPassword(password)
                 continue
             }
             
-            // Error code is not 0 (success) and 15 (password missing), therefore,
-            // throw for now. We might handle other error codes in future
-            throw ArchiveError.xadError(
-                archive.lastError(),
-                archive.describeLastError()
-            )
+            // Anything else is a real failure, not something a password fixes.
+            throw ArchiveError.xadError(error, errorDescription)
         }
     }
     
@@ -99,6 +173,12 @@ private final class XADArchiveWithPasswordSupport {
         try await performXADOperationWithPasswordRetry {
             let hasSize = self.archive.entryHasSize(n)
             return hasSize
+        }
+    }
+
+    public func entryIsEncrypted(_ n: Int32) async throws -> Bool {
+        try await performXADOperationWithPasswordRetry {
+            self.archive.entryIsEncrypted(n)
         }
     }
     
@@ -233,6 +313,21 @@ private final class XADExtractionProgressDelegate: NSObject, @unchecked Sendable
     }
 }
 
+/// Whether `url` really sits inside `directory`.
+///
+/// Both sides are standardized first, which is what collapses any `..` segments
+/// — an entry path like "../../etc/passwd" resolves out of the destination and is
+/// then plainly not a descendant. Symlinks are deliberately not resolved: the
+/// candidate is built by appending to `directory`, so both share the same symlink
+/// state, and resolving a path that does not exist yet would only desynchronise
+/// them (`/var` vs `/private/var`).
+private func isContained(_ url: URL, in directory: URL) -> Bool {
+    let base = directory.standardizedFileURL.path
+    let target = url.standardizedFileURL.path
+    let prefix = base.hasSuffix("/") ? base : base + "/"
+    return target != base && target.hasPrefix(prefix)
+}
+
 final actor ArchiveXadEngine: ArchiveEngine {
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
 
@@ -262,11 +357,13 @@ final actor ArchiveXadEngine: ArchiveEngine {
 
         var entries: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0
+        var isEncrypted = false
         let numberOfEntries = try await archive.numberOfEntries()
         for index in 0..<numberOfEntries {
             // name
             let path = try await archive.name(ofEntry: index)
             let isDir = try await archive.entryIsDirectory(index)
+            if try await archive.entryIsEncrypted(index) { isEncrypted = true }
             
             // tar archives (and similar) don't have a compressed size as they
             // just package up files.
@@ -317,7 +414,8 @@ final actor ArchiveXadEngine: ArchiveEngine {
         return ArchiveEngineLoadResult(
             items: entries,
             hasTree: false,
-            uncompressedSize: uncompressedSizeOverall
+            uncompressedSize: uncompressedSizeOverall,
+            isEncrypted: isEncrypted
         )
     }
     
@@ -362,9 +460,21 @@ final actor ArchiveXadEngine: ArchiveEngine {
                 throw ArchiveError.extractionFailed("Could not extract file: missing index")
             }
 
+            let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: item.type == .directory)
+
             do {
                 try await archive.extractEntry(Int32(itemIndex), to: destination.path)
             } catch {
+                // XAD creates the output file before it decodes, so a failure
+                // (wrong password, corrupt data) leaves a truncated or empty
+                // file that looks like a successful extraction. Remove it — but
+                // only if it is actually inside the destination. `virtualPath`
+                // comes from the archive, so an entry named "../something" would
+                // otherwise aim this delete at a file the user never asked us to
+                // touch, and a wrong password is enough to trigger it.
+                if isContained(resultUrl, in: destination) {
+                    try? FileManager.default.removeItem(at: resultUrl)
+                }
                 // a should-stop answer makes XAD fail the entry — surface
                 // it as cancellation, not as an extraction error
                 if progressDelegate?.wasStopped == true {
@@ -377,7 +487,6 @@ final actor ArchiveXadEngine: ArchiveEngine {
             }
             progressDelegate?.advanceBase(by: Int64(Swift.max(0, item.uncompressedSize)))
 
-            let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: item.type == .directory)
             urlsByItemID[item.id] = resultUrl
         }
 

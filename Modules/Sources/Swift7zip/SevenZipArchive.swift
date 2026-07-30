@@ -7,28 +7,42 @@ public class SevenZipArchive {
     let handle: BridgeHandle
     /// The URL of the archive file.
     public let url: URL
-    private var hasPassword = false
+    /// Whether a password has been supplied for this archive.
+    public private(set) var hasPassword = false
 
     // MARK: - Lifecycle
 
     /// Opens the archive at the given file URL.
-    /// - Parameter url: A file URL pointing to an archive.
-    /// - Throws: ``SevenZipError/openFailed(_:)`` if the file cannot
-    ///   be opened or no supported format is detected.
-    public init(url: URL) throws {
+    /// - Parameters:
+    ///   - url: A file URL pointing to an archive.
+    ///   - password: Password for formats that encrypt their header (7z
+    ///     `-mhe=on`, RAR `-hp`), which cannot even be listed without one.
+    ///     Also pre-sets the extraction password.
+    /// - Throws: ``SevenZipError/passwordMissing`` when the header is encrypted
+    ///   and no password was given, ``SevenZipError/passwordWrong`` when the
+    ///   given one did not decrypt it, ``SevenZipError/openFailed(_:)`` if the
+    ///   file cannot be opened or no supported format is detected.
+    public init(url: URL, password: String? = nil) throws {
         self.url = url
-        self.handle = try Self.openHandle(at: url)
+        self.handle = try Self.openHandle(at: url, password: password)
+        self.hasPassword = password != nil
     }
 
     /// Opens the C bridge handle at the given URL.
-    private static func openHandle(at url: URL) throws -> BridgeHandle {
+    private static func openHandle(at url: URL, password: String?) throws -> BridgeHandle {
         var errorPtr: UnsafeMutablePointer<CChar>?
-        guard let ref = sz_open(url.path, &errorPtr) else {
+        var needsPassword = false
+        guard let ref = sz_open(url.path, password, &needsPassword, &errorPtr) else {
             let msg = errorPtr.map { ptr -> String in
                 let str = String(cString: ptr)
                 free(ptr)
                 return str
             } ?? "Unknown error"
+            if needsPassword {
+                throw password == nil
+                    ? SevenZipError.passwordMissing
+                    : SevenZipError.passwordWrong
+            }
             throw SevenZipError.openFailed(msg)
         }
         return BridgeHandle(ref: ref)
@@ -86,6 +100,26 @@ public class SevenZipArchive {
 
     // MARK: - Extraction
 
+    /// Maps a bridge `SZ_EXTRACT_*` code to a typed error, consuming
+    /// `errorPtr`. Returns normally when the extraction succeeded.
+    private static func check(
+        _ result: Int32,
+        _ errorPtr: UnsafeMutablePointer<CChar>?
+    ) throws {
+        let message = errorPtr.map { ptr -> String in
+            let str = String(cString: ptr)
+            free(ptr)
+            return str
+        } ?? "Unknown error"
+
+        switch result {
+        case SZ_EXTRACT_OK: return
+        case SZ_EXTRACT_ABORTED: throw SevenZipError.cancelled
+        case SZ_EXTRACT_WRONG_PASSWORD: throw SevenZipError.passwordWrong
+        default: throw SevenZipError.extractionFailed(message)
+        }
+    }
+
     /// Extracts a single entry to the given directory.
     /// - Parameters:
     ///   - index: The index of the entry to extract.
@@ -113,14 +147,7 @@ public class SevenZipArchive {
         let result = sz_extract_entry(
             handle.ref, index,
             destination.path, &errorPtr)
-        if result != 0 {
-            let msg = errorPtr.map { ptr -> String in
-                let str = String(cString: ptr)
-                free(ptr)
-                return str
-            } ?? "Unknown error"
-            throw SevenZipError.extractionFailed(msg)
-        }
+        try Self.check(result, errorPtr)
         return [index: destination.appendingPathComponent(entry.path)]
     }
 
@@ -190,17 +217,7 @@ public class SevenZipArchive {
                     &errorPtr)
             }
         }
-        if result == SZ_EXTRACT_ABORTED {
-            throw SevenZipError.cancelled
-        }
-        if result != SZ_EXTRACT_OK {
-            let msg = errorPtr.map { ptr -> String in
-                let str = String(cString: ptr)
-                free(ptr)
-                return str
-            } ?? "Unknown error"
-            throw SevenZipError.extractionFailed(msg)
-        }
+        try Self.check(result, errorPtr)
         var result2: [UInt32: URL] = [:]
         for (idx, path) in indexPaths {
             result2[idx] = destination.appendingPathComponent(path)
@@ -237,17 +254,7 @@ public class SevenZipArchive {
                 box.map { Unmanaged.passUnretained($0).toOpaque() },
                 &errorPtr)
         }
-        if result == SZ_EXTRACT_ABORTED {
-            throw SevenZipError.cancelled
-        }
-        if result != SZ_EXTRACT_OK {
-            let msg = errorPtr.map { ptr -> String in
-                let str = String(cString: ptr)
-                free(ptr)
-                return str
-            } ?? "Unknown error"
-            throw SevenZipError.extractionFailed(msg)
-        }
+        try Self.check(result, errorPtr)
         var result2: [UInt32: URL] = [:]
         for entry in allEntries {
             result2[entry.index] = destination.appendingPathComponent(entry.path)

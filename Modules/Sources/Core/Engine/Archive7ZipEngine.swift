@@ -33,13 +33,16 @@ final actor Archive7ZipEngine: ArchiveEngine {
         // canonical entry (`.zip` for spanned, `.001` for numeric) and holds a
         // security-scoped grant on the containing folder, so the C bridge's
         // volume callback opens sibling volumes directly — no staging needed.
-        let szip = try SevenZipArchive(url: url)
-        
+        let szip = try await Self.open(url: url, passwordResolver: passwordResolver)
+
         var items: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0
         var idToUUIDMap: [UInt32: UUID] = [:]
-        
+        var isEncrypted = false
+
         try szip.entries.forEach { entry in
+            if entry.isEncrypted { isEncrypted = true }
+
             var name = entry.path
             let parts = entry.path.split(separator: "/")
             if let last = parts.last {
@@ -85,7 +88,10 @@ final actor Archive7ZipEngine: ArchiveEngine {
         return ArchiveEngineLoadResult(
             items: items,
             hasTree: szip.isTree,
-            uncompressedSize: uncompressedSizeOverall
+            uncompressedSize: uncompressedSizeOverall,
+            // A header-encrypted archive needed the password just to list, so
+            // it counts as encrypted even if no entry flags itself.
+            isEncrypted: isEncrypted || szip.hasPassword
         )
     }
     
@@ -118,12 +124,11 @@ final actor Archive7ZipEngine: ArchiveEngine {
         }
         let sorted = indices.keys.sorted { $0 < $1 }
         
-        let szip = try SevenZipArchive(url: url)
-        
+        let szip = try await Self.open(url: url, passwordResolver: passwordResolver)
+
         var attempt = 0
-        // The loop is used to allow multiple tries when there is no password
-        // give or the password is wrong
-        // TODO: Change from while true loop to a loop with a real end condition
+        // Loops until the archive extracts, the user cancels the prompt, or the
+        // attempt budget runs out.
         while true {
             do {
                 // blocking C call — keep it off the cooperative pool
@@ -137,23 +142,18 @@ final actor Archive7ZipEngine: ArchiveEngine {
                         return (uuid, url)
                     }
                 )
-                
+
                 let result = ArchiveExtractionResult(urlsByItemID: urlsByItemID)
-                
+
                 return result
-                
-            } catch SevenZipError.passwordMissing {
+
+            } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
                 attempt += 1
-                
-                let request = ArchivePasswordRequest(
-                    url: url,
-                    attempt: attempt
+                let password = try await Self.nextPassword(
+                    for: url,
+                    attempt: attempt,
+                    resolver: passwordResolver
                 )
-                
-                guard let password = await passwordResolver(request) else {
-                    throw ArchiveError.passwordCancelled
-                }
-                
                 szip.setPassword(password)
                 continue
             } catch SevenZipError.cancelled {
@@ -176,7 +176,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
         passwordResolver: @escaping ArchivePasswordResolver,
         onProgress: ArchiveExtractionProgress?
     ) async throws {
-        let szip = try SevenZipArchive(url: url)
+        let szip = try await Self.open(url: url, passwordResolver: passwordResolver)
 
         var attempt = 0
         // Same retry shape as extract(items:): loop until the archive
@@ -188,24 +188,72 @@ final actor Archive7ZipEngine: ArchiveEngine {
                     try szip.extractAll(to: destination, progress: Self.bridgeProgress(onProgress))
                 }
                 return
-            } catch SevenZipError.passwordMissing {
+            } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
                 attempt += 1
-
-                let request = ArchivePasswordRequest(
-                    url: url,
-                    attempt: attempt
+                let password = try await Self.nextPassword(
+                    for: url,
+                    attempt: attempt,
+                    resolver: passwordResolver
                 )
-
-                guard let password = await passwordResolver(request) else {
-                    throw ArchiveError.passwordCancelled
-                }
-
                 szip.setPassword(password)
                 continue
             } catch SevenZipError.cancelled {
                 throw CancellationError()
             }
         }
+    }
+
+    /// Opens the archive, prompting for a password when the format encrypts its
+    /// header (7z `-mhe=on`, RAR `-hp`) — those cannot even be listed without
+    /// one. Shared by listing and both extraction paths so the prompt behaves
+    /// the same wherever the archive is opened.
+    private static func open(
+        url: URL,
+        passwordResolver: ArchivePasswordResolver
+    ) async throws -> SevenZipArchive {
+        var password: String?
+        var attempt = 0
+        while true {
+            do {
+                return try SevenZipArchive(url: url, password: password)
+            } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
+                attempt += 1
+                password = try await nextPassword(
+                    for: url,
+                    attempt: attempt,
+                    resolver: passwordResolver
+                )
+            }
+        }
+    }
+
+    /// How many passwords a single operation will ask for before giving up.
+    /// A resolver that keeps answering with the same wrong password (a stale
+    /// cache, a scripted caller) would otherwise spin forever.
+    private static let maxPasswordAttempts = 20
+
+    /// Asks the resolver for the next password to try.
+    /// - Throws: ``ArchiveError/passwordCancelled`` when the user dismisses the
+    ///   prompt, or ``ArchiveError/extractionFailed(_:)`` once the attempt
+    ///   budget is exhausted.
+    private static func nextPassword(
+        for url: URL,
+        attempt: Int,
+        resolver: ArchivePasswordResolver
+    ) async throws -> String {
+        // 7z AES stores no password verifier, so a failed decrypt and a damaged
+        // encrypted entry are genuinely indistinguishable — say both rather than
+        // insist on the password when we cannot know.
+        guard attempt <= maxPasswordAttempts else {
+            throw ArchiveError.extractionFailed(
+                "Could not decrypt \(url.lastPathComponent) after \(maxPasswordAttempts) attempts. The password may be wrong, or the archive may be damaged.")
+        }
+        guard let password = await resolver(
+            ArchivePasswordRequest(url: url, attempt: attempt)
+        ) else {
+            throw ArchiveError.passwordCancelled
+        }
+        return password
     }
 
     /// Adapts the engine-level progress closure to the bridge's handler.

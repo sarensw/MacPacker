@@ -30,6 +30,7 @@ let cSevenZipSources: [String] = [
     "Sources/CSevenZip/vendor/7zip/C/7zFile.c",
     "Sources/CSevenZip/vendor/7zip/C/7zStream.c",
     "Sources/CSevenZip/vendor/7zip/C/Aes.c",
+    "Sources/CSevenZip/vendor/7zip/C/AesOpt.c",
     "Sources/CSevenZip/vendor/7zip/C/Bcj2.c",
     "Sources/CSevenZip/vendor/7zip/C/Bcj2Enc.c",
     "Sources/CSevenZip/vendor/7zip/C/Blake2s.c",
@@ -53,9 +54,13 @@ let cSevenZipSources: [String] = [
     "Sources/CSevenZip/vendor/7zip/C/Ppmd8Dec.c",
     "Sources/CSevenZip/vendor/7zip/C/Ppmd8Enc.c",
     "Sources/CSevenZip/vendor/7zip/C/Sha1.c",
+    "Sources/CSevenZip/vendor/7zip/C/Sha1Opt.c",
     "Sources/CSevenZip/vendor/7zip/C/Sha256.c",
+    "Sources/CSevenZip/vendor/7zip/C/Sha256Opt.c",
     "Sources/CSevenZip/vendor/7zip/C/Sha3.c",
     "Sources/CSevenZip/vendor/7zip/C/Sha512.c",
+    "Sources/CSevenZip/vendor/7zip/C/Sha512Opt.c",
+    "Sources/CSevenZip/vendor/7zip/C/SwapBytes.c",
     "Sources/CSevenZip/vendor/7zip/C/Sort.c",
     "Sources/CSevenZip/vendor/7zip/C/Threads.c",
     "Sources/CSevenZip/vendor/7zip/C/Xxh64.c",
@@ -382,7 +387,6 @@ let package = Package(
             sources: cSevenZipSources + [
                 "Sources/CSevenZip/sevenzip_bridge.cpp",
                 "Sources/CSevenZip/sevenzip_bridge_write.cpp",
-                "Sources/CSevenZip/hw_stubs.c",
             ],
             publicHeadersPath: "Sources/CSevenZip/include",
             cSettings: [
@@ -398,7 +402,11 @@ let package = Package(
                 .headerSearchPath("Sources/CSevenZip/vendor/7zip/CPP/7zip/Archive"),
                 .headerSearchPath("Sources/CSevenZip/vendor/7zip/C"),
                 .headerSearchPath("Sources/CSevenZip"),
-                .unsafeFlags(["-w"]),
+                // Xcode turns on CLANG_ENABLE_MODULES, under which the x86
+                // intrinsics headers stop exporting __m128i transitively and
+                // AesOpt.c/Sha*Opt.c fail to compile for the x86_64 slice of a
+                // Release build. Nothing vendored here wants modules.
+                .unsafeFlags(["-w", "-fno-modules"]),
             ],
             cxxSettings: [
                 .define("_7ZIP_ST"),
@@ -420,16 +428,8 @@ let package = Package(
             ]
         ),
         .target(
-            name: "CSevenZipPlatformStubs",
-            path: "Sources/CSevenZipPlatformStubs",
-            publicHeadersPath: "include",
-            cSettings: [
-                .unsafeFlags(["-w"])
-            ]
-        ),
-        .target(
             name: "Swift7zip",
-            dependencies: ["CSevenZip", "CSevenZipPlatformStubs"],
+            dependencies: ["CSevenZip"],
             path: "Sources/Swift7zip",
             swiftSettings: [
                 .swiftLanguageMode(.v6),
@@ -442,11 +442,15 @@ let package = Package(
                 .product(name: "tb", package: "TailBeatKit")
             ],
             resources: [
+                // The payload every defaultArchive.* (and every password fixture)
+                // packs, so tests can assert extracted bytes against the source.
+                .copy("TestArchives/defaultArchiveContent"),
                 .copy("TestArchives/defaultArchives"),
                 .copy("TestArchives/lha_lzh"),
                 .copy("TestArchives/lzx"),
                 .copy("TestArchives/stuffit"),
-                .copy("TestArchives/zip")
+                .copy("TestArchives/zip"),
+                .copy("TestArchives/password")
             ]
         )
     ]

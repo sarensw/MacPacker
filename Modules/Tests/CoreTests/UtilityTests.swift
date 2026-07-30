@@ -542,13 +542,13 @@ extension AllCoreTests {
 
         @Test func initCreatesStore() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             #expect(store != nil)
         }
 
         @Test func selectedEngineDefaultsFromCatalog() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let engine = store.selectedEngine(for: "zip")
             // Should come from catalog default
             #expect(engine != nil)
@@ -556,7 +556,7 @@ extension AllCoreTests {
 
         @Test func setSelectedEngineStoresOverride() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
 
             // Find a valid engine for zip from the catalog options
             let options = catalog.engineOptions(for: "zip")
@@ -565,6 +565,9 @@ extension AllCoreTests {
                 return
             }
 
+            // Overrides only apply when the user is choosing; automatic mode
+            // deliberately ignores them (see AutomaticEngineSelectionTests).
+            store.isAutomatic = false
             store.setSelectedEngine(engineType, for: "zip")
             let selected = store.selectedEngine(for: "zip")
             #expect(selected == engineType)
@@ -572,7 +575,7 @@ extension AllCoreTests {
 
         @Test func setSelectedEngineRejectsUnknownEngine() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let original = store.selectedEngine(for: "zip")
 
             // swc is likely not a valid engine for zip, so it should be rejected
@@ -592,14 +595,14 @@ extension AllCoreTests {
 
         @Test func initCreatesSelector() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: store)
             #expect(selector != nil)
         }
 
         @Test func engineForZipReturnsEngine() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: store)
             let engine = selector.engine(for: "zip")
             #expect(engine != nil)
@@ -607,7 +610,7 @@ extension AllCoreTests {
 
         @Test func engineForNonexistentReturnsNil() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: store)
             let engine = selector.engine(for: "nonexistent")
             #expect(engine == nil)
@@ -615,7 +618,7 @@ extension AllCoreTests {
 
         @Test func engineForType7zipReturnsArchive7ZipEngine() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: store)
             let engine = selector.engine(for: .`7zip`)
             #expect(engine is Archive7ZipEngine)
@@ -623,7 +626,7 @@ extension AllCoreTests {
 
         @Test func engineTypeForZipReturnsEngineType() {
             let catalog = ArchiveTypeCatalog()
-            let store = ArchiveEngineConfigStore(catalog: catalog)
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: store)
             let engineType = selector.engineType(for: "zip")
             #expect(engineType != nil)

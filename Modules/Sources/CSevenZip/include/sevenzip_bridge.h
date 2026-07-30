@@ -13,9 +13,19 @@ typedef void* SZArchiveRef;
 // --- Lifecycle ---
 
 /// Open an archive at the given filesystem path.
+///
+/// @param password  Password to use while reading the archive headers, or NULL.
+///                  Formats that encrypt their header (7z -mhe=on, RAR -hp)
+///                  cannot be listed without it. Also pre-sets the extraction
+///                  password, so sz_set_password() is not needed afterwards.
+/// @param needs_password_out  If non-NULL, set to true when a handler asked for
+///                  a password during the open. Meaningful only on failure:
+///                  it tells the caller to prompt and retry rather than report
+///                  an unsupported file.
 /// Returns NULL on failure. On failure, *error_out (if non-NULL) is set to a
 /// malloc'd UTF-8 error string -- caller must free() it.
-SZArchiveRef sz_open(const char *path, char **error_out);
+SZArchiveRef sz_open(const char *path, const char *password,
+                     bool *needs_password_out, char **error_out);
 
 /// Release all resources. Must be called exactly once per successful sz_open().
 void sz_close(SZArchiveRef archive);
@@ -66,6 +76,10 @@ typedef bool (*sz_progress_callback)(uint64_t completed, uint64_t total,
 #define SZ_EXTRACT_OK 0
 #define SZ_EXTRACT_FAILED (-1)
 #define SZ_EXTRACT_ABORTED 2
+/// At least one entry could not be decrypted with the password that was set
+/// (or no password was set for an encrypted entry). Distinct from
+/// SZ_EXTRACT_FAILED so callers can re-prompt instead of giving up.
+#define SZ_EXTRACT_WRONG_PASSWORD 3
 
 /// Extract a single entry by index into dest_dir (which must already exist).
 /// Returns 0 on success. On failure, *error_out receives a malloc'd string.

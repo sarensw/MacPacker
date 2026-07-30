@@ -19,6 +19,9 @@ struct ContentView: View {
     
     @State private var showPasswordSheet: Bool = false
     @State private var passwordContinuation: CheckedContinuation<String?, Never>?
+    /// The request the sheet is currently answering, so it can name the archive
+    /// and say that the previous attempt was rejected.
+    @State private var passwordRequest: ArchivePasswordRequest?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -58,10 +61,11 @@ struct ContentView: View {
         .onAppear {
             if self.archiveState.passwordProvider == nil {
                 let passwordProvider: ArchivePasswordUserProvider = { request in
-                    
+
                     await withCheckedContinuation { continuation in
                         Task { @MainActor in
                             self.passwordContinuation = continuation
+                            self.passwordRequest = request
                             self.showPasswordSheet = true
                         }
                     }
@@ -70,8 +74,27 @@ struct ContentView: View {
                 self.archiveState.passwordProvider = passwordProvider
             }
         }
+        // A failed open ends in reset(), so the window falls back to its empty
+        // state: without this the user's drag or double-click just appears to do
+        // nothing. Extraction failures are deliberately not shown here — the
+        // progress window already reports those.
+        .alert(
+            "Could not open archive",
+            isPresented: Binding(
+                get: { archiveState.openError != nil },
+                set: { presented in
+                    if !presented { archiveState.clearOpenError() }
+                }
+            ),
+            presenting: archiveState.openError
+        ) { _ in
+            Button("OK", role: .cancel) { }
+        } message: { reason in
+            Text(verbatim: reason)
+        }
         .sheet(isPresented: $showPasswordSheet) {
             PasswordView(
+                request: passwordRequest,
                 onSubmit: { password in
                     passwordContinuation?.resume(returning: password)
                     passwordContinuation = nil

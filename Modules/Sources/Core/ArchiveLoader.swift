@@ -6,6 +6,13 @@
 //
 
 import Foundation
+import tb
+
+/// The loader only ever reported through `yield(.processing(...))`, which lands
+/// in the UI status text and nowhere else — so a failed open left no trace of
+/// which type was detected or which engine ran. That is the first thing anyone
+/// needs from a bug report, hence a real logger.
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "loader")
 
 struct ArchiveLoaderLoadResult: Sendable {
     let type: ArchiveTypeDto
@@ -16,6 +23,12 @@ struct ArchiveLoaderLoadResult: Sendable {
     let tempDirectory: URL?
     let uncompressedSize: Int64?
     let hasTree: Bool
+    /// True when at least one entry in the archive is encrypted.
+    let isEncrypted: Bool
+    /// The engine that actually read the archive. Differs from the configured
+    /// one when the loader had to fall back; the caller pins it so extraction
+    /// uses the same engine.
+    let engineType: ArchiveEngineType?
     /// For a split archive, the resolved first volume — so the window shows the
     /// canonical `.z01`/`.zip.001` regardless of which part was opened. nil otherwise.
     let firstVolumeURL: URL?
@@ -106,8 +119,19 @@ final actor ArchiveLoader {
         var compoundTempUrl: URL? = nil
         
         guard let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true) else {
-            throw ArchiveError.invalidArchive("Could not detect archive type")
+            log.notice("No archive type detected", context: [
+                "file": url.lastPathComponent,
+                "ext": url.pathExtension
+            ])
+            throw ArchiveError.invalidArchive(
+                "\(url.lastPathComponent) is not a recognised archive type.")
         }
+        log.info("Archive type detected", context: [
+            "file": url.lastPathComponent,
+            "type": detectorResult.type.id,
+            "composition": detectorResult.composition?.id ?? "none",
+            "split": detectorResult.split == nil ? "no" : "yes"
+        ])
         
         if let compound = detectorResult.composition {
             // this is a compound, in which case we decompress first,
@@ -180,9 +204,18 @@ final actor ArchiveLoader {
         yield(.processing(progress: nil, message: "loading engine for: \(detectorResult.type.id)"))
         guard let engine = archiveEngineSelector.engine(for: detectorResult.type.id) else {
             yield(.processing(progress: nil, message: "invalid archive type: \(detectorResult.type.id)"))
-            throw ArchiveError.invalidArchive("Could not find engine for detected archive type")
+            log.error("No engine for archive type", context: ["type": detectorResult.type.id])
+            throw ArchiveError.invalidArchive(
+                "No engine is configured for \(detectorResult.type.name).")
         }
         self.engine = engine
+        // Which engine actually ran is the single most useful fact when an open
+        // fails — the same archive behaves differently on 7-Zip and XAD.
+        log.info("Engine selected", context: [
+            "file": url.lastPathComponent,
+            "type": detectorResult.type.id,
+            "engine": archiveEngineSelector.engineType(for: detectorResult.type.id)?.configId ?? "unknown"
+        ])
         yield(.processing(progress: nil, message: "engine loaded: \(String(describing: type(of: engine))), for: \(detectorResult.type.id)"))
         
         // build the status stream to forward the engine status to the UI
@@ -190,12 +223,11 @@ final actor ArchiveLoader {
         defer { forwardTask.cancel() }
         
         // set the entries
-        let engineLoadResult = try await Sandbox.access(url: archiveUrl) {
-            try await engine.loadArchive(
-                url: archiveUrl,
-                passwordResolver: passwordResolver
-            )
-        }
+        let (engineLoadResult, usedEngine) = try await loadArchiveWithFallback(
+            url: archiveUrl,
+            type: detectorResult.type,
+            selected: engine
+        )
         self.entries = engineLoadResult.items
         yield(.processing(progress: nil, message: "entries found: \(self.entries.count)"))
         
@@ -222,11 +254,81 @@ final actor ArchiveLoader {
             tempDirectory: compoundTempUrl,
             uncompressedSize: engineLoadResult.uncompressedSize,
             hasTree: engineLoadResult.hasTree,
+            isEncrypted: engineLoadResult.isEncrypted,
+            engineType: usedEngine,
             firstVolumeURL: firstVolumeURL
         )
         return result
     }
     
+    /// Reads the archive with the configured engine, falling back to the other
+    /// engines the catalog lists for the format if that one simply cannot open
+    /// it.
+    ///
+    /// A format's engines are not interchangeable per archive: XAD is a valid
+    /// choice for `rar` and `7zip` but cannot open a header-encrypted archive of
+    /// either, so a user with XAD selected got "Unsupported or invalid archive"
+    /// for a file 7-Zip reads fine. Telling them to change a setting is a poor
+    /// answer when the app can just use the engine that works.
+    ///
+    /// Only `invalidArchive` triggers a retry — that is the engine saying "I
+    /// can't read this". A cancelled password prompt or a genuine extraction
+    /// error is final, so the user is never asked for a password twice.
+    private func loadArchiveWithFallback(
+        url: URL,
+        type: ArchiveTypeDto,
+        selected: any ArchiveEngine
+    ) async throws -> (ArchiveEngineLoadResult, ArchiveEngineType?) {
+        let selectedType = archiveEngineSelector.engineType(for: type.id)
+        do {
+            let result = try await Sandbox.access(url: url) {
+                try await selected.loadArchive(url: url, passwordResolver: passwordResolver)
+            }
+            return (result, selectedType)
+        } catch ArchiveError.invalidArchive(let reason) {
+            // Manual mode: the user chose this engine, so its limits are the
+            // answer, not something to route around.
+            guard archiveEngineSelector.allowsEngineFallback else {
+                log.notice("Engine cannot read archive, fallback disabled", context: [
+                    "file": url.lastPathComponent,
+                    "engine": selectedType?.configId ?? "unknown",
+                    "reason": reason
+                ])
+                throw ArchiveError.invalidArchive(reason)
+            }
+
+            let alternatives = type.engines
+                .compactMap { ArchiveEngineType(configId: $0.id) }
+                .filter { $0 != selectedType }
+
+            for candidate in alternatives {
+                let engine = archiveEngineSelector.engine(for: candidate)
+                do {
+                    let result = try await Sandbox.access(url: url) {
+                        try await engine.loadArchive(url: url, passwordResolver: passwordResolver)
+                    }
+                    log.notice("Engine fallback", context: [
+                        "file": url.lastPathComponent,
+                        "from": selectedType?.configId ?? "unknown",
+                        "to": candidate.configId,
+                        "reason": reason
+                    ])
+                    self.engine = engine
+                    return (result, candidate)
+                } catch ArchiveError.invalidArchive {
+                    // This engine can't read it either — try the next one.
+                    continue
+                }
+                // Anything else is a real outcome and belongs to the caller:
+                // a dismissed password prompt is the user's answer, cancellation
+                // is the user's answer, and a genuine failure is information.
+                // Swallowing them here reported the *first* engine's "can't read
+                // this" instead, blaming an engine the user never chose.
+            }
+            throw ArchiveError.invalidArchive(reason)
+        }
+    }
+
     /// Builds the hierarchy from the list of entries for the given root. The root can be the entry of the opened
     /// archive, or an item in the archive that is an archive itself
     /// - Parameter root: root to attache the tree to
