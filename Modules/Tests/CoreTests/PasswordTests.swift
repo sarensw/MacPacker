@@ -55,9 +55,32 @@ private actor PasswordAnswers {
 /// Resolver that never answers — extraction must fail, not stall.
 private let neverResolves: ArchivePasswordResolver = { _ in nil }
 
-private let helloContents = "encrypted hello\n"
-private let nestedContents = "nested secret\n"
-private let publicContents = "public data\n"
+// Every fixture packs `TestArchives/defaultArchiveContent`, so a correct
+// decryption has to reproduce those files byte for byte.
+
+/// The text entry, with a space in the name.
+private let helloPath = "hello world.txt"
+private let helloContents = "Hello World!\n"
+/// `zip_mixed.zip` leaves everything under `folder/` unencrypted.
+private let plainPath = "folder/README.md"
+/// Every file of the payload, as archive-relative paths. `NestedArchive.zip` is
+/// 52 KB of binary, which is the interesting one: a truncated or wrongly
+/// decrypted stream shows up here and not in a 13-byte text file.
+private let payloadFiles = ["hello world.txt", "folder/README.md", "folder/NestedArchive.zip"]
+
+/// The original file the archives were built from.
+private func payloadSource(_ path: String) -> URL {
+    Bundle.module.url(forResource: "defaultArchiveContent", withExtension: nil)!
+        .appendingPathComponent(path)
+}
+
+/// True when an extracted file is byte-identical to the payload source.
+private func matchesPayload(_ extracted: URL, _ path: String) -> Bool {
+    guard let got = try? Data(contentsOf: extracted),
+          let want = try? Data(contentsOf: payloadSource(path))
+    else { return false }
+    return got == want
+}
 
 private let correctPassword = "password"
 private let unicodePassword = "pässwörd"
@@ -109,7 +132,7 @@ extension AllCoreTests {
             ("zip_symbol_pw.zip", symbolPassword),
             ("zip_long_pw.zip", longPassword),
             ("7z_aes256.7z", correctPassword),
-            ("7z_header_encrypted.7z", correctPassword),
+            ("7z_encrypted_header.7z", correctPassword),
             ("7z_symbol_pw.7z", symbolPassword)
         ])
         func extractsEncryptedEntryWithCorrectPassword(name: String, password: String) async throws {
@@ -117,7 +140,7 @@ extension AllCoreTests {
                 // XAD cannot open a header-encrypted archive: the header has to be
                 // decrypted during init and XADArchive only accepts a password
                 // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("header_encrypted") { continue }
+                if engineName == "xad" && name.contains("encrypted_header") { continue }
 
                 let answers = PasswordAnswers.always(password)
                 let url = fixture(name)
@@ -126,8 +149,8 @@ extension AllCoreTests {
 
                 let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
                 let hello = try #require(
-                    load.items.values.first { $0.virtualPath == "hello.txt" },
-                    "\(engineName)/\(name): hello.txt missing from listing"
+                    load.items.values.first { $0.virtualPath == helloPath },
+                    "\(engineName)/\(name): \(helloPath) missing from listing"
                 )
 
                 let result = try await engine.extract(
@@ -152,7 +175,7 @@ extension AllCoreTests {
                 // XAD cannot open a header-encrypted archive: the header has to be
                 // decrypted during init and XADArchive only accepts a password
                 // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("header_encrypted") { continue }
+                if engineName == "xad" && name.contains("encrypted_header") { continue }
 
                 let answers = PasswordAnswers.always(correctPassword)
                 let destination = try tempDirectory()
@@ -164,14 +187,12 @@ extension AllCoreTests {
                     passwordResolver: answers.resolver
                 )
 
-                #expect(
-                    contents(of: destination.appendingPathComponent("hello.txt")) == helloContents,
-                    "\(engineName)/\(name): hello.txt wrong"
-                )
-                #expect(
-                    contents(of: destination.appendingPathComponent("folder/nested.txt")) == nestedContents,
-                    "\(engineName)/\(name): folder/nested.txt wrong"
-                )
+                for path in payloadFiles {
+                    #expect(
+                        matchesPayload(destination.appendingPathComponent(path), path),
+                        "\(engineName)/\(name): \(path) wrong, empty or missing"
+                    )
+                }
             }
         }
 
@@ -186,7 +207,10 @@ extension AllCoreTests {
 
                 let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
                 let files = load.items.values.filter { $0.type == .file }
-                #expect(files.count == 2, "\(engineName): expected 2 files")
+                #expect(
+                    files.count == payloadFiles.count,
+                    "\(engineName): expected \(payloadFiles.count) files, got \(files.count)"
+                )
 
                 let result = try await engine.extract(
                     items: Array(files),
@@ -197,8 +221,8 @@ extension AllCoreTests {
 
                 for file in files {
                     let extracted = try #require(result[file], "\(engineName): no url for \(file.name)")
-                    let expected = file.name == "hello.txt" ? helloContents : nestedContents
-                    #expect(contents(of: extracted) == expected, "\(engineName): \(file.name) wrong")
+                    let path = try #require(file.virtualPath)
+                    #expect(matchesPayload(extracted, path), "\(engineName): \(path) wrong")
                 }
             }
         }
@@ -217,7 +241,7 @@ extension AllCoreTests {
                 // XAD cannot open a header-encrypted archive: the header has to be
                 // decrypted during init and XADArchive only accepts a password
                 // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("header_encrypted") { continue }
+                if engineName == "xad" && name.contains("encrypted_header") { continue }
 
                 // One wrong answer, then cancel — bounded either way.
                 let answers = PasswordAnswers("definitely-not-the-password")
@@ -226,7 +250,7 @@ extension AllCoreTests {
                 defer { try? FileManager.default.removeItem(at: destination) }
 
                 let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
-                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+                let hello = try #require(load.items.values.first { $0.virtualPath == helloPath })
 
                 await #expect(throws: (any Error).self, "\(engineName)/\(name): wrong password reported success") {
                     _ = try await engine.extract(
@@ -238,7 +262,7 @@ extension AllCoreTests {
                 }
 
                 // No half-written garbage left where the user asked for a file.
-                let leftover = destination.appendingPathComponent("hello.txt")
+                let leftover = destination.appendingPathComponent(helloPath)
                 #expect(
                     FileManager.default.fileExists(atPath: leftover.path) == false,
                     "\(engineName)/\(name): empty file left behind after failure"
@@ -254,7 +278,7 @@ extension AllCoreTests {
                 // XAD cannot open a header-encrypted archive: the header has to be
                 // decrypted during init and XADArchive only accepts a password
                 // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("header_encrypted") { continue }
+                if engineName == "xad" && name.contains("encrypted_header") { continue }
 
                 let answers = PasswordAnswers("wrong-first-try", correctPassword)
                 let url = fixture(name)
@@ -262,7 +286,7 @@ extension AllCoreTests {
                 defer { try? FileManager.default.removeItem(at: destination) }
 
                 let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
-                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+                let hello = try #require(load.items.values.first { $0.virtualPath == helloPath })
 
                 let result = try await engine.extract(
                     items: [hello],
@@ -289,11 +313,11 @@ extension AllCoreTests {
         @Test func wrongPasswordOnHeaderEncrypted7zIsReprompted() async throws {
             let answers = PasswordAnswers("wrong-first-try", correctPassword)
             let load = try await Archive7ZipEngine().loadArchive(
-                url: fixture("7z_header_encrypted.7z"),
+                url: fixture("7z_encrypted_header.7z"),
                 passwordResolver: answers.resolver
             )
 
-            #expect(load.items.values.contains { $0.virtualPath == "hello.txt" })
+            #expect(load.items.values.contains { $0.virtualPath == helloPath })
             let attempts = await answers.attempts
             #expect(attempts == [1, 2], "got \(attempts)")
         }
@@ -317,7 +341,7 @@ extension AllCoreTests {
                 // XAD cannot open a header-encrypted archive: the header has to be
                 // decrypted during init and XADArchive only accepts a password
                 // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("header_encrypted") { continue }
+                if engineName == "xad" && name.contains("encrypted_header") { continue }
 
                 // Unbounded: answers "wrong" every single time, forever.
                 let answers = PasswordAnswers.always("definitely-not-the-password")
@@ -326,7 +350,7 @@ extension AllCoreTests {
                 defer { try? FileManager.default.removeItem(at: destination) }
 
                 let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
-                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+                let hello = try #require(load.items.values.first { $0.virtualPath == helloPath })
 
                 await #expect(throws: (any Error).self, "\(engineName)/\(name)") {
                     _ = try await engine.extract(
@@ -356,7 +380,7 @@ extension AllCoreTests {
             state.open(url: fixture("zip_aes256.zip"))
             try await state.openTask?.value
 
-            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
             await #expect(throws: (any Error).self) {
                 _ = try await state.extractToTemp(item: hello)
             }
@@ -377,14 +401,14 @@ extension AllCoreTests {
                 // XAD cannot open a header-encrypted archive: the header has to be
                 // decrypted during init and XADArchive only accepts a password
                 // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("header_encrypted") { continue }
+                if engineName == "xad" && name.contains("encrypted_header") { continue }
 
                 let url = fixture(name)
                 let destination = try tempDirectory()
                 defer { try? FileManager.default.removeItem(at: destination) }
 
                 let load = try await engine.loadArchive(url: url, passwordResolver: neverResolves)
-                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+                let hello = try #require(load.items.values.first { $0.virtualPath == helloPath })
 
                 do {
                     _ = try await engine.extract(
@@ -405,7 +429,7 @@ extension AllCoreTests {
         @Test func cancellingHeaderEncrypted7zLoadThrows() async throws {
             await #expect(throws: (any Error).self) {
                 _ = try await Archive7ZipEngine().loadArchive(
-                    url: fixture("7z_header_encrypted.7z"),
+                    url: fixture("7z_encrypted_header.7z"),
                     passwordResolver: neverResolves
                 )
             }
@@ -426,7 +450,7 @@ extension AllCoreTests {
                 // XAD cannot open a header-encrypted archive: the header has to be
                 // decrypted during init and XADArchive only accepts a password
                 // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("header_encrypted") { continue }
+                if engineName == "xad" && name.contains("encrypted_header") { continue }
 
                 let answers = PasswordAnswers()
                 let load = try await engine.loadArchive(
@@ -435,7 +459,7 @@ extension AllCoreTests {
                 )
 
                 #expect(
-                    load.items.values.contains { $0.virtualPath == "hello.txt" },
+                    load.items.values.contains { $0.virtualPath == helloPath },
                     "\(engineName)/\(name): hello.txt not listed"
                 )
                 let prompted = await answers.callCount
@@ -453,7 +477,7 @@ extension AllCoreTests {
         @Test func xadCannotOpenHeaderEncryptedArchives() async throws {
             do {
                 _ = try await ArchiveXadEngine().loadArchive(
-                    url: fixture("7z_header_encrypted.7z"),
+                    url: fixture("7z_encrypted_header.7z"),
                     passwordResolver: PasswordAnswers.always(correctPassword).resolver
                 )
                 Issue.record("XAD opened a header-encrypted archive — limitation lifted, drop the skips")
@@ -472,7 +496,7 @@ extension AllCoreTests {
                 url: fixture(name),
                 passwordResolver: answers.resolver
             )
-            #expect(load.items.values.contains { $0.virtualPath == "hello.txt" }, "\(name)")
+            #expect(load.items.values.contains { $0.virtualPath == helloPath }, "\(name)")
             let prompted = await answers.callCount
             #expect(prompted == 0, "\(name): listing asked for a password")
         }
@@ -482,12 +506,12 @@ extension AllCoreTests {
         @Test func headerEncrypted7zListsOnlyWithPassword() async throws {
             let answers = PasswordAnswers.always(correctPassword)
             let load = try await Archive7ZipEngine().loadArchive(
-                url: fixture("7z_header_encrypted.7z"),
+                url: fixture("7z_encrypted_header.7z"),
                 passwordResolver: answers.resolver
             )
 
-            #expect(load.items.values.contains { $0.virtualPath == "hello.txt" })
-            #expect(load.items.values.contains { $0.virtualPath == "folder/nested.txt" })
+            #expect(load.items.values.contains { $0.virtualPath == helloPath })
+            #expect(load.items.values.contains { $0.virtualPath == plainPath })
             let prompted = await answers.callCount
             #expect(prompted >= 1, "header-encrypted listing did not ask for a password")
         }
@@ -513,7 +537,7 @@ extension AllCoreTests {
 
     @MainActor struct MixedEncryptionTests {
 
-        /// `public.txt` is stored unencrypted next to encrypted entries.
+        /// Everything under `folder/` is stored unencrypted next to the encrypted
         /// Extracting it must not prompt at all.
         @Test func plainEntryNeedsNoPassword() async throws {
             for (engineName, engine) in engines() {
@@ -523,7 +547,7 @@ extension AllCoreTests {
                 defer { try? FileManager.default.removeItem(at: destination) }
 
                 let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
-                let plain = try #require(load.items.values.first { $0.virtualPath == "public.txt" })
+                let plain = try #require(load.items.values.first { $0.virtualPath == plainPath })
 
                 let result = try await engine.extract(
                     items: [plain],
@@ -533,7 +557,7 @@ extension AllCoreTests {
                 )
 
                 let extracted = try #require(result[plain])
-                #expect(contents(of: extracted) == publicContents, "\(engineName): public.txt wrong")
+                #expect(matchesPayload(extracted, plainPath), "\(engineName): \(plainPath) wrong")
                 let prompted = await answers.callCount
                 #expect(prompted == 0, "\(engineName): plain entry asked for a password")
             }
@@ -549,8 +573,8 @@ extension AllCoreTests {
             defer { try? FileManager.default.removeItem(at: destination) }
 
             let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
-            let plain = try #require(load.items.values.first { $0.virtualPath == "public.txt" })
-            let secret = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+            let plain = try #require(load.items.values.first { $0.virtualPath == plainPath })
+            let secret = try #require(load.items.values.first { $0.virtualPath == helloPath })
 
             let result = try await engine.extract(
                 items: [plain, secret],
@@ -559,7 +583,7 @@ extension AllCoreTests {
                 passwordResolver: answers.resolver
             )
 
-            #expect(contents(of: try #require(result[plain])) == publicContents)
+            #expect(matchesPayload(try #require(result[plain]), plainPath))
             #expect(contents(of: try #require(result[secret])) == helloContents)
             let prompted = await answers.callCount
             #expect(prompted == 1, "prompted \(prompted) times")
@@ -568,31 +592,29 @@ extension AllCoreTests {
 
     // MARK: - RAR
 
-    /// Encrypted RAR, which neither engine has ever been tested against.
+    /// Encrypted RAR. RAR5 derives its key with PBKDF2-HMAC-SHA256 and RAR3/4
+    /// with SHA-1, both through the 7-Zip crypto that was silently broken until
+    /// v0.18.2, so these are the cases most likely to regress if the Opt sources
+    /// ever get dropped again.
     ///
-    /// RAR5 derives its key with PBKDF2-HMAC-SHA256 and RAR3/4 with SHA-1 — both
-    /// through the 7-Zip crypto that was silently broken until v0.18.2 — so this
-    /// is the one encrypted format still taken on faith.
-    ///
-    /// The fixtures cannot be built on macOS (`rar` is not redistributable);
-    /// `TestArchives/password/make_rar_fixtures.sh` creates them on a machine that
-    /// has it. Until they are committed these tests skip instead of failing, and
-    /// they have never been executed — treat a first failure as "the assertion
-    /// might be wrong", not only "the code is wrong".
+    /// The fixtures can only be *created* where `rar` runs (Windows/Linux) —
+    /// `make_rar_fixtures.sh`, and `-ma4` for the RAR3/4 pair needs WinRAR 6.
+    /// The suite stays gated on them existing so a fresh submodule checkout that
+    /// lacks them skips rather than fails.
     @MainActor
-    @Suite(.enabled(if: rarFixturesAvailable, "RAR fixtures not committed yet — see make_rar_fixtures.sh"))
+    @Suite(.enabled(if: rarFixturesAvailable, "RAR fixtures missing — see make_rar_fixtures.sh"))
     struct EncryptedRarTests {
 
         @Test(arguments: [
-            "rar5_aes.rar", "rar5_header_encrypted.rar",
-            "rar4_aes.rar", "rar4_header_encrypted.rar"
+            "rar5_aes.rar", "rar5_encrypted_header.rar",
+            "rar4_aes.rar", "rar4_encrypted_header.rar"
         ])
         func extractsEncryptedRarEntryWithCorrectPassword(name: String) async throws {
             for (engineName, engine) in engines() {
                 // XAD cannot open a header-encrypted archive: the header has to be
                 // decrypted during init and XADArchive only accepts a password
                 // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("header_encrypted") { continue }
+                if engineName == "xad" && name.contains("encrypted_header") { continue }
 
                 let answers = PasswordAnswers.always(correctPassword)
                 let url = fixture(name)
@@ -601,8 +623,8 @@ extension AllCoreTests {
 
                 let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
                 let hello = try #require(
-                    load.items.values.first { $0.virtualPath == "hello.txt" },
-                    "\(engineName)/\(name): hello.txt missing from listing"
+                    load.items.values.first { $0.virtualPath == helloPath },
+                    "\(engineName)/\(name): \(helloPath) missing from listing"
                 )
 
                 let result = try await engine.extract(
@@ -626,7 +648,7 @@ extension AllCoreTests {
                 // XAD cannot open a header-encrypted archive: the header has to be
                 // decrypted during init and XADArchive only accepts a password
                 // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("header_encrypted") { continue }
+                if engineName == "xad" && name.contains("encrypted_header") { continue }
 
                 let answers = PasswordAnswers("wrong-first-try", correctPassword)
                 let url = fixture(name)
@@ -634,7 +656,7 @@ extension AllCoreTests {
                 defer { try? FileManager.default.removeItem(at: destination) }
 
                 let load = try await engine.loadArchive(url: url, passwordResolver: answers.resolver)
-                let hello = try #require(load.items.values.first { $0.virtualPath == "hello.txt" })
+                let hello = try #require(load.items.values.first { $0.virtualPath == helloPath })
 
                 let result = try await engine.extract(
                     items: [hello],
@@ -652,14 +674,14 @@ extension AllCoreTests {
 
         /// `rar -hp` encrypts the header, so the listing itself needs the
         /// password — the RAR equivalent of 7z `-mhe=on`.
-        @Test(arguments: ["rar5_header_encrypted.rar", "rar4_header_encrypted.rar"])
+        @Test(arguments: ["rar5_encrypted_header.rar", "rar4_encrypted_header.rar"])
         func headerEncryptedRarListsOnlyWithPassword(name: String) async throws {
             let answers = PasswordAnswers.always(correctPassword)
             let load = try await Archive7ZipEngine().loadArchive(
                 url: fixture(name),
                 passwordResolver: answers.resolver
             )
-            #expect(load.items.values.contains { $0.virtualPath == "hello.txt" }, "\(name)")
+            #expect(load.items.values.contains { $0.virtualPath == helloPath }, "\(name)")
 
             let prompted = await answers.callCount
             #expect(prompted >= 1, "\(name): header-encrypted listing did not ask for a password")
@@ -750,21 +772,27 @@ extension AllCoreTests {
             state.open(url: archive)
             try await state.openTask?.value
 
-            let nested = try #require(state.entries.values.first { $0.virtualPath == "folder/nested.txt" })
-            state.remove(items: [nested])
+            let readme = try #require(state.entries.values.first { $0.virtualPath == plainPath })
+            state.remove(items: [readme])
             await state.save()?.value
             #expect(state.error == nil, "save reported \(state.error ?? "")")
 
-            // Reopen from scratch: hello.txt must still decrypt to its real
-            // contents and folder/nested.txt must be gone.
+            // Reopen from scratch: the deleted entry must be gone and the ones
+            // copied through must still decrypt to their original bytes.
             let reopened = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             reopened.passwordProvider = { _ in correctPassword }
             reopened.open(url: archive)
             try await reopened.openTask?.value
 
-            #expect(reopened.entries.values.contains { $0.virtualPath == "folder/nested.txt" } == false)
-            let hello = try #require(reopened.entries.values.first { $0.virtualPath == "hello.txt" })
-            #expect(contents(of: try await reopened.extractToTemp(item: hello)) == helloContents)
+            #expect(reopened.entries.values.contains { $0.virtualPath == plainPath } == false)
+            for path in payloadFiles where path != plainPath {
+                let item = try #require(
+                    reopened.entries.values.first { $0.virtualPath == path },
+                    "\(path) vanished from the rewritten archive"
+                )
+                let extracted = try await reopened.extractToTemp(item: item)
+                #expect(matchesPayload(extracted, path), "\(path) did not survive the rewrite")
+            }
             #expect(reopened.isEncrypted == true, "the rewrite dropped the encryption")
         }
     }
@@ -785,7 +813,7 @@ extension AllCoreTests {
             state.open(url: fixture("zip_aes256.zip"))
             try await state.openTask?.value
 
-            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
             #expect(contents(of: try await state.extractToTemp(item: hello)) == helloContents)
             #expect(contents(of: try await state.extractToTemp(item: hello)) == helloContents)
 
@@ -810,7 +838,7 @@ extension AllCoreTests {
             state.open(url: fixture("zip_aes256.zip"))
             try await state.openTask?.value
 
-            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
             let extracted = try await state.extractToTemp(item: hello)
 
             #expect(contents(of: extracted) == helloContents)
@@ -826,7 +854,7 @@ extension AllCoreTests {
             state.open(url: fixture("zip_aes256.zip"))
             try await state.openTask?.value
 
-            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
             await #expect(throws: (any Error).self) {
                 _ = try await state.extractToTemp(item: hello)
             }
@@ -843,7 +871,7 @@ extension AllCoreTests {
             state.open(url: fixture("zip_aes256.zip"))
             try await state.openTask?.value
 
-            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
             state.extract(items: [hello], to: try tempDirectory())
 
             try await Task.sleep(for: .milliseconds(400))
@@ -863,7 +891,7 @@ extension AllCoreTests {
             state.open(url: fixture("zip_aes256.zip"))
             try await state.openTask?.value
 
-            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
             state.extract(items: [hello], to: try tempDirectory())
 
             try await Task.sleep(for: .milliseconds(400))
@@ -887,7 +915,7 @@ extension AllCoreTests {
             state.open(url: fixture("zip_aes256.zip"))
             try await state.openTask?.value
 
-            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
             state.extract(items: [hello], to: try tempDirectory())
 
             try await Task.sleep(for: .milliseconds(600))
@@ -915,7 +943,7 @@ extension AllCoreTests {
             state.open(url: fixture(name))
             try await state.openTask?.value
 
-            let hello = try #require(state.entries.values.first { $0.virtualPath == "hello.txt" })
+            let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
             try await state.openFile(hello)
 
             let handed = try #require(opened.urls.first, "\(name): nothing handed to the system")
@@ -935,7 +963,7 @@ extension AllCoreTests {
             try await state.openAsync(item: inner)
 
             let hello = try #require(
-                state.entries.values.first { $0.virtualPath == "hello.txt" },
+                state.entries.values.first { $0.virtualPath == helloPath },
                 "inner archive did not list"
             )
             #expect(contents(of: try await state.extractToTemp(item: hello)) == helloContents)

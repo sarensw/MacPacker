@@ -61,6 +61,19 @@ private final class XADArchiveWithPasswordSupport {
     /// CPU without ever surfacing an error.
     private static let maxPasswordAttempts = 20
 
+    /// Failures that mean "the bytes did not decode" — on an encrypted archive
+    /// that is a wrong or missing password far more often than a damaged file.
+    /// Deliberately excludes the unambiguous ones (write, open, out of memory,
+    /// skip, break) so a real I/O problem still surfaces as itself.
+    private static let passwordSuspectErrors: Set<XADError> = [
+        XADUnknownError,      // RAR3/4, wrong password
+        XADInputError,        // RAR3/4, wrong password mid-stream
+        XADIllegalDataError,
+        XADNotSupportedError, // RAR, no password set
+        XADDecrunchError,     // 7z
+        XADChecksumError
+    ]
+
     func performXADOperationWithPasswordRetry<T>(
         operation: @escaping () -> T
     ) async throws -> T {
@@ -79,15 +92,21 @@ private final class XADArchiveWithPasswordSupport {
             }
 
             // XADMaster only reports XADPasswordError for the formats whose
-            // decryptors check the password explicitly. On 7z it surfaces a
-            // missing or wrong password as a plain decrunch error, so the prompt
-            // below never ran and an encrypted 7z failed with "Error on
-            // decrunching" — even though XAD extracts it fine once the password
-            // is set. On an archive that has encrypted entries, a decrunch error
-            // is overwhelmingly a password problem, so treat it as one; the
-            // attempt ceiling stops a genuinely corrupt archive from looping.
+            // decryptors check the password explicitly — zip, and RAR5 once it
+            // gets that far. Everywhere else a missing or wrong password
+            // surfaces as whatever the decoder happened to choke on: a decrunch
+            // error on 7z, "not fully supported" or an input/unknown error on
+            // RAR3/4. The prompt below never ran for those, so the archives
+            // failed outright even though XAD reads them fine once the password
+            // is set.
+            //
+            // So on an archive that *has* encrypted entries, treat any
+            // data-shaped failure as a possible password problem. Real I/O and
+            // resource errors are left alone, and the attempt ceiling stops a
+            // genuinely broken archive from looping. Same trade the 7-Zip engine
+            // makes for 7z AES, which has no password verifier either.
             let isPasswordError = error == XADPasswordError
-                || (error == XADDecrunchError && hasEncryptedEntry)
+                || (hasEncryptedEntry && Self.passwordSuspectErrors.contains(error))
 
             // failed, but because password is wrong / needed > ask user
             if isPasswordError {

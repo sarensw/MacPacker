@@ -442,6 +442,9 @@ let package = Package(
                 .product(name: "tb", package: "TailBeatKit")
             ],
             resources: [
+                // The payload every defaultArchive.* (and every password fixture)
+                // packs, so tests can assert extracted bytes against the source.
+                .copy("TestArchives/defaultArchiveContent"),
                 .copy("TestArchives/defaultArchives"),
                 .copy("TestArchives/lha_lzh"),
                 .copy("TestArchives/lzx"),
