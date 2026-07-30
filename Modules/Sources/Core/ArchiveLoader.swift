@@ -315,9 +315,15 @@ final actor ArchiveLoader {
                     ])
                     self.engine = engine
                     return (result, candidate)
-                } catch {
+                } catch ArchiveError.invalidArchive {
+                    // This engine can't read it either — try the next one.
                     continue
                 }
+                // Anything else is a real outcome and belongs to the caller:
+                // a dismissed password prompt is the user's answer, cancellation
+                // is the user's answer, and a genuine failure is information.
+                // Swallowing them here reported the *first* engine's "can't read
+                // this" instead, blaming an engine the user never chose.
             }
             throw ArchiveError.invalidArchive(reason)
         }

@@ -891,6 +891,36 @@ extension AllCoreTests {
             )
         }
 
+        /// Cancelling the prompt on the *fallback* engine must stay a
+        /// cancellation.
+        ///
+        /// The fallback loop swallowed every error from a candidate engine and
+        /// then reported the original engine's reason, so dismissing the password
+        /// prompt came back as "Could not open … with the XAD engine" — blaming
+        /// an engine the user never saw, for a file that is perfectly readable.
+        /// Task cancellation and real extraction errors were lost the same way.
+        @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"))
+        func cancellingThePromptOnTheFallbackEngineIsNotReportedAsInvalid() async throws {
+            // XAD is the default and cannot open a header-encrypted archive, so
+            // the loader falls back to 7-Zip, which needs the password to list.
+            let state = automaticState(defaultEngine: .xad, for: "rar")
+            state.passwordProvider = { _ in nil }
+
+            state.open(url: fixture("rar5_encrypted_header.rar"))
+            try await state.openTask?.value
+
+            #expect(state.hasArchive == false)
+            let message = try #require(state.error, "no reason reported")
+            #expect(
+                message.localizedCaseInsensitiveContains("cancel"),
+                "cancelling was not reported as a cancellation — got \(message)"
+            )
+            #expect(
+                message.localizedCaseInsensitiveContains("XAD") == false,
+                "blamed the engine the user never chose — got \(message)"
+            )
+        }
+
         /// A file the detector cannot place must say so, not fall through with a
         /// blank reason — the log line that started this was useless precisely
         /// because the message was thrown away.
