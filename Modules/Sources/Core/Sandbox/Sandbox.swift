@@ -62,6 +62,18 @@ public nonisolated final class Sandbox: Sendable {
         return try await perform()
     }
 
+    /// Synchronous twin of `access`, for callers that can't await — the type
+    /// detector reads the file's magic bytes from a plain (non-async) function, and
+    /// a file reached through a stored bookmark is unreadable outside the scope.
+    public static func accessSync<T>(url: URL, perform: () throws -> T) rethrows -> T {
+        if let scopedURL = sandbox.getSecurityUrl(url: url),
+           scopedURL.startAccessingSecurityScopedResource() {
+            defer { scopedURL.stopAccessingSecurityScopedResource() }
+            return try perform()
+        }
+        return try perform()
+    }
+
     /// Resolves the stored bookmark for `url` (or its nearest bookmarked ancestor)
     /// WITHOUT starting access. Resolving can block on an unresponsive network
     /// volume, so prefer calling this off the main thread. Returns nil when nothing

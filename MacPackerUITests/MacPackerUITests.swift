@@ -213,6 +213,87 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// An empty window shows the home screen, lists the archives opened before,
+    /// and opening one from that list loads it in that very window.
+    ///
+    /// The empty window is opened with ⌘⇧N from a window launched via
+    /// `-ArchivePath`: that both seeds the recents list and keeps the welcome
+    /// window (always shown on a plain dev launch) out of the way. Depending on
+    /// the system's window-tabbing setting it may come up as a tab — the
+    /// assertions look at content, not at window count, so either is fine.
+    func testHomeScreenOpensArchiveFromRecents() throws {
+        let dir = try makeWorkDir("recents")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        let zip = dir.appendingPathComponent("recents-fixture.zip")
+        try run("/usr/bin/zip", [zip.path, "one.txt"], cwd: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", zip.path])
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
+
+        // New MacPacker Window → empty → home screen
+        app.typeKey("n", modifierFlags: [.command, .shift])
+        // the start-page cards carry title + subtitle in one AX label
+        let openButton = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Open Archive…")).firstMatch
+        XCTAssertTrue(openButton.waitForExistence(timeout: 10), "the empty window does not show the home screen")
+
+        // the archive just opened is listed under Recent, and opening it from
+        // there replaces the home screen with the archive
+        let recent = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "recents-fixture.zip")).firstMatch
+        XCTAssertTrue(recent.waitForExistence(timeout: 5), "the archive is not listed under Recent")
+        recent.click()
+        XCTAssertTrue(openButton.waitForNonExistence(timeout: 15), "the recent archive did not open in that window")
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "the archive content is not shown")
+        app.terminate()
+    }
+
+    /// Dragging a file from Finder onto the upper half of an editable archive adds
+    /// it — the drop zones replaced the old ⌥-modifier gesture, so the plain drag
+    /// has to land in the archive without any key held.
+    func testDragFromFinderAddsToArchive() throws {
+        let dir = try makeWorkDir("drag")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        let zip = dir.appendingPathComponent("fixture.zip")
+        try run("/usr/bin/zip", [zip.path, "one.txt"], cwd: dir)
+        try "dropped".write(to: dir.appendingPathComponent("dropped.txt"), atomically: true, encoding: .utf8)
+
+        let app = launchApp(arguments: ["-ArchivePath", zip.path])
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
+
+        // a Finder window on the fixture folder is the drag source
+        NSWorkspace.shared.open(dir)
+        let finder = XCUIApplication(bundleIdentifier: "com.apple.finder")
+        // list view shows names as text fields (they double as the rename field)
+        let source = finder.textFields.matching(NSPredicate(format: "value == %@", "dropped.txt")).firstMatch
+        XCTAssertTrue(source.waitForExistence(timeout: 15), "Finder does not show the file to drag")
+
+        // upper half of the window = the "add" zone
+        let target = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35))
+        source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 1, thenDragTo: target)
+
+        XCTAssertTrue(app.staticTexts["dropped.txt"].waitForExistence(timeout: 15),
+                      "the dropped file was not added to the archive")
+        // the zones are for the drag only — `dropUpdated` keeps firing after the
+        // drop, so they must not re-arm themselves once the file has landed
+        XCTAssertTrue(app.staticTexts["Open in a new window"].waitForNonExistence(timeout: 5),
+                      "the drop zones stayed on screen after the drop")
+
+        // lower half = "open in a new window"; a plain file starts a new archive
+        // there. Let the previous drag settle first — back-to-back drags out of
+        // the same Finder row drop the second one.
+        sleep(1)
+        let openZone = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8))
+        source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 1, thenDragTo: openZone)
+        XCTAssertTrue(app.staticTexts["New Archive"].waitForExistence(timeout: 15),
+                      "the open zone did not start a new archive for the plain file")
+        XCTAssertTrue(app.staticTexts["Open in a new window"].waitForNonExistence(timeout: 5),
+                      "the drop zones stayed on screen after the drop")
+        app.terminate()
+    }
+
     /// Issue #141: the toolbar display mode picked from the toolbar's context menu
     /// survives a relaunch. Drives the reported repro in both directions, so the
     /// result can't come from state a previous run left behind.

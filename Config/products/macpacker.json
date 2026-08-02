@@ -97,6 +97,48 @@
             "issues": [
               "151"
             ]
+          },
+          {
+            "type": "feat",
+            "title": {
+              "en": "Dropping a file now asks whether to add or open it",
+              "zh-Hans": "拖入文件时，现在会询问是添加还是打开",
+              "fr": "Le dépôt d’un fichier demande désormais s’il faut l’ajouter ou l’ouvrir",
+              "de": "Beim Ablegen einer Datei wird jetzt gefragt, ob sie hinzugefügt oder geöffnet wird",
+              "it": "Trascinando un file ora viene chiesto se aggiungerlo o aprirlo",
+              "ja": "ファイルをドロップすると、追加するか開くかを選べるようになりました",
+              "fa": "هنگام رها کردن یک فایل، اکنون پرسیده می‌شود که افزوده شود یا باز شود",
+              "pl": "Upuszczenie pliku pyta teraz, czy dodać go, czy otworzyć",
+              "pt-BR": "Soltar um arquivo agora pergunta se deve adicioná-lo ou abri-lo",
+              "ru": "При перетаскивании файла теперь спрашивается, добавить его или открыть",
+              "uk": "Під час перетягування файлу тепер запитується, додати його чи відкрити",
+              "es-MX": "Al soltar un archivo ahora se pregunta si agregarlo o abrirlo",
+              "ko": "파일을 놓으면 추가할지 열지 선택할 수 있습니다"
+            },
+            "issues": [
+              "154"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+              "en": "New start page with your recent archives",
+              "zh-Hans": "全新的起始页，显示最近打开的压缩包",
+              "fr": "Nouvelle page d’accueil avec vos archives récentes",
+              "de": "Neue Startseite mit den zuletzt geöffneten Archiven",
+              "it": "Nuova pagina iniziale con gli archivi recenti",
+              "ja": "最近開いたアーカイブを表示する新しいスタートページ",
+              "fa": "صفحهٔ شروع تازه با آرشیوهای اخیر شما",
+              "pl": "Nowa strona startowa z ostatnio otwieranymi archiwami",
+              "pt-BR": "Nova página inicial com seus arquivos recentes",
+              "ru": "Новая начальная страница с недавними архивами",
+              "uk": "Нова початкова сторінка з нещодавніми архівами",
+              "es-MX": "Nueva página de inicio con tus archivos recientes",
+              "ko": "최근 압축 파일을 보여 주는 새 시작 페이지"
+            },
+            "issues": [
+              "154"
+            ]
           }
         ]
       },

@@ -17,6 +17,9 @@ class Constants {
     static let twitterLink: String = "https://x.com/macpackerapp"
     
     static let homepageURL: URL = URL(string: "https://macpacker.app")!
+    /// Docs, opened from the start page of an empty window. Tagged so Plausible
+    /// shows how much traffic the app itself sends over.
+    static let docsURL: URL = URL(string: "https://macpacker.app/docs?utm_source=macpacker&utm_medium=ui&utm_content=startpage")!
     static let changelogURL: URL = URL(string: "https://github.com/sarensw/MacPacker/releases")!
     static let privacyURL: URL = URL(string: "https://github.com/sarensw/MacPacker/blob/main/PRIVACY.md")!
     static let termsURL: URL = URL(string: "https://github.com/sarensw/MacPacker/blob/main/TERMS.md")!

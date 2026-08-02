@@ -14,8 +14,16 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
+/// Where a dragged file lands. Which zones exist depends on the window: an empty
+/// one only opens, a read-only archive only opens, an editable archive offers both.
+enum ArchiveDropZone: Equatable {
+    case add
+    case open
+
+    var name: String { self == .add ? "add" : "open" }
+}
+
 struct ArchiveView: View {
-    @Environment(\.openWindow) var openWindow
     @Environment(\.openArchiveInNewWindow) private var openArchiveInNewWindow
     @EnvironmentObject private var state: ArchiveState
 
@@ -25,32 +33,64 @@ struct ArchiveView: View {
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
 
     @State private var selection: IndexSet?
-    @State private var loading: Bool = false
-    @State private var isDropTargeted = false
-    @State private var hintTimer: Timer?
+    /// nil while no file is over the window; otherwise the zone the pointer is in.
+    @State private var activeZone: ArchiveDropZone?
+    /// The file being dragged, while it is over the window. nil when it couldn't be
+    /// read off the drag pasteboard (a promised file, say).
+    @State private var draggedURL: URL?
+    @State private var contentSize: CGSize = .zero
+
+    /// Adding needs an archive that the format can write, and no in-flight save.
+    private var canAdd: Bool {
+        state.hasArchive && state.canBeEdited && !state.isSaving
+    }
+
+    /// Dropping a non-archive doesn't open anything — it starts a new archive with
+    /// that file in it. Say so, rather than promising to "open" a text file. Only
+    /// the extension is knowable mid-drag, so an unreadable name keeps the neutral
+    /// wording.
+    private var dropCreatesArchive: Bool {
+        guard let draggedURL else { return false }
+        return !state.looksLikeArchive(url: draggedURL)
+    }
 
     var body: some View {
-        VStack {
-            ArchiveTableViewRepresentable(
-                selection: $selection,
-                isReloadNeeded: $state.isReloadNeeded,
-                showCompressedSizeColumn: $showCompressedSize,
-                showUncompressedSizeColumn: $showUncompressedSize,
-                showModificationDateColumn: $showModificationDate,
-                showPosixPermissionsColumn: $showPermissions
-            )
+        Group {
+            if state.hasArchive {
+                ArchiveTableViewRepresentable(
+                    selection: $selection,
+                    isReloadNeeded: $state.isReloadNeeded,
+                    showCompressedSizeColumn: $showCompressedSize,
+                    showUncompressedSizeColumn: $showUncompressedSize,
+                    showModificationDateColumn: $showModificationDate,
+                    showPosixPermissionsColumn: $showPermissions
+                )
+            } else {
+                HomeView()
+            }
         }
-        // Plain drop = add (or open, when nothing is loaded / it can't be edited).
-        // ⌥ drop = open in a new window. `isDropTargeted` (SwiftUI-managed) reliably
-        // brackets the drag, so the status-bar hint always clears when it ends.
-        .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
-            handleDrop(providers)
-            return true
+        .background(
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { contentSize = proxy.size }
+                    .onChange(of: proxy.size) { _, size in contentSize = size }
+            }
+        )
+        // Two visible targets beat a hidden modifier: the drag itself says what
+        // will happen. One drop target decides by pointer position rather than
+        // nested `onDrop`s, which a drag already in flight would never register.
+        .onDrop(of: [.fileURL], delegate: ArchiveDropDelegate(
+            activeZone: $activeZone,
+            draggedURL: $draggedURL,
+            zone: zone(at:),
+            perform: handleDrop,
+            window: state.name ?? "(empty)"
+        ))
+        .overlay {
+            if let activeZone {
+                dropZones(active: activeZone)
+            }
         }
-        .onChange(of: isDropTargeted) { _, targeted in
-            if targeted { startHintPolling() } else { stopHintPolling() }
-        }
-        .onDisappear { stopHintPolling() }
         .onAppear {
             if state.openWithUrls.count > 0 {
                 state.openDropped(url: state.openWithUrls[0])
@@ -61,23 +101,21 @@ struct ArchiveView: View {
 
     // MARK: - Drop
 
-    /// Plain drop adds to the current editable archive (or opens it, if nothing is
-    /// loaded / it can't be edited). ⌥ drop opens the file in a new window. ⌥ is
-    /// used rather than ⌘ because a Finder ⌘-drag means "move" — a copy target would
-    /// reject it (what looked like "nothing happens"), and accepting a move risks
-    /// deleting the source file. ⌥ maps cleanly to copy.
-    private func handleDrop(_ providers: [NSItemProvider]) {
-        let flags = NSEvent.modifierFlags
-        let openInNewWindow = flags.contains(.option)
-        // Capture the "open in new window" action and state up front (on the main
-        // actor) so the async provider callbacks don't have to reach back through
-        // the view.
+    /// Top half adds, bottom half opens — matching the cards drawn below. With
+    /// nothing to add to, the whole window opens.
+    private func zone(at location: CGPoint) -> ArchiveDropZone {
+        guard canAdd, contentSize.height > 0 else { return .open }
+        return location.y < contentSize.height / 2 ? .add : .open
+    }
+
+    private func handleDrop(_ zone: ArchiveDropZone, _ providers: [NSItemProvider]) {
+        // Capture the action and state up front (on the main actor) so the async
+        // provider callbacks don't have to reach back through the view.
         let openInNewWindowAction = openArchiveInNewWindow
         let state = self.state
         log.notice("File drop performed", context: [
             "providers": "\(providers.count)",
-            "option": "\(flags.contains(.option))",
-            "command": "\(flags.contains(.command))"
+            "zone": zone == .add ? "add" : "open"
         ])
         for provider in providers {
             provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { data, _ in
@@ -87,14 +125,17 @@ struct ArchiveView: View {
                     return
                 }
                 Task { @MainActor in
-                    if openInNewWindow {
-                        log.notice("Drop → open in a new window", context: ["file": url.lastPathComponent])
-                        openInNewWindowAction(url)
-                    } else if state.hasArchive, state.canBeEdited {
+                    switch zone {
+                    case .add:
                         log.notice("Drop → add to current archive", context: ["file": url.lastPathComponent])
                         state.add(url: url)
-                    } else {
+                    case .open where state.hasArchive:
+                        // This window is taken (and may hold unsaved edits).
+                        log.notice("Drop → open in a new window", context: ["file": url.lastPathComponent])
+                        openInNewWindowAction(url)
+                    case .open:
                         log.notice("Drop → open in this window", context: ["file": url.lastPathComponent])
+                        if state.isSupportedArchive(url: url) { RecentArchives.note(url) }
                         state.openDropped(url: url)
                     }
                 }
@@ -102,41 +143,139 @@ struct ArchiveView: View {
         }
     }
 
-    // MARK: - Status-bar hint
+    // MARK: - Drop zones
 
-    /// While a file is over the window, poll ⌥ so the status-bar hint can flip
-    /// between "add" and "open in a new window". A timer (not `dropUpdated`) is used
-    /// so the flip tracks the key even when the pointer is still; it runs on the
-    /// common run-loop mode so it keeps firing during the drag.
-    private func startHintPolling() {
-        stopHintPolling(clearHint: false)
-        let state = self.state
-        // Show the hint whenever an archive is open. The default drop differs — add
-        // for an editable archive, replace for a read-only one — but ⌥ always opens a
-        // new window, so the affordance is worth advertising either way. An empty
-        // window just opens the dropped file, so no hint there.
-        guard state.hasArchive else {
-            state.dropHint = nil
-            return
-        }
-        setHint(on: state)
-        let timer = Timer(timeInterval: 0.06, repeats: true) { _ in
-            MainActor.assumeIsolated { setHint(on: state) }
-        }
-        RunLoop.main.add(timer, forMode: .common)
-        hintTimer = timer
+    private var openZoneIcon: String {
+        if dropCreatesArchive { return "doc.badge.plus" }
+        return state.hasArchive ? "macwindow.badge.plus" : "shippingbox.fill"
     }
 
-    private func stopHintPolling(clearHint: Bool = true) {
-        hintTimer?.invalidate()
-        hintTimer = nil
-        if clearHint { state.dropHint = nil }
+    private var openZoneTitle: String {
+        if dropCreatesArchive {
+            return String(localized: "Create a new archive",
+                          comment: "Drop zone shown while dragging a file that isn't an archive: releasing here starts a new archive containing that file.")
+        }
+        return state.hasArchive
+            ? String(localized: "Open in a new window",
+                     comment: "Drop zone shown while dragging an archive over a window that already holds one: releasing here opens it in a new window.")
+            : String(localized: "Open",
+                     comment: "Drop zone shown while dragging an archive over an empty window: releasing here opens it.")
+    }
+
+    @ViewBuilder
+    private func dropZones(active: ArchiveDropZone) -> some View {
+        VStack(spacing: 10) {
+            if canAdd {
+                zoneCard(
+                    .add,
+                    active: active,
+                    icon: "plus.rectangle.on.folder.fill",
+                    title: String(
+                        localized: "Add to “\(state.name ?? "")”",
+                        comment: "Drop zone shown while dragging a file over an editable archive: releasing here adds the file to that archive. The placeholder is the archive's file name."
+                    ),
+                    subtitle: nil
+                )
+            }
+            zoneCard(
+                .open,
+                active: active,
+                icon: openZoneIcon,
+                title: openZoneTitle,
+                subtitle: nil
+            )
+        }
+        .padding(12)
+        .background(.regularMaterial)
+    }
+
+    private func zoneCard(
+        _ zone: ArchiveDropZone,
+        active: ArchiveDropZone,
+        icon: String,
+        title: String,
+        subtitle: String?
+    ) -> some View {
+        let isActive = active == zone
+        return VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 28))
+            Text(verbatim: title)
+                .font(.headline)
+            if let subtitle {
+                Text(verbatim: subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .foregroundStyle(isActive ? Color.accentColor : Color.secondary)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.accentColor.opacity(isActive ? 0.15 : 0.03))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(
+                    isActive ? Color.accentColor : Color.secondary.opacity(0.4),
+                    style: StrokeStyle(lineWidth: isActive ? 2 : 1, dash: isActive ? [] : [6, 4])
+                )
+        )
+        .animation(.easeOut(duration: 0.12), value: isActive)
     }
 }
 
-/// Free function (no `self` capture) so it's safe to call from the polling timer.
-@MainActor
-private func setHint(on state: ArchiveState) {
-    let hint: ArchiveDropHint = NSEvent.modifierFlags.contains(.option) ? .openInNewWindow : .dragging
-    if state.dropHint != hint { state.dropHint = hint }
+/// Tracks the pointer through the drag so the zone under it can be highlighted —
+/// `onDrop(isTargeted:)` alone only reports enter/exit, not where.
+private struct ArchiveDropDelegate: DropDelegate {
+    @Binding var activeZone: ArchiveDropZone?
+    @Binding var draggedURL: URL?
+    let zone: (CGPoint) -> ArchiveDropZone
+    let perform: (ArchiveDropZone, [NSItemProvider]) -> Void
+    /// only for the log — which window's delegate is talking
+    let window: String
+
+    func validateDrop(info: DropInfo) -> Bool {
+        info.hasItemsConforming(to: [.fileURL])
+    }
+
+    func dropEntered(info: DropInfo) {
+        let entered = zone(info.location)
+        // `DropInfo` only hands out item providers, and loading one is async — too
+        // late to label a zone. The drag pasteboard has the url right now.
+        // ponytail: first file only; a multi-file drag is labelled by its first.
+        draggedURL = (NSPasteboard(name: .drag).readObjects(forClasses: [NSURL.self]) as? [URL])?.first
+        log.info("drop: entered", context: [
+            "window": window,
+            "zone": entered.name,
+            "file": draggedURL?.lastPathComponent ?? "(unknown)"
+        ])
+        activeZone = entered
+    }
+
+    /// Only *moves* the highlight, never arms it: `dropUpdated` keeps arriving for
+    /// a while after `performDrop` (and `dropExited` never comes, because the
+    /// pointer doesn't leave the window), which would put the zones back on screen
+    /// and leave them there. Arming is `dropEntered`'s job alone.
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        guard activeZone != nil else { return DropProposal(operation: .copy) }
+        let current = zone(info.location)
+        if activeZone != current { activeZone = current }
+        return DropProposal(operation: .copy)
+    }
+
+    func dropExited(info: DropInfo) {
+        log.info("drop: exited", context: ["window": window])
+        activeZone = nil
+        draggedURL = nil
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        let target = zone(info.location)
+        log.info("drop: performed", context: ["window": window, "zone": target.name])
+        activeZone = nil
+        draggedURL = nil
+        perform(target, info.itemProviders(for: [.fileURL]))
+        return true
+    }
 }
