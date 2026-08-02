@@ -192,6 +192,13 @@ final public class ArchiveTypeDetector: Sendable {
     }
 
     func detectByMagicNumber(for url: URL) -> DetectionResult? {
+        // Reached with nothing but a stored bookmark when the file is opened from
+        // the recents list or by `-ArchivePath`: no scope, no read, and the archive
+        // then looks like an unsupported file.
+        Sandbox.accessSync(url: url) { detectByMagicNumberInScope(for: url) }
+    }
+
+    private func detectByMagicNumberInScope(for url: URL) -> DetectionResult? {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { handle.closeFile() }
 
@@ -236,7 +243,13 @@ final public class ArchiveTypeDetector: Sendable {
 
     /// Reads up to `maxBytes` from the end of the file, for a split `marker`
     /// (the zip EOCD can sit anywhere in the last 64 KiB + comment).
+    /// Same bookmark caveat as `detectByMagicNumber` — a tail read that silently
+    /// fails costs the split marker, so a spanned set would load as a lone volume.
     private func readTail(of url: URL, maxBytes: Int = 65557) -> [UInt8]? {
+        Sandbox.accessSync(url: url) { readTailInScope(of: url, maxBytes: maxBytes) }
+    }
+
+    private func readTailInScope(of url: URL, maxBytes: Int) -> [UInt8]? {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { handle.closeFile() }
         guard let size = getFileSize(for: url), size > 0 else { return nil }
