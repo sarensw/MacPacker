@@ -29,15 +29,6 @@ public enum ArchiveSortOrder: String {
     case posixPermissions
 }
 
-/// What the status bar should communicate while a file is dragged over the window.
-/// The UI maps each case to a localized, styled hint.
-public enum ArchiveDropHint: Equatable, Sendable {
-    /// A file is over the window with no modifier held — teach the ⌥ affordance.
-    case dragging
-    /// ⌥ is held — releasing will open the file in a new window.
-    case openInNewWindow
-}
-
 @MainActor
 public class ArchiveState: ObservableObject {
     @Published private(set) public var hasArchive: Bool = false
@@ -97,9 +88,6 @@ public class ArchiveState: ObservableObject {
     /// so the window goes back to its empty state and the user sees nothing.
     @Published private(set) public var openError: String? = nil
     @Published public var isReloadNeeded: Bool = false
-    /// Transient state shown in the status bar while a file is dragged over the
-    /// window. nil when no drag is active — the normal status-bar info shows then.
-    @Published public var dropHint: ArchiveDropHint? = nil
 
     // Listeners for non-ui
     @Published private(set) public var status: ArchiveStateStatus = .idle
@@ -390,6 +378,13 @@ extension ArchiveState {
     /// - Returns: true in case it is a supported archive, false otherwise
     public func isSupportedArchive(url: URL) -> Bool {
         return archiveTypeDetector.detect(for: url) != nil
+    }
+
+    /// Extension-only check, for saying up front what a *drag* would do. The file
+    /// isn't readable while it hovers — the sandbox grants access on the drop — so
+    /// its content can't be sniffed and the name is all there is to go on.
+    public func looksLikeArchive(url: URL) -> Bool {
+        return archiveTypeDetector.detectByExtension(for: url, considerComposition: true) != nil
     }
     
     //

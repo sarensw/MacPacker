@@ -54,7 +54,7 @@ class ArchiveWindowManager {
             archiveState: archiveState,
             appState: appState,
             openArchiveInNewWindow: { [weak self] url in
-                self?.openArchiveWindow(for: url)
+                self?.openDroppedInNewWindow(url)
             }
         )
         windowControllers.append(archiveWindowController)
@@ -90,6 +90,17 @@ class ArchiveWindowManager {
         createAndShowArchiveWindow(nil)
     }
 
+    /// A file dropped on the "open in a new window" zone of a window that is
+    /// already busy: an archive opens, anything else starts a new archive holding
+    /// it — the same rule an empty window applies (`ArchiveState.openDropped`).
+    func openDroppedInNewWindow(_ url: URL) {
+        if ArchiveTypeDetector(catalog: appState.catalog).detect(for: url) != nil {
+            openArchiveWindow(for: url)
+        } else {
+            openCreateArchiveWindow(with: [url])
+        }
+    }
+
     /// Opens a window with a fresh, empty archive in edit mode — optionally
     /// pre-filled with files (used by the Finder "Add to Archive…" action).
     /// The archive gets its place on disk when the user saves.
@@ -118,6 +129,14 @@ class ArchiveWindowManager {
     /// navigate to a path, select an item.
     @discardableResult
     func openArchiveWindow(for url: URL) -> ArchiveState {
+        let state = showWindow(for: url)
+        // Home-screen recents. Only real archives — an "Open With" on a plain file
+        // ends up in a new archive, which isn't something to reopen later.
+        if state.isSupportedArchive(url: url) { RecentArchives.note(url) }
+        return state
+    }
+
+    private func showWindow(for url: URL) -> ArchiveState {
         let key = windowKey(for: url)
         if let wc = windowControllers.first(where: {
             guard let existing = $0.archiveState.url else { return false }
