@@ -23,7 +23,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
     @State private var isExportingItem: Bool = false
     @State private var isExportingAll: Bool = false
     
-    let archiveState: ArchiveState
+    @ObservedObject var archiveState: ArchiveState
     let contentService: ArchiveContentService = ArchiveContentService()
     
     /// Lets the user pick files/folders and adds them to the current
@@ -85,6 +85,14 @@ struct ArchiveContentToolbarView: ToolbarContent {
 
             // ponytail: no toolbar Save — not macOS-like; saving lives in the
             // File menu (Save ⌘S / Save As… ⇧⌘S), see ArchiveCommands.
+
+            ArchiveSearchFieldView(text: Binding(
+                get: { archiveState.searchText },
+                set: { archiveState.search($0) }
+            ))
+            .frame(minWidth: 140, idealWidth: 180, maxWidth: 220)
+            .help("Search files in the archive")
+            .disabled(!archiveState.hasArchive)
 
             Spacer()
             
@@ -297,7 +305,53 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .menuIndicator(.hidden)
-            
+
+        }
+    }
+}
+
+/// Native search field for the toolbar. Filters the shown entries live on
+/// every keystroke; the built-in cancel button (and Esc) clears the filter.
+/// SwiftUI's `.searchable` is not used because it pins the field to the
+/// toolbar's trailing edge — this one sits next to the add/delete buttons.
+struct ArchiveSearchFieldView: NSViewRepresentable {
+    @Binding var text: String
+
+    final class Coordinator: NSObject {
+        var text: Binding<String>
+
+        init(text: Binding<String>) {
+            self.text = text
+        }
+
+        @objc func searchChanged(_ sender: NSSearchField) {
+            text.wrappedValue = sender.stringValue
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text)
+    }
+
+    func makeNSView(context: Context) -> NSSearchField {
+        let field = NSSearchField()
+        field.placeholderString = String(
+            localized: "Search in archive",
+            comment: "Placeholder of the toolbar search field that filters the files shown for the open archive"
+        )
+        field.sendsWholeSearchString = false
+        field.sendsSearchStringImmediately = true
+        field.target = context.coordinator
+        field.action = #selector(Coordinator.searchChanged(_:))
+        return field
+    }
+
+    func updateNSView(_ field: NSSearchField, context: Context) {
+        context.coordinator.text = $text
+        // Navigation clears the filter in state — reflect that here, but never
+        // fight the user's in-progress typing.
+        if field.stringValue != text {
+            field.stringValue = text
         }
     }
 }
