@@ -330,10 +330,22 @@ extension ArchiveState {
         guard UserDefaults.standard.string(forKey: Keys.defaultOrderColumn) != nil else {
             return matches.sorted { a, b in
                 if a.isFolder != b.isFolder { return a.isFolder }
-                return a.name.localizedStandardCompare(b.name) == .orderedAscending
+                let cmp = a.name.localizedStandardCompare(b.name)
+                if cmp != .orderedSame { return cmp == .orderedAscending }
+                return isBeforeByPath(a, b)
             }
         }
         return sortedForDisplay(matches)
+    }
+
+    /// Settles two entries the chosen column cannot separate. Ties are the rule,
+    /// not the exception — same name in two folders, same size, same timestamp —
+    /// and `sorted(by:)` is free to order equal elements any way it likes, so
+    /// without this the rows reshuffle as the search set narrows.
+    private func isBeforeByPath(_ a: ArchiveItem, _ b: ArchiveItem) -> Bool {
+        let cmp = (a.virtualPath ?? a.name).localizedStandardCompare(b.virtualPath ?? b.name)
+        if cmp != .orderedSame { return cmp == .orderedAscending }
+        return a.id.uuidString < b.id.uuidString
     }
 
     public func loadChildren() {
@@ -366,37 +378,46 @@ extension ArchiveState {
                     }
 
                     let cmp = a.name.localizedStandardCompare(b.name)
-                    return defaultOrderColumnAscending ? cmp == .orderedAscending : cmp == .orderedDescending
+                    if cmp != .orderedSame {
+                        return defaultOrderColumnAscending ? cmp == .orderedAscending : cmp == .orderedDescending
+                    }
 
                 case ArchiveSortOrder.modificationDate.rawValue:
                     let lhs = a.modificationDate ?? .distantPast
                     let rhs = b.modificationDate ?? .distantPast
-                    
-                    return defaultOrderColumnAscending
-                    ? lhs < rhs
-                    : lhs > rhs
+
+                    if lhs != rhs {
+                        return defaultOrderColumnAscending ? lhs < rhs : lhs > rhs
+                    }
 
                 case ArchiveSortOrder.uncompressedSize.rawValue:
-                    return defaultOrderColumnAscending
-                    ? a.uncompressedSize < b.uncompressedSize
-                    : a.uncompressedSize > b.uncompressedSize
-                    
+                    if a.uncompressedSize != b.uncompressedSize {
+                        return defaultOrderColumnAscending
+                        ? a.uncompressedSize < b.uncompressedSize
+                        : a.uncompressedSize > b.uncompressedSize
+                    }
+
                 case ArchiveSortOrder.compressedSize.rawValue:
-                    return defaultOrderColumnAscending
-                    ? a.compressedSize < b.compressedSize
-                    : a.compressedSize > b.compressedSize
-                    
+                    if a.compressedSize != b.compressedSize {
+                        return defaultOrderColumnAscending
+                        ? a.compressedSize < b.compressedSize
+                        : a.compressedSize > b.compressedSize
+                    }
+
                 case ArchiveSortOrder.posixPermissions.rawValue:
                     let lhs = a.posixPermissions ?? 0
                     let rhs = b.posixPermissions ?? 0
-                    
-                    return defaultOrderColumnAscending
-                    ? lhs < rhs
-                    : lhs > rhs
+
+                    if lhs != rhs {
+                        return defaultOrderColumnAscending ? lhs < rhs : lhs > rhs
+                    }
 
                 default:
-                    return false
+                    break
                 }
+
+                // the column above left them equal — settle it the same way every time
+                return isBeforeByPath(a, b)
         }
     }
 

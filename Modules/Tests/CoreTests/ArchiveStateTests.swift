@@ -914,4 +914,48 @@ extension AllCoreTests {
             #expect(FileManager.default.fileExists(atPath: extractedUrl.path))
         }
     }
+
+    // MARK: - Search result order
+
+    @MainActor struct ArchiveStateSearchOrderTests {
+
+        /// The same file name in three folders: the sort column cannot tell the
+        /// matches apart, so the order has to come from the path — and stay put
+        /// while the query narrows, instead of following the entries dictionary.
+        @Test func searchResultsWithEqualNamesOrderByPath() async throws {
+            let dir = FileManager.default.temporaryDirectory
+                .appendingPathComponent("SearchOrderTests-\(UUID().uuidString)")
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let src = dir.appendingPathComponent("src")
+            for folder in ["c", "a", "b"] {
+                try FileManager.default.createDirectory(
+                    at: src.appendingPathComponent(folder), withIntermediateDirectories: true)
+                try folder.write(to: src.appendingPathComponent("\(folder)/dup.txt"),
+                                 atomically: true, encoding: .utf8)
+            }
+            let zip = dir.appendingPathComponent("dups.zip")
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
+            p.arguments = ["-r", zip.path, "a", "b", "c"]
+            p.currentDirectoryURL = src
+            p.standardOutput = Pipe()
+            p.standardError = Pipe()
+            try p.run()
+            p.waitUntilExit()
+
+            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: zip)
+            try await state.openTask?.value
+
+            state.search("dup")
+            let paths = state.childItems!.map { $0.virtualPath ?? $0.name }
+            #expect(paths == ["a/dup.txt", "b/dup.txt", "c/dup.txt"])
+
+            state.search("dup.")
+            #expect(state.childItems!.map { $0.virtualPath ?? $0.name } == paths)
+        }
+    }
 }
