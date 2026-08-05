@@ -2,10 +2,26 @@
   "sourceLanguage" : "en",
   "strings" : {
     "Add to Archive…" : {
-      "comment" : "Finder context menu: open a new-archive window pre-filled with the selection so name, format and compression can be picked"
+      "comment" : "Finder context menu: open a new-archive window pre-filled with the selection so name, format and compression can be picked",
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Add to Archive…"
+          }
+        }
+      }
     },
     "Compress to \"%@\"" : {
-      "comment" : "Finder context menu: compress the selection directly to the named zip in the current directory"
+      "comment" : "Finder context menu: compress the selection directly to the named zip in the current directory",
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Compress to \"%@\""
+          }
+        }
+      }
     },
     "Extract Here" : {
       "comment" : "Tell the user in the Finder context menu to extract the archive in the current directory as is",
@@ -26,6 +42,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estrai qui"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extract Here"
           }
         },
         "ru" : {
@@ -67,6 +89,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estrai in \"%@\""
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extract to \"%@\""
           }
         },
         "ru" : {
@@ -159,6 +187,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Apri %lld archivi"
+                }
+              }
+            }
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Open Archive"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Open %lld Archives"
                 }
               }
             }

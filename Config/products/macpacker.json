@@ -29,7 +29,8 @@
       "ru": "Полноценное создание и редактирование архивов",
       "uk": "Повноцінне створення та редагування архівів",
       "es-MX": "Creación y edición completas de archivos",
-      "ko": "압축 파일 생성 및 편집 완성"
+      "ko": "압축 파일 생성 및 편집 완성",
+      "nl": "Het complete archief aanmaken en bewerken"
     },
     "versions": [
       {
@@ -50,7 +51,8 @@
               "ru": "Архивы, защищённые паролем, больше не распаковываются пустыми",
               "uk": "Архіви, захищені паролем, більше не розпаковуються порожніми",
               "es-MX": "Los archivos protegidos con contraseña ya no se extraen vacíos",
-              "ko": "암호로 보호된 압축 파일이 더 이상 빈 파일로 압축 해제되지 않습니다"
+              "ko": "암호로 보호된 압축 파일이 더 이상 빈 파일로 압축 해제되지 않습니다",
+              "nl": "Met een wachtwoord beveiligde archieven worden niet langer als lege bestanden uitgepakt"
             },
             "issues": [
               "150"
@@ -59,19 +61,20 @@
           {
             "type": "fix",
             "title": {
-              "en": "Wrong passwords are now reported instead of hanging",
-              "zh-Hans": "密码错误时会给出提示，不再卡住",
-              "fr": "Un mot de passe incorrect est signalé au lieu de bloquer",
-              "de": "Falsche Passwörter werden gemeldet statt zu hängen",
-              "it": "Le password errate vengono segnalate invece di bloccarsi",
-              "ja": "パスワードが違う場合、固まらずにエラーを表示します",
-              "fa": "رمز نادرست اکنون گزارش می‌شود و برنامه متوقف نمی‌ماند",
-              "pl": "Błędne hasła są teraz zgłaszane, a nie zawieszają aplikację",
-              "pt-BR": "Senhas incorretas agora são informadas em vez de travar",
-              "ru": "Неверный пароль теперь сообщается, а не приводит к зависанию",
-              "uk": "Неправильний пароль тепер повідомляється, а не призводить до зависання",
-              "es-MX": "Las contraseñas incorrectas ahora se informan en vez de bloquearse",
-              "ko": "잘못된 암호는 멈추지 않고 오류로 표시됩니다"
+              "en": "Wrong passwords could freeze the application",
+              "zh-Hans": "输入错误密码可能导致应用程序冻结",
+              "fr": "Un mot de passe incorrect pouvait bloquer l’application",
+              "de": "Falsche Passwörter konnten die App einfrieren lassen",
+              "it": "Le password errate potevano bloccare l’applicazione",
+              "ja": "誤ったパスワードでアプリがフリーズすることがありました",
+              "fa": "رمزهای نادرست می‌توانستند باعث توقف برنامه شوند",
+              "pl": "Błędne hasła mogły powodować zawieszenie aplikacji",
+              "pt-BR": "Senhas incorretas podiam fazer o aplicativo travar",
+              "ru": "Неверный пароль мог привести к зависанию приложения",
+              "uk": "Неправильний пароль міг призвести до зависання застосунку",
+              "es-MX": "Las contraseñas incorrectas podían congelar la aplicación",
+              "ko": "잘못된 암호 입력 시 앱이 멈출 수 있던 문제 수정",
+              "nl": "Onjuiste wachtwoorden konden de app laten vastlopen"
             },
             "issues": [
               "150"
@@ -92,7 +95,8 @@
               "ru": "Автоматический выбор движка",
               "uk": "Автоматичний вибір рушія",
               "es-MX": "Selección automática de motor",
-              "ko": "엔진 자동 선택"
+              "ko": "엔진 자동 선택",
+              "nl": "Automatische engine-selectie"
             },
             "issues": [
               "151"
@@ -113,7 +117,8 @@
               "ru": "При перетаскивании файла теперь спрашивается, добавить его или открыть",
               "uk": "Під час перетягування файлу тепер запитується, додати його чи відкрити",
               "es-MX": "Al soltar un archivo ahora se pregunta si agregarlo o abrirlo",
-              "ko": "파일을 놓으면 추가할지 열지 선택할 수 있습니다"
+              "ko": "파일을 놓으면 추가할지 열지 선택할 수 있습니다",
+              "nl": "Bij het neerzetten van een bestand wordt nu gevraagd of het moet worden toegevoegd of geopend"
             },
             "issues": [
               "154"
@@ -134,10 +139,55 @@
               "ru": "Новая начальная страница с недавними архивами",
               "uk": "Нова початкова сторінка з нещодавніми архівами",
               "es-MX": "Nueva página de inicio con tus archivos recientes",
-              "ko": "최근 압축 파일을 보여 주는 새 시작 페이지"
+              "ko": "최근 압축 파일을 보여 주는 새 시작 페이지",
+              "nl": "Nieuwe startpagina met je recente archieven"
             },
             "issues": [
               "154"
+            ]
+          },
+          {
+            "type": "lang",
+            "title": {
+                "en": "Updates to multiple translations",
+                "zh-Hans": "更新多种语言翻译",
+                "fr": "Mises à jour de plusieurs traductions",
+                "de": "Aktualisierungen mehrerer Übersetzungen",
+                "it": "Aggiornamenti a diverse traduzioni",
+                "ja": "複数の翻訳を更新",
+                "fa": "به‌روزرسانی چندین ترجمه",
+                "pl": "Aktualizacje wielu tłumaczeń",
+                "pt-BR": "Atualizações em várias traduções",
+                "ru": "Обновления нескольких переводов",
+                "uk": "Оновлення кількох перекладів",
+                "es-MX": "Actualizaciones de varias traducciones",
+                "ko": "여러 번역 업데이트",
+                "nl": "Updates voor meerdere vertalingen"
+            },
+            "issues": [
+              "158"
+            ]
+          },
+          {
+            "type": "lang",
+            "title": {
+              "en": "Language support for Dutch",
+              "zh-Hans": "新增荷兰语支持",
+              "fr": "Prise en charge de la langue néerlandaise",
+              "de": "Unterstützung für Niederländisch",
+              "it": "Supporto per la lingua olandese",
+              "ja": "オランダ語サポートを追加",
+              "fa": "پشتیبانی از زبان هلندی",
+              "pl": "Obsługa języka niderlandzkiego",
+              "pt-BR": "Suporte ao idioma neerlandês",
+              "ru": "Поддержка нидерландского языка",
+              "uk": "Підтримка нідерландської мови",
+              "es-MX": "Compatibilidad con el idioma neerlandés",
+              "ko": "네덜란드어 지원 추가",
+              "nl": "Ondersteuning voor de Nederlandse taal"
+            },
+            "issues": [
+              "158"
             ]
           }
         ]
