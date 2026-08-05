@@ -1225,7 +1225,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Формат архивов"
+            "value" : "Форматы архивов"
           }
         },
         "uk" : {
@@ -3014,7 +3014,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "발췌"
+            "value" : "압축 풀기"
           }
         },
         "nl" : {
@@ -3594,7 +3594,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Structuur:"
+            "value" : "Formaat:"
           }
         },
         "pl" : {
@@ -6955,7 +6955,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Speichern"
+            "value" : "Ohne Komprimierung"
           }
         },
         "en" : {
@@ -6967,7 +6967,7 @@
         "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Almacenar"
+            "value" : "Sin compresión"
           }
         },
         "fa" : {
@@ -6979,13 +6979,13 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stocker"
+            "value" : "Sans compression"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memorizza"
+            "value" : "Nessuna compressione"
           }
         },
         "ja" : {
@@ -7003,7 +7003,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opslaan"
+            "value" : "Geen compressie"
           }
         },
         "pl" : {
@@ -7015,7 +7015,7 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Armazenar"
+            "value" : "Sem compressão"
           }
         },
         "ru" : {
@@ -7033,7 +7033,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "仅存储"
+            "value" : "不压缩"
           }
         }
       }
@@ -7627,7 +7627,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ваши изменения будут потеряны если вы их не сохраните"
+            "value" : "Ваши изменения будут потеряны, если вы их не сохраните"
           }
         }
       }
