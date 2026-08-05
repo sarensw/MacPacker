@@ -73,6 +73,7 @@ struct GeneralSettingsView: View {
         .padding()
     }
     
+    /// Returns the localized label for a breadcrumb position in the settings picker.
     @ViewBuilder
     private func breadcrumbPositionLabel(_ position: BreadcrumbPosition) -> some View {
         switch position {
