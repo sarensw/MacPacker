@@ -51,7 +51,7 @@ struct GeneralSettingsView: View {
                 HStack {
                     Picker(String(""), selection: $breadcrumbPosition) {
                         ForEach(BreadcrumbPosition.allCases, id: \.self) { position in
-                            Text(position.rawValue)
+                            breadcrumbPositionLabel(position)
                                 .tag(position)
                         }
                     }
@@ -71,6 +71,18 @@ struct GeneralSettingsView: View {
             }
         }
         .padding()
+    }
+    
+    @ViewBuilder
+    private func breadcrumbPositionLabel(_ position: BreadcrumbPosition) -> some View {
+        switch position {
+        case .top:
+            Text("Top", comment: "Breadcrumb position at the top of the archive window")
+        case .bottom:
+            Text("Bottom", comment: "Breadcrumb position at the bottom of the archive window")
+        case .none:
+            Text("None", comment: "Hide the breadcrumb in the archive window")
+        }
     }
 }
 

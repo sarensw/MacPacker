@@ -179,7 +179,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     openURL(URL(string: "https://poeditor.com/join/project/J2Qq2SUzYr")!)
                 } label: {
                     Label {
-                        Text(verbatim: "Help with translation")
+                        Text("Help with translation", comment: "Menu item that opens the translation contribution page")
                     } icon: {
                         Image(systemName: "flag")
                     }
@@ -240,7 +240,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FlowMoose", pointSize: 16))
                         }
                         .labelStyle(.titleAndIcon)
-                        Text(verbatim: "Voice-2-Text working everywhere")
+                        Text("Voice-2-Text working everywhere", comment: "Short description of the FlowMoose app")
                     }
                     
                     Button {
@@ -252,7 +252,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FileFillet", pointSize: 16))
                         }
                         .labelStyle(.titleAndIcon)
-                        Text(verbatim: "Organize files. Fast.")
+                        Text("Organize files. Fast.", comment: "Short description of the FileFillet app")
                     }
                 } label: {
                     Label {

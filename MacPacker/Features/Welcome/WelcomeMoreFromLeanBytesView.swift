@@ -57,14 +57,14 @@ struct MoreFromLeanBytesProductView: View {
 struct WelcomeMoreFromLeanBytesView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(verbatim: "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool.")
+            Text("MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool.", comment: "Explains that supporting the listed LeanBytes apps supports MacPacker")
                 .foregroundStyle(.secondary)
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
             
-            MoreFromLeanBytesProductView(logo: "AppIcon_FlowMoose", title: Constants.otherAppFlowMoose, description: "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only.", openSource: false, url: Constants.otherAppFlowMooseURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FlowMoose", title: Constants.otherAppFlowMoose, description: String(localized: "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only.", comment: "Description of the FlowMoose app"), openSource: false, url: Constants.otherAppFlowMooseURL)
             
-            MoreFromLeanBytesProductView(logo: "AppIcon_FileFillet", title: Constants.otherAppFileFillet, description: "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows.", openSource: true, url: Constants.otherAppMacPackerURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FileFillet", title: Constants.otherAppFileFillet, description: String(localized: "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows.", comment: "Description of the FileFillet app"), openSource: true, url: Constants.otherAppMacPackerURL)
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)

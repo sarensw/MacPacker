@@ -42,7 +42,7 @@ struct WelcomeFooterView: View {
                         openURL(Constants.privacyURL)
                     } label: {
                         HStack(spacing: 2) {
-                            Text(verbatim: "Privacy")
+                            Text("Privacy", comment: "Button that opens the privacy policy")
                         }
                     }
                     .buttonStyle(.plain)
@@ -51,7 +51,7 @@ struct WelcomeFooterView: View {
                         openURL(Constants.termsURL)
                     } label: {
                         HStack(spacing: 2) {
-                            Text(verbatim: "Terms")
+                            Text("Terms", comment: "Button that opens the terms of service")
                         }
                     }
                     .buttonStyle(.plain)
@@ -60,7 +60,7 @@ struct WelcomeFooterView: View {
                         openURL(Constants.imprintURL)
                     } label: {
                         HStack(spacing: 2) {
-                            Text(verbatim: "Imprint")
+                            Text("Imprint", comment: "Button that opens the imprint")
                         }
                     }
                     .buttonStyle(.plain)
