@@ -65,9 +65,9 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         func numberOfRows(in tableView: NSTableView) -> Int {
             guard let selectedItem = parent.archiveState.selectedItem else { return 0 }
             guard let children = parent.archiveState.childItems else { return 0 }
-            
+
             var childrenCount = children.count
-            if selectedItem.parent != nil && selectedItem.type != .root {
+            if selectedItem.parent != nil && parent.archiveState.showsParentRow {
                 // we're adding +1 in order to show ".." at the top,
                 // but only if there is a parent to go to
                 childrenCount += 1
@@ -126,14 +126,14 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             row: Int
         ) -> NSView? {
             guard let columnIdentifier = tableColumn?.identifier else { return nil }
-            guard let selectedItem = parent.archiveState.selectedItem else { return nil }
+            guard parent.archiveState.selectedItem != nil else { return nil }
             guard let childItems = parent.archiveState.childItems else { return nil }
-            
+
             // The root of an archive does not allow to go up.
             // All other levels allow to go up with the first item
-            // in the list which is ".."
-            let isParent = selectedItem.type != .root && row == 0
-            let hasParent = selectedItem.type != .root
+            // in the list which is "..". Search results never show it.
+            let hasParent = parent.archiveState.showsParentRow
+            let isParent = hasParent && row == 0
             let item = hasParent
             ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
             : childItems[row]
@@ -288,11 +288,11 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         ) -> NSPasteboardWriting? {
             log.debug("Starting to drag item in row \(row)")
             
-            guard let selectedItem = parent.archiveState.selectedItem else { return nil }
+            guard parent.archiveState.selectedItem != nil else { return nil }
             guard let childItems = parent.archiveState.childItems else { return nil }
-            
-            let isParent = selectedItem.type != .root && row == 0
-            let hasParent = selectedItem.type != .root
+
+            let hasParent = parent.archiveState.showsParentRow
+            let isParent = hasParent && row == 0
             let item = hasParent
             ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
             : childItems[row]
@@ -326,10 +326,10 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             if clickedRow >= 0 {
                 // The root of an archive does not allow to go up.
                 // All other levels allow to go up with the first item
-                // in the list which is ".."
-                guard let selectedItem = parent.archiveState.selectedItem else { return }
-                let isParent = selectedItem.type != .root && clickedRow == 0
-                let hasParent = selectedItem.type != .root
+                // in the list which is "..". Search results never show it.
+                guard parent.archiveState.selectedItem != nil else { return }
+                let hasParent = parent.archiveState.showsParentRow
+                let isParent = hasParent && clickedRow == 0
                 
                 if hasParent {
                     if isParent {

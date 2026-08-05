@@ -57,5 +57,27 @@ struct ArchiveCommands: Commands {
             // Deletion is the standard Edit ▸ Delete menu item, handled by the
             // archive table (ArchiveTableView.delete(_:)) — not a File command.
         }
+
+        // Edit ▸ Find, right after Select All, as in Finder and Mail.
+        CommandGroup(after: .pasteboard) {
+            Divider()
+
+            Button {
+                // `.searchable` is backed by the standard search toolbar item,
+                // which knows how to expand itself and take the focus
+                let window = NSApp.keyWindow ?? NSApp.mainWindow
+                window?.toolbar?.items
+                    .lazy
+                    .compactMap { $0 as? NSSearchToolbarItem }
+                    .first?
+                    .beginSearchInteraction()
+            } label: {
+                Label(
+                    String(localized: "Find", comment: "Edit menu entry that moves the focus to the search field of the archive window"),
+                    systemImage: "magnifyingglass"
+                )
+            }
+            .keyboardShortcut("f", modifiers: [.command])
+        }
     }
 }

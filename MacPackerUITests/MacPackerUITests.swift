@@ -247,6 +247,41 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// The search field sits at the trailing end of the toolbar (HIG), says
+    /// "Search", and ⌘F puts the focus into it: typing then filters the archive
+    /// instead of type-selecting in the table.
+    func testCommandFFocusesTrailingToolbarSearch() throws {
+        let dir = try makeWorkDir("search")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try FileManager.default.createDirectory(at: dir.appendingPathComponent("sub"),
+                                                withIntermediateDirectories: true)
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        try "deep".write(to: dir.appendingPathComponent("sub/deep.txt"), atomically: true, encoding: .utf8)
+        let zip = dir.appendingPathComponent("fixture.zip")
+        try run("/usr/bin/zip", ["-r", zip.path, "one.txt", "sub"], cwd: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", zip.path])
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
+        // nested — only a search across the whole archive brings it into view
+        XCTAssertFalse(app.staticTexts["deep.txt"].exists)
+
+        let search = app.windows.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5), "no search field in the toolbar")
+        XCTAssertEqual(search.placeholderValue, "Search")
+        let delete = app.buttons["Delete"].firstMatch
+        XCTAssertGreaterThan(search.frame.minX, delete.frame.maxX,
+                             "the search field is not at the trailing end of the toolbar")
+
+        app.typeKey("f", modifierFlags: .command)
+        app.typeText("deep")
+
+        XCTAssertTrue(app.staticTexts["deep.txt"].waitForExistence(timeout: 10),
+                      "⌘F did not put the focus into the search field")
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForNonExistence(timeout: 10),
+                      "non-matching entries are still shown")
+        app.terminate()
+    }
+
     /// Dragging a file from Finder onto the upper half of an editable archive adds
     /// it — the drop zones replaced the old ⌥-modifier gesture, so the plain drag
     /// has to land in the archive without any key held.

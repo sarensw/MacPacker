@@ -23,7 +23,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
     @State private var isExportingItem: Bool = false
     @State private var isExportingAll: Bool = false
     
-    let archiveState: ArchiveState
+    @ObservedObject var archiveState: ArchiveState
     let contentService: ArchiveContentService = ArchiveContentService()
     
     /// Lets the user pick files/folders and adds them to the current
@@ -82,9 +82,6 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
             .help("Delete the selected items from the archive")
             .disabled(!archiveState.canBeEdited || archiveState.selectedItems.isEmpty || archiveState.isSaving)
-
-            // ponytail: no toolbar Save — not macOS-like; saving lives in the
-            // File menu (Save ⌘S / Save As… ⇧⌘S), see ArchiveCommands.
 
             Spacer()
             
@@ -297,7 +294,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .menuIndicator(.hidden)
-            
+
         }
     }
 }

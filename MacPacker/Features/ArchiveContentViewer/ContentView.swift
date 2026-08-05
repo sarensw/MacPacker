@@ -58,6 +58,10 @@ struct ContentView: View {
                 archiveState: archiveState
             )
         }
+        .searchable(text: Binding(
+            get: { archiveState.searchText },
+            set: { archiveState.search($0) }
+        ))
         .onAppear {
             if self.archiveState.passwordProvider == nil {
                 let passwordProvider: ArchivePasswordUserProvider = { request in

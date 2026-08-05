@@ -74,6 +74,10 @@ public class ArchiveState: ObservableObject {
     
     // Items currently selected by the user in the tree / table
     @Published public var selectedItems: [ArchiveItem] = []
+
+    // Live filter over the whole archive. While non-empty, the table shows
+    // every entry whose name matches instead of the current folder.
+    @Published private(set) public var searchText: String = ""
     
     // UI State
     @Published private(set) public var isBusy: Bool = false
@@ -237,7 +241,8 @@ extension ArchiveState {
         
         self.selectedItem = nil
         self.selectedItems = []
-        
+        self.searchText = ""
+
         self.childItems = nil
         
         self.archiveLoader = nil
@@ -284,19 +289,88 @@ extension ArchiveState {
         }
     }
     
+    //
+    // MARK: Search
+    //
+
+    public var isSearching: Bool { !searchText.isEmpty }
+
+    /// Whether the table shows the ".." row at the top: browsing below the
+    /// root shows it, search results never do (they come from all levels at
+    /// once, so there is no single parent to go up to).
+    public var showsParentRow: Bool {
+        guard let selectedItem, !isSearching else { return false }
+        return selectedItem.type != .root
+    }
+
+    /// Updates the live search. Every change re-filters the entries; clearing
+    /// the text returns the table to the folder that was being browsed.
+    public func search(_ text: String) {
+        guard text != searchText else { return }
+        searchText = text
+        selectedItems = []
+        isReloadNeeded = true
+        loadChildren()
+    }
+
+    /// Navigation leaves search mode — going into a folder (or up) shows that
+    /// folder, not the stale result list.
+    private func clearSearch() {
+        guard isSearching else { return }
+        searchText = ""
+    }
+
+    /// All entries (any level) whose name contains the search text. Sorted
+    /// like the browse view; without a stored order, by name — dictionary
+    /// order would make the results jump around on every keystroke.
+    private func searchResults() -> [ArchiveItem] {
+        let matches = entries.values.filter {
+            $0.type != .root && $0.name.localizedCaseInsensitiveContains(searchText)
+        }
+        guard UserDefaults.standard.string(forKey: Keys.defaultOrderColumn) != nil else {
+            return matches.sorted { a, b in
+                if a.isFolder != b.isFolder { return a.isFolder }
+                let cmp = a.name.localizedStandardCompare(b.name)
+                if cmp != .orderedSame { return cmp == .orderedAscending }
+                return isBeforeByPath(a, b)
+            }
+        }
+        return sortedForDisplay(matches)
+    }
+
+    /// Settles two entries the chosen column cannot separate. Ties are the rule,
+    /// not the exception — same name in two folders, same size, same timestamp —
+    /// and `sorted(by:)` is free to order equal elements any way it likes, so
+    /// without this the rows reshuffle as the search set narrows.
+    private func isBeforeByPath(_ a: ArchiveItem, _ b: ArchiveItem) -> Bool {
+        let cmp = (a.virtualPath ?? a.name).localizedStandardCompare(b.virtualPath ?? b.name)
+        if cmp != .orderedSame { return cmp == .orderedAscending }
+        return a.id.uuidString < b.id.uuidString
+    }
+
     public func loadChildren() {
         guard let selectedItem else { return }
-        
-        let defaultOrderColumn = UserDefaults.standard.string(forKey: Keys.defaultOrderColumn)
-        let defaultOrderColumnAscending = UserDefaults.standard.bool(forKey: Keys.defaultOrderColumnAscending)
-        
-        guard defaultOrderColumn != nil else {
+
+        if isSearching {
+            childItems = searchResults()
+            return
+        }
+
+        guard UserDefaults.standard.string(forKey: Keys.defaultOrderColumn) != nil else {
             childItems = selectedItem.children?.compactMap { entries[$0] }
             return
         }
-        
+
         if let children = selectedItem.children?.compactMap({ entries[$0] }) {
-            childItems = children.sorted { a, b in
+            childItems = sortedForDisplay(children)
+        }
+    }
+
+    private func sortedForDisplay(_ items: [ArchiveItem]) -> [ArchiveItem] {
+        let defaultOrderColumn = UserDefaults.standard.string(forKey: Keys.defaultOrderColumn)
+        let defaultOrderColumnAscending = UserDefaults.standard.bool(forKey: Keys.defaultOrderColumnAscending)
+
+        return items.sorted { a, b in
                 switch defaultOrderColumn {
                 case ArchiveSortOrder.name.rawValue:
                     if a.isFolder != b.isFolder {
@@ -304,41 +378,49 @@ extension ArchiveState {
                     }
 
                     let cmp = a.name.localizedStandardCompare(b.name)
-                    return defaultOrderColumnAscending ? cmp == .orderedAscending : cmp == .orderedDescending
+                    if cmp != .orderedSame {
+                        return defaultOrderColumnAscending ? cmp == .orderedAscending : cmp == .orderedDescending
+                    }
 
                 case ArchiveSortOrder.modificationDate.rawValue:
                     let lhs = a.modificationDate ?? .distantPast
                     let rhs = b.modificationDate ?? .distantPast
-                    
-                    return defaultOrderColumnAscending
-                    ? lhs < rhs
-                    : lhs > rhs
+
+                    if lhs != rhs {
+                        return defaultOrderColumnAscending ? lhs < rhs : lhs > rhs
+                    }
 
                 case ArchiveSortOrder.uncompressedSize.rawValue:
-                    return defaultOrderColumnAscending
-                    ? a.uncompressedSize < b.uncompressedSize
-                    : a.uncompressedSize > b.uncompressedSize
-                    
+                    if a.uncompressedSize != b.uncompressedSize {
+                        return defaultOrderColumnAscending
+                        ? a.uncompressedSize < b.uncompressedSize
+                        : a.uncompressedSize > b.uncompressedSize
+                    }
+
                 case ArchiveSortOrder.compressedSize.rawValue:
-                    return defaultOrderColumnAscending
-                    ? a.compressedSize < b.compressedSize
-                    : a.compressedSize > b.compressedSize
-                    
+                    if a.compressedSize != b.compressedSize {
+                        return defaultOrderColumnAscending
+                        ? a.compressedSize < b.compressedSize
+                        : a.compressedSize > b.compressedSize
+                    }
+
                 case ArchiveSortOrder.posixPermissions.rawValue:
                     let lhs = a.posixPermissions ?? 0
                     let rhs = b.posixPermissions ?? 0
-                    
-                    return defaultOrderColumnAscending
-                    ? lhs < rhs
-                    : lhs > rhs
+
+                    if lhs != rhs {
+                        return defaultOrderColumnAscending ? lhs < rhs : lhs > rhs
+                    }
 
                 default:
-                    return false
+                    break
                 }
-            }
+
+                // the column above left them equal — settle it the same way every time
+                return isBeforeByPath(a, b)
         }
     }
-    
+
     /// This stream is the only way to get status from any engine in a concurrency safe way
     /// - Parameter stream: the stream from the engine
     /// - Returns: handler task that can be used for different actions like loading, extracting, ...
@@ -890,6 +972,7 @@ extension ArchiveState {
             } else {
                 // Do nothing here. It is an archive. It is extracted already.
                 // We have updated the hierarchy already. Just select the item
+                clearSearch()
                 self.selectedItem = item
                 loadChildren()
             }
@@ -897,14 +980,17 @@ extension ArchiveState {
             // TODO: This can never happen as each archive is also of type .file > Remove .archive as a type
             break
         case .virtual:
+            clearSearch()
             self.selectedItem = item
             loadChildren()
             break
         case .directory:
+            clearSearch()
             self.selectedItem = item
             loadChildren()
             break
         case .root:
+            clearSearch()
             self.selectedItem = item
             loadChildren()
             break
@@ -924,7 +1010,9 @@ extension ArchiveState {
     /// Opens the parent of the current view
     public func openParent() {
         updateStatus(.processing)
-        
+
+        clearSearch()
+
         if selectedItem?.type == .root {
             updateStatus(.done)
             return
@@ -991,6 +1079,7 @@ extension ArchiveState {
            let engine = effectiveEngineSelector.engine(for: detectionResult.type.id) {
             
             // set the services required for this nested archive
+            clearSearch()
             item.set(
                 url: tempUrl,
                 typeId: detectionResult.type.id
@@ -1362,9 +1451,9 @@ extension ArchiveState {
     public func changeSelection(selection: IndexSet) {
         log.debug("Selection changed: tableViewSelectionDidChange(_:)")
         
-        guard let selectedItem else { return }
-        let hasParent = selectedItem.type != .root
-        
+        guard selectedItem != nil else { return }
+        let hasParent = showsParentRow
+
         // Adjust selection to account for parent row when present
         var adjustedSelection: IndexSet? = selection
         if hasParent {
@@ -1394,8 +1483,8 @@ extension ArchiveState {
     }
     
     public func selectionOffset(selection: IndexSet) -> IndexSet {
-        guard let selectedItem else { return selection }
-        let hasParent = selectedItem.type != .root
+        guard selectedItem != nil else { return selection }
+        let hasParent = showsParentRow
         
         var adjustedSelection: IndexSet = selection
         if hasParent {
