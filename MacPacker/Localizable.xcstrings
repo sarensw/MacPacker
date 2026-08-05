@@ -245,7 +245,27 @@
       }
     },
     "%@ left" : {
-      "comment" : "Time remaining in the extraction row, e.g. '14 sec left'."
+      "comment" : "Time remaining in the extraction row, e.g. '14 sec left'.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ übrig"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ left"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ осталось"
+          }
+        }
+      }
     },
     "%lld items" : {
       "comment" : "A label displaying the number of items in the current archive. The argument is the count of items in the archive.",
@@ -317,19 +337,19 @@
               "many" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld éléments"
+                  "value" : "éléments"
                 }
               },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld élément"
+                  "value" : "élément"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld éléments"
+                  "value" : "éléments"
                 }
               }
             }
@@ -341,7 +361,7 @@
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld개 항목"
+                  "value" : "lld개 항목"
                 }
               }
             }
@@ -419,7 +439,7 @@
               "many" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld елементів"
+                  "value" : ""
                 }
               },
               "one" : {
@@ -793,7 +813,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Про %@"
+            "value" : "О %@"
           }
         },
         "uk" : {
@@ -953,10 +973,97 @@
       }
     },
     "Add files or folders to the archive" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateien oder Ordner zum Archiv hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add files or folders to the archive"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить файлы или папки в архив"
+          }
+        }
+      }
     },
     "Add to “%@”" : {
-      "comment" : "Drop zone shown while dragging a file over an editable archive: releasing here adds the file to that archive. The placeholder is the archive's file name."
+      "comment" : "Drop zone shown while dragging a file over an editable archive: releasing here adds the file to that archive. The placeholder is the archive's file name.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zu „%@“ hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to “%@”"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar a “%@”"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter à « %@ »"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi a “%@”"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”に追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’에 추가"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar a “%@”"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить в «%@»"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Додати в «%@»"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加到“%@”"
+          }
+        }
+      }
     },
     "Advanced" : {
       "comment" : "Advanced settings",
@@ -1009,6 +1116,12 @@
             "value" : "고급"
           }
         },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geavanceerd"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1024,7 +1137,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Дополнительные"
+            "value" : "Дополнительно"
           }
         },
         "uk" : {
@@ -1042,7 +1155,27 @@
       }
     },
     "An extraction is still in progress" : {
-      "comment" : "Title of the alert shown when the user quits while an extraction is running."
+      "comment" : "Title of the alert shown when the user quits while an extraction is running.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Entpackung läuft noch."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An extraction is still in progress"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковка в процессе"
+          }
+        }
+      }
     },
     "Archive Formats" : {
       "comment" : "Archive formats title in settings",
@@ -1194,7 +1327,21 @@
     },
     "Automatic engine selection" : {
       "comment" : "A toggle that lets users choose whether MacPacker should choose the archive engine automatically.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatische Engine-Auswahl"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic engine selection"
+          }
+        }
+      }
     },
     "Automatically check for updates" : {
       "comment" : "Toggle to enable or disable the automatic check for updates",
@@ -1215,6 +1362,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automatycznie szukaj aktualizacji"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверять обновления автоматически"
           }
         },
         "zh-Hans" : {
@@ -1285,7 +1438,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Позиция строки навигации:"
+            "value" : "Положение строки навигации:"
           }
         },
         "uk" : {
@@ -1386,7 +1539,33 @@
       }
     },
     "Cancel" : {
-      "comment" : "Alert button that keeps the app running so the extraction can finish.\nButton in the save-on-close prompt that keeps the window open"
+      "comment" : "Alert button that keeps the app running so the extraction can finish.\nButton in the save-on-close prompt that keeps the window open",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuleren"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отмена"
+          }
+        }
+      }
     },
     "Changelog" : {
       "comment" : "A label displayed above a grid of pill buttons.",
@@ -1408,6 +1587,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dziennik zmian"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменения"
           }
         },
         "zh-Hans" : {
@@ -1497,7 +1682,21 @@
     },
     "Clear" : {
       "comment" : "A button that clears the list of recently opened archives.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        }
+      }
     },
     "Clear cache" : {
       "comment" : "Allows the user to clear the cache",
@@ -1769,6 +1968,12 @@
             "value" : "Nadchodzące zmiany"
           }
         },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В будущих обновлениях"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1778,7 +1983,81 @@
       }
     },
     "Compression:" : {
-      "comment" : "Label of the compression level picker in the save panel"
+      "comment" : "Label of the compression level picker in the save panel",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Komprimierung:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compression:"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compresión:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compression :"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compressione:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圧縮:"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "압축:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kompresja:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compressão:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сжатие:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стиснення:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "压缩："
+          }
+        }
+      }
     },
     "Contact Us" : {
       "comment" : "A button label that links to the support email address.",
@@ -1938,10 +2217,38 @@
     },
     "Could not open archive" : {
       "comment" : "A title for an alert that a user can't open an archive.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiv konnte nicht geöffnet werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not open archive"
+          }
+        }
+      }
     },
     "Create a new archive" : {
-      "comment" : "Drop zone shown while dragging a file that isn't an archive: releasing here starts a new archive containing that file."
+      "comment" : "Drop zone shown while dragging a file that isn't an archive: releasing here starts a new archive containing that file.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neues Archiv erstellen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a new archive"
+          }
+        }
+      }
     },
     "Date Modified" : {
       "comment" : "Column that shows the date the file was modified",
@@ -2009,7 +2316,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Дата модификации"
+            "value" : "Дата изменения"
           }
         },
         "uk" : {
@@ -2092,10 +2399,109 @@
       }
     },
     "Delete" : {
-      "comment" : "Button in the toolbar that deletes the selected files from the archive.\nContext menu: delete the selected items from the archive"
+      "comment" : "Button in the toolbar that deletes the selected files from the archive.\nContext menu: delete the selected items from the archive",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삭제"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Видалити"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除"
+          }
+        }
+      }
     },
     "Delete the selected items from the archive" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgewählte Elemente aus dem Archiv löschen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete the selected items from the archive"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить выбранные объекты из архива"
+          }
+        }
+      }
     },
     "Disabled" : {
       "comment" : "The text displayed in the \"Enabled\" / \"Disabled\" toggle for the file provider extension.",
@@ -2176,10 +2582,110 @@
       }
     },
     "Do you want to save the changes you made to “%@”?" : {
-      "comment" : "Title of the prompt shown when closing an archive window with unsaved changes"
+      "comment" : "Title of the prompt shown when closing an archive window with unsaved changes",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Möchtest du die Änderungen an \"%@\" speichern?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you want to save the changes you made to “%@”?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы хотите сохранить сделанные изменения в “%@”?"
+          }
+        }
+      }
     },
     "Don’t Save" : {
-      "comment" : "Button in the save-on-close prompt that discards the changes"
+      "comment" : "Button in the save-on-close prompt that discards the changes",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht sichern"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don't Save"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No guardar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne pas enregistrer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non salvare"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存しない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장하지 않음"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar niet"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie zachowuj"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não Salvar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не сохранять"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не зберігати"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不保存"
+          }
+        }
+      }
     },
     "Enabled" : {
       "comment" : "A label indicating that the file provider extension is enabled.",
@@ -2384,7 +2890,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Журналы экспорта"
+            "value" : "Экспорт логов"
           }
         },
         "uk" : {
@@ -2467,7 +2973,87 @@
       }
     },
     "Extract" : {
-      "comment" : "Prompt of the folder picker used to extract items"
+      "comment" : "Prompt of the folder picker used to extract items",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extrahieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extract"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraire"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrai"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取り出す"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "압축 풀기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraheren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyodrębnij"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extrair"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковать архив"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "витягти"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提取"
+          }
+        }
+      }
     },
     "Extract archive" : {
       "comment" : "Button in the toolbar that allows the user to extract the full archive to a target directory.",
@@ -2636,13 +3222,133 @@
       }
     },
     "Extract Selected…" : {
-      "comment" : "Context menu: extract the selected items to a folder"
+      "comment" : "Context menu: extract the selected items to a folder",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auswahl entpacken…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extract Selected…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковать выбранное..."
+          }
+        }
+      }
     },
     "Extracting" : {
-      "comment" : "Title of the extraction progress window."
+      "comment" : "Title of the extraction progress window.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entpacken"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extracting"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Распаковка"
+          }
+        }
+      }
     },
     "Fast" : {
-      "comment" : "Compression level: fast"
+      "comment" : "Compression level: fast",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schnell"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fast"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rápida"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rapide"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veloce"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高速"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "빠르게"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snel"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szybko"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rápida"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Быстрое"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Швидко"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速"
+          }
+        }
+      }
     },
     "File Format" : {
       "comment" : "A column header in the format settings view.",
@@ -2675,6 +3381,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "파일 형식"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestandsformaat"
           }
         },
         "pl" : {
@@ -2757,7 +3469,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Расширение менеджера файлов"
+            "value" : "Расширение файлового менеджера"
           }
         },
         "uk" : {
@@ -2835,7 +3547,87 @@
       }
     },
     "Format:" : {
-      "comment" : "Label of the archive format picker in the save panel"
+      "comment" : "Label of the archive format picker in the save panel",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format:"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format :"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato:"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フォーマット:"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "포맷:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formaat:"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format:"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Формат:"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Формат:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "格式："
+          }
+        }
+      }
     },
     "General" : {
       "comment" : "General settings",
@@ -3004,7 +3796,93 @@
       }
     },
     "Guides & documentation" : {
-      "comment" : "Detail line of the documentation link on the start page"
+      "comment" : "Detail line of the documentation link on the start page",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anleitungen & Dokumentation"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guides & documentation"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guías y documentación"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "راهنماها و مستندات"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guides et documentation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guide e documentazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ガイドとドキュメント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가이드 및 문서"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handleidingen en documentatie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przewodniki i dokumentacja"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guias e documentação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Руководства и документация"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Посібники та документація"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指南与文档"
+          }
+        }
+      }
     },
     "How to set %@ as default?" : {
       "comment" : "A button that shows a popover explaining how to set MacPacker as the default file opener.",
@@ -3093,6 +3971,12 @@
             "value" : "Dodaj wersje Beta"
           }
         },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Включить бета обновления"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3168,11 +4052,105 @@
     },
     "Learn" : {
       "comment" : "A section of the start page that links to documentation and release notes.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere Infos …"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn more…"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obtén detalles…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En savoir plus…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scopri di più…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳しい情報…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "더 알⁠아⁠보⁠기…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meer informatie…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Więcej informacji…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saiba mais…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подробнее…"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Докладніше…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "进一步了解…"
+          }
+        }
+      }
     },
     "Learn to use %@" : {
       "comment" : "A link to the documentation. The argument is the name of the app.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kennenlernen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn to use %@"
+          }
+        }
+      }
     },
     "Leave a review in the App Store" : {
       "comment" : "Opens the App Store review page for the MacPacker app for the user to write a review.",
@@ -3317,7 +4295,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Журналы:"
+            "value" : "Журналирование:"
           }
         },
         "uk" : {
@@ -3335,7 +4313,21 @@
       }
     },
     "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself." : {
-      "comment" : "Explains the automatic engine selection toggle in the archive format settings"
+      "comment" : "Explains the automatic engine selection toggle in the archive format settings",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker wählt für jedes Archiv automatisch die passende Engine aus und versucht bei Bedarf eine andere, falls die erste das Archiv nicht lesen kann. Deaktiviere diese Option, um die Engine selbst auszuwählen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself."
+          }
+        }
+      }
     },
     "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format." : {
       "comment" : "Help text to let users understand what the engine selection for each archive format is about",
@@ -3438,7 +4430,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Управлять в Системных настройках"
+            "value" : "Настроить в Системных настройках"
           }
         },
         "uk" : {
@@ -3456,7 +4448,93 @@
       }
     },
     "Maximum" : {
-      "comment" : "Compression level: maximum"
+      "comment" : "Compression level: maximum",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máxima"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حداکثر"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Massima"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최대"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximaal"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maksymalna"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máxima"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Максимальное"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Максимальне"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最大"
+          }
+        }
+      }
     },
     "More" : {
       "comment" : "The 'More' menu in the archive window",
@@ -3672,7 +4750,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Название"
+            "value" : "Наименование"
           }
         },
         "uk" : {
@@ -3750,23 +4828,401 @@
       }
     },
     "New Archive" : {
-      "comment" : "Default file name of a new archive\nFile menu entry that opens a window with a new, empty archive ready to be filled and saved\nStart-page card that starts a new, empty archive in this window\nTitle of the save panel used to create a new archive"
+      "comment" : "Default file name of a new archive\nFile menu entry that opens a window with a new, empty archive ready to be filled and saved\nStart-page card that starts a new, empty archive in this window\nTitle of the save panel used to create a new archive",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neues Archiv"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Archive"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuw Archief"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый архив"
+          }
+        }
+      }
     },
     "No recent archives." : {
-      "comment" : "Shown in place of the recents list on the start page when nothing has been opened yet"
+      "comment" : "Shown in place of the recents list on the start page when nothing has been opened yet",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine zuletzt verwendeten Archive."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No recent archives."
+          }
+        }
+      }
     },
     "Normal" : {
-      "comment" : "Compression level: normal"
+      "comment" : "Compression level: normal",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عادی"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "標準"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "보통"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normaal"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normalna"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нормальное"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Звичайне"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "标准"
+          }
+        }
+      }
     },
     "OK" : {
       "comment" : "The label of a button that dismisses a dialog.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aceptar"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تأیید"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确定"
+          }
+        }
+      }
     },
     "Open" : {
-      "comment" : "Context menu: open the clicked item\nDrop zone shown while dragging an archive over an empty window: releasing here opens it."
+      "comment" : "Context menu: open the clicked item\nDrop zone shown while dragging an archive over an empty window: releasing here opens it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "باز کردن"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Openen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开"
+          }
+        }
+      }
     },
     "Open Archive…" : {
-      "comment" : "Start-page card that shows the open panel"
+      "comment" : "Start-page card that shows the open panel",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiv öffnen..."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Archive..."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir archivo..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir une archive..."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri archivio..."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アーカイブを開く..."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "압축 파일 열기..."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archief openen..."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz archiwum..."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir arquivo..."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть архив..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити архів..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开压缩包..."
+          }
+        }
+      }
     },
     "Open cache directory" : {
       "comment" : "Allows the user to open the application support folder that holds the cache for temporarly extracted archive files",
@@ -3828,7 +5284,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Открыть каталог кэша"
+            "value" : "Открыть папку с кэшем"
           }
         },
         "uk" : {
@@ -3846,7 +5302,87 @@
       }
     },
     "Open in a new window" : {
-      "comment" : "Drop zone shown while dragging an archive over a window that already holds one: releasing here opens it in a new window."
+      "comment" : "Drop zone shown while dragging an archive over a window that already holds one: releasing here opens it in a new window.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In neuem Fenster öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in New Window"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir en una ventana nueva"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir dans une nouvelle fenêtre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri in una nuova finestra"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新規ウインドウで開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새로운 윈도우에서 열기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in nieuw venster"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz w nowym oknie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir em Nova Janela"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть в новом окне"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Відкрити в новому вікні"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在新窗口中打开"
+          }
+        }
+      }
     },
     "Open…" : {
       "comment" : "A label for a button that allows the user to open an archive from disk. The order depends on the language.",
@@ -3979,7 +5515,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Упакованный размер"
+            "value" : "Сжатый размер"
           }
         },
         "uk" : {
@@ -4034,6 +5570,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "パスワード:"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wachtwoord:"
           }
         },
         "pl" : {
@@ -4294,7 +5836,87 @@
       }
     },
     "Quit Anyway" : {
-      "comment" : "Alert button that quits the app even though an extraction is running."
+      "comment" : "Alert button that quits the app even though an extraction is running.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trotzdem beenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit Anyway"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salir"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitter quand même"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esci comunque"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このまま終了"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그래도 종료"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop toch"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakończ mimo to"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encerrar Mesmo Assim"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все равно выйти"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все одно завершити"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仍要退出"
+          }
+        }
+      }
     },
     "Quit on last window closed:" : {
       "comment" : "Quit the app when the last archive window is closed",
@@ -4317,6 +5939,12 @@
             "value" : "Zakończ po zamknięciu ostatniego okna:"
           }
         },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть вместе с последним окном"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4326,10 +5954,110 @@
       }
     },
     "Quitting now stops the extraction and may leave incomplete files at the destination." : {
-      "comment" : "Body of the alert shown when the user quits while an extraction is running."
+      "comment" : "Body of the alert shown when the user quits while an extraction is running.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn du jetzt beendest, wird die Entpackung abgebrochen. Am Zielort können unvollständige Dateien zurückbleiben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitting now stops the extraction and may leave incomplete files at the destination."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выход останавливает извлечение и может оставить неполные файлы в пункте назначения."
+          }
+        }
+      }
     },
     "Recent" : {
-      "comment" : "Header of the list of recently opened archives on the home screen"
+      "comment" : "Header of the list of recently opened archives on the home screen",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zuletzt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recientes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récents"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recenti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近使った項目"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 항목"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ostatni"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recentes"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недавние"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недавні"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近使用"
+          }
+        }
+      }
     },
     "Refresh" : {
       "comment" : "A button to refresh the list of supported file formats.",
@@ -4397,7 +6125,87 @@
       }
     },
     "Release notes" : {
-      "comment" : "Detail line of the release-notes link on the start page"
+      "comment" : "Detail line of the release-notes link on the start page",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versionshinweise"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Release Notes"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas de la versión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes de mise à jour"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note di uscita"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リリースノート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "릴리즈 노트"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versienotities"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informacje o wersji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas de Lançamento"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заметки к выпуску"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Примітки до випуску"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发布说明"
+          }
+        }
+      }
     },
     "Review" : {
       "comment" : "A button label that translates to \"Review\" in different languages.",
@@ -4471,7 +6279,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save"
+            "value" : "save"
           }
         },
         "es-MX" : {
@@ -4519,7 +6327,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "сохранить"
+            "value" : "Сохранить"
           }
         },
         "uk" : {
@@ -4537,7 +6345,87 @@
       }
     },
     "Save As…" : {
-      "comment" : "File menu entry that saves the front archive to a new location"
+      "comment" : "File menu entry that saves the front archive to a new location",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichern unter …"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save As…"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar como…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer sous…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva col nome…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "別名で保存…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "별도 저장…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewaar als…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zachowaj jako…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar Como…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сохранить как..."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зберегти як…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存为…"
+          }
+        }
+      }
     },
     "Send a smile" : {
       "comment" : "This is the menu in the 'More' menu of the archive window to give customers a hint on how to support the developer. The user has the option to open the MacPacker repository on GitHub or leave a review in the App Store.",
@@ -4676,7 +6564,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Настройка..."
+            "value" : "Настройки..."
           }
         },
         "uk" : {
@@ -4985,10 +6873,170 @@
     },
     "Start" : {
       "comment" : "A section of the start page of an empty window.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시작"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Старт"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почати"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始"
+          }
+        }
+      }
     },
     "Store" : {
-      "comment" : "Compression level: no compression"
+      "comment" : "Compression level: no compression",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohne Komprimierung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Store"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin compresión"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "بدون فشرده‌سازی"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans compression"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna compressione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無圧縮"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "압축 안 함"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen compressie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez kompresji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem compressão"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без сжатия"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Без стиснення"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不压缩"
+          }
+        }
+      }
     },
     "Support the development..." : {
       "comment" : "Hint to the user to support the app's development via some donation",
@@ -5068,7 +7116,27 @@
       }
     },
     "the archive" : {
-      "comment" : "Fallback name in the save-on-close prompt when the archive has no file name yet"
+      "comment" : "Fallback name in the save-on-close prompt when the archive has no file name yet",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "das Archiv"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the archive"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Архив"
+          }
+        }
+      }
     },
     "Translate" : {
       "comment" : "A button label that translates the app.",
@@ -5114,6 +7182,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "번역"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vertalen"
           }
         },
         "pl" : {
@@ -5363,7 +7437,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Добро пожаловать на %@"
+            "value" : "Добро пожаловать в %@"
           }
         },
         "uk" : {
@@ -5536,7 +7610,27 @@
       }
     },
     "Your changes will be lost if you don’t save them." : {
-      "comment" : "Explanation in the save-on-close prompt"
+      "comment" : "Explanation in the save-on-close prompt",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Änderungen gehen verloren, wenn du sie nicht speicherst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your changes will be lost if you don’t save them."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ваши изменения будут потеряны, если вы их не сохраните"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

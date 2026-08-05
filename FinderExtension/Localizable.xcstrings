@@ -1,236 +1,630 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "Add to Archive…" : {
-      "comment" : "Finder context menu: open a new-archive window pre-filled with the selection so name, format and compression can be picked"
-    },
-    "Compress to \"%@\"" : {
-      "comment" : "Finder context menu: compress the selection directly to the named zip in the current directory"
-    },
-    "Extract Here" : {
-      "comment" : "Tell the user in the Finder context menu to extract the archive in the current directory as is",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hier entpacken"
+  "sourceLanguage": "en",
+  "strings": {
+    "Add to Archive…": {
+      "comment": "Finder context menu: open a new-archive window pre-filled with the selection so name, format and compression can be picked",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Archiv hinzufügen…"
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Extraire ici"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to Archive…"
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estrai qui"
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregar al archivo…"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Извлечь сюда"
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "افزودن به آرشیو…"
           }
         },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Розпакувати сюди"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajouter à l’archive…"
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "解压到此处"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aggiungi all'archivio…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アーカイブに追加…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "압축 파일에 추가…"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toevoegen aan archief…"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dodaj do archiwum…"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar ao arquivo…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить в архив…"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Додати до архіву…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加到压缩包…"
           }
         }
       }
     },
-    "Extract to \"%@\"" : {
-      "comment" : "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entpacken nach \"%@\""
+    "Compress to \"%@\"": {
+      "comment": "Finder context menu: compress the selection directly to the named zip in the current directory",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komprimieren nach \"%@\""
           }
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Extraire vers \"%@\""
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress to \"%@\""
           }
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estrai in \"%@\""
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprimir en \"%@\""
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Извлечь в «%@»"
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فشرده‌سازی در \"%@\""
           }
         },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Розпакувати в «%@»"
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compresser vers \"%@\""
           }
         },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "解压到“%@”"
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprimi in \"%@\""
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\"%@\" に圧縮"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\"%@\"으로 압축"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprimeren naar \"%@\""
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skompresuj do \"%@\""
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compactar para \"%@\""
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сжать в «%@»"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Стиснути в «%@»"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "压缩到“%@”"
           }
         }
       }
     },
-    "Open %lld Archive" : {
-      "comment" : "Opens the archive in an archive window",
-      "localizations" : {
-        "de" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Archiv öffnen"
+    "Extract Here": {
+      "comment": "Tell the user in the Finder context menu to extract the archive in the current directory as is",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hier entpacken"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract Here"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extraer aquí"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استخراج در اینجا"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extraire ici"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estrai qui"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ここに展開"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여기에 압축 풀기"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hier uitpakken"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wypakuj tutaj"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extrair aqui"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Извлечь сюда"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Розпакувати сюди"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解压到此处"
+          }
+        }
+      }
+    },
+    "Extract to \"%@\"": {
+      "comment": "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to.",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entpacken nach \"%@\""
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract to \"%@\""
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extraer a \"%@\""
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استخراج در \"%@\""
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extraire vers \"%@\""
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estrai in \"%@\""
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\"%@\" に展開"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\"%@\"에 압축 풀기"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uitpakken naar \"%@\""
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wypakuj do \"%@\""
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extrair para \"%@\""
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Извлечь в «%@»"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Розпакувати в «%@»"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "解压到“%@”"
+          }
+        }
+      }
+    },
+    "Open %lld Archive": {
+      "comment": "Opens the archive in an archive window",
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Archiv öffnen"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Archive öffnen"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Archive öffnen"
                 }
               }
             }
           }
         },
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Open Archive"
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Open Archive"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Open %lld Archives"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Open %lld Archives"
                 }
               }
             }
           }
         },
-        "fr" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Ouvrir l’archive"
+        "es-MX": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Abrir archivo"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Ouvrir les %lld archives"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Abrir %lld archivos"
                 }
               }
             }
           }
         },
-        "it" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Apri archivio"
+        "fa": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "باز کردن آرشیو"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Apri %lld archivi"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "باز کردن %lld آرشیو"
                 }
               }
             }
           }
         },
-        "ru" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Открыть %lld архива"
+        "fr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Ouvrir l’archive"
                 }
               },
-              "many" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Открыть %lld архивов"
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Открыть %lld архив"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Открыть %lld архива"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Ouvrir les %lld archives"
                 }
               }
             }
           }
         },
-        "uk" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Відкрити %lld архіви"
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Apri archivio"
                 }
               },
-              "many" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Відкрити %lld архівів"
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Відкрити %lld архів"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Відкрити %lld архіву"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Apri %lld archivi"
                 }
               }
             }
           }
         },
-        "zh-Hans" : {
-          "variations" : {
-            "plural" : {
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "打开压缩包"
+        "ja": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "アーカイブを開く"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld個のアーカイブを開く"
+                }
+              }
+            }
+          }
+        },
+        "ko": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "압축 파일 열기"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "압축 파일 %lld개 열기"
+                }
+              }
+            }
+          }
+        },
+        "nl": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Archief openen"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld archieven openen"
+                }
+              }
+            }
+          }
+        },
+        "pl": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Otwórz archiwum"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Otwórz %lld archiwów"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Abrir arquivo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Abrir %lld arquivos"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Открыть %lld архив"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Открыть %lld архива"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Открыть %lld архивов"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Открыть %lld архива"
+                }
+              }
+            }
+          }
+        },
+        "uk": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Відкрити %lld архів"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Відкрити %lld архіви"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Відкрити %lld архівів"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Відкрити %lld архіву"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "打开压缩包"
                 }
               }
             }
@@ -239,5 +633,5 @@
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }
