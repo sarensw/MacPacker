@@ -147,6 +147,25 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+              "en": "Find files in the open archive",
+              "zh-Hans": "在打开的压缩包中查找文件",
+              "fr": "Rechercher des fichiers dans l’archive ouverte",
+              "de": "Dateien im geöffneten Archiv finden",
+              "it": "Trova i file nell’archivio aperto",
+              "ja": "開いているアーカイブ内のファイルを検索",
+              "fa": "یافتن فایل‌ها در آرشیو باز",
+              "pl": "Znajdź pliki w otwartym archiwum",
+              "pt-BR": "Encontre arquivos no arquivo compactado aberto",
+              "ru": "Поиск файлов в открытом архиве",
+              "uk": "Пошук файлів у відкритому архіві",
+              "es-MX": "Encuentra archivos en el archivo comprimido abierto",
+              "ko": "열려 있는 아카이브에서 파일 찾기",
+              "nl": "Vind bestanden in het geopende archief"
+            }
+          },
+          {
             "type": "lang",
             "title": {
                 "en": "Updates to multiple translations",
