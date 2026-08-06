@@ -497,6 +497,33 @@ extension AllCoreTests {
             #expect(result?.type.id == "zip")
         }
 
+        @Test func detectByExtJarReturnsJar() {
+            let catalog = ArchiveTypeCatalog()
+            let detector = ArchiveTypeDetector(catalog: catalog)
+
+            let result = detector.detectBy(ext: "jar")
+            #expect(result != nil)
+            #expect(result?.type.id == "jar")
+        }
+
+        @Test func detectByExtAarReturnsAar() {
+            let catalog = ArchiveTypeCatalog()
+            let detector = ArchiveTypeDetector(catalog: catalog)
+
+            let result = detector.detectBy(ext: "aar")
+            #expect(result != nil)
+            #expect(result?.type.id == "aar")
+        }
+
+        @Test func detectByExtApkReturnsApk() {
+            let catalog = ArchiveTypeCatalog()
+            let detector = ArchiveTypeDetector(catalog: catalog)
+
+            let result = detector.detectBy(ext: "apk")
+            #expect(result != nil)
+            #expect(result?.type.id == "apk")
+        }
+
         @Test func detectByExtUnknownReturnsNil() {
             let catalog = ArchiveTypeCatalog()
             let detector = ArchiveTypeDetector(catalog: catalog)
