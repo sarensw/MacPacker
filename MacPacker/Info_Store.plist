@@ -897,15 +897,23 @@
 	<array>
 		<dict>
 			<key>UTTypeConformsTo</key>
-			<array/>
+			<array>
+				<string>public.zip-archive</string>
+				<string>public.data</string>
+			</array>
 			<key>UTTypeDescription</key>
-			<string></string>
+			<string>Android Archive</string>
 			<key>UTTypeIcons</key>
 			<dict/>
 			<key>UTTypeIdentifier</key>
-			<string></string>
+			<string>com.sarensx.MacPacker.aar</string>
 			<key>UTTypeTagSpecification</key>
-			<dict/>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>aar</string>
+				</array>
+			</dict>
 		</dict>
 	</array>
 	<key>UTImportedTypeDeclarations</key>
@@ -1008,26 +1016,6 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>apk</string>
-				</array>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.zip-archive</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>Android Archive</string>
-			<key>UTTypeIcons</key>
-			<dict/>
-			<key>UTTypeIdentifier</key>
-			<string>com.sarensx.MacPacker.aar</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>aar</string>
 				</array>
 			</dict>
 		</dict>
