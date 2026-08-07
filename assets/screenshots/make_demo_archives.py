@@ -14,6 +14,7 @@ assets that a recording is using.
 """
 
 import datetime
+import hashlib
 import os
 import sys
 import zipfile
@@ -75,11 +76,16 @@ def info(name: str, index: int) -> zipfile.ZipInfo:
 
 
 def filler(size: int, name: str) -> bytes:
-    """`ratio` random bytes (incompressible) padded with zeros (compress to
-    nothing), so the entry deflates to about `ratio` of its size."""
+    """`ratio` incompressible bytes padded with zeros (which compress to
+    nothing), so the entry deflates to about `ratio` of its size.
+
+    The bytes come from SHAKE-256 seeded with the entry, not from `os.urandom`:
+    a hash stream is just as incompressible, and it makes a rebuild produce
+    byte-identical archives — same fixtures, same screenshots, on any machine."""
     ratio = RATIO.get(name.rsplit(".", 1)[-1].lower(), DEFAULT_RATIO)
-    random = int(size * ratio)
-    return os.urandom(random) + bytes(size - random)
+    noise = int(size * ratio)
+    seed = f"{name}:{size}".encode()
+    return hashlib.shake_256(seed).digest(noise) + bytes(size - noise)
 
 
 def write(zf: zipfile.ZipFile, name: str, megabytes: int, index: int = 0) -> None:
