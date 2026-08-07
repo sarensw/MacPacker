@@ -48,9 +48,9 @@ extension AllCoreTests {
             ("tar", "tar", 5, 2),
             ("xar", "xar", 6, 3), // additional `[TOC].xml`
             ("zip", "zip", 5, 2),
-            // zip-based package format — no folder entry stored, buildTree
-            // synthesizes the folder like the zip fixture
-            ("jar", "jar", 5, 2),
+            // zip-based package format — detected as plain zip, and like the zip
+            // fixture it stores no folder entry, so buildTree synthesizes it
+            ("jar", "zip", 5, 2),
             // installers
             ("rpm", "rpm", 2, 1),
             // disk images

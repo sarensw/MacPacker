@@ -37,6 +37,25 @@
         "version": "0.20.0",
         "items": [
           {
+            "type": "feat",
+            "title": {
+              "en": "Open jar, aar, and apk archives",
+              "zh-Hans": "打开 jar、aar 和 apk 压缩包",
+              "fr": "Ouvrir les archives jar, aar et apk",
+              "de": "jar-, aar- und apk-Archive öffnen",
+              "it": "Apri gli archivi jar, aar e apk",
+              "ja": "jar、aar、apk アーカイブを開く",
+              "fa": "باز کردن آرشیوهای jar، aar و apk",
+              "pl": "Otwieraj archiwa jar, aar i apk",
+              "pt-BR": "Abra arquivos jar, aar e apk",
+              "ru": "Открытие архивов jar, aar и apk",
+              "uk": "Відкриття архівів jar, aar і apk",
+              "es-MX": "Abre archivos jar, aar y apk",
+              "ko": "jar, aar, apk 압축 파일 열기",
+              "nl": "Open jar-, aar- en apk-archieven"
+            }
+          },
+          {
             "type": "core",
             "title": {
               "en": "Made previously hard-coded strings available for localization",

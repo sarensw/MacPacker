@@ -17,32 +17,6 @@
       ]
     },
     {
-      "id": "aar",
-      "name": "Android Archive",
-      "kind": "archive",
-      "uti": ["com.sarensx.MacPacker.aar"],
-      "extensions": ["aar"],
-      "mime": ["application/octet-stream"],
-      "rules": [],
-      "engines": [
-        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
-      ]
-    },
-    {
-      "id": "apk",
-      "name": "Android Package",
-      "kind": "archive",
-      "uti": ["com.android.package-archive"],
-      "extensions": ["apk"],
-      "mime": ["application/vnd.android.package-archive"],
-      "rules": [],
-      "engines": [
-        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
-      ]
-    },
-    {
       "id": "ar",
       "name": "Archiver Archive",
       "kind": "archive",
@@ -190,19 +164,6 @@
           {"type": "signature", "bytes": "43 44 30 30 31", "offset": 36865}
           ] }
       ],
-      "engines": [
-        { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
-      ]
-    },
-    {
-      "id": "jar",
-      "name": "Java Archive",
-      "kind": "archive",
-      "uti": ["com.sun.java-archive"],
-      "extensions": ["jar"],
-      "mime": ["application/java-archive"],
-      "rules": [],
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
         { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
@@ -553,9 +514,9 @@
       "id": "zip",
       "name": "ZIP Archive",
       "kind": "archive",
-      "uti": ["public.zip-archive", "com.pkware.zip-archive"],
-      "extensions": ["zip"],
-      "mime": ["application/zip", "application/x-zip-compressed", "application/zip-compressed", "multipart/x-zip"],
+      "uti": ["public.zip-archive", "com.pkware.zip-archive", "com.sun.java-archive", "com.android.package-archive"],
+      "extensions": ["zip", "jar", "aar", "apk"],
+      "mime": ["application/zip", "application/x-zip-compressed", "application/zip-compressed", "multipart/x-zip", "application/java-archive", "application/vnd.android.package-archive"],
       "rules": [
         { "policy": "any", "tests": [
           {"type": "signature", "bytes": "50 4B 03 04", "offset": 0},
