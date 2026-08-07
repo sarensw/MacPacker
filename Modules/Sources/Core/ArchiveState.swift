@@ -473,18 +473,22 @@ extension ArchiveState {
     // MARK: Create / Edit
     //
     
-    public func create() {
+    /// `name` is what the window and the breadcrumb show until the archive is
+    /// saved. Core has no string catalog, so the app passes its localized one.
+    public func create(named name: String = "New Archive") {
         reset()
-        
+
         self.canBeEdited = true
         self.hasArchive = true
         // self.url = nil
-        self.name = "New Archive"
+        self.name = name
         self.type = self.catalog.getType(for: "zip")
         self.ext = ".zip"
         
-        self.root = ArchiveItem(name: "<root>", virtualPath: "/", type: .root)
-        
+        // Named like the archive, not "<root>": the breadcrumb shows this item,
+        // and a placeholder there is the first thing a new archive shows.
+        self.root = ArchiveItem(name: self.name ?? "", virtualPath: "/", type: .root)
+
         self.isReloadNeeded = true
         
         self.selectedItem = root
