@@ -97,7 +97,14 @@ enum LaunchParameters {
     /// and selects the requested item.
     static func applyIfNeeded(windowManager: ArchiveWindowManager) {
         if createsArchive {
-            windowManager.openCreateArchiveWindow(with: filesToAdd)
+            // The window already holds the added files; drive it for the rest,
+            // so -SearchQuery and -SelectItem mean the same thing here as they
+            // do for an opened archive rather than being silently dropped.
+            let state = windowManager.openCreateArchiveWindow(with: filesToAdd)
+            Task {
+                await drive(state, navigate: nil, add: [],
+                            search: value(searchQueryKey), select: value(selectItemKey))
+            }
             return
         }
         guard let archivePath else { return }
