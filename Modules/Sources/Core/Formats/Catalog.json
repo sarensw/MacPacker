@@ -20,7 +20,7 @@
       "id": "aar",
       "name": "Android Archive",
       "kind": "archive",
-      "uti": [],
+      "uti": ["com.sarensx.MacPacker.aar"],
       "extensions": ["aar"],
       "mime": ["application/octet-stream"],
       "rules": [],

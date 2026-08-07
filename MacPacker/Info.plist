@@ -131,7 +131,9 @@
 			<key>LSHandlerRank</key>
 			<string>Default</string>
 			<key>LSItemContentTypes</key>
-			<array/>
+			<array>
+				<string>com.sarensx.MacPacker.aar</string>
+			</array>
 			<key>LSTypeIsPackage</key>
 			<false/>
 		</dict>
@@ -1012,6 +1014,26 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>apk</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.zip-archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Android Archive</string>
+			<key>UTTypeIcons</key>
+			<dict/>
+			<key>UTTypeIdentifier</key>
+			<string>com.sarensx.MacPacker.aar</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>aar</string>
 				</array>
 			</dict>
 		</dict>
