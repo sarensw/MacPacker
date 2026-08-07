@@ -56,7 +56,7 @@ struct WelcomeView: View {
                         .padding(.top, 22)
                         .padding(.bottom, 22)
                     
-                    Text(verbatim: "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!")
+                    Text("❤️ Many thanks to all the PR contributors, translators and sponsors of this project!", comment: "Thanks shown to contributors, translators, and project sponsors on the welcome screen")
                         .padding(.horizontal, 16)
                     
                     #if !STORE
