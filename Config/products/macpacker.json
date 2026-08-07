@@ -34,6 +34,33 @@
     },
     "versions": [
       {
+        "version": "0.20.0",
+        "items": [
+          {
+            "type": "core",
+            "title": {
+              "en": "Made previously hard-coded strings available for localization",
+              "zh-Hans": "使之前硬编码的字符串可进行本地化",
+              "fr": "Rendu les chaînes auparavant codées en dur disponibles pour la localisation",
+              "de": "Zuvor fest codierte Texte für die Lokalisierung verfügbar gemacht",
+              "it": "Rese disponibili per la localizzazione le stringhe precedentemente codificate",
+              "ja": "以前ハードコードされていた文字列をローカライズ可能に変更",
+              "fa": "رشته‌های قبلاً کدنویسی‌شده برای بومی‌سازی در دسترس قرار گرفتند",
+              "pl": "Udostępniono do lokalizacji wcześniej zakodowane na stałe ciągi tekstowe",
+              "pt-BR": "Strings anteriormente codificadas diretamente agora podem ser localizadas",
+              "ru": "Ранее жёстко заданные строки стали доступны для локализации",
+              "uk": "Раніше жорстко задані рядки стали доступними для локалізації",
+              "es-MX": "Las cadenas anteriormente codificadas de forma fija ahora están disponibles para localización",
+              "ko": "이전에 하드코딩된 문자열을 현지화할 수 있도록 변경",
+              "nl": "Voorheen hardgecodeerde teksten beschikbaar gemaakt voor lokalisatie"
+            },
+            "issues": [
+              "161"
+            ]
+          }
+        ]
+      },
+      {
         "version": "0.19.0",
         "items": [
           {

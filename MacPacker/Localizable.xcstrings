@@ -244,6 +244,83 @@
         }
       }
     },
+    "“%@” is password protected." : {
+      "comment" : "Explains that the named archive requires a password",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” ist passwortgeschützt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” is password protected."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” está protegido con contraseña."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » est protégé par mot de passe."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” è protetto da password."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」はパスワードで保護されています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "'%@'은(는) 암호로 보호되어 있습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@” jest chroniony hasłem."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” está protegido por senha."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» защищён паролем."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "«%@» захищено паролем."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”受密码保护。"
+          }
+        }
+      }
+    },
     "%@ left" : {
       "comment" : "Time remaining in the extraction row, e.g. '14 sec left'.",
       "localizations" : {
@@ -671,6 +748,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!" : {
+      "comment" : "Thanks shown to contributors, translators, and project sponsors on the welcome screen",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ Vielen Dank an alle PR-Mitwirkenden, Übersetzer und Sponsoren dieses Projekts!"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
           }
         }
       }
@@ -1340,6 +1434,12 @@
             "state" : "translated",
             "value" : "Automatic engine selection"
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автоматический выбор движка"
+          }
         }
       }
     },
@@ -1374,6 +1474,89 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自动检查更新"
+          }
+        }
+      }
+    },
+    "Bottom" : {
+      "comment" : "Breadcrumb position at the bottom of the archive window",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bottom"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abajo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En bas"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In basso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "하단"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onder"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "na dole"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inferior"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Внизу"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "внизу"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "底部"
           }
         }
       }
@@ -1539,7 +1722,7 @@
       }
     },
     "Cancel" : {
-      "comment" : "Alert button that keeps the app running so the extraction can finish.\nButton in the save-on-close prompt that keeps the window open",
+      "comment" : "Alert button that keeps the app running so the extraction can finish.\nButton in the save-on-close prompt that keeps the window open\nCancels password entry",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1694,6 +1877,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить"
           }
         }
       }
@@ -2215,6 +2404,23 @@
         }
       }
     },
+    "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows." : {
+      "comment" : "Description of the FileFillet app",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiere oder verschiebe Dateien in deine bevorzugten Ordner und deren Unterordner. Ganz ohne zusätzliche Finder-Fenster."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows."
+          }
+        }
+      }
+    },
     "Could not open archive" : {
       "comment" : "A title for an alert that a user can't open an archive.",
       "isCommentAutoGenerated" : true,
@@ -2229,6 +2435,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Could not open archive"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Невозможно открыть архив"
           }
         }
       }
@@ -2246,6 +2458,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create a new archive"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создать новый архив"
           }
         }
       }
@@ -3967,6 +4185,23 @@
         }
       }
     },
+    "Help with translation" : {
+      "comment" : "Menu item that opens the translation contribution page",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei der Übersetzung helfen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help with translation"
+          }
+        }
+      }
+    },
     "How to set %@ as default?" : {
       "comment" : "A button that shows a popover explaining how to set MacPacker as the default file opener.",
       "localizations" : {
@@ -4028,6 +4263,89 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "如何将 %@ 设为默认？"
+          }
+        }
+      }
+    },
+    "Imprint" : {
+      "comment" : "Button that opens the imprint",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impressum"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legal Notice"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aviso legal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mentions légales"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note legali"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "法的情報"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "법적 고지"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juridische informatie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota prawna"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aviso legal"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Правовая информация"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Правова інформація"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "法律声明"
           }
         }
       }
@@ -4232,6 +4550,12 @@
             "state" : "translated",
             "value" : "Learn to use %@"
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Научитесь пользоваться %@"
+          }
         }
       }
     },
@@ -4409,6 +4733,12 @@
             "state" : "translated",
             "value" : "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself."
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker выбирает движок для каждого архива и пробует другой, если первый не может его прочитать. Отключите эту функцию, чтобы выбирать движки самостоятельно."
+          }
         }
       }
     },
@@ -4461,6 +4791,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MacPacker 包含数种归档引擎。推荐使用默认引擎；如果你遇到特定格式的问题，可以尝试替代引擎。不过请注意，不同格式对引擎的支持可能有所不同。"
+          }
+        }
+      }
+    },
+    "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool." : {
+      "comment" : "Explains that supporting the listed LeanBytes apps supports MacPacker",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker wird durch meine eigene Arbeit bei LeanBytes finanziert. Wenn du die Apps unten unterstützt, unterstützt du damit direkt dieses Open-Source-Projekt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
           }
         }
       }
@@ -4953,6 +5300,95 @@
             "state" : "translated",
             "value" : "No recent archives."
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Недавних архивов нет."
+          }
+        }
+      }
+    },
+    "None" : {
+      "comment" : "Hide the breadcrumb in the archive window",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohne"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguno"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "なし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "없음"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не призначено"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
+          }
         }
       }
     },
@@ -5046,8 +5482,7 @@
       }
     },
     "OK" : {
-      "comment" : "The label of a button that dismisses a dialog.",
-      "isCommentAutoGenerated" : true,
+      "comment" : "Submits the entered password",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5538,6 +5973,23 @@
         }
       }
     },
+    "Organize files. Fast." : {
+      "comment" : "Short description of the FileFillet app",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateien organisieren. Schnell."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organize files. Fast."
+          }
+        }
+      }
+    },
     "Packed Size" : {
       "comment" : "Column that shows the packed size of the archive files",
       "localizations" : {
@@ -5616,8 +6068,7 @@
       }
     },
     "Password:" : {
-      "comment" : "A text field for entering a password.",
-      "isCommentAutoGenerated" : true,
+      "comment" : "Label for the password field",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5843,6 +6294,89 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "预览"
+          }
+        }
+      }
+    },
+    "Privacy" : {
+      "comment" : "Button that opens the privacy policy",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacidad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confidentialité"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プライバシー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개인정보 보호"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prywatność"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacidade"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфиденциальность"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приватність"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐私"
           }
         }
       }
@@ -6273,7 +6807,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Заметки к выпуску"
+            "value" : "Примечания к выпуску"
           }
         },
         "uk" : {
@@ -7198,6 +7732,106 @@
         }
       }
     },
+    "Terms" : {
+      "comment" : "Button that opens the terms of service",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutzungsbedingungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms & Conditions"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Términos y condiciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions générales"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termini e condizioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用規約"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이용 약관"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorwaarden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warunki i zasady"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termos e Condições"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Положения и условия"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Умови та положення"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "条款与条件"
+          }
+        }
+      }
+    },
+    "That password is incorrect. Try again." : {
+      "comment" : "Shown after an incorrect password is entered",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Passwort ist falsch. Versuche es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That password is incorrect. Try again."
+          }
+        }
+      }
+    },
     "the archive" : {
       "comment" : "Fallback name in the save-on-close prompt when the archive has no file name yet",
       "localizations" : {
@@ -7217,6 +7851,89 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Архив"
+          }
+        }
+      }
+    },
+    "Top" : {
+      "comment" : "Breadcrumb position at the top of the archive window",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arriba"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En haut"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In alto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상단"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bovenaan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na górze"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acima"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сверху"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зверху"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顶部"
           }
         }
       }
@@ -7379,6 +8096,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "访问网站"
+          }
+        }
+      }
+    },
+    "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only." : {
+      "comment" : "Description of the FlowMoose app",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache-zu-Text zur Entlastung von Handgelenken und Armen im Zeitalter von KI-Chats. Offline und ausschließlich lokal."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only."
+          }
+        }
+      }
+    },
+    "Voice-2-Text working everywhere" : {
+      "comment" : "Short description of the FlowMoose app",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache-zu-Text, die überall funktioniert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voice-2-Text working everywhere"
           }
         }
       }

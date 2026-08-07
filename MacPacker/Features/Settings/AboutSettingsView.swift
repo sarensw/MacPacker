@@ -125,7 +125,7 @@ struct AboutSettingsView: View {
                 Button {
                     openURL(Constants.privacyURL)
                 } label: {
-                    Text("Privacy Policy", comment: "Button that opens the privacy policy")
+                    Text("Privacy", comment: "Button that opens the privacy policy")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -135,7 +135,17 @@ struct AboutSettingsView: View {
                 Button {
                     openURL(Constants.termsURL)
                 } label: {
-                    Text("Terms of Service", comment: "Button that opens the terms of service")
+                    Text("Terms", comment: "Button that opens the terms of service")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 8)
+                
+                Button {
+                    openURL(Constants.imprintURL)
+                } label: {
+                    Text("Imprint", comment: "Button that opens the imprint")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
