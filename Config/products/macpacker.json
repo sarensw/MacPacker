@@ -57,6 +57,28 @@
             "issues": [
               "161"
             ]
+          },
+          {
+            "type": "core",
+            "title": {
+              "en": "Launch parameters can open a search, start a new archive, and add files to it",
+              "zh-Hans": "启动参数可以打开搜索、新建压缩包并向其中添加文件",
+              "fr": "Les paramètres de lancement peuvent ouvrir une recherche, créer une archive et y ajouter des fichiers",
+              "de": "Startparameter können eine Suche öffnen, ein neues Archiv anlegen und Dateien hinzufügen",
+              "it": "I parametri di avvio possono aprire una ricerca, creare un nuovo archivio e aggiungervi file",
+              "ja": "起動パラメータで検索を開き、新しいアーカイブを作成してファイルを追加できます",
+              "fa": "پارامترهای راه‌اندازی می‌توانند جست‌وجو را باز کنند، آرشیو جدیدی بسازند و به آن فایل اضافه کنند",
+              "pl": "Parametry uruchamiania mogą otworzyć wyszukiwanie, utworzyć nowe archiwum i dodać do niego pliki",
+              "pt-BR": "Os parâmetros de inicialização podem abrir uma busca, criar um novo arquivo e adicionar arquivos a ele",
+              "ru": "Параметры запуска могут открыть поиск, создать новый архив и добавить в него файлы",
+              "uk": "Параметри запуску можуть відкрити пошук, створити новий архів і додати до нього файли",
+              "es-MX": "Los parámetros de inicio pueden abrir una búsqueda, crear un archivo nuevo y agregarle archivos",
+              "ko": "실행 매개변수로 검색을 열고 새 압축 파일을 만들어 파일을 추가할 수 있습니다",
+              "nl": "Startparameters kunnen een zoekopdracht openen, een nieuw archief maken en er bestanden aan toevoegen"
+            },
+            "issues": [
+              "163"
+            ]
           }
         ]
       },

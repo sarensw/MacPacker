@@ -20,7 +20,11 @@ import SandboxPilotKit
 ///
 ///   -ArchivePath  <path>    open this archive in a window
 ///   -NavigatePath a/b/c     navigate into these folder / nested-archive segments, in order
-///   -SelectItem   <name>    select this item in the final folder
+///   -SearchQuery  <text>    filter the listing by this text
+///   -SelectItem   a,b,c     select these items in the final folder (comma-separated)
+///   -NewArchive   1         open a window with a fresh, empty archive instead
+///   -AddFiles     a,b,c     add these files — to the new archive, or to the
+///                           opened one at the navigated-to path
 ///
 /// This is a normal, shipping feature — not gated to debug builds. It also
 /// encapsulates *where a parameter comes from*: it resolves each one from two
@@ -35,8 +39,12 @@ import SandboxPilotKit
 enum LaunchParameters {
     static let archivePathKey = "ArchivePath"
     static let navigatePathKey = "NavigatePath"
+    static let searchQueryKey = "SearchQuery"
     static let selectItemKey = "SelectItem"
+    static let newArchiveKey = "NewArchive"
+    static let addFilesKey = "AddFiles"
     static let extractDemoKey = "ExtractDemo"
+    static let dropZoneKey = "DropZone"
     static let disableUpdateChecksKey = "DisableUpdateChecks"
 
     /// Resolves a launch parameter from its two sources (command line first,
@@ -60,8 +68,27 @@ enum LaunchParameters {
     /// The app then shows that archive's window instead of an empty/welcome one.
     static var opensArchive: Bool { archivePath != nil }
 
+    /// True when launch parameters ask for a fresh, empty archive to fill.
+    static var createsArchive: Bool { flag(newArchiveKey) }
+
+    /// True when launch parameters put a window on screen themselves — the app
+    /// then skips the empty launch window and the welcome screen.
+    static var opensWindow: Bool { opensArchive || createsArchive }
+
     /// True when launch parameters request the extraction preview (debug).
     static var isExtractDemo: Bool { flag(extractDemoKey) }
+
+    #if DEBUG
+    /// Screenshot-only: pins the drop-zone overlay on, so the drag-and-drop UI
+    /// can be captured without a live drag (nothing simulates one).
+    static var dropZone: ArchiveDropZone? {
+        switch value(dropZoneKey) {
+        case "add": .add
+        case "open": .open
+        default: nil
+        }
+    }
+    #endif
 
     /// True when launch parameters ask to skip the startup update check.
     static var disableUpdateChecks: Bool { flag(disableUpdateChecksKey) }
@@ -69,35 +96,61 @@ enum LaunchParameters {
     /// Opens the requested archive (if any), navigates to the requested path,
     /// and selects the requested item.
     static func applyIfNeeded(windowManager: ArchiveWindowManager) {
+        if createsArchive {
+            // The window already holds the added files; drive it for the rest,
+            // so -SearchQuery and -SelectItem mean the same thing here as they
+            // do for an opened archive rather than being silently dropped.
+            let state = windowManager.openCreateArchiveWindow(with: filesToAdd)
+            Task {
+                await drive(state, navigate: nil, add: [],
+                            search: value(searchQueryKey), select: value(selectItemKey))
+            }
+            return
+        }
         guard let archivePath else { return }
-        let url = resolveArchive(archivePath)
+        let url = resolveInputFile(archivePath)
         let navigate = value(navigatePathKey)
+        let search = value(searchQueryKey)
         let select = value(selectItemKey)
+        let add = filesToAdd
 
         // A plain -ArchivePath just opens the archive; only bind the state and
-        // drive it when a navigation or selection was actually requested.
-        guard navigate != nil || select != nil else {
+        // drive it when something was actually requested on top.
+        guard navigate != nil || search != nil || select != nil || !add.isEmpty else {
             windowManager.openArchiveWindow(for: url)
             return
         }
         let state = windowManager.openArchiveWindow(for: url)
-        Task { await drive(state, navigate: navigate, select: select) }
+        Task { await drive(state, navigate: navigate, add: add, search: search, select: select) }
     }
 
-    /// Resolves the archive URL, tolerating a path this process can't read.
+    /// The `-AddFiles` list, resolved to readable urls.
+    private static var filesToAdd: [URL] {
+        (value(addFilesKey) ?? "")
+            .split(separator: ",")
+            .map { resolveInputFile($0.trimmingCharacters(in: .whitespaces)) }
+    }
+
+    /// Resolves a file named by a launch parameter (the archive to open, or a
+    /// file to put into a new one), tolerating a path this process can't read.
     ///
     /// A genuine launch (`open --args -ArchivePath /some/file.zip`) passes a path
     /// we can read, and we use it verbatim. But a sandboxed automation harness
     /// (SandboxPilot) can't stage a file into *this* app's container, so its plan
     /// may reference a test archive by a path outside our sandbox. In debug builds
-    /// we fall back to a bundled copy of the same-named archive so those runs still
-    /// open a real archive instead of an empty window.
-    private static func resolveArchive(_ path: String) -> URL {
+    /// we then look for the same file name in the demo folder (the one location
+    /// the downloads entitlement lets us read), and finally fall back to a bundled
+    /// copy, so those runs still open a real archive instead of an empty window.
+    private static func resolveInputFile(_ path: String) -> URL {
         if FileManager.default.isReadableFile(atPath: path) {
             return URL(fileURLWithPath: path)
         }
         #if DEBUG
         let filename = (path as NSString).lastPathComponent
+        if let staged = demoFile(named: filename) {
+            log.info("Launch parameter file not readable (\(path)); using staged demo file")
+            return staged
+        }
         if let bundled = bundledArchive(named: filename) {
             log.info("Launch parameter archive not readable (\(path)); using bundled fallback")
             return bundled
@@ -107,6 +160,22 @@ enum LaunchParameters {
     }
 
     #if DEBUG
+    /// `~/Downloads/MacPacker-Demo/[extra/]<name>` — the screenshot archives and
+    /// the loose files added to a new one, matched by basename so a plan can name
+    /// them by their repo-relative path while the sandbox only ever reads them out
+    /// of Downloads. Generated (not committed) by
+    /// `assets/screenshots/make_demo_archives.py`.
+    private static func demoFile(named filename: String) -> URL? {
+        // The *real* home, not the container: `FileManager`'s downloads url is the
+        // container one, and the window subtitle would show that path even though
+        // the entitlement redirects it to the same file.
+        guard let pw = getpwuid(getuid()) else { return nil }
+        let demo = URL(fileURLWithPath: String(cString: pw.pointee.pw_dir))
+            .appending(path: "Downloads/MacPacker-Demo")
+        return [demo.appending(path: filename), demo.appending(path: "extra").appending(path: filename)]
+            .first { FileManager.default.isReadableFile(atPath: $0.path) }
+    }
+
     /// The debug-only test archive, embedded as a base64 blob (see
     /// `ScreenshotTestArchive`) so it's stripped from release. Materialised into
     /// this app's container tmp dir — a readable URL for the archive loader.
@@ -127,8 +196,13 @@ enum LaunchParameters {
     #endif
 
     /// Waits for the initial load, walks the requested path segment by segment
-    /// (awaiting each nested-archive unfold), then selects the requested item.
-    private static func drive(_ state: ArchiveState, navigate: String?, select: String?) async {
+    /// (awaiting each nested-archive unfold), adds the requested files, applies
+    /// the search filter, then selects the requested items — in that order,
+    /// because files land in the folder being shown, navigating clears the
+    /// search, and searching clears the selection.
+    private static func drive(
+        _ state: ArchiveState, navigate: String?, add: [URL], search: String?, select: String?
+    ) async {
         try? await state.openTask?.value
 
         if let navigate, !navigate.isEmpty {
@@ -141,12 +215,23 @@ enum LaunchParameters {
             }
         }
 
+        for file in add {
+            state.add(url: file)
+        }
+
+        if let search, !search.isEmpty {
+            state.search(search)
+        }
+
         if let select, !select.isEmpty {
-            if let item = state.childItems?.first(where: { $0.name == select }) {
-                state.selectedItems = [item]
+            let names = select.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+            let items = names.compactMap { name in state.childItems?.first { $0.name == name } }
+            if items.count != names.count {
+                log.error("Launch parameter select item(s) not found: \(select)")
+            }
+            if !items.isEmpty {
+                state.selectedItems = items
                 state.isReloadNeeded = true
-            } else {
-                log.error("Launch parameter select item not found: \(select)")
             }
         }
     }

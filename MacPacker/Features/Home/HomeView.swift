@@ -58,10 +58,9 @@ struct HomeView: View {
                     title: String(localized: "Open Archive…", comment: "Start-page card that shows the open panel")
                 ) { openUsingPanel() }
 
-                StartCard(
-                    icon: "doc.badge.plus",
-                    title: String(localized: "New Archive", comment: "Start-page card that starts a new, empty archive in this window")
-                ) { state.create() }
+                // Also the name the new archive carries until it is saved.
+                let newArchive = String(localized: "New Archive", comment: "Start-page card that starts a new, empty archive in this window")
+                StartCard(icon: "doc.badge.plus", title: newArchive) { state.create(named: newArchive) }
             }
         }
     }
