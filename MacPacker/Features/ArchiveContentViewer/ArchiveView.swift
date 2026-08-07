@@ -95,6 +95,11 @@ struct ArchiveView: View {
             if state.openWithUrls.count > 0 {
                 state.openDropped(url: state.openWithUrls[0])
             }
+            #if DEBUG
+            // -DropZone add|open pins the overlay for a screenshot: no drag is
+            // in flight, so nothing would arm it.
+            activeZone = LaunchParameters.dropZone
+            #endif
         }
         .quickLookPreview($state.previewItemUrl)
     }

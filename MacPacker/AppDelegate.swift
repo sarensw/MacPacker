@@ -137,13 +137,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // When launched to open a specific archive (launch parameters) — or to
         // show the debug extraction preview — MacPacker shows that one window
         // instead of the empty launch window and the welcome screen.
-        let opensArchive = LaunchParameters.opensArchive
+        let opensWindow = LaunchParameters.opensWindow
 #if DEBUG
         let showsExtractionDemo = ExtractionDemo.isRequested
 #else
         let showsExtractionDemo = false
 #endif
-        let launchedToOpenSomething = opensArchive || showsExtractionDemo
+        let launchedToOpenSomething = opensWindow || showsExtractionDemo
 
         // make sure that at least one window will be shown even if it is empty
         if !launchedToOpenSomething {
