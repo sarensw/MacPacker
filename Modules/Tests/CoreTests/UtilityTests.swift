@@ -497,6 +497,19 @@ extension AllCoreTests {
             #expect(result?.type.id == "zip")
         }
 
+        /// jar/aar/apk are zip containers, so they are alternative extensions on
+        /// the zip format rather than formats of their own — same shape as `deb`
+        /// on `ar` or `lzh` on `lha`.
+        @Test(arguments: ["jar", "aar", "apk"])
+        func detectByExtZipBasedPackageReturnsZip(ext: String) {
+            let catalog = ArchiveTypeCatalog()
+            let detector = ArchiveTypeDetector(catalog: catalog)
+
+            let result = detector.detectBy(ext: ext)
+            #expect(result != nil)
+            #expect(result?.type.id == "zip")
+        }
+
         @Test func detectByExtUnknownReturnsNil() {
             let catalog = ArchiveTypeCatalog()
             let detector = ArchiveTypeDetector(catalog: catalog)

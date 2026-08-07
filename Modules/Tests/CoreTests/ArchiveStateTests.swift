@@ -744,6 +744,49 @@ extension AllCoreTests {
             #expect(nestedNames.contains("photo.psd"))
             #expect(nestedNames.contains("taxes.xlsx"))
         }
+
+        /// A zip holding jar/aar/apk packages: double-clicking one must unfold
+        /// it in place (browse into it) instead of handing it to the system.
+        @Test(arguments: ["jar", "aar", "apk"])
+        func opensZipBasedPackageInsideZip(ext: String) async throws {
+            let dir = FileManager.default.temporaryDirectory
+                .appendingPathComponent("NestedPackageTests-\(UUID().uuidString)")
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let fixtures = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            // The defaultArchives fixture set only ships a .jar; aar and apk are
+            // the same zip payload under a different extension, so derive them
+            // from it — no extra fixtures to keep in the TestArchives submodule.
+            try FileManager.default.copyItem(
+                at: fixtures.appendingPathComponent("defaultArchive.jar"),
+                to: dir.appendingPathComponent("lib.\(ext)")
+            )
+
+            let outer = dir.appendingPathComponent("outer.zip")
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
+            p.arguments = ["-r", outer.path, "lib.\(ext)"]
+            p.currentDirectoryURL = dir
+            p.standardOutput = FileHandle.nullDevice
+            p.standardError = FileHandle.nullDevice
+            try p.run()
+            p.waitUntilExit()
+            #expect(p.terminationStatus == 0)
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: outer)
+            try await state.openTask?.value
+
+            let package = try #require(
+                state.entries.values.first { $0.type == .file && $0.name == "lib.\(ext)" }
+            )
+            try await state.openAsync(item: package)
+
+            #expect(state.selectedItem === package)
+            #expect(state.childItems?.isEmpty == false)
+            #expect(state.childItems?.contains { $0.name == "hello world.txt" } == true)
+        }
     }
 
     // MARK: - loadChildren edge cases

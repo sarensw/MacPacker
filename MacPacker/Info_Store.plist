@@ -104,6 +104,34 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>aar</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Android Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>apk</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Android Package</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>xz</string>
 			</array>
 			<key>CFBundleTypeName</key>
