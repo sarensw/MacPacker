@@ -114,7 +114,7 @@ struct ContentView: View {
             .frame(width: 366)
         }
         .navigationTitle(archiveState.hasArchive == false ? Bundle.main.displayName : archiveState.name!)
-        .navigationSubtitle(Text(verbatim: "\(archiveState.diff.count > 0 ? "Edited • " : "")\(archiveState.url == nil ? "" : archiveState.url!.deletingLastPathComponent().path + "/")"))
+        .navigationSubtitle(Text(verbatim: "\(archiveState.diff.count > 0 ? String(localized: "Edited • ", comment: "Window subtitle marker shown when the archive has unsaved changes") : "")\(archiveState.url == nil ? "" : archiveState.url!.deletingLastPathComponent().path + "/")"))
         .environmentObject(archiveState)
     }
 }
