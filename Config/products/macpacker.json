@@ -78,6 +78,28 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+              "en": "Correct icon size in the Finder toolbar",
+              "zh-Hans": "修正访达工具栏中的图标尺寸",
+              "fr": "Taille d’icône corrigée dans la barre d’outils du Finder",
+              "de": "Korrekte Symbolgröße in der Finder-Symbolleiste",
+              "it": "Dimensione corretta dell’icona nella barra degli strumenti del Finder",
+              "ja": "Finder ツールバーのアイコンサイズを修正",
+              "fa": "اندازهٔ صحیح آیکون در نوار ابزار Finder",
+              "pl": "Poprawny rozmiar ikony na pasku narzędzi Findera",
+              "pt-BR": "Tamanho correto do ícone na barra de ferramentas do Finder",
+              "ru": "Правильный размер значка на панели инструментов Finder",
+              "uk": "Правильний розмір значка на панелі інструментів Finder",
+              "es-MX": "Tamaño correcto del ícono en la barra de herramientas del Finder",
+              "ko": "Finder 도구 막대의 아이콘 크기 수정",
+              "nl": "Correcte pictogramgrootte in de Finder-werkbalk"
+            },
+            "issues": [
+              "134"
+            ]
+          },
+          {
             "type": "core",
             "title": {
               "en": "Made previously hard-coded strings available for localization",
