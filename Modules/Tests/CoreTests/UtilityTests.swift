@@ -518,23 +518,7 @@ extension AllCoreTests {
             #expect(result == nil)
         }
 
-        @Test func getNameWithoutExtensionSimple() {
-            let catalog = ArchiveTypeCatalog()
-            let detector = ArchiveTypeDetector(catalog: catalog)
-            let url = URL(fileURLWithPath: "/tmp/archive.zip")
-
-            let name = detector.getNameWithoutExtension(for: url)
-            #expect(name == "archive")
-        }
-
-        @Test func getNameWithoutExtensionCompound() {
-            let catalog = ArchiveTypeCatalog()
-            let detector = ArchiveTypeDetector(catalog: catalog)
-            let url = URL(fileURLWithPath: "/tmp/archive.tar.gz")
-
-            let name = detector.getNameWithoutExtension(for: url)
-            #expect(name == "archive")
-        }
+        // `getNameWithoutExtension` cases live in `ArchiveNamingTests`.
 
         @Test func detectByMagicNumberWithTestArchive() {
             let catalog = ArchiveTypeCatalog()
