@@ -189,6 +189,10 @@ extension AllCoreTests {
             // Same for a compound (tar.gz) extension written in uppercase.
             let compoundUrl = URL(fileURLWithPath: "/tmp/MyArchive.TAR.GZ")
             #expect(detector.getNameWithoutExtension(for: compoundUrl) == "MyArchive")
+
+            // Mixed case on a compound — only the trailing component is uppercase.
+            let tarZUrl = URL(fileURLWithPath: "/tmp/MyArchive.tar.Z")
+            #expect(detector.getNameWithoutExtension(for: tarZUrl) == "MyArchive")
         }
 
         @Test func detectAllCompoundExtensions() {
