@@ -56,6 +56,28 @@
             }
           },
           {
+            "type": "fix",
+            "title": {
+              "en": "Extract to folder now names the folder after the archive",
+              "zh-Hans": "解压到文件夹时，现在以压缩包名称命名该文件夹",
+              "fr": "L’extraction vers un dossier nomme désormais le dossier d’après l’archive",
+              "de": "Beim Entpacken in einen Ordner wird dieser jetzt nach dem Archiv benannt",
+              "it": "L’estrazione in una cartella ora la nomina in base all’archivio",
+              "ja": "フォルダーへの展開時、フォルダー名にアーカイブ名を使用するようになりました",
+              "fa": "هنگام استخراج در پوشه، نام پوشه اکنون از نام آرشیو گرفته می‌شود",
+              "pl": "Wypakowywanie do folderu nadaje mu teraz nazwę archiwum",
+              "pt-BR": "Ao extrair para uma pasta, ela agora recebe o nome do arquivo",
+              "ru": "При извлечении в папку она теперь называется по имени архива",
+              "uk": "Під час розпакування в теку вона тепер називається за іменем архіву",
+              "es-MX": "Al extraer a una carpeta, ahora recibe el nombre del archivo",
+              "ko": "폴더로 압축을 풀면 이제 폴더 이름이 압축 파일 이름으로 지정됩니다",
+              "nl": "Bij uitpakken naar een map krijgt deze nu de naam van het archief"
+            },
+            "issues": [
+              "170"
+            ]
+          },
+          {
             "type": "core",
             "title": {
               "en": "Made previously hard-coded strings available for localization",
