@@ -72,11 +72,11 @@ struct AboutSettingsView: View {
                     Text(verbatim: "© 2023-2026 Stephan Arenswald")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                    Text(verbatim: "Licensed under the GNU General Public License v3.0 (GPL-3.0-or-later). This is free software: you can redistribute it and/or modify it under the terms of the GPL.")
+                    Text("Licensed under the GNU General Public License v3.0 (GPL-3.0-or-later). This is free software: you can redistribute it and/or modify it under the terms of the GPL.", comment: "License notice shown in the About settings.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text(verbatim: "No warranty. See LICENSE for details.")
+                    Text("No warranty. See LICENSE for details.", comment: "Warranty disclaimer shown in the About settings.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     

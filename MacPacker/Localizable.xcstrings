@@ -4743,6 +4743,9 @@
         }
       }
     },
+    "Licensed under the GNU General Public License v3.0 (GPL-3.0-or-later). This is free software: you can redistribute it and/or modify it under the terms of the GPL." : {
+      "comment" : "License notice shown in the About settings."
+    },
     "Logs:" : {
       "comment" : "A label for the log related section in the advanced settings",
       "localizations" : {
@@ -5415,6 +5418,9 @@
           }
         }
       }
+    },
+    "No warranty. See LICENSE for details." : {
+      "comment" : "Warranty disclaimer shown in the About settings."
     },
     "None" : {
       "comment" : "Hide the breadcrumb in the archive window",
@@ -7234,6 +7240,9 @@
         }
       }
     },
+    "Set MacPacker as the default app" : {
+      "comment" : "Title of the alert that explains how to set MacPacker as the default app for archive files."
+    },
     "Settings..." : {
       "comment" : "Used to open the settings/preferences window",
       "localizations" : {
@@ -7973,6 +7982,9 @@
           }
         }
       }
+    },
+    "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives." : {
+      "comment" : "Instructions in the alert explaining how to set MacPacker as the default app for archive files in Finder."
     },
     "Top" : {
       "comment" : "Breadcrumb position at the top of the archive window",
