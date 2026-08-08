@@ -304,7 +304,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "«%@» защищён паролем."
+            "value" : "“%@” защищён паролем."
           }
         },
         "uk" : {
@@ -766,6 +766,12 @@
             "state" : "translated",
             "value" : "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ Огромное спасибо всем, кто внес свой вклад посредством PR, переводчикам и спонсорам этого проекта!"
+          }
         }
       }
     },
@@ -1142,7 +1148,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Добавить в «%@»"
+            "value" : "Добавить в “%@”"
           }
         },
         "uk" : {
@@ -2418,6 +2424,12 @@
             "state" : "translated",
             "value" : "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows."
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копируйте или перемещайте файлы в ваши папки и их подпапки. Нет необходимости открывать новые окна Finder."
+          }
         }
       }
     },
@@ -2905,13 +2917,85 @@
         }
       }
     },
-    "Edited • " : {
+    "Edited" : {
       "comment" : "Window subtitle marker shown when the archive has unsaved changes",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geändert"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edited • "
+            "value" : "Modified"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modificación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifié"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modificato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更日"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수정일"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewerking"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmodyfikowano"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modificado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дата изменения"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Змінено"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改时间"
           }
         }
       }
@@ -3267,7 +3351,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Распаковать архив"
+            "value" : "Распаковать"
           }
         },
         "uk" : {
@@ -4210,6 +4294,12 @@
             "state" : "translated",
             "value" : "Help with translation"
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Помочь с переводом"
+          }
         }
       }
     },
@@ -4529,7 +4619,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Подробнее…"
+            "value" : "Дополнительно…"
           }
         },
         "uk" : {
@@ -4819,6 +4909,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker создан благодаря моей работе в LeanBytes. Поддержка приложений, перечисленных ниже, напрямую способствует развитию этого инструмента с открытым исходным кодом."
           }
         }
       }
@@ -5114,7 +5210,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Больше программ"
+            "value" : "Больше приложений"
           }
         },
         "uk" : {
@@ -5997,6 +6093,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Organize files. Fast."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Организовать файлы. Быстро."
           }
         }
       }
@@ -7840,6 +7942,12 @@
             "state" : "translated",
             "value" : "That password is incorrect. Try again."
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Неверный пароль. Попробуйте еще раз."
+          }
         }
       }
     },
@@ -8125,6 +8233,12 @@
             "state" : "translated",
             "value" : "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only."
           }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Функция преобразования голоса в текст для снижения нагрузки на запястья и руки в эпоху чатов с использованием ИИ. Работает в автономном режиме, полностью локально."
+          }
         }
       }
     },
@@ -8141,6 +8255,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voice-2-Text working everywhere"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Функция преобразования голоса в текст работает повсюду."
           }
         }
       }
