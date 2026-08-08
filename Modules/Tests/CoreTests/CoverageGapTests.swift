@@ -320,35 +320,6 @@ extension AllCoreTests {
         }
     }
 
-    // MARK: - ArchiveTypeDetector: getNameWithoutExtension
-
-    @MainActor struct DetectorNameWithoutExtensionTests {
-
-        @Test func nameWithoutExtensionForSimpleArchive() {
-            let catalog = ArchiveTypeCatalog()
-            let detector = ArchiveTypeDetector(catalog: catalog)
-            let url = URL(fileURLWithPath: "/tmp/archive.zip")
-            let name = detector.getNameWithoutExtension(for: url)
-            #expect(name == "archive")
-        }
-
-        @Test func nameWithoutExtensionForCompound() {
-            let catalog = ArchiveTypeCatalog()
-            let detector = ArchiveTypeDetector(catalog: catalog)
-            let url = URL(fileURLWithPath: "/tmp/archive.tar.gz")
-            let name = detector.getNameWithoutExtension(for: url)
-            #expect(name == "archive")
-        }
-
-        @Test func nameWithoutExtensionForUnknown() {
-            let catalog = ArchiveTypeCatalog()
-            let detector = ArchiveTypeDetector(catalog: catalog)
-            let url = URL(fileURLWithPath: "/tmp/document.txt")
-            let name = detector.getNameWithoutExtension(for: url)
-            #expect(name == "document.txt")
-        }
-    }
-
     // MARK: - ArchiveSupportUtilities: makeTempFileDescriptor
 
     @MainActor struct TempFileDescriptorTests {

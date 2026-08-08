@@ -168,52 +168,7 @@ extension AllCoreTests {
             #expect(result!.type.id == "zip")
         }
 
-        @Test func getNameWithoutExtensionNoMatch() {
-            let catalog = ArchiveTypeCatalog()
-            let detector = ArchiveTypeDetector(catalog: catalog)
-
-            let url = URL(fileURLWithPath: "/tmp/readme.txt")
-            let name = detector.getNameWithoutExtension(for: url)
-            #expect(name == "readme.txt")
-        }
-
-        @Test func getNameWithoutExtensionStripsUppercaseExtension() {
-            let catalog = ArchiveTypeCatalog()
-            let detector = ArchiveTypeDetector(catalog: catalog)
-
-            // Detection is case-insensitive, so the suffix strip must be too;
-            // the base name keeps its original casing.
-            let zipUrl = URL(fileURLWithPath: "/tmp/MyArchive.ZIP")
-            #expect(detector.getNameWithoutExtension(for: zipUrl) == "MyArchive")
-
-            // Same for a compound (tar.gz) extension written in uppercase.
-            let compoundUrl = URL(fileURLWithPath: "/tmp/MyArchive.TAR.GZ")
-            #expect(detector.getNameWithoutExtension(for: compoundUrl) == "MyArchive")
-
-            // Mixed case on a compound — only the trailing component is uppercase.
-            let tarZUrl = URL(fileURLWithPath: "/tmp/MyArchive.tar.Z")
-            #expect(detector.getNameWithoutExtension(for: tarZUrl) == "MyArchive")
-        }
-
-        @Test func getNameWithoutExtensionStripsSplitVolumeSuffix() {
-            let catalog = ArchiveTypeCatalog()
-            let detector = ArchiveTypeDetector(catalog: catalog)
-
-            // A split/multi-volume part is detected by its own suffix (.zNN,
-            // .zip.NNN); that suffix must be stripped so the extract-to-folder
-            // is named after the archive base, not the volume — mirroring how
-            // ArchiveState.splitSetName(for:) titles the window.
-            let spannedUrl = URL(fileURLWithPath: "/tmp/MyArchive.z03")
-            #expect(detector.getNameWithoutExtension(for: spannedUrl) == "MyArchive")
-
-            let numericUrl = URL(fileURLWithPath: "/tmp/MyArchive.zip.005")
-            #expect(detector.getNameWithoutExtension(for: numericUrl) == "MyArchive")
-
-            // Detection is case-insensitive, so the strip must be too; the base
-            // name keeps its original casing.
-            let upperUrl = URL(fileURLWithPath: "/tmp/MyArchive.Z03")
-            #expect(detector.getNameWithoutExtension(for: upperUrl) == "MyArchive")
-        }
+        // `getNameWithoutExtension` cases live in `ArchiveNamingTests`.
 
         @Test func detectAllCompoundExtensions() {
             let catalog = ArchiveTypeCatalog()
