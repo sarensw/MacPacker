@@ -27,7 +27,10 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
             requestAccessToDir(for: appUrl.target) { response, url in
                 if response == .OK {
                     if let url {
-                        let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: url)
+                        // `url` is the folder the user granted access to — the
+                        // destination. The folder we create inside it is named
+                        // after the archive, so the name comes from `fileUrl`.
+                        let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
                         let folderUrl = url.appendingPathComponent(folderName)
                         do {
                             try FileManager.default.createDirectory(
