@@ -93,9 +93,13 @@ class FinderSync: FIFinderSync {
     }
     
     override var toolbarItemImage: NSImage {
-        let img = NSImage(named: "AppIcon_MacPacker") ?? NSImage()
-        img.size = NSSize(width: 18, height: 18)
-        return img
+        // Finder toolbar items use a 16 pt square, like the built-in toolbar icons.
+        // Copy the cached asset before changing its logical (point) size.
+        guard let image = NSImage(named: "AppIcon_MacPacker")?.copy() as? NSImage else {
+            return NSImage(size: NSSize(width: 16, height: 16))
+        }
+        image.size = NSSize(width: 16, height: 16)
+        return image
     }
     
     /// Whether the URL points at a directory. Uses the file system's
