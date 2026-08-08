@@ -177,6 +177,24 @@ extension AllCoreTests {
             #expect(name == "readme.txt")
         }
 
+        @Test func getNameWithoutExtensionStripsUppercaseExtension() {
+            let catalog = ArchiveTypeCatalog()
+            let detector = ArchiveTypeDetector(catalog: catalog)
+
+            // Detection is case-insensitive, so the suffix strip must be too;
+            // the base name keeps its original casing.
+            let zipUrl = URL(fileURLWithPath: "/tmp/MyArchive.ZIP")
+            #expect(detector.getNameWithoutExtension(for: zipUrl) == "MyArchive")
+
+            // Same for a compound (tar.gz) extension written in uppercase.
+            let compoundUrl = URL(fileURLWithPath: "/tmp/MyArchive.TAR.GZ")
+            #expect(detector.getNameWithoutExtension(for: compoundUrl) == "MyArchive")
+
+            // Mixed case on a compound — only the trailing component is uppercase.
+            let tarZUrl = URL(fileURLWithPath: "/tmp/MyArchive.tar.Z")
+            #expect(detector.getNameWithoutExtension(for: tarZUrl) == "MyArchive")
+        }
+
         @Test func detectAllCompoundExtensions() {
             let catalog = ArchiveTypeCatalog()
             let detector = ArchiveTypeDetector(catalog: catalog)

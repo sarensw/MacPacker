@@ -54,17 +54,23 @@ final public class ArchiveTypeDetector: Sendable {
 
     public func getNameWithoutExtension(for url: URL) -> String {
         var name = url.lastPathComponent
+        // `detectByExtension` matches case-insensitively, so a `MyArchive.ZIP`
+        // is recognized as a zip — the suffix test here must be case-insensitive
+        // too, or the extension is never stripped. Compare against a lowercased
+        // view of the name, but remove from the original so the base name keeps
+        // its casing (MyArchive.ZIP → "MyArchive").
+        let lowercasedName = name.lowercased()
         if let byExt = detectByExtension(for: url, considerComposition: true) {
             if let composition = byExt.composition {
                 for compExt in composition.extensions {
-                    if name.hasSuffix(".\(compExt)") {
+                    if lowercasedName.hasSuffix(".\(compExt)") {
                         name.removeLast(compExt.count + 1)
                         break
                     }
                 }
             } else {
                 for ext in byExt.type.extensions {
-                    if name.hasSuffix(".\(ext)") {
+                    if lowercasedName.hasSuffix(".\(ext)") {
                         name.removeLast(ext.count + 1)
                         break
                     }
