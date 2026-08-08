@@ -80,6 +80,26 @@
           {
             "type": "fix",
             "title": {
+              "en": "Split and multi-volume archives now extract to a folder named after the archive",
+              "zh-Hans": "分卷和多卷压缩包现在会解压到以压缩包命名的文件夹",
+              "fr": "Les archives fractionnées et multi-volumes s'extraient désormais dans un dossier nommé d'après l'archive",
+              "de": "Aufgeteilte und mehrteilige Archive werden nun in einen nach dem Archiv benannten Ordner entpackt",
+              "it": "Gli archivi suddivisi e multi-volume ora si estraggono in una cartella denominata come l'archivio",
+              "ja": "分割・マルチボリュームアーカイブはアーカイブ名のフォルダーに展開されるようになりました",
+              "fa": "آرشیوهای چندبخشی و چندجلدی اکنون در پوشه‌ای به‌نام آرشیو استخراج می‌شوند",
+              "pl": "Archiwa dzielone i wielowolumenowe są teraz wypakowywane do folderu o nazwie archiwum",
+              "pt-BR": "Arquivos divididos e de vários volumes agora são extraídos para uma pasta com o nome do arquivo",
+              "ru": "Составные и многотомные архивы теперь распаковываются в папку с именем архива",
+              "uk": "Складені та багатотомні архіви тепер розпаковуються до теки з іменем архіву",
+              "es-MX": "Los archivos divididos y de varios volúmenes ahora se extraen en una carpeta con el nombre del archivo",
+              "ko": "분할 및 다중 볼륨 아카이브가 이제 아카이브 이름을 딴 폴더에 풀립니다",
+              "nl": "Gesplitste en multi-volume archieven worden nu uitgepakt in een map die naar het archief is vernoemd"
+            },
+            "issues": []
+          },
+          {
+            "type": "fix",
+            "title": {
               "en": "Correct icon size in the Finder toolbar",
               "zh-Hans": "修正访达工具栏中的图标尺寸",
               "fr": "Taille d’icône corrigée dans la barre d’outils du Finder",

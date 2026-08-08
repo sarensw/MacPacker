@@ -68,6 +68,17 @@ final public class ArchiveTypeDetector: Sendable {
                         break
                     }
                 }
+            } else if let split = byExt.split {
+                // A split/multi-volume part (.z03, .zip.005) is detected by its
+                // own $-anchored regex; strip that suffix so the folder is named
+                // after the archive base (MyArchive.z03 → "MyArchive"). Detection
+                // is case-insensitive, so the strip must be too — but we replace
+                // in the original `name` to keep the base name's casing.
+                name = name.replacingOccurrences(
+                    of: split.pattern,
+                    with: "",
+                    options: [.regularExpression, .caseInsensitive]
+                )
             } else {
                 for ext in byExt.type.extensions {
                     if lowercasedName.hasSuffix(".\(ext)") {
