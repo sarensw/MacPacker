@@ -195,6 +195,26 @@ extension AllCoreTests {
             #expect(detector.getNameWithoutExtension(for: tarZUrl) == "MyArchive")
         }
 
+        @Test func getNameWithoutExtensionStripsSplitVolumeSuffix() {
+            let catalog = ArchiveTypeCatalog()
+            let detector = ArchiveTypeDetector(catalog: catalog)
+
+            // A split/multi-volume part is detected by its own suffix (.zNN,
+            // .zip.NNN); that suffix must be stripped so the extract-to-folder
+            // is named after the archive base, not the volume — mirroring how
+            // ArchiveState.splitSetName(for:) titles the window.
+            let spannedUrl = URL(fileURLWithPath: "/tmp/MyArchive.z03")
+            #expect(detector.getNameWithoutExtension(for: spannedUrl) == "MyArchive")
+
+            let numericUrl = URL(fileURLWithPath: "/tmp/MyArchive.zip.005")
+            #expect(detector.getNameWithoutExtension(for: numericUrl) == "MyArchive")
+
+            // Detection is case-insensitive, so the strip must be too; the base
+            // name keeps its original casing.
+            let upperUrl = URL(fileURLWithPath: "/tmp/MyArchive.Z03")
+            #expect(detector.getNameWithoutExtension(for: upperUrl) == "MyArchive")
+        }
+
         @Test func detectAllCompoundExtensions() {
             let catalog = ArchiveTypeCatalog()
             let detector = ArchiveTypeDetector(catalog: catalog)
