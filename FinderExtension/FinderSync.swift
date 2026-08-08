@@ -93,9 +93,11 @@ class FinderSync: FIFinderSync {
     }
     
     override var toolbarItemImage: NSImage {
-        let img = NSImage(named: "AppIcon_MacPacker") ?? NSImage()
-        img.size = NSSize(width: 18, height: 18)
-        return img
+        // Finder renders this at the asset's own logical size and ignores anything
+        // assigned to `size`, so the toolbar metrics are baked into the imageset:
+        // a 24 pt canvas with the artwork inset to 20 pt, matching what Finder's
+        // built-in items and other archivers ship.
+        NSImage(named: "FinderToolbarIcon") ?? NSImage()
     }
     
     /// Whether the URL points at a directory. Uses the file system's
