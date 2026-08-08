@@ -84,8 +84,8 @@ struct FormatSettingsView: View {
     func showInfoToSetAsDefault() {
         let alert = NSAlert()
         alert.icon = NSImage(named: "AppIcon")
-        alert.messageText = "Set MacPacker as the default app"
-        alert.informativeText = "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives."
+        alert.messageText = String(localized: "Set MacPacker as the default app", comment: "Title of the alert that explains how to set MacPacker as the default app for archive files.")
+        alert.informativeText = String(localized: "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives.", comment: "Instructions in the alert explaining how to set MacPacker as the default app for archive files in Finder.")
         alert.alertStyle = .informational
         alert.runModal()
     }
