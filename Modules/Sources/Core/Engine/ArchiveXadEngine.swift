@@ -405,8 +405,13 @@ final actor ArchiveXadEngine: ArchiveEngine {
             )
             
             entries[entry.id] = entry
-            
-            uncompressedSizeOverall += Int64(entry.uncompressedSize)
+
+            // Directory entries keep the "-1" unknown sentinel in
+            // `uncompressedSize` (their size block is skipped under `if !isDir`
+            // above), so clamp before accumulating — otherwise every directory
+            // subtracts a byte from the reported total. Mirrors the same
+            // `max(0, …)` clamp the extraction side applies for its byte totals.
+            uncompressedSizeOverall += Int64(Swift.max(0, entry.uncompressedSize))
         }
         
         emit(.done)
