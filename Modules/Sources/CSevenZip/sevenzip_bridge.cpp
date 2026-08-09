@@ -6,6 +6,7 @@
 #include "include/sevenzip_bridge.h"
 
 #include <cstdlib>
+#include <cctype>
 #include <cstring>
 #include <string>
 #include <deque>
@@ -29,11 +30,15 @@
 #include "Windows/PropVariantConv.h"
 
 #include "7zip/Common/FileStreams.h"
+#include "7zip/Common/CWrappers.h"
 #include "7zip/Common/StreamUtils.h"
 
 #include "7zip/Archive/IArchive.h"
 #include "7zip/IPassword.h"
 #include "7zip/MyVersion.h"   // MY_VERSION -- tracks the vendored submodule
+
+#include "C/Alloc.h"
+#include "C/Xz.h"
 
 static const GUID IID_IInArchive_Local = {
   0x23170F69, 0x40C1, 0x278A,
@@ -116,6 +121,7 @@ struct SZArchiveHandle {
     UInt32 numItems;
     std::string password;
     bool hasPassword = false;
+    bool usesBoundedCompoundStream = false;
 
     const char* storeString(const std::string &s) {
         storedStrings.push_back(s);
@@ -141,6 +147,17 @@ class COpenVolumeCallback final :
     FString _fileName;
     std::string _password;
     bool _hasPassword = false;
+    sz_progress_callback _progress = nullptr;
+    void *_progressContext = nullptr;
+    UInt64 _total = 0;
+
+    HRESULT Report(UInt64 completed) {
+        if (_progress && !_progress(completed, _total, _progressContext)) {
+            aborted = true;
+            return E_ABORT;
+        }
+        return S_OK;
+    }
 
 public:
     /// Set when a handler asked for a password while opening. Formats that
@@ -148,6 +165,16 @@ public:
     /// without one, and a failed open is otherwise indistinguishable from
     /// "not an archive".
     bool passwordRequested = false;
+    bool aborted = false;
+
+    void SetProgress(sz_progress_callback progress, void *context) {
+        _progress = progress;
+        _progressContext = context;
+    }
+
+    HRESULT CheckCancellation(UInt64 completed) {
+        return Report(completed);
+    }
 
     void SetPassword(const char *password) {
         if (password) {
@@ -209,9 +236,237 @@ public:
         return S_OK;
     }
 
-    Z7_COM7F_IMF(SetTotal(const UInt64 *, const UInt64 *)) { return S_OK; }
-    Z7_COM7F_IMF(SetCompleted(const UInt64 *, const UInt64 *)) { return S_OK; }
+    Z7_COM7F_IMF(SetTotal(const UInt64 *files, const UInt64 *bytes)) {
+        _total = bytes ? *bytes : (files ? *files : 0);
+        return Report(0);
+    }
+
+    Z7_COM7F_IMF(SetCompleted(const UInt64 *files, const UInt64 *bytes)) {
+        UInt64 completed = bytes ? *bytes : (files ? *files : 0);
+        return Report(completed);
+    }
 };
+
+// 7-Zip's archive-open callbacks are not invoked while a decoder is servicing
+// a seekable sub-stream. In particular, finding the next tar header can make
+// the xz handler decode a very large block without reporting open progress.
+// Wrapping the original compressed input gives us cancellation checkpoints at
+// the decoder's regular input reads without modifying vendored 7-Zip code.
+class CCancellableInStream final :
+    public IInStream,
+    public CMyUnknownImp
+{
+    Z7_IFACES_IMP_UNK_2(ISequentialInStream, IInStream)
+
+    CMyComPtr<IInStream> _stream;
+    CMyComPtr<IArchiveOpenCallback> _callbackRef;
+    COpenVolumeCallback *_callback;
+    UInt64 _position = 0;
+
+public:
+    CCancellableInStream(
+        IInStream *stream,
+        COpenVolumeCallback *callback)
+        : _stream(stream), _callbackRef(callback), _callback(callback) {}
+};
+
+Z7_COM7F_IMF(CCancellableInStream::Read(
+    void *data, UInt32 size, UInt32 *processedSize))
+{
+    if (processedSize)
+        *processedSize = 0;
+    RINOK(_callback->CheckCancellation(_position))
+
+    UInt32 processed = 0;
+    const HRESULT result = _stream->Read(data, size, &processed);
+    _position += processed;
+    if (processedSize)
+        *processedSize = processed;
+    if (result != S_OK)
+        return result;
+    return _callback->CheckCancellation(_position);
+}
+
+Z7_COM7F_IMF(CCancellableInStream::Seek(
+    Int64 offset, UInt32 seekOrigin, UInt64 *newPosition))
+{
+    RINOK(_callback->CheckCancellation(_position))
+    UInt64 position = 0;
+    const HRESULT result = _stream->Seek(offset, seekOrigin, &position);
+    if (result != S_OK)
+        return result;
+    _position = position;
+    if (newPosition)
+        *newPosition = position;
+    return _callback->CheckCancellation(_position);
+}
+
+// 7-Zip's XZ IInArchiveGetStream implementation allocates a seek cache equal
+// to the largest *uncompressed* XZ block. Archives made with multi-gigabyte
+// blocks therefore turn a nominally streamed Quick Look scan into a 4 GB
+// allocation. This pull stream instead decodes only as the tar handler reads.
+// It supports arbitrary seeks without a block cache: forward seeks discard
+// decoded bytes, and backward seeks restart the decoder from the beginning.
+// Tar listing is naturally forward-only; restarting mainly keeps later item
+// extraction compatible with the existing seek-based tar handler.
+class CBoundedXzInStream final :
+    public IInStream,
+    public CMyUnknownImp
+{
+    Z7_IFACES_IMP_UNK_2(ISequentialInStream, IInStream)
+
+    static constexpr size_t kInputBufferSize = 1 << 16;
+    // Tar seeks over file bodies rather than reading them. Decode skipped
+    // bytes in 1 MiB chunks to keep call overhead low while remaining bounded.
+    static constexpr size_t kSkipBufferSize = 1 << 20;
+
+    CMyComPtr<IInStream> _compressed;
+    CXzUnpacker _decoder;
+    std::vector<Byte> _input;
+    std::vector<Byte> _skip;
+    SizeT _inputPos = 0;
+    SizeT _inputSize = 0;
+    bool _sourceFinished = false;
+    UInt64 _decodedPos = 0;
+    UInt64 _virtPos = 0;
+    UInt64 _size;
+
+    HRESULT ResetDecoder() {
+        UInt64 position = 0;
+        RINOK(_compressed->Seek(0, STREAM_SEEK_SET, &position))
+        if (position != 0)
+            return E_FAIL;
+        XzUnpacker_Init(&_decoder);
+        _inputPos = 0;
+        _inputSize = 0;
+        _sourceFinished = false;
+        _decodedPos = 0;
+        return S_OK;
+    }
+
+    HRESULT Decode(void *data, UInt32 size, UInt32 *processedSize) {
+        if (processedSize)
+            *processedSize = 0;
+        if (size == 0 || _decodedPos >= _size)
+            return S_OK;
+
+        const UInt64 remaining = _size - _decodedPos;
+        if ((UInt64)size > remaining)
+            size = (UInt32)remaining;
+
+        auto *output = static_cast<Byte *>(data);
+        UInt32 totalOut = 0;
+
+        while (totalOut < size) {
+            if (_inputPos == _inputSize && !_sourceFinished) {
+                _inputPos = 0;
+                _inputSize = 0;
+                UInt32 readSize = (UInt32)_input.size();
+                RINOK(_compressed->Read(_input.data(), readSize, &readSize))
+                _inputSize = readSize;
+                if (readSize == 0)
+                    _sourceFinished = true;
+            }
+
+            SizeT inProcessed = _inputSize - _inputPos;
+            SizeT outProcessed = size - totalOut;
+            ECoderStatus status = CODER_STATUS_NOT_SPECIFIED;
+            const SRes result = XzUnpacker_Code(
+                &_decoder,
+                output + totalOut,
+                &outProcessed,
+                _input.data() + _inputPos,
+                &inProcessed,
+                _sourceFinished ? True : False,
+                CODER_FINISH_ANY,
+                &status);
+
+            _inputPos += inProcessed;
+            totalOut += (UInt32)outProcessed;
+            _decodedPos += outProcessed;
+
+            if (result != SZ_OK)
+                return SResToHRESULT(result);
+
+            if (inProcessed == 0 && outProcessed == 0) {
+                if (_sourceFinished) {
+                    if (!XzUnpacker_IsStreamWasFinished(&_decoder))
+                        return E_FAIL;
+                    break;
+                }
+                if (_inputPos != _inputSize)
+                    return E_FAIL;
+            }
+        }
+
+        if (processedSize)
+            *processedSize = totalOut;
+        return S_OK;
+    }
+
+    HRESULT AlignDecoderToVirtualPosition() {
+        if (_virtPos < _decodedPos)
+            RINOK(ResetDecoder())
+
+        while (_decodedPos < _virtPos) {
+            const UInt64 remaining = _virtPos - _decodedPos;
+            const UInt32 request = (UInt32)(
+                remaining < _skip.size() ? remaining : _skip.size());
+            UInt32 processed = 0;
+            RINOK(Decode(_skip.data(), request, &processed))
+            if (processed == 0)
+                return E_FAIL;
+        }
+        return S_OK;
+    }
+
+public:
+    CBoundedXzInStream(IInStream *compressed, UInt64 size)
+        : _compressed(compressed),
+          _input(kInputBufferSize),
+          _skip(kSkipBufferSize),
+          _size(size) {
+        XzUnpacker_Construct(&_decoder, &g_Alloc);
+    }
+
+    ~CBoundedXzInStream() {
+        XzUnpacker_Free(&_decoder);
+    }
+
+    HRESULT Init() {
+        return ResetDecoder();
+    }
+};
+
+Z7_COM7F_IMF(CBoundedXzInStream::Read(
+    void *data, UInt32 size, UInt32 *processedSize))
+{
+    RINOK(AlignDecoderToVirtualPosition())
+    UInt32 processed = 0;
+    const HRESULT result = Decode(data, size, &processed);
+    _virtPos += processed;
+    if (processedSize)
+        *processedSize = processed;
+    return result;
+}
+
+Z7_COM7F_IMF(CBoundedXzInStream::Seek(
+    Int64 offset, UInt32 seekOrigin, UInt64 *newPosition))
+{
+    __int128 target = offset;
+    switch (seekOrigin) {
+        case STREAM_SEEK_SET: break;
+        case STREAM_SEEK_CUR: target += _virtPos; break;
+        case STREAM_SEEK_END: target += _size; break;
+        default: return STG_E_INVALIDFUNCTION;
+    }
+    if (target < 0 || target > _size)
+        return HRESULT_WIN32_ERROR_NEGATIVE_SEEK;
+    _virtPos = (UInt64)target;
+    if (newPosition)
+        *newPosition = _virtPos;
+    return S_OK;
+}
 
 // --- Format probing helper ---
 
@@ -220,7 +475,8 @@ public:
 static HRESULT tryOpenStream(
     IInStream *stream,
     CMyComPtr<IInArchive> &archiveOut,
-    IArchiveOpenCallback *callback = nullptr)
+    IArchiveOpenCallback *callback = nullptr,
+    const bool *aborted = nullptr)
 {
     UInt32 numFormats = 0;
     GetNumberOfFormats(&numFormats);
@@ -240,7 +496,9 @@ static HRESULT tryOpenStream(
             continue;
 
         UInt64 newPos;
-        stream->Seek(0, STREAM_SEEK_SET, &newPos);
+        const HRESULT seekHr = stream->Seek(0, STREAM_SEEK_SET, &newPos);
+        if (seekHr != S_OK)
+            return seekHr;
 
         UInt64 maxCheckStart = 1 << 22; // 4MB
         hr = archive->Open(stream, &maxCheckStart, callback);
@@ -249,8 +507,48 @@ static HRESULT tryOpenStream(
             return S_OK;
         }
         archive->Close();
+        if (aborted && *aborted)
+            return E_ABORT;
     }
     return S_FALSE;
+}
+
+/// Construct one registered archive handler by its canonical format name.
+/// The bounded XZ path knows its inner stream is tar, so using the tar handler
+/// directly avoids repeatedly rewinding and re-decoding data while probing
+/// every registered format.
+static HRESULT createArchiveByName(
+    const char *name,
+    CMyComPtr<IInArchive> &archiveOut)
+{
+    UInt32 numFormats = 0;
+    GetNumberOfFormats(&numFormats);
+    for (UInt32 i = 0; i < numFormats; i++) {
+        NWindows::NCOM::CPropVariant propName;
+        GetHandlerProperty2(i, NArchive::NHandlerPropID::kName, &propName);
+        if (PropVariantToUTF8(propName) != name)
+            continue;
+
+        NWindows::NCOM::CPropVariant propClassID;
+        GetHandlerProperty2(i, NArchive::NHandlerPropID::kClassID, &propClassID);
+        if (propClassID.vt != VT_BSTR || !propClassID.bstrVal)
+            return E_FAIL;
+
+        GUID classID;
+        memcpy(&classID, propClassID.bstrVal, sizeof(GUID));
+        return CreateArchiver(
+            &classID, &IID_IInArchive_Local, (void **)&archiveOut);
+    }
+    return S_FALSE;
+}
+
+static bool hasXzFileExtension(const char *path) {
+    if (!path) return false;
+    std::string lower(path);
+    for (char &c : lower)
+        c = (char)tolower((unsigned char)c);
+    return (lower.size() >= 3 && lower.compare(lower.size() - 3, 3, ".xz") == 0)
+        || (lower.size() >= 4 && lower.compare(lower.size() - 4, 4, ".txz") == 0);
 }
 
 // --- Minimal extract callback ---
@@ -552,8 +850,12 @@ static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_ou
 extern "C" {
 
 SZArchiveRef sz_open(const char *path, const char *password,
-                     bool *needs_password_out, char **error_out) {
+                     sz_progress_callback progress, void *progress_context,
+                     bool drill_single_stream,
+                     bool *needs_password_out, bool *cancelled_out,
+                     char **error_out) {
     if (needs_password_out) *needs_password_out = false;
+    if (cancelled_out) *cancelled_out = false;
     try {
         // Force 7-Zip to treat all narrow<->wide path conversions as UTF-8.
         // On macOS the filesystem encoding is always UTF-8, but 7-Zip's
@@ -571,7 +873,7 @@ SZArchiveRef sz_open(const char *path, const char *password,
 
         // Open the file stream
         auto *fileStreamSpec = new CInFileStream;
-        handle->fileStream = fileStreamSpec;
+        CMyComPtr<IInStream> rawFileStream = fileStreamSpec;
         FString fpath = us2fs(UString());
         {
             AString apath(path);
@@ -594,15 +896,30 @@ SZArchiveRef sz_open(const char *path, const char *password,
         CMyComPtr<IArchiveOpenCallback> volCallback = volCallbackSpec;
         volCallbackSpec->SetFilePath(fpath);
         volCallbackSpec->SetPassword(password);
+        volCallbackSpec->SetProgress(progress, progress_context);
+
+        if (progress) {
+            auto *cancellableStream = new CCancellableInStream(
+                rawFileStream, volCallbackSpec);
+            handle->fileStream = cancellableStream;
+        } else {
+            handle->fileStream = rawFileStream;
+        }
 
         // Try each registered format on the file stream
         CMyComPtr<IInArchive> firstArchive;
-        HRESULT hr = tryOpenStream(handle->fileStream, firstArchive, volCallback);
+        HRESULT hr = tryOpenStream(
+            handle->fileStream, firstArchive, volCallback,
+            &volCallbackSpec->aborted);
         if (hr != S_OK || !firstArchive) {
+            if (cancelled_out)
+                *cancelled_out = volCallbackSpec->aborted;
             if (needs_password_out)
                 *needs_password_out = volCallbackSpec->passwordRequested;
             if (error_out)
-                *error_out = strdup(volCallbackSpec->passwordRequested
+                *error_out = strdup(volCallbackSpec->aborted
+                    ? "Archive open cancelled"
+                    : volCallbackSpec->passwordRequested
                     ? "The archive header is encrypted"
                     : "No suitable archive format found");
             delete handle;
@@ -620,42 +937,115 @@ SZArchiveRef sz_open(const char *path, const char *password,
         for (int depth = 0; depth < kMaxNestingDepth; depth++) {
             IInArchive *currentArc = handle->levels.back().archive;
 
-            // Check if this archive signals a nested container
-            NWindows::NCOM::CPropVariant prop;
-            currentArc->GetArchiveProperty(kpidMainSubfile, &prop);
-            if (prop.vt != VT_UI4)
-                break;
-            UInt32 mainSubfile = prop.ulVal;
-
-            // Validate index
             UInt32 itemCount = 0;
             currentArc->GetNumberOfItems(&itemCount);
+
+            // Check if this archive signals a nested container. An opt-in
+            // streaming caller can also probe the sole stream exposed by a
+            // compressor such as xz, which does not set kpidMainSubfile.
+            NWindows::NCOM::CPropVariant prop;
+            currentArc->GetArchiveProperty(kpidMainSubfile, &prop);
+            UInt32 mainSubfile = 0;
+            if (prop.vt == VT_UI4)
+                mainSubfile = prop.ulVal;
+            else if (!drill_single_stream || itemCount != 1)
+                break;
+
+            // Validate index
             if (mainSubfile >= itemCount)
                 break;
 
-            // Get IInArchiveGetStream from current archive
-            CMyComPtr<IInArchiveGetStream> getStream;
-            if (currentArc->QueryInterface(
-                    IID_IInArchiveGetStream_Local,
-                    (void **)&getStream) != S_OK || !getStream)
-                break;
-
-            // Extract the sub-stream
-            CMyComPtr<ISequentialInStream> subSeqStream;
-            if (getStream->GetStream(mainSubfile, &subSeqStream) != S_OK
-                || !subSeqStream)
-                break;
-
-            // Need seekable IInStream for archive opening
             CMyComPtr<IInStream> subStream;
-            if (subSeqStream->QueryInterface(
-                    IID_IInStream_Local,
-                    (void **)&subStream) != S_OK || !subStream)
-                break;
+            bool boundedXzStream = false;
+
+            // Quick Look opts into single-stream drilling for tar.xz. Avoid
+            // XzHandler::GetStream here: it allocates the largest unpacked XZ
+            // block as a seek cache (4 GB for a common large-block archive).
+            if (drill_single_stream && depth == 0 && hasXzFileExtension(path)) {
+                NWindows::NCOM::CPropVariant sizeProp;
+                currentArc->GetProperty(mainSubfile, kpidSize, &sizeProp);
+                if (sizeProp.vt == VT_UI8) {
+                    auto *boundedSpec = new CBoundedXzInStream(
+                        handle->fileStream, sizeProp.uhVal.QuadPart);
+                    CMyComPtr<IInStream> boundedRef = boundedSpec;
+                    const HRESULT initHr = boundedSpec->Init();
+                    if (initHr != S_OK) {
+                        if (error_out)
+                            *error_out = strdup("Could not initialize bounded XZ stream");
+                        delete handle;
+                        return nullptr;
+                    }
+                    subStream = boundedRef;
+                    boundedXzStream = true;
+                }
+            }
+
+            if (!subStream) {
+                // Other nested formats keep 7-Zip's native seekable stream.
+                CMyComPtr<IInArchiveGetStream> getStream;
+                if (currentArc->QueryInterface(
+                        IID_IInArchiveGetStream_Local,
+                        (void **)&getStream) != S_OK || !getStream)
+                    break;
+
+                CMyComPtr<ISequentialInStream> subSeqStream;
+                if (getStream->GetStream(mainSubfile, &subSeqStream) != S_OK
+                    || !subSeqStream)
+                    break;
+
+                if (subSeqStream->QueryInterface(
+                        IID_IInStream_Local,
+                        (void **)&subStream) != S_OK || !subStream)
+                    break;
+            }
 
             // Try to open the sub-stream as a new archive
+            // Cancellation for native nested streams (notably SplitHandler's
+            // combined stream) must travel through the stream itself. Passing
+            // the outer volume callback into the inner handler changes how a
+            // numeric split ZIP is interpreted and makes it reopen the parts
+            // as volumes instead of reading the combined stream.
+            if (progress && !boundedXzStream) {
+                auto *cancellableSubStream = new CCancellableInStream(
+                    subStream, volCallbackSpec);
+                CMyComPtr<IInStream> cancellableSubStreamRef =
+                    cancellableSubStream;
+                subStream = cancellableSubStreamRef;
+            }
             CMyComPtr<IInArchive> innerArchive;
-            if (tryOpenStream(subStream, innerArchive) != S_OK)
+            IArchiveOpenCallback *innerCallback = boundedXzStream && progress
+                ? static_cast<IArchiveOpenCallback *>(volCallbackSpec)
+                : nullptr;
+            HRESULT innerHr;
+            if (boundedXzStream) {
+                innerHr = createArchiveByName("tar", innerArchive);
+                if (innerHr == S_OK && innerArchive) {
+                    UInt64 maxCheckStart = 1 << 22;
+                    innerHr = innerArchive->Open(
+                        subStream, &maxCheckStart, innerCallback);
+                }
+            } else {
+                innerHr = tryOpenStream(
+                    subStream, innerArchive, innerCallback,
+                    progress ? &volCallbackSpec->aborted : nullptr);
+            }
+            if (innerHr == E_ABORT && volCallbackSpec->aborted) {
+                if (cancelled_out) *cancelled_out = true;
+                if (error_out) *error_out = strdup("Archive open cancelled");
+                delete handle;
+                return nullptr;
+            }
+            // The streamed tar.xz path is selected only when the caller asked
+            // to drill into the known inner tar. Falling back to the outer xz
+            // after its decoder failed makes a damaged or truncated stream
+            // look like a successfully opened one-entry archive.
+            if (boundedXzStream && innerHr != S_OK) {
+                if (error_out)
+                    *error_out = strdup("Could not open inner tar stream");
+                delete handle;
+                return nullptr;
+            }
+            if (innerHr != S_OK)
                 break;
 
             // Push the new level
@@ -663,6 +1053,8 @@ SZArchiveRef sz_open(const char *path, const char *password,
             level.archive = innerArchive;
             level.stream = subStream;
             handle->levels.push_back(level);
+            if (boundedXzStream)
+                handle->usesBoundedCompoundStream = true;
         }
 
         // Entry count comes from the innermost archive
@@ -683,6 +1075,10 @@ SZArchiveRef sz_open(const char *path, const char *password,
                 && propIsTree.boolVal != VARIANT_FALSE);
         }
 
+        // The wrapper can outlive this call because archive handlers retain
+        // their input stream. The Swift callback context cannot, so turn the
+        // wrapper into a transparent pass-through once opening has finished.
+        volCallbackSpec->SetProgress(nullptr, nullptr);
         return static_cast<SZArchiveRef>(handle);
     } catch (...) {
         if (error_out)
@@ -949,9 +1345,13 @@ bool sz_is_tree(SZArchiveRef archive) {
     }
 }
 
+bool sz_uses_bounded_compound_stream(SZArchiveRef archive) {
+    if (!archive) return false;
+    return static_cast<SZArchiveHandle *>(archive)->usesBoundedCompoundStream;
+}
+
 const char* sz_version(void) {
     return MY_VERSION;
 }
 
 } // extern "C"
-

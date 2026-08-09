@@ -8,8 +8,9 @@
 import Foundation
 import Swift7zip
 
-final actor Archive7ZipEngine: ArchiveEngine {
+final actor Archive7ZipEngine: ArchiveEngine, CompoundArchiveStreamingEngine {
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
+    private var openCancelFlag: ExtractionCancelFlag?
     
     func statusStream() -> AsyncStream<EngineStatus> {
         AsyncStream { continuation in
@@ -23,24 +24,77 @@ final actor Archive7ZipEngine: ArchiveEngine {
     }
     
     func cancel() async {
+        openCancelFlag?.cancel()
     }
 
     func loadArchive(
         url: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws -> ArchiveEngineLoadResult {
+        let cancelFlag = ExtractionCancelFlag()
+        openCancelFlag = cancelFlag
+        defer {
+            if openCancelFlag === cancelFlag {
+                openCancelFlag = nil
+            }
+        }
+
         // Split/multi-volume archives are read in place. The caller resolves the
         // canonical entry (`.zip` for spanned, `.001` for numeric) and holds a
         // security-scoped grant on the containing folder, so the C bridge's
         // volume callback opens sibling volumes directly — no staging needed.
-        let szip = try await Self.open(url: url, passwordResolver: passwordResolver)
+        do {
+            let szip = try await Self.open(
+                url: url,
+                passwordResolver: passwordResolver,
+                openProgress: { _, _ in !cancelFlag.isCancelled }
+            )
+            return try Self.loadResult(from: szip)
+        } catch SevenZipError.cancelled {
+            throw CancellationError()
+        }
+    }
+
+    func loadCompoundArchive(
+        url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> ArchiveEngineLoadResult {
+        let cancelFlag = ExtractionCancelFlag()
+        openCancelFlag = cancelFlag
+        defer {
+            if openCancelFlag === cancelFlag {
+                openCancelFlag = nil
+            }
+        }
+
+        do {
+            let szip = try await Self.open(
+                url: url,
+                passwordResolver: passwordResolver,
+                openProgress: { _, _ in !cancelFlag.isCancelled },
+                drillSingleStream: true
+            )
+            let result = try Self.loadResult(from: szip)
+            for item in result.items.values {
+                item.requiresCompoundStream = true
+            }
+            return result
+        } catch SevenZipError.cancelled {
+            throw CancellationError()
+        }
+    }
+
+    private static func loadResult(
+        from szip: SevenZipArchive
+    ) throws -> ArchiveEngineLoadResult {
+        let entries = try szip.entries
 
         var items: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0
         var idToUUIDMap: [UInt32: UUID] = [:]
         var isEncrypted = false
 
-        try szip.entries.forEach { entry in
+        entries.forEach { entry in
             if entry.isEncrypted { isEncrypted = true }
 
             var name = entry.path
@@ -68,7 +122,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
         if szip.isTree {
             // The file type (usually disk images) already provide the hierarchy.
             // So there is no need to recalculate this later. Just one pass here.
-            try szip.entries.forEach { entry in
+            entries.forEach { entry in
                 let index = entry.index
                 if
                     // the item itself
@@ -124,7 +178,10 @@ final actor Archive7ZipEngine: ArchiveEngine {
         }
         let sorted = indices.keys.sorted { $0 < $1 }
         
-        let szip = try await Self.open(url: url, passwordResolver: passwordResolver)
+        let szip = try await Self.open(
+            url: url,
+            passwordResolver: passwordResolver,
+            drillSingleStream: items.contains { $0.requiresCompoundStream })
 
         var attempt = 0
         // Loops until the archive extracts, the user cancels the prompt, or the
@@ -176,7 +233,39 @@ final actor Archive7ZipEngine: ArchiveEngine {
         passwordResolver: @escaping ArchivePasswordResolver,
         onProgress: ArchiveExtractionProgress?
     ) async throws {
-        let szip = try await Self.open(url: url, passwordResolver: passwordResolver)
+        try await extractArchive(
+            url,
+            to: destination,
+            passwordResolver: passwordResolver,
+            onProgress: onProgress,
+            drillSingleStream: false)
+    }
+
+    func extractCompoundArchive(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws {
+        try await extractArchive(
+            url,
+            to: destination,
+            passwordResolver: passwordResolver,
+            onProgress: onProgress,
+            drillSingleStream: true)
+    }
+
+    private func extractArchive(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?,
+        drillSingleStream: Bool
+    ) async throws {
+        let szip = try await Self.open(
+            url: url,
+            passwordResolver: passwordResolver,
+            drillSingleStream: drillSingleStream)
 
         var attempt = 0
         // Same retry shape as extract(items:): loop until the archive
@@ -209,13 +298,20 @@ final actor Archive7ZipEngine: ArchiveEngine {
     /// the same wherever the archive is opened.
     private static func open(
         url: URL,
-        passwordResolver: ArchivePasswordResolver
+        passwordResolver: ArchivePasswordResolver,
+        openProgress: SevenZipArchive.OpenProgressHandler? = nil,
+        drillSingleStream: Bool = false
     ) async throws -> SevenZipArchive {
         var password: String?
         var attempt = 0
         while true {
             do {
-                return try SevenZipArchive(url: url, password: password)
+                return try SevenZipArchive(
+                    url: url,
+                    password: password,
+                    openProgress: openProgress,
+                    drillSingleStream: drillSingleStream
+                )
             } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
                 attempt += 1
                 password = try await nextPassword(

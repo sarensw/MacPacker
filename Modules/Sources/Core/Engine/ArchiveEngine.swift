@@ -153,6 +153,22 @@ public protocol ArchiveEngine: Sendable {
     ) async throws
 }
 
+/// An engine that can unwrap one single-entry compression container and parse
+/// the archive inside it without materialising that inner archive on disk.
+protocol CompoundArchiveStreamingEngine: ArchiveEngine {
+    func loadCompoundArchive(
+        url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> ArchiveEngineLoadResult
+
+    func extractCompoundArchive(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws
+}
+
 public extension ArchiveEngine {
     func extract(
         items: [ArchiveItem],

@@ -15,6 +15,8 @@ import Core
 /// running the main app.
 public final class ArchivePreviewViewController: NSViewController {
     private let contentViewController = ContentViewController()
+    private var loadTask: Task<Void, Never>?
+    private var currentState: ArchiveState?
 
     private lazy var messageLabel: NSTextField = {
         let label = NSTextField(labelWithString: "")
@@ -60,6 +62,30 @@ public final class ArchivePreviewViewController: NSViewController {
         view = container
     }
 
+    /// Starts loading without holding up Quick Look's prepare callback. Once
+    /// the callback returns, Finder presents the view and sends its normal
+    /// disappearance lifecycle when the preview closes, which lets us cancel
+    /// a scan that is still running.
+    public func beginLoadingPreview(of url: URL) {
+        cancelPreviewLoad()
+        loadTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await loadPreview(of: url)
+            } catch is CancellationError {
+                // Closing or replacing a preview is an expected cancellation.
+            } catch {
+                showMessage("Couldn’t read this archive.\n\(error.localizedDescription)")
+            }
+        }
+    }
+
+    public func cancelPreviewLoad() {
+        loadTask?.cancel()
+        loadTask = nil
+        currentState?.cancelCurrentOperation()
+    }
+
     /// Loads `url` as an archive and shows its contents.
     ///
     /// Awaits the full load (`ArchiveState.openTask`) before returning so the
@@ -78,8 +104,11 @@ public final class ArchivePreviewViewController: NSViewController {
         defer { if didAccess { url.stopAccessingSecurityScopedResource() } }
 
         let state = ArchivePreviewLoader.makeState()
+        currentState = state
         state.open(url: url)
         try await state.openTask?.value
+        try Task.checkCancellation()
+        guard currentState === state else { throw CancellationError() }
 
         // Diagnostics: NSLog always surfaces in Console/Xcode (the appex doesn't
         // call tb.start(), so tb logs don't reach the unified log).

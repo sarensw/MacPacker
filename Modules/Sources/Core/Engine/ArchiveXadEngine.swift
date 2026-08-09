@@ -330,6 +330,7 @@ private func isContained(_ url: URL, in directory: URL) -> Bool {
 
 final actor ArchiveXadEngine: ArchiveEngine {
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
+    private var loadCancelFlag: ExtractionCancelFlag?
 
     func statusStream() -> AsyncStream<EngineStatus> {
         AsyncStream { continuation in
@@ -343,23 +344,41 @@ final actor ArchiveXadEngine: ArchiveEngine {
     }
     
     func cancel() async {
+        loadCancelFlag?.cancel()
     }
     
     func loadArchive(
         url: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws -> ArchiveEngineLoadResult {
+        let cancelFlag = ExtractionCancelFlag()
+        loadCancelFlag = cancelFlag
+        defer {
+            if loadCancelFlag === cancelFlag {
+                loadCancelFlag = nil
+            }
+        }
+
+        func checkCancellation() throws {
+            try Task.checkCancellation()
+            guard !cancelFlag.isCancelled else { throw CancellationError() }
+        }
+
+        try checkCancellation()
         let archive = try XADArchiveWithPasswordSupport(
             url: url,
             passwordResolver: passwordResolver
         )
         try await archive.setNameEncoding(NSUTF8StringEncoding)
+        try checkCancellation()
 
         var entries: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0
         var isEncrypted = false
         let numberOfEntries = try await archive.numberOfEntries()
+        try checkCancellation()
         for index in 0..<numberOfEntries {
+            try checkCancellation()
             // name
             let path = try await archive.name(ofEntry: index)
             let isDir = try await archive.entryIsDirectory(index)
@@ -413,7 +432,8 @@ final actor ArchiveXadEngine: ArchiveEngine {
             // `max(0, …)` clamp the extraction side applies for its byte totals.
             uncompressedSizeOverall += Int64(Swift.max(0, entry.uncompressedSize))
         }
-        
+
+        try checkCancellation()
         emit(.done)
         
         return ArchiveEngineLoadResult(

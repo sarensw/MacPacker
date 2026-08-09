@@ -6,6 +6,7 @@
 //
 
 import Foundation
+@testable import Swift7zip
 import Testing
 @testable import Core
 
@@ -35,6 +36,44 @@ extension AllCoreTests {
             let result = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
 
             #expect(result.items.count > 0)
+        }
+
+        @Test func sevenZipCanDrillIntoCompressedTarStream() throws {
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.tar.xz")
+
+            let archive = try SevenZipArchive(
+                url: url,
+                drillSingleStream: true
+            )
+            let names = Set(try archive.entries.map(\.name))
+
+            #expect(archive.usesBoundedCompoundStream)
+            #expect(names.contains("README.md"))
+            #expect(names.contains("hello world.txt"))
+        }
+
+        @Test func sevenZipOpenCanCancelDuringCompressedInputRead() throws {
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.tar.xz")
+            var readCompressedInput = false
+
+            do {
+                _ = try SevenZipArchive(
+                    url: url,
+                    openProgress: { completed, _ in
+                        guard completed > 0 else { return true }
+                        readCompressedInput = true
+                        return false
+                    },
+                    drillSingleStream: true
+                )
+                Issue.record("7-Zip archive opening ignored cancellation")
+            } catch SevenZipError.cancelled {
+                #expect(readCompressedInput)
+            } catch {
+                Issue.record("Expected cancellation, got \(error)")
+            }
         }
 
         @Test func loadArchiveIsoReturnsEntries() async throws {

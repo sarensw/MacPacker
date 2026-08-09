@@ -10,6 +10,11 @@ extern "C" {
 // Not thread-safe -- must only be used from the thread that called sz_open().
 typedef void* SZArchiveRef;
 
+/// Progress reported by 7-Zip while opening or extracting an archive.
+/// Return false to abort at the next callback.
+typedef bool (*sz_progress_callback)(uint64_t completed, uint64_t total,
+                                     void *context);
+
 // --- Lifecycle ---
 
 /// Open an archive at the given filesystem path.
@@ -18,6 +23,9 @@ typedef void* SZArchiveRef;
 ///                  Formats that encrypt their header (7z -mhe=on, RAR -hp)
 ///                  cannot be listed without it. Also pre-sets the extraction
 ///                  password, so sz_set_password() is not needed afterwards.
+/// @param drill_single_stream  If true, a single stream exposed by a compressor
+///                  such as xz is probed as another archive. Keep false for the
+///                  normal one-layer archive semantics.
 /// @param needs_password_out  If non-NULL, set to true when a handler asked for
 ///                  a password during the open. Meaningful only on failure:
 ///                  it tells the caller to prompt and retry rather than report
@@ -25,7 +33,10 @@ typedef void* SZArchiveRef;
 /// Returns NULL on failure. On failure, *error_out (if non-NULL) is set to a
 /// malloc'd UTF-8 error string -- caller must free() it.
 SZArchiveRef sz_open(const char *path, const char *password,
-                     bool *needs_password_out, char **error_out);
+                     sz_progress_callback progress, void *progress_context,
+                     bool drill_single_stream,
+                     bool *needs_password_out, bool *cancelled_out,
+                     char **error_out);
 
 /// Release all resources. Must be called exactly once per successful sz_open().
 void sz_close(SZArchiveRef archive);
@@ -69,8 +80,6 @@ void sz_set_password(SZArchiveRef archive, const char *password);
 /// extraction — it stops at the next progress checkpoint and the extract
 /// call returns SZ_EXTRACT_ABORTED.
 /// Called on the extraction thread.
-typedef bool (*sz_progress_callback)(uint64_t completed, uint64_t total,
-                                     void *context);
 
 /// Extract call result codes.
 #define SZ_EXTRACT_OK 0
@@ -109,6 +118,10 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
 /// When true, SZEntry::parent_index and SZEntry::name are populated from the
 /// archive's native tree structure rather than derived from path strings.
 bool sz_is_tree(SZArchiveRef archive);
+
+/// Returns true when a compound archive was opened through the bounded-memory
+/// pull stream rather than 7-Zip's whole-XZ-block seek cache.
+bool sz_uses_bounded_compound_stream(SZArchiveRef archive);
 
 // --- Utilities ---
 

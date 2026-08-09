@@ -52,6 +52,33 @@ private actor PasswordAnswers {
     var callCount: Int { attempts.count }
 }
 
+/// Holds a header-password request open so a test can cancel the engine before
+/// allowing the archive open to resume.
+private actor PasswordGate {
+    private var requested = false
+    private var continuation: CheckedContinuation<String?, Never>?
+
+    nonisolated var resolver: ArchivePasswordResolver {
+        { [self] _ in await suspend() }
+    }
+
+    private func suspend() async -> String? {
+        requested = true
+        return await withCheckedContinuation { continuation = $0 }
+    }
+
+    func waitUntilRequested() async {
+        while !requested {
+            await Task.yield()
+        }
+    }
+
+    func answer(_ password: String?) {
+        continuation?.resume(returning: password)
+        continuation = nil
+    }
+}
+
 /// Resolver that never answers — extraction must fail, not stall.
 private let neverResolves: ArchivePasswordResolver = { _ in nil }
 
@@ -432,6 +459,25 @@ extension AllCoreTests {
                     url: fixture("7z_encrypted_header.7z"),
                     passwordResolver: neverResolves
                 )
+            }
+        }
+
+        @Test func cancellingPlainSevenZipLoadStopsTheResumedOpen() async throws {
+            let engine = Archive7ZipEngine()
+            let gate = PasswordGate()
+            let loadTask = Task {
+                try await engine.loadArchive(
+                    url: fixture("7z_encrypted_header.7z"),
+                    passwordResolver: gate.resolver
+                )
+            }
+
+            await gate.waitUntilRequested()
+            await engine.cancel()
+            await gate.answer(correctPassword)
+
+            await #expect(throws: CancellationError.self) {
+                _ = try await loadTask.value
             }
         }
     }

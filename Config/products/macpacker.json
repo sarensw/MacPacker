@@ -37,6 +37,28 @@
         "version": "0.20.0",
         "items": [
           {
+            "type": "fix",
+            "title": {
+              "en": "Closing Quick Look stops tar.xz scans",
+              "zh-Hans": "关闭 Quick Look 后停止扫描 tar.xz",
+              "fr": "Fermer Quick Look arrête l’analyse des tar.xz",
+              "de": "Schließen von Quick Look stoppt tar.xz-Scans",
+              "it": "Chiudere Quick Look interrompe la scansione tar.xz",
+              "ja": "Quick Look を閉じると tar.xz のスキャンを停止",
+              "fa": "بستن Quick Look پویش tar.xz را متوقف می‌کند",
+              "pl": "Zamknięcie Quick Look zatrzymuje skanowanie tar.xz",
+              "pt-BR": "Fechar o Quick Look interrompe a leitura de tar.xz",
+              "ru": "Закрытие Quick Look останавливает сканирование tar.xz",
+              "uk": "Закриття Quick Look зупиняє сканування tar.xz",
+              "es-MX": "Cerrar Quick Look detiene el análisis de tar.xz",
+              "ko": "Quick Look을 닫으면 tar.xz 스캔 중지",
+              "nl": "Quick Look sluiten stopt tar.xz-scans"
+            },
+            "issues": [
+              "180"
+            ]
+          },
+          {
             "type": "feat",
             "title": {
               "en": "jar, aar, and apk support",
