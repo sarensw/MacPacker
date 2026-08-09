@@ -20,7 +20,12 @@ class PreviewViewController: NSViewController, QLPreviewingController {
         view = preview.view
     }
 
+    override func viewWillDisappear() {
+        super.viewWillDisappear()
+        preview.cancelPreviewLoad()
+    }
+
     func preparePreviewOfFile(at url: URL) async throws {
-        try await preview.loadPreview(of: url)
+        preview.beginLoadingPreview(of: url)
     }
 }

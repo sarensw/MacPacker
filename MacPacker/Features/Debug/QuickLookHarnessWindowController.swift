@@ -59,6 +59,7 @@ final class QuickLookHarnessWindowController: NSWindowController, NSToolbarDeleg
     }
 
     func windowWillClose(_ notification: Notification) {
+        previewController.cancelPreviewLoad()
         Self.retained = nil
     }
 
@@ -83,7 +84,7 @@ final class QuickLookHarnessWindowController: NSWindowController, NSToolbarDeleg
 
     private func load(_ url: URL) {
         window?.title = "Quick Look Harness — \(url.lastPathComponent)"
-        Task { try? await previewController.loadPreview(of: url) }
+        previewController.beginLoadingPreview(of: url)
     }
 
     // MARK: - NSToolbarDelegate

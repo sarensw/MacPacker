@@ -6,6 +6,29 @@
 import AppKit
 import Core
 
+/// A read-only selector for the engines that are safe inside Quick Look.
+///
+/// Do not express these pins through `ArchiveEngineConfigStore`: automatic
+/// selection intentionally ignores stored overrides, and writing them also
+/// leaks preview-only choices into the in-app debug harness's user settings.
+private struct ArchivePreviewEngineSelector: ArchiveEngineSelectorProtocol {
+    let base: ArchiveEngineSelector
+    let pinned: [String: ArchiveEngineType]
+
+    func engine(for id: String) -> ArchiveEngine? {
+        guard let type = pinned[id] else { return base.engine(for: id) }
+        return base.engine(for: type)
+    }
+
+    func engine(for type: ArchiveEngineType) -> ArchiveEngine {
+        base.engine(for: type)
+    }
+
+    func engineType(for id: String) -> ArchiveEngineType? {
+        pinned[id] ?? base.engineType(for: id)
+    }
+}
+
 /// Builds a fully-configured `ArchiveState` for previewing an archive.
 ///
 /// QuickLook extensions can't spawn subprocesses, so every format is pinned to a
@@ -18,31 +41,39 @@ enum ArchivePreviewLoader {
         let catalog = ArchiveTypeCatalog()
         let configStore = ArchiveEngineConfigStore(catalog: catalog)
 
-        // NOTE: 7-Zip now runs in-process (Swift7zip, no subprocess), so the
-        // preview could use the native `.7zip` engine instead of pinning these
-        // to `.xad`. Switching them over is tracked as a separate follow-up.
-        configStore.setSelectedEngine(.xad, for: "7zip")
-        configStore.setSelectedEngine(.xad, for: "bzip2")
-        configStore.setSelectedEngine(.xad, for: "cab")
-        configStore.setSelectedEngine(.xad, for: "cpio")
-        configStore.setSelectedEngine(.xad, for: "gzip")
-        configStore.setSelectedEngine(.xad, for: "iso")
-        configStore.setSelectedEngine(.xad, for: "lha")
-        configStore.setSelectedEngine(.swc, for: "lz4")
-        configStore.setSelectedEngine(.xad, for: "lzx")
-        configStore.setSelectedEngine(.xad, for: "rar")
-        configStore.setSelectedEngine(.xad, for: "rpm")
-        configStore.setSelectedEngine(.xad, for: "sea")
-        configStore.setSelectedEngine(.xad, for: "sit")
-        configStore.setSelectedEngine(.xad, for: "sitx")
-        configStore.setSelectedEngine(.xad, for: "tar")
-        configStore.setSelectedEngine(.xad, for: "xar")
-        configStore.setSelectedEngine(.xad, for: "xz")
-        configStore.setSelectedEngine(.xad, for: "z")
-        configStore.setSelectedEngine(.xad, for: "zip")
-        configStore.setSelectedEngine(.xad, for: "zipx")
-
-        let selector = ArchiveEngineSelector(catalog: catalog, configStore: configStore)
-        return ArchiveState(catalog: catalog, engineSelector: selector)
+        // tar.xz previewing opts into 7-Zip's nested-stream path so it can scan
+        // the inner tar without staging it or allocating 7-Zip's whole-XZ-block
+        // seek cache. Staged XAD compounds remain pinned below; ArchiveLoader
+        // makes those cancellable through their extraction progress callback.
+        let selector = ArchivePreviewEngineSelector(
+            base: ArchiveEngineSelector(catalog: catalog, configStore: configStore),
+            pinned: [
+                "7zip": .xad,
+                "bzip2": .xad,
+                "cab": .xad,
+                "cpio": .xad,
+                "gzip": .xad,
+                "iso": .xad,
+                "lha": .xad,
+                "lz4": .swc,
+                "lzx": .xad,
+                "rar": .xad,
+                "rpm": .xad,
+                "sea": .xad,
+                "sit": .xad,
+                "sitx": .xad,
+                "tar": .xad,
+                "xar": .xad,
+                "xz": .`7zip`,
+                "z": .xad,
+                "zip": .xad,
+                "zipx": .xad
+            ]
+        )
+        return ArchiveState(
+            catalog: catalog,
+            engineSelector: selector,
+            compoundLoadingStrategy: .streamed
+        )
     }
 }

@@ -14,6 +14,11 @@ import tb
 /// needs from a bug report, hence a real logger.
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "loader")
 
+public enum CompoundArchiveLoadingStrategy: Sendable, Equatable {
+    case staged
+    case streamed
+}
+
 struct ArchiveLoaderLoadResult: Sendable {
     let type: ArchiveTypeDto
     let compositionType: CompositionTypeDto?
@@ -47,9 +52,12 @@ final actor ArchiveLoader {
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
     private let passwordResolver: ArchivePasswordResolver
     private let folderAccessResolver: ArchiveFolderAccessResolver
+    private let compoundLoadingStrategy: CompoundArchiveLoadingStrategy
+    private let tempDirectoryProvider: @Sendable () -> URL?
 
     private var entries: [UUID: ArchiveItem] = [:]
     private var engine: (any ArchiveEngine)?
+    private var loadCancelFlag: ExtractionCancelFlag?
     
     // status passthrough from the engine to the UI
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
@@ -64,12 +72,18 @@ final actor ArchiveLoader {
         archiveTypeDetector: ArchiveTypeDetector,
         archiveEngineSelector: ArchiveEngineSelectorProtocol,
         passwordResolver: @escaping ArchivePasswordResolver,
-        folderAccessResolver: @escaping ArchiveFolderAccessResolver = { _ in true }
+        folderAccessResolver: @escaping ArchiveFolderAccessResolver = { _ in true },
+        compoundLoadingStrategy: CompoundArchiveLoadingStrategy = .staged,
+        tempDirectoryProvider: @escaping @Sendable () -> URL? = {
+            ArchiveSupportUtilities().createTempDirectory()?.url
+        }
     ) {
         self.archiveTypeDetector = archiveTypeDetector
         self.archiveEngineSelector = archiveEngineSelector
         self.passwordResolver = passwordResolver
         self.folderAccessResolver = folderAccessResolver
+        self.compoundLoadingStrategy = compoundLoadingStrategy
+        self.tempDirectoryProvider = tempDirectoryProvider
     }
 
     /// Whether the engine currently selected for `type` declares `capability`.
@@ -104,19 +118,44 @@ final actor ArchiveLoader {
     
     /// Cancels the loading progress
     public func cancel() async {
-        guard let engine else { return }
-        await engine.cancel()
+        loadCancelFlag?.cancel()
+        if let engine {
+            await engine.cancel()
+        }
     }
     
     /// Opens the given URL, assuming this is an archive. `loadEntries(url:)` will figure out the
     /// archive type, select the proper engine and then load all info like type info, entries,  ... . The hiarchy is built in a separate step.
     /// - Parameter url: The url to open
     public func loadEntries(url: URL) async throws -> ArchiveLoaderLoadResult {
+        let cancelFlag = ExtractionCancelFlag()
+        loadCancelFlag = cancelFlag
+        defer {
+            if loadCancelFlag === cancelFlag {
+                loadCancelFlag = nil
+            }
+        }
+
         // in case this is a compount `archiveUrl` will hold the extracted url
         var archiveUrl: URL? = url
         // for a split, the resolved first volume (adopted as the window identity)
         var firstVolumeURL: URL? = nil
         var compoundTempUrl: URL? = nil
+        var didTransferCompoundTempDirectory = false
+        var streamedCompound: (ArchiveEngineLoadResult, ArchiveEngineType?)? = nil
+        defer {
+            if let compoundTempUrl,
+               !didTransferCompoundTempDirectory {
+                do {
+                    try FileManager.default.removeItem(at: compoundTempUrl)
+                } catch {
+                    log.error("Could not remove failed compound staging directory", context: [
+                        "path": compoundTempUrl.path,
+                        "error": error.localizedDescription
+                    ])
+                }
+            }
+        }
         
         guard let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true) else {
             log.notice("No archive type detected", context: [
@@ -147,35 +186,58 @@ final actor ArchiveLoader {
             let forwardTaskCompound = forwardStatus(from: engine)
             defer { forwardTaskCompound.cancel() }
             
-            let archiveSupportUtilities = ArchiveSupportUtilities()
-            guard let temp = archiveSupportUtilities.createTempDirectory() else {
-                throw ArchiveError.extractionFailed("Could not create temporary directory")
-            }
-            compoundTempUrl = temp.url
-            yield(.processing(progress: nil, message: "temp dir created: \(temp.url)"))
-            
-            let loaderResult = try await Sandbox.access(url: url) {
-                try await engine.loadArchive(
-                    url: url,
-                    passwordResolver: passwordResolver
+            if compoundLoadingStrategy == .streamed,
+               let streamingEngine = engine as? any CompoundArchiveStreamingEngine {
+                let loaderResult = try await Sandbox.access(url: url) {
+                    try await streamingEngine.loadCompoundArchive(
+                        url: url,
+                        passwordResolver: passwordResolver
+                    )
+                }
+                try Task.checkCancellation()
+                guard !cancelFlag.isCancelled else { throw CancellationError() }
+                streamedCompound = (
+                    loaderResult,
+                    archiveEngineSelector.engineType(for: compound.components.last!)
                 )
+                yield(.processing(
+                    progress: nil,
+                    message: "inner archive streamed: \(loaderResult.items.count) entries"
+                ))
+            } else {
+                guard let tempURL = tempDirectoryProvider() else {
+                    throw ArchiveError.extractionFailed("Could not create temporary directory")
+                }
+                compoundTempUrl = tempURL
+                yield(.processing(progress: nil, message: "temp dir created: \(tempURL)"))
+
+                let loaderResult = try await Sandbox.access(url: url) {
+                    try await engine.loadArchive(
+                        url: url,
+                        passwordResolver: passwordResolver
+                    )
+                }
+                let entries = loaderResult.items
+                yield(.processing(progress: nil, message: "entries found: \(entries.count)"))
+
+                guard let entry = entries.values.first else {
+                    throw ArchiveError.extractionFailed("Extraction of \(url.lastPathComponent) resulted in no files")
+                }
+
+                let extractionResult = try await Sandbox.access(url: url) {
+                    try await engine.extract(
+                        items: [entry],
+                        from: url,
+                        to: tempURL,
+                        passwordResolver: passwordResolver,
+                        onProgress: { _, _ in !cancelFlag.isCancelled }
+                    )
+                }
+                try Task.checkCancellation()
+                guard !cancelFlag.isCancelled else { throw CancellationError() }
+                archiveUrl = try extractionResult.singleURL
+                yield(.processing(progress: nil, message: "entry extracted: \(String(describing: archiveUrl))"))
             }
-            let entries = loaderResult.items
-            yield(.processing(progress: nil, message: "entries found: \(entries.count)"))
-            
-            guard entries.count > 0 else {
-                throw ArchiveError.extractionFailed("Extraction of \(url.lastPathComponent) resulted in no files")
-            }
-            
-            archiveUrl = try await Sandbox.access(url: url) {
-                try await engine.extract(
-                    item: entries.first!.value,
-                    from: url,
-                    to: temp.url,
-                    passwordResolver: passwordResolver
-                )
-            }
-            yield(.processing(progress: nil, message: "entry extracted: \(String(describing: archiveUrl))"))
         } else if let split = detectorResult.split {
             // A split archive — same shape as the compound step: reduce any volume to
             // the real archive (its first segment). First the selected engine must be
@@ -199,41 +261,52 @@ final actor ArchiveLoader {
             throw ArchiveError.invalidArchive("Somehow we lost the archiveUrl while decompressing")
         }
         
-        // This is either the original archive, or the extracted archive from the
-        // compound
-        yield(.processing(progress: nil, message: "loading engine for: \(detectorResult.type.id)"))
-        guard let engine = archiveEngineSelector.engine(for: detectorResult.type.id) else {
-            yield(.processing(progress: nil, message: "invalid archive type: \(detectorResult.type.id)"))
-            log.error("No engine for archive type", context: ["type": detectorResult.type.id])
-            throw ArchiveError.invalidArchive(
-                "No engine is configured for \(detectorResult.type.name).")
+        let engineLoadResult: ArchiveEngineLoadResult
+        let usedEngine: ArchiveEngineType?
+
+        if let streamedCompound {
+            (engineLoadResult, usedEngine) = streamedCompound
+            log.info("Compound archive streamed", context: [
+                "file": url.lastPathComponent,
+                "type": detectorResult.type.id,
+                "engine": usedEngine?.configId ?? "unknown"
+            ])
+        } else {
+            // This is either the original archive, or the extracted archive from
+            // a staged compound.
+            yield(.processing(progress: nil, message: "loading engine for: \(detectorResult.type.id)"))
+            guard let engine = archiveEngineSelector.engine(for: detectorResult.type.id) else {
+                yield(.processing(progress: nil, message: "invalid archive type: \(detectorResult.type.id)"))
+                log.error("No engine for archive type", context: ["type": detectorResult.type.id])
+                throw ArchiveError.invalidArchive(
+                    "No engine is configured for \(detectorResult.type.name).")
+            }
+            self.engine = engine
+            // Which engine actually ran is the single most useful fact when an
+            // open fails — the same archive behaves differently on 7-Zip and XAD.
+            log.info("Engine selected", context: [
+                "file": url.lastPathComponent,
+                "type": detectorResult.type.id,
+                "engine": archiveEngineSelector.engineType(for: detectorResult.type.id)?.configId ?? "unknown"
+            ])
+            yield(.processing(progress: nil, message: "engine loaded: \(String(describing: type(of: engine))), for: \(detectorResult.type.id)"))
+
+            let forwardTask = forwardStatus(from: engine)
+            defer { forwardTask.cancel() }
+
+            (engineLoadResult, usedEngine) = try await loadArchiveWithFallback(
+                url: archiveUrl,
+                type: detectorResult.type,
+                selected: engine
+            )
         }
-        self.engine = engine
-        // Which engine actually ran is the single most useful fact when an open
-        // fails — the same archive behaves differently on 7-Zip and XAD.
-        log.info("Engine selected", context: [
-            "file": url.lastPathComponent,
-            "type": detectorResult.type.id,
-            "engine": archiveEngineSelector.engineType(for: detectorResult.type.id)?.configId ?? "unknown"
-        ])
-        yield(.processing(progress: nil, message: "engine loaded: \(String(describing: type(of: engine))), for: \(detectorResult.type.id)"))
-        
-        // build the status stream to forward the engine status to the UI
-        let forwardTask = forwardStatus(from: engine)
-        defer { forwardTask.cancel() }
-        
-        // set the entries
-        let (engineLoadResult, usedEngine) = try await loadArchiveWithFallback(
-            url: archiveUrl,
-            type: detectorResult.type,
-            selected: engine
-        )
         self.entries = engineLoadResult.items
         yield(.processing(progress: nil, message: "entries found: \(self.entries.count)"))
         
         // build the hierarchy
         let root = ArchiveItem(name: url.lastPathComponent, type: .root)
         root.set(url: archiveUrl, typeId: detectorResult.type.id)
+        root.requiresCompoundStream = streamedCompound != nil
         
         // Make sure top level entries are linked to the virtual root so they
         // are not orphaned
@@ -258,6 +331,7 @@ final actor ArchiveLoader {
             engineType: usedEngine,
             firstVolumeURL: firstVolumeURL
         )
+        didTransferCompoundTempDirectory = compoundTempUrl != nil
         return result
     }
     

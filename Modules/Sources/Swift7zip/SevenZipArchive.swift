@@ -4,6 +4,19 @@ import CSevenZip
 /// An open 7-zip archive.
 public class SevenZipArchive {
 
+    public typealias OpenProgressHandler = (_ completed: UInt64, _ total: UInt64) -> Bool
+
+    private final class OpenProgressBox {
+        let handler: OpenProgressHandler
+        init(_ handler: @escaping OpenProgressHandler) { self.handler = handler }
+    }
+
+    private static let openProgressThunk: sz_progress_callback = { completed, total, context in
+        guard let context else { return true }
+        let box = Unmanaged<OpenProgressBox>.fromOpaque(context).takeUnretainedValue()
+        return box.handler(completed, total)
+    }
+
     let handle: BridgeHandle
     /// The URL of the archive file.
     public let url: URL
@@ -18,26 +31,61 @@ public class SevenZipArchive {
     ///   - password: Password for formats that encrypt their header (7z
     ///     `-mhe=on`, RAR `-hp`), which cannot even be listed without one.
     ///     Also pre-sets the extraction password.
+    ///   - drillSingleStream: Whether to probe a compressor's sole output
+    ///     stream as a nested archive, for example the tar inside tar.xz.
     /// - Throws: ``SevenZipError/passwordMissing`` when the header is encrypted
     ///   and no password was given, ``SevenZipError/passwordWrong`` when the
     ///   given one did not decrypt it, ``SevenZipError/openFailed(_:)`` if the
     ///   file cannot be opened or no supported format is detected.
-    public init(url: URL, password: String? = nil) throws {
+    public init(
+        url: URL,
+        password: String? = nil,
+        openProgress: OpenProgressHandler? = nil,
+        drillSingleStream: Bool = false
+    ) throws {
         self.url = url
-        self.handle = try Self.openHandle(at: url, password: password)
+        self.handle = try Self.openHandle(
+            at: url,
+            password: password,
+            progress: openProgress,
+            drillSingleStream: drillSingleStream
+        )
         self.hasPassword = password != nil
     }
 
     /// Opens the C bridge handle at the given URL.
-    private static func openHandle(at url: URL, password: String?) throws -> BridgeHandle {
+    private static func openHandle(
+        at url: URL,
+        password: String?,
+        progress: OpenProgressHandler?,
+        drillSingleStream: Bool
+    ) throws -> BridgeHandle {
         var errorPtr: UnsafeMutablePointer<CChar>?
         var needsPassword = false
-        guard let ref = sz_open(url.path, password, &needsPassword, &errorPtr) else {
+        var cancelled = false
+        let progressBox = progress.map(OpenProgressBox.init)
+        let context = progressBox.map { Unmanaged.passUnretained($0).toOpaque() }
+        let ref = withExtendedLifetime(progressBox) {
+            sz_open(
+                url.path,
+                password,
+                progressBox == nil ? nil : Self.openProgressThunk,
+                context,
+                drillSingleStream,
+                &needsPassword,
+                &cancelled,
+                &errorPtr
+            )
+        }
+        guard let ref else {
             let msg = errorPtr.map { ptr -> String in
                 let str = String(cString: ptr)
                 free(ptr)
                 return str
             } ?? "Unknown error"
+            if cancelled {
+                throw SevenZipError.cancelled
+            }
             if needsPassword {
                 throw password == nil
                     ? SevenZipError.passwordMissing
@@ -66,6 +114,12 @@ public class SevenZipArchive {
     /// is `nil`.
     public var isTree: Bool {
         sz_is_tree(handle.ref)
+    }
+
+    /// Whether compound opening used the bounded-memory decoder stream instead
+    /// of 7-Zip's seek cache, whose size equals the largest unpacked XZ block.
+    var usesBoundedCompoundStream: Bool {
+        sz_uses_bounded_compound_stream(handle.ref)
     }
 
     /// All entries in the archive.

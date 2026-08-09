@@ -33,6 +33,11 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     public let uncompressedSize: Int
     public let modificationDate: Date?
     public let posixPermissions: Int?
+
+    /// The item's indices belong to the archive inside a single-stream
+    /// compressor, not to the outer compressor entry. Internal extraction
+    /// routing uses this instead of guessing from the source filename.
+    var requiresCompoundStream = false
     
     // hierarchy
     public var parent: UUID?

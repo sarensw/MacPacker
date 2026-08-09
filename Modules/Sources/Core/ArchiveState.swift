@@ -117,6 +117,7 @@ public class ArchiveState: ObservableObject {
             : AutomaticEngineSelector(base: archiveEngineSelector, pinned: pinnedEngines)
     }
     private let archiveTypeDetector: ArchiveTypeDetector
+    private let compoundLoadingStrategy: CompoundArchiveLoadingStrategy
     
     private var tempDirectories: [URL] = []
     
@@ -140,10 +141,15 @@ public class ArchiveState: ObservableObject {
     public private(set) var openTask: Task<Void, any Error>?
     private var archiveLoader: ArchiveLoader?
     
-    public init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
+    public init(
+        catalog: ArchiveTypeCatalog,
+        engineSelector: ArchiveEngineSelectorProtocol,
+        compoundLoadingStrategy: CompoundArchiveLoadingStrategy = .staged
+    ) {
         self.catalog = catalog
         self.archiveEngineSelector = engineSelector
         self.archiveTypeDetector = ArchiveTypeDetector(catalog: catalog)
+        self.compoundLoadingStrategy = compoundLoadingStrategy
     }
 }
 
@@ -813,7 +819,8 @@ extension ArchiveState {
                     archiveTypeDetector: self.archiveTypeDetector,
                     archiveEngineSelector: self.effectiveEngineSelector,
                     passwordResolver: passwordResolver,
-                    folderAccessResolver: makeFolderAccessResolver()
+                    folderAccessResolver: makeFolderAccessResolver(),
+                    compoundLoadingStrategy: compoundLoadingStrategy
                 )
                 self.archiveLoader = archiveLoader
                 
@@ -1120,7 +1127,8 @@ extension ArchiveState {
                     archiveTypeDetector: self.archiveTypeDetector,
                     archiveEngineSelector: self.effectiveEngineSelector,
                     passwordResolver: passwordResolver,
-                    folderAccessResolver: makeFolderAccessResolver()
+                    folderAccessResolver: makeFolderAccessResolver(),
+                    compoundLoadingStrategy: compoundLoadingStrategy
                 )
                 
                 let stream = await archiveLoader.statusStream()
@@ -1380,6 +1388,7 @@ extension ArchiveState {
                     archiveUrl,
                     archiveTypeId: archiveTypeId,
                     to: destination,
+                    requiresCompoundStream: root.requiresCompoundStream,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 progressCenter.finish(jobId, .done)
@@ -1504,4 +1513,3 @@ extension ArchiveState {
         return adjustedSelection
     }
 }
-

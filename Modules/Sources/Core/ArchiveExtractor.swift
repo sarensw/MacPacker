@@ -189,6 +189,7 @@ final actor ArchiveExtractor {
         _ url: URL,
         archiveTypeId: String,
         to destination: URL,
+        requiresCompoundStream: Bool = false,
         onProgress: ArchiveExtractionProgress? = nil
     ) async throws {
         _ = destination.startAccessingSecurityScopedResource()
@@ -199,7 +200,20 @@ final actor ArchiveExtractor {
         }
 
         try await Sandbox.access(url: url) {
-            try await engine.extract(url, to: destination, passwordResolver: passwordResolver, onProgress: onProgress)
+            if requiresCompoundStream,
+               let streamingEngine = engine as? any CompoundArchiveStreamingEngine {
+                try await streamingEngine.extractCompoundArchive(
+                    url,
+                    to: destination,
+                    passwordResolver: passwordResolver,
+                    onProgress: onProgress)
+            } else {
+                try await engine.extract(
+                    url,
+                    to: destination,
+                    passwordResolver: passwordResolver,
+                    onProgress: onProgress)
+            }
         }
     }
 }

@@ -439,6 +439,8 @@ let package = Package(
             name: "CoreTests",
             dependencies: [
                 "Core",
+                "ArchivePreviewUI",
+                "Swift7zip",
                 .product(name: "tb", package: "TailBeatKit")
             ],
             resources: [
