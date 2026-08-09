@@ -95,7 +95,9 @@
               "ko": "폴더로 압축 풀기가 분할 접미사를 제거",
               "nl": "Uitpakken naar map verwijdert het volumesuffix"
             },
-            "issues": []
+            "issues": [
+              "171"
+            ]
           },
           {
             "type": "fix",
