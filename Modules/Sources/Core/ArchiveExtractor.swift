@@ -57,6 +57,14 @@ final actor ArchiveExtractor {
         for (id, sourceURL) in extractedURLs {
             guard let item = itemsById[id] else { continue }
 
+            // `ArchiveBatchResolver` expanded every selected folder into its
+            // descendants so the engine could extract them by index — but only
+            // what the user actually selected belongs in the destination. Moving
+            // a directory takes its whole subtree along, so the descendants ride
+            // with it; moving them separately would flatten the tree into the
+            // destination and collide on any repeated leaf name (#175).
+            if let parentID = item.parent, itemsById[parentID] != nil { continue }
+
             let targetURL = destination.appending(component: item.name)
             try FileManager.default.moveItem(at: sourceURL, to: targetURL)
         }

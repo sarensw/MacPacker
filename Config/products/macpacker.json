@@ -145,6 +145,28 @@
             "issues": []
           },
           {
+            "type": "fix",
+            "title": {
+              "en": "App extraction",
+              "zh-Hans": "解压应用程序",
+              "fr": "Extraction des apps",
+              "de": "Entpacken von Apps",
+              "it": "Estrazione delle app",
+              "ja": "アプリの展開",
+              "fa": "استخراج برنامه‌ها",
+              "pl": "Wypakowywanie aplikacji",
+              "pt-BR": "Extração de apps",
+              "ru": "Распаковка приложений",
+              "uk": "Розпакування програм",
+              "es-MX": "Extracción de apps",
+              "ko": "앱 압축 풀기",
+              "nl": "Apps uitpakken"
+            },
+            "issues": [
+              "175"
+            ]
+          },
+          {
             "type": "core",
             "title": {
               "en": "More localizable strings",
