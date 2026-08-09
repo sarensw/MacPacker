@@ -31,7 +31,10 @@ on the app target build, so `swift test` alone leaves new strings out and they
 never reach POEditor. Commit whichever catalog changed (`MacPacker/`,
 `FinderExtension/`, `Modules/Sources/ArchivePreviewUI/`). Write no translations
 into it, English included: the literal in the code is the key and its own
-fallback, and every value — `en` too — comes back from POEditor.
+fallback, and every value — `en` too — comes back from POEditor. Where the
+literal alone does not say where the string appears, pass `comment:` at the call
+site (`Text(_, comment:)`, `String(localized:comment:)`); it is the only context
+a translator gets.
 
 **Bug fixes start with a failing test** in `Modules/Tests/CoreTests`.
 
