@@ -24,15 +24,14 @@ All AI-assisted contributions require manual verification. Contributions without
 - For visual/UI changes: include before/after screenshots.
 - For core, logging, build, or scripting changes: include terminal output, logs, or passing test results.
 
-## Never Set the Version
+## Point Your Agent at AGENTS.md
 
-`Config/Version.xcconfig` stays at `MARKETING_VERSION = 0.0.0-dev` locally. That
-is not a placeholder waiting to be filled in — it is the permanent local value.
-The release version comes from CI at tag time.
+[AGENTS.md](AGENTS.md) holds the repository rules an agent has to follow while
+writing code — build and test commands, the changelog entry every user-visible
+change needs, and the settings it must never touch. Most agents load it (or the
+`CLAUDE.md` symlink) automatically; if yours does not, point it there yourself.
 
-Never edit `MARKETING_VERSION` or `CURRENT_PROJECT_VERSION`, in any branch, for
-any reason, including when a change is "for version X". Naming the target version
-in a changelog entry or commit message is fine; changing the build setting is not.
+Following those rules is the contributor's responsibility, not the agent's.
 
 ## Why These Rules Exist
 

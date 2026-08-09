@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Translations
+    url: https://poeditor.com/join/project/J2Qq2SUzYr
+    about: Fix or add a translation directly on POEditor — no issue needed.
+  - name: Documentation & format guides
+    url: https://macpacker.app/en/docs
+    about: Per-format guides and the full format reference.
+  - name: Questions & ideas
+    url: https://github.com/sarensw/MacPacker/discussions
+    about: For open questions and discussion, rather than a concrete bug or feature.

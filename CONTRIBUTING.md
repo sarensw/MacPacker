@@ -1,3 +1,11 @@
+# Pull Requests
+
+Small fixes: just open a pull request. For larger changes, open an issue first so we can discuss the approach before you spend time on it — MacPacker is still early and some breaking changes are ahead.
+
+If your PR addresses an existing issue, reference it in the description (`Closes #123`).
+
+[AGENTS.md](AGENTS.md) documents how to build and test the project, and the repository rules that apply to every change (changelog entries, vendored dependencies, versioning). Worth reading before the first PR, whether or not you use an AI tool.
+
 # AI
 
 MacPacker accepts AI-assisted contributions. Pull requests where AI is the primary author must follow the [AI Contribution Guidelines](AI_CONTRIBUTING.md): disclose AI involvement, open the PR from a human account, and include verification evidence that the change works. 
@@ -6,11 +14,7 @@ Using AI as a coding buddy for minor edits and completions, where you are clearl
 
 # Localization
 
-Localization (translation of all strings to specific languages) is done using [POEditor](poeditor.com).
-
-## Update Language
-
-- 
+Localization (translation of all strings to specific languages) is done using [POEditor](poeditor.com). Add new strings to `Localizable.xcstrings` in English only — the other languages come back from POEditor.
 
 ## Push new texts for translation
 
