@@ -120,6 +120,26 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+              "en": "Correct total size for archives with folders",
+              "zh-Hans": "修正含文件夹压缩包的总大小",
+              "fr": "Taille totale corrigée pour les archives contenant des dossiers",
+              "de": "Korrekte Gesamtgröße bei Archiven mit Ordnern",
+              "it": "Dimensione totale corretta per gli archivi con cartelle",
+              "ja": "フォルダーを含むアーカイブの合計サイズを修正",
+              "fa": "اندازهٔ کل صحیح برای آرشیوهای دارای پوشه",
+              "pl": "Poprawny łączny rozmiar archiwów z folderami",
+              "pt-BR": "Tamanho total correto para arquivos com pastas",
+              "ru": "Правильный общий размер для архивов с папками",
+              "uk": "Правильний загальний розмір для архівів із теками",
+              "es-MX": "Tamaño total correcto para archivos con carpetas",
+              "ko": "폴더가 포함된 압축 파일의 전체 크기 수정",
+              "nl": "Correcte totale grootte voor archieven met mappen"
+            },
+            "issues": []
+          },
+          {
             "type": "core",
             "title": {
               "en": "Made previously hard-coded strings available for localization",

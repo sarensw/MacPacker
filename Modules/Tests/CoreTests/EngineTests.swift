@@ -295,17 +295,9 @@ extension AllCoreTests {
             #expect(result.items.count > 0)
         }
 
-        // Regression: the XAD engine reported a total uncompressed size that
-        // was too small by one byte per directory entry. Directory entries
-        // carry the "-1" unknown sentinel in `uncompressedSize` (their size
-        // block is skipped under `if !isDir`), and the load-side accumulation
-        // summed that sentinel verbatim — so an archive with D directories
-        // reported a total D bytes short. The fix clamps the sentinel to 0 at
-        // the accumulation site, the same `max(0, …)` clamp the extraction
-        // side already applies for its byte totals. The fixture
-        // `defaultArchive.zip` has one directory (`folder/`) plus three files,
-        // so the reported total must equal the sum of the file-entry sizes
-        // only — with the bug it is one byte less.
+        // Regression: directory entries keep the "-1" unknown sentinel in
+        // `uncompressedSize`, and the load-side total summed it verbatim — so
+        // an archive with D directories reported D bytes short.
         @Test func loadArchiveViaXadReportsCorrectTotalSizeWithDirectories() async throws {
             let engine = ArchiveXadEngine()
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
@@ -313,9 +305,7 @@ extension AllCoreTests {
 
             let result = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
 
-            // The fixture must actually contain directory entries for this
-            // regression to mean anything; otherwise the assertion would pass
-            // trivially even without the fix.
+            // Without a directory entry the assertion passes even unfixed.
             let dirCount = result.items.values.filter { $0.type == .directory }.count
             #expect(dirCount > 0, "fixture should contain at least one directory entry")
 
