@@ -26,11 +26,12 @@ version X". Naming a version in a changelog entry or commit message is fine.
 **Vendored submodules stay pristine.** `Modules/Sources/CSevenZip/vendor/7zip`
 tracks upstream unmodified. Fix in the bridging layer or in MacPacker code.
 
-**New UI strings: build, then commit the catalog.** Extraction runs on the app
-target build, so `swift test` alone leaves new strings out and they never reach
-POEditor. Commit whichever catalog changed (`MacPacker/`, `FinderExtension/`,
-`Modules/Sources/ArchivePreviewUI/`) with the English value only; the other
-languages come back from POEditor.
+**New UI strings: build, then commit the catalog as generated.** Extraction runs
+on the app target build, so `swift test` alone leaves new strings out and they
+never reach POEditor. Commit whichever catalog changed (`MacPacker/`,
+`FinderExtension/`, `Modules/Sources/ArchivePreviewUI/`). Write no translations
+into it, English included: the literal in the code is the key and its own
+fallback, and every value — `en` too — comes back from POEditor.
 
 **Bug fixes start with a failing test** in `Modules/Tests/CoreTests`.
 
