@@ -3,8 +3,8 @@
 Instructions for AI coding agents. Humans: [CONTRIBUTING.md](CONTRIBUTING.md),
 [AI_CONTRIBUTING.md](AI_CONTRIBUTING.md).
 
-App logic lives in the `Modules` Swift package. The Xcode project is the shell,
-plus a Finder and a Quick Look extension.
+App logic is in the `Modules` Swift package; the Xcode project is the shell plus
+a Finder and a Quick Look extension.
 
 ## Build & test
 
@@ -19,33 +19,26 @@ xcodebuild -scheme MacPacker build        # app build; also extracts new UI stri
 ## Rules
 
 **Never set the version.** `Config/Version.xcconfig` stays at
-`MARKETING_VERSION = 0.0.0-dev` permanently; CI sets the real version at tag
-time. Never edit `MARKETING_VERSION` or `CURRENT_PROJECT_VERSION` in any branch,
-including "for version X". Naming a version in a changelog entry or commit
-message is fine.
+`MARKETING_VERSION = 0.0.0-dev`; CI sets the real one at tag time. Never edit
+`MARKETING_VERSION` or `CURRENT_PROJECT_VERSION`, in any branch, including "for
+version X". Naming a version in a changelog entry or commit message is fine.
 
 **Vendored submodules stay pristine.** `Modules/Sources/CSevenZip/vendor/7zip`
 tracks upstream unmodified. Fix in the bridging layer or in MacPacker code.
 
-**New UI strings: commit the catalog, English only.** Xcode extracts strings
-into the `.xcstrings` catalogs when the app target builds, so `swift test` alone
-leaves them out. Build once, then commit whichever catalog changed
-(`MacPacker/`, `FinderExtension/`, `Modules/Sources/ArchivePreviewUI/`). Fill in
-English only — the other languages come back from POEditor. Without the catalog
-entry the string can never be translated.
+**New UI strings: build, then commit the catalog.** Extraction runs on the app
+target build, so `swift test` alone leaves new strings out and they never reach
+POEditor. Commit whichever catalog changed (`MacPacker/`, `FinderExtension/`,
+`Modules/Sources/ArchivePreviewUI/`) with the English value only; the other
+languages come back from POEditor.
 
 **Bug fixes start with a failing test** in `Modules/Tests/CoreTests`.
 
-**Archive fixtures never go in this repository.** They live in the
-`MacPacker-TestArchives` submodule, a permanent regression corpus: each archive
-is a real file from a real tool, kept so a later engine change cannot silently
-break the quirk it covers. Do not synthesize an equivalent archive in the test —
-the quirk is usually exactly what a synthetic archive lacks.
-
-Adding one means landing the archive in MacPacker-TestArchives first, then
-bumping the submodule pointer here. Outside contributors cannot push there:
-attach the archive to the PR and let the maintainer place it. Never contribute
-an archive containing third-party or personal content.
+**Archive fixtures live in the `MacPacker-TestArchives` submodule**, never in
+this repository. Do not synthesize a substitute in the test — the quirk under
+fix is usually what a synthetic archive lacks. Order: PR the archive to
+MacPacker-TestArchives, wait for merge, bump the submodule pointer here, then
+the fix. Never contribute archives holding third-party or personal content.
 
 **Link the issue when one exists** in the PR body (`Closes #123`). Do not open
 an issue solely to have something to link.
@@ -68,28 +61,26 @@ User-visible changes need an entry in `Config/products/macpacker.json` under
 }
 ```
 
-**Do not decide version numbers.** Versions are listed newest first. Add the
-item to the first block, unless that version is already tagged (`git tag --list
-"v0.20.0"` returns something — beta tags do not count). If it is, the next
-number is the maintainer's call: still write the full item, but put it in the PR
-body instead of the file, and say the release needs a new block.
+**Never pick a version number.** Versions run newest first; add to the first
+block unless it is already tagged (`git tag --list "v0.20.0"` — beta tags do not
+count). If tagged, write the full item into the PR body instead and say a new
+block is needed.
 
-**`issues` always points at something.** Prefer the issue, so readers land on
-the report in a user's own words; otherwise use this PR's own number, which
-shares GitHub's numbering. That number exists only once the PR is open, so add
-it in a second push. Never guess a number, and never write an empty `[]`.
+**`issues` is never empty.** Prefer the issue, so readers land on the report in
+a user's own words; otherwise this PR's own number, which shares GitHub's
+numbering. That number exists only after the PR is open — add it in a second
+push. Never guess one.
 
-**Titles: customer-facing and short.** What changed for the user, not how it was
-built. Under ~50 characters.
+**Titles: customer-facing, under ~50 characters.** What changed for the user,
+not how it was built.
 
 - Yes: `Extract-to-folder ignores extension case`
 - No: `Normalize archive extension casing in ExtractDestinationResolver`
 
-**Translate into every language already present in the file** — match that set,
-not a fixed list. Translate the meaning rather than the English wording, and
-keep each roughly as short. `MacPacker`, format names (`zip`, `7z`) and macOS
-feature names (`Finder`, `Quick Look`) stay untranslated. Get the English
-approved before writing the rest.
+**Translate into every language already in the file**, not a fixed list.
+Translate meaning, not wording; keep each roughly as short as the English.
+`MacPacker`, format names (`zip`, `7z`) and macOS features (`Finder`,
+`Quick Look`) stay untranslated. Get the English approved first.
 
 ## Conventions
 
