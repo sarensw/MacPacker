@@ -343,6 +343,7 @@ let cSevenZipSources: [String] = [
 
 let package = Package(
     name: "Modules",
+    defaultLocalization: "en",
     platforms: [ .macOS(.v14) ],
     products: [
         .library(name: "Core", targets: ["Core"]),
