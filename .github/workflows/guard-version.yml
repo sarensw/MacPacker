@@ -1,0 +1,28 @@
+# ── Version guard ─────────────────────────────────────────────────────────────
+# Config/Version.xcconfig stays at 0.0.0-dev; the release version is set by CI at
+# tag time. This job only triggers when a pull request touches that file, and
+# fails unless the author owns the repository.
+#
+# Because of the paths filter this workflow does not report on most pull
+# requests, so it must NOT be configured as a required status check — required
+# checks that never report block merging.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Guard Version
+
+on:
+  pull_request:
+    paths:
+      - 'Config/Version.xcconfig'
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    if: github.event.pull_request.author_association != 'OWNER'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject the version change
+        run: |
+          echo "::error file=Config/Version.xcconfig::Config/Version.xcconfig must not be changed in a pull request. It stays at MARKETING_VERSION = 0.0.0-dev; CI sets the release version at tag time. Revert this file to merge."
+          exit 1

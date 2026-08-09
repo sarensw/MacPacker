@@ -17,6 +17,5 @@ Required. Describe what you ran or clicked, and paste the evidence.
 ## Checklist
 
 - [ ] Verification evidence is included above
-- [ ] Changelog entry added to `Config/products/macpacker.json` (or: no user-visible change)
-- [ ] `Config/Version.xcconfig` is untouched
+- [ ] Changelog entry added to `Config/products/macpacker.json`
 - [ ] AI involvement disclosed, if AI was the primary author — see [AI_CONTRIBUTING.md](../AI_CONTRIBUTING.md)
