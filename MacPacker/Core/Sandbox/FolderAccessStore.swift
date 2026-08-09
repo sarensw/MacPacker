@@ -85,8 +85,8 @@ final class FolderAccessStore {
             panel.canChooseDirectories = true
             panel.allowsMultipleSelection = false
             panel.directoryURL = seed
-            panel.prompt = "Grant Access"
-            panel.message = "MacPacker needs access to \u{201C}\(seed.lastPathComponent)\u{201D} to work with the archive there. This is remembered so you won't be asked again for this folder."
+            panel.prompt = String(localized: "Grant Access", comment: "Confirmation button in the folder-access panel")
+            panel.message = String(localized: "MacPacker needs access to \u{201C}\(seed.lastPathComponent)\u{201D} to work with the archive there. This is remembered so you won't be asked again for this folder.", comment: "Message in the folder-access panel explaining why permission is required")
             panel.level = .floating
             panel.begin { response in
                 continuation.resume(returning: response == .OK ? panel.url : nil)

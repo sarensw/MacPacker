@@ -28,7 +28,7 @@ final class QuickLookHarnessWindowController: NSWindowController, NSToolbarDeleg
             backing: .buffered,
             defer: false
         )
-        window.title = "Quick Look Harness"
+        window.title = String(localized: "Quick Look Harness", comment: "Title of the debug Quick Look test window")
         window.isReleasedWhenClosed = false
         self.init(window: window)
 
@@ -74,7 +74,7 @@ final class QuickLookHarnessWindowController: NSWindowController, NSToolbarDeleg
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
-        panel.message = "Choose an archive to preview"
+        panel.message = String(localized: "Choose an archive to preview", comment: "Prompt in the debug Quick Look file picker")
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             self?.load(url)
@@ -82,7 +82,7 @@ final class QuickLookHarnessWindowController: NSWindowController, NSToolbarDeleg
     }
 
     private func load(_ url: URL) {
-        window?.title = "Quick Look Harness — \(url.lastPathComponent)"
+        window?.title = String(localized: "Quick Look Harness — \(url.lastPathComponent)", comment: "Title of the debug Quick Look test window after selecting an archive")
         Task { try? await previewController.loadPreview(of: url) }
     }
 
@@ -95,8 +95,11 @@ final class QuickLookHarnessWindowController: NSWindowController, NSToolbarDeleg
     ) -> NSToolbarItem? {
         guard itemIdentifier == Self.openItemID else { return nil }
         let item = NSToolbarItem(itemIdentifier: itemIdentifier)
-        item.label = "Open…"
-        item.image = NSImage(systemSymbolName: "folder", accessibilityDescription: "Open archive")
+        item.label = String(localized: "Open…", comment: "Toolbar action in the debug Quick Look test window")
+        item.image = NSImage(
+            systemSymbolName: "folder",
+            accessibilityDescription: String(localized: "Open archive", comment: "Accessibility description of the Open toolbar action in the debug Quick Look test window")
+        )
         item.target = self
         item.action = #selector(openArchive(_:))
         return item

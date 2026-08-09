@@ -67,7 +67,7 @@ struct AdvancedSettingsView: View {
             NSWorkspace.shared.activateFileViewerSelecting([url])
         } catch {
             let alert = NSAlert()
-            alert.messageText = "Export failed"
+            alert.messageText = String(localized: "Export failed", comment: "Title of the alert shown when exporting logs fails")
             alert.informativeText = error.localizedDescription
             alert.runModal()
         }

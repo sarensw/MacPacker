@@ -114,7 +114,11 @@ class FinderSync: FIFinderSync {
         guard !allItems.isEmpty else {
             if menuKind == .toolbarItemMenu {
                 let menu = NSMenu(title: "??")
-                let item = NSMenuItem(title: "..nothing selected..", action: nil, keyEquivalent: "")
+                let item = NSMenuItem(
+                    title: String(localized: "Nothing selected", comment: "Disabled Finder toolbar menu item shown when no files are selected"),
+                    action: nil,
+                    keyEquivalent: ""
+                )
                 item.isEnabled = false
                 menu.addItem(item)
                 return menu

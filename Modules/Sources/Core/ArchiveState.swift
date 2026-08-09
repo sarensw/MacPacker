@@ -190,7 +190,8 @@ extension ArchiveState {
     /// extracted. That needs to be a failure with a message that says what to do.
     private func passwordCancelledOutcome() -> ExtractionJob.State {
         guard passwordProvider == nil else { return .cancelled }
-        return .failed("\(name ?? "The archive") is password protected. Open it in MacPacker to enter the password.")
+        let archiveName = name ?? String(localized: "The archive", bundle: .main, comment: "Fallback archive name in a password-required error")
+        return .failed(String(localized: "\(archiveName) is password protected. Open it in MacPacker to enter the password.", bundle: .main, comment: "Error shown when an encrypted archive cannot request a password"))
     }
 
     private func makeFolderAccessResolver() -> ArchiveFolderAccessResolver {
@@ -442,11 +443,11 @@ extension ArchiveState {
                         self.progress = Int(progress!)
                     }
                 case .done:
-                    updateStatusText("done")
+                    updateStatusText(String(localized: "done", bundle: .main, comment: "Archive operation status"))
                     self.progress = nil
                     log.debug("status: done")
                 case .error(let error):
-                    updateStatusText("error: \(error.localizedDescription)")
+                    updateStatusText(String(localized: "error: \(error.localizedDescription)", bundle: .main, comment: "Archive operation status that includes an error description"))
                     self.progress = nil
                     log.error("engine status error", context: ["error": error.localizedDescription])
                 }
@@ -669,7 +670,7 @@ extension ArchiveState {
         isBusy = true
         progress = 0
         updateStatus(.processing)
-        updateStatusText("saving...")
+        updateStatusText(String(localized: "saving...", bundle: .main, comment: "Archive operation status"))
         log.notice("Saving archive", context: [
             "target": target.lastPathComponent,
             "changes": "\(items.count)",
@@ -821,7 +822,7 @@ extension ArchiveState {
                 let statusTask = receiveStatusUpdates(from: stream)
                 defer { statusTask.cancel() }
                 
-                updateStatusText("loading...")
+                updateStatusText(String(localized: "loading...", bundle: .main, comment: "Archive operation status"))
                 let loaderResult = try await archiveLoader.loadEntries(url: url)
                 // why does root have itself as child here?
                 if let tempDirectory = loaderResult.tempDirectory {
@@ -832,7 +833,7 @@ extension ArchiveState {
                 guard generation == self.openGeneration else { return }
 
                 if loaderResult.error != nil {
-                    updateStatusText("failed to load")
+                    updateStatusText(String(localized: "failed to load", bundle: .main, comment: "Archive operation status"))
                     self.error = loaderResult.error
                     log.error("Archive load reported an error", context: ["file": url.lastPathComponent, "error": loaderResult.error ?? "?"])
                 }
@@ -867,7 +868,7 @@ extension ArchiveState {
                     ])
                 }
 
-                updateStatusText("building tree...")
+                updateStatusText(String(localized: "building tree...", bundle: .main, comment: "Archive operation status"))
                 
                 try Task.checkCancellation()
                 
@@ -970,7 +971,7 @@ extension ArchiveState {
                 //                  Then set the item.
                 self.isBusy = true
                 self.error = nil
-                updateStatusText("extracting...")
+                updateStatusText(String(localized: "extracting...", bundle: .main, comment: "Archive operation status"))
                 
                 try await openFile(item)
             } else {
@@ -1127,7 +1128,7 @@ extension ArchiveState {
                 let statusTask = receiveStatusUpdates(from: stream)
                 defer { statusTask.cancel() }
                 
-                updateStatusText("loading...")
+                updateStatusText(String(localized: "loading...", bundle: .main, comment: "Archive operation status"))
                 let loaderResult = try await archiveLoader.loadEntries(url: url)
                 
                 if let tempDirectory = loaderResult.tempDirectory {
@@ -1135,12 +1136,12 @@ extension ArchiveState {
                 }
                 
                 if loaderResult.error != nil {
-                    updateStatusText("failed to load")
+                    updateStatusText(String(localized: "failed to load", bundle: .main, comment: "Archive operation status"))
                     self.error = loaderResult.error
                 }
                 self.selectedItem = archiveItem
                 
-                updateStatusText("building tree...")
+                updateStatusText(String(localized: "building tree...", bundle: .main, comment: "Archive operation status"))
                 
                 var loadedEntries = loaderResult.entries
                 if !loaderResult.hasTree {

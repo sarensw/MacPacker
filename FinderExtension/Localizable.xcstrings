@@ -357,6 +357,17 @@
         }
       }
     },
+    "Nothing selected": {
+      "comment": "Disabled Finder toolbar menu item shown when no files are selected",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing selected"
+          }
+        }
+      }
+    },
     "Open %lld Archive": {
       "comment": "Opens the archive in an archive window",
       "localizations": {

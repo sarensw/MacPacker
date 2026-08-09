@@ -16,25 +16,25 @@ struct DebugSettingsView: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
-                Text(verbatim: "Windows:")
+                Text("Windows:", comment: "Debug settings section for opening windows")
                     .frame(width: 160, alignment: .trailing)
                 
                 VStack(alignment: .leading) {
                     Button {
                         WelcomeWindowController().show()
                     } label: {
-                        Text(verbatim: "Show Welcome window")
+                        Text("Show Welcome window", comment: "Debug action that opens the welcome window")
                     }
                     Button {
                         appState.selectedSettingsTab = .about
                         openSettings()
                     } label: {
-                        Text(verbatim: "Show About window")
+                        Text("Show About window", comment: "Debug action that opens the About settings window")
                     }
                     Button {
                         QuickLookHarnessWindowController().show()
                     } label: {
-                        Text(verbatim: "Open Quick Look Harness…")
+                        Text("Open Quick Look Harness…", comment: "Debug action that opens the Quick Look test window")
                     }
                 }
                 .padding(.leading, 8)
@@ -43,7 +43,7 @@ struct DebugSettingsView: View {
             }
             
             HStack(alignment: .top) {
-                Text(verbatim: "Meta:")
+                Text("Meta:", comment: "Debug settings section for application metadata")
                     .frame(width: 160, alignment: .trailing)
                 
                 VStack(alignment: .leading) {
@@ -62,16 +62,16 @@ struct DebugSettingsView: View {
             }
 
             HStack(alignment: .top) {
-                Text(verbatim: "Logs:")
+                Text("Logs:", comment: "Debug settings section for logs")
                     .frame(width: 160, alignment: .trailing)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Button {
                         exportLogs()
                     } label: {
-                        Text(verbatim: "Export Logs…")
+                        Text("Export Logs…", comment: "Debug action that exports the current session logs")
                     }
-                    Text(verbatim: "Saves this session's logs (notice level and above) as NDJSON you can send for diagnosis.")
+                    Text("Saves this session's logs (notice level and above) as NDJSON you can send for diagnosis.", comment: "Explanation of the debug log export action")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -91,7 +91,7 @@ struct DebugSettingsView: View {
             NSWorkspace.shared.activateFileViewerSelecting([url])
         } catch {
             let alert = NSAlert()
-            alert.messageText = "Could not export logs"
+            alert.messageText = String(localized: "Could not export logs", comment: "Title of the alert shown when debug log export fails")
             alert.informativeText = error.localizedDescription
             alert.runModal()
         }
