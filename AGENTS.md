@@ -40,9 +40,9 @@ exception (below).
 `Modules/Tests/CoreTests`, then fix. Archive fixtures live in the
 `MacPacker-TestArchives` submodule.
 
-**Link the issue, if there is one.** When the change addresses a reported issue,
-reference it in the PR body (`Closes #123`). The changelog entry's `issues` field
-is always filled — see below. No need to open an issue just to have one to link.
+**Link the issue when one exists.** If the change addresses a reported issue,
+reference it in the PR body (`Closes #123`). Do not open an issue solely to have
+something to link — the changelog falls back to the PR number (see below).
 
 ## Changelog
 
@@ -63,8 +63,10 @@ time that the released version exists here.
 }
 ```
 
-Add to the topmost unreleased `version` block, or open a new one if the last
-block is already released.
+Versions are listed newest first. Add to the first block, unless that version is
+already released — then add a new block above it. Check the exact tag:
+`git tag --list "v0.20.0"`. Empty means unreleased. Beta tags
+(`v0.20.0-beta.6`) do not count as released.
 
 **`issues` always points at something.** Prefer the issue the change addresses —
 readers land on the report in a user's own words. If there is no issue, use this
