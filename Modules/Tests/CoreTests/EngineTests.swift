@@ -295,6 +295,32 @@ extension AllCoreTests {
             #expect(result.items.count > 0)
         }
 
+        // Regression: directory entries keep the "-1" unknown sentinel in
+        // `uncompressedSize`, and the load-side total summed it verbatim — so
+        // an archive with D directories reported D bytes short.
+        @Test func loadArchiveViaXadReportsCorrectTotalSizeWithDirectories() async throws {
+            let engine = ArchiveXadEngine()
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+
+            let result = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+
+            // Without a directory entry the assertion passes even unfixed.
+            let dirCount = result.items.values.filter { $0.type == .directory }.count
+            #expect(dirCount > 0, "fixture should contain at least one directory entry")
+
+            let expected = result.items.values.reduce(Int64(0)) { sum, item in
+                item.type == .file
+                    ? sum + Int64(Swift.max(0, item.uncompressedSize))
+                    : sum
+            }
+
+            #expect(
+                result.uncompressedSize == expected,
+                "total uncompressed size should sum file sizes only, got \(result.uncompressedSize) expected \(expected)"
+            )
+        }
+
         // MARK: extract(items:)
 
         @Test func extractSingleFileViaXad() async throws {
