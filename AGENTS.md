@@ -34,11 +34,18 @@ leaves them out. Build once, then commit whichever catalog changed
 English only — the other languages come back from POEditor. Without the catalog
 entry the string can never be translated.
 
-**Bug fixes start with a failing test** in `Modules/Tests/CoreTests`. If it
-needs an archive fixture, build the archive in the test at runtime. Do not
-commit archive files — fixtures live in a separate repository, and archives
-easily carry third-party or personal content. If a fixture cannot be generated,
-describe the reproduction in the PR and leave it to the maintainer.
+**Bug fixes start with a failing test** in `Modules/Tests/CoreTests`.
+
+**Archive fixtures never go in this repository.** They live in the
+`MacPacker-TestArchives` submodule, a permanent regression corpus: each archive
+is a real file from a real tool, kept so a later engine change cannot silently
+break the quirk it covers. Do not synthesize an equivalent archive in the test —
+the quirk is usually exactly what a synthetic archive lacks.
+
+Adding one means landing the archive in MacPacker-TestArchives first, then
+bumping the submodule pointer here. Outside contributors cannot push there:
+attach the archive to the PR and let the maintainer place it. Never contribute
+an archive containing third-party or personal content.
 
 **Link the issue when one exists** in the PR body (`Closes #123`). Do not open
 an issue solely to have something to link.
@@ -61,10 +68,11 @@ User-visible changes need an entry in `Config/products/macpacker.json` under
 }
 ```
 
-**Do not decide version numbers.** Versions are listed newest first; add the
-item to the first block. If that version is already tagged (`git tag --list
-"v0.20.0"` returns something — beta tags do not count), say so in the PR and
-leave the new block to the maintainer.
+**Do not decide version numbers.** Versions are listed newest first. Add the
+item to the first block, unless that version is already tagged (`git tag --list
+"v0.20.0"` returns something — beta tags do not count). If it is, the next
+number is the maintainer's call: still write the full item, but put it in the PR
+body instead of the file, and say the release needs a new block.
 
 **`issues` always points at something.** Prefer the issue, so readers land on
 the report in a user's own words; otherwise use this PR's own number, which
