@@ -1,54 +1,52 @@
 # Agent Guide
 
-Working instructions for AI coding agents in this repository. Humans: see
-[CONTRIBUTING.md](CONTRIBUTING.md) and [AI_CONTRIBUTING.md](AI_CONTRIBUTING.md).
+Instructions for AI coding agents. Humans: [CONTRIBUTING.md](CONTRIBUTING.md),
+[AI_CONTRIBUTING.md](AI_CONTRIBUTING.md).
 
-MacPacker is a sandboxed SwiftUI archive manager for macOS, with a Finder
-extension and a Quick Look extension. Most logic lives in the `Modules` Swift
-package; the Xcode project is the app shell.
+App logic lives in the `Modules` Swift package. The Xcode project is the shell,
+plus a Finder and a Quick Look extension.
 
 ## Build & test
 
 ```bash
 git submodule update --init --recursive   # required — the build fails without it
-swift test --package-path Modules         # unit tests (what CI runs on every PR)
-open MacPacker.xcodeproj                  # app build, Cmd+R
+swift test --package-path Modules         # unit tests; what PR CI runs
+xcodebuild -scheme MacPacker build        # app build; also extracts new UI strings
 ```
 
-The `MacPacker.xctestplan` scheme runs the XCUITest target only; it is not part
-of PR CI.
+`MacPacker.xctestplan` runs the XCUITest target only, outside PR CI.
 
 ## Rules
 
 **Never set the version.** `Config/Version.xcconfig` stays at
-`MARKETING_VERSION = 0.0.0-dev`. That is the permanent local value, not a
-placeholder. Never edit `MARKETING_VERSION` or `CURRENT_PROJECT_VERSION` in any
-branch for any reason, including when a change is "for version X". Naming a
-target version in a changelog entry or commit message is fine; changing the
-build setting is not. CI sets the real version at tag time.
+`MARKETING_VERSION = 0.0.0-dev` permanently; CI sets the real version at tag
+time. Never edit `MARKETING_VERSION` or `CURRENT_PROJECT_VERSION` in any branch,
+including "for version X". Naming a version in a changelog entry or commit
+message is fine.
 
-**Vendored dependencies are pristine submodules.** `Modules/Sources/CSevenZip/vendor/7zip`
-and friends track upstream unmodified. Fixes belong in the bridging layer or in
-MacPacker code, never in vendored sources.
+**Vendored submodules stay pristine.** `Modules/Sources/CSevenZip/vendor/7zip`
+tracks upstream unmodified. Fix in the bridging layer or in MacPacker code.
 
-**Localization goes through POEditor, not by hand.** Do not add translations to
-`Localizable.xcstrings` directly — add the English key and leave the rest.
-See [CONTRIBUTING.md](CONTRIBUTING.md#localization). The changelog is the one
-exception (below).
+**New UI strings: commit the catalog, English only.** Xcode extracts strings
+into the `.xcstrings` catalogs when the app target builds, so `swift test` alone
+leaves them out. Build once, then commit whichever catalog changed
+(`MacPacker/`, `FinderExtension/`, `Modules/Sources/ArchivePreviewUI/`). Fill in
+English only — the other languages come back from POEditor. Without the catalog
+entry the string can never be translated.
 
-**Bug fixes start with a failing test.** Reproduce in a test in
-`Modules/Tests/CoreTests`, then fix. Archive fixtures live in the
-`MacPacker-TestArchives` submodule.
+**Bug fixes start with a failing test** in `Modules/Tests/CoreTests`. If it
+needs an archive fixture, build the archive in the test at runtime. Do not
+commit archive files — fixtures live in a separate repository, and archives
+easily carry third-party or personal content. If a fixture cannot be generated,
+describe the reproduction in the PR and leave it to the maintainer.
 
-**Link the issue when one exists.** If the change addresses a reported issue,
-reference it in the PR body (`Closes #123`). Do not open an issue solely to have
-something to link — the changelog falls back to the PR number (see below).
+**Link the issue when one exists** in the PR body (`Closes #123`). Do not open
+an issue solely to have something to link.
 
 ## Changelog
 
 User-visible changes need an entry in `Config/products/macpacker.json` under
-`changelog.versions[]`. There is no separate CHANGELOG file. CI validates at tag
-time that the released version exists here.
+`changelog.versions[]`. There is no separate CHANGELOG file.
 
 ```jsonc
 {
@@ -56,48 +54,38 @@ time that the released version exists here.
   "items": [
     {
       "type": "fix",              // feat | fix | core | lang
-      "title": { "en": "…", "de": "…", /* all 14 languages */ },
-      "issues": ["170"]           // issue number, or this PR's own number
+      "title": { "en": "…", "de": "…", /* every language in the file */ },
+      "issues": ["170"]           // the issue, or this PR's own number
     }
   ]
 }
 ```
 
-Versions are listed newest first. Add to the first block, unless that version is
-already released — then add a new block above it. Check the exact tag:
-`git tag --list "v0.20.0"`. Empty means unreleased. Beta tags
-(`v0.20.0-beta.6`) do not count as released.
+**Do not decide version numbers.** Versions are listed newest first; add the
+item to the first block. If that version is already tagged (`git tag --list
+"v0.20.0"` returns something — beta tags do not count), say so in the PR and
+leave the new block to the maintainer.
 
-**`issues` always points at something.** Prefer the issue the change addresses —
-readers land on the report in a user's own words. If there is no issue, use this
-pull request's own number instead; GitHub resolves issue and PR numbers from the
-same namespace, so either link works.
+**`issues` always points at something.** Prefer the issue, so readers land on
+the report in a user's own words; otherwise use this PR's own number, which
+shares GitHub's numbering. That number exists only once the PR is open, so add
+it in a second push. Never guess a number, and never write an empty `[]`.
 
-That means the number does not exist until the PR is opened. Sequence:
-
-1. Write the entry with everything except `issues`, and open the PR.
-2. Add `"issues": ["<pr-number>"]` and push again.
-
-Never guess a number. An invented one resolves to somebody else's issue. Leave
-the field out until the real number exists, and never write an empty `[]`.
-
-**Writing the title.** Customer-facing and short. Describe what changed for the
-user, not how it was implemented. Aim for under ~50 characters.
+**Titles: customer-facing and short.** What changed for the user, not how it was
+built. Under ~50 characters.
 
 - Yes: `Extract-to-folder ignores extension case`
 - No: `Normalize archive extension casing in ExtractDestinationResolver`
 
-**Translations.** Fill in all 14 languages: `en`, `de`, `es-MX`, `fa`, `fr`,
-`it`, `ja`, `ko`, `nl`, `pl`, `pt-BR`, `ru`, `uk`, `zh-Hans`. Translate the
-meaning for a user of that language, not the English wording literally. Keep
-each one roughly as short as the English. Format names (`zip`, `7z`, `apk`),
-`MacPacker`, and macOS feature names (`Finder`, `Quick Look`) stay untranslated.
-
-Get the English wording approved before writing out all 14 languages.
+**Translate into every language already present in the file** — match that set,
+not a fixed list. Translate the meaning rather than the English wording, and
+keep each roughly as short. `MacPacker`, format names (`zip`, `7z`) and macOS
+feature names (`Finder`, `Quick Look`) stay untranslated. Get the English
+approved before writing the rest.
 
 ## Conventions
 
 - Commit and PR titles: `feat:`, `fix:`, `core:`, `lang:`, `docs:`, `ci:`,
-  `refactor:` — same set as the changelog `type` field.
-- Do not add `Co-Authored-By` trailers for AI tools.
-- Do not commit `Config/SigningOverride.xcconfig` (gitignored, local only).
+  `refactor:` — the changelog `type` set.
+- No `Co-Authored-By` trailers for AI tools.
+- Never commit `Config/SigningOverride.xcconfig` (gitignored).
