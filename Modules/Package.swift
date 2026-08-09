@@ -368,7 +368,8 @@ let package = Package(
                 "Swift7zip"
             ],
             resources: [
-                .copy("Formats/Catalog.json")
+                .copy("Formats/Catalog.json"),
+                .process("Localizable.xcstrings")
             ]
         ),
         .target(
