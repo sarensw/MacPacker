@@ -57,6 +57,13 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         fatalError("init(coder:) has not been implemented")
     }
     
+    /// SwiftUI fills the toolbar after the hosting view is installed, so the
+    /// search field does not exist yet at init. This is the first moment it
+    /// reliably does; the call is idempotent and cheap.
+    func windowDidUpdate(_ notification: Notification) {
+        (notification.object as? NSWindow)?.publishAccessibilityIdentifiers()
+    }
+
     /// Closing a window with unsaved edits asks to save first, like a document
     /// (this is a plain NSWindow, not an NSDocument, so it's wired by hand).
     func windowShouldClose(_ sender: NSWindow) -> Bool {
