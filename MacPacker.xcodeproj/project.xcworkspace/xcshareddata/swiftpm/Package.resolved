@@ -1,5 +1,5 @@
 {
-  "originHash" : "762bbea033d8fc472662f8305d715e9d7375df9709362fe1d82ec9c02a1d59ca",
+  "originHash" : "ea2c671323d359aacc0029a0e007f912adceb19ef5d79a0bcc448405efae4c19",
   "pins" : [
     {
       "identity" : "bitbytedata",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/LeanBytes/SandboxPilotKit",
       "state" : {
-        "revision" : "36e42ea0ea3eb2afdcc0e2fb231cad2e6a770643",
-        "version" : "1.1.0"
+        "revision" : "3818fb855d18547ed0db586a8e865ce271d232fe",
+        "version" : "1.3.1"
       }
     },
     {
