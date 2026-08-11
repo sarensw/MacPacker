@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Regenerates the demo archives the screenshot plan (../../sandboxpilot.json) opens.
+"""Stages the demo archives the screenshot plan (../../sandboxpilot.json) opens.
 
 They live in ~/Downloads/MacPacker-Demo because that is the one place a sandboxed
 MacPacker can read without the user picking a file (the downloads entitlement).
-The archives are ~200 MB of incompressible filler, so they are generated rather
-than committed — the entries only have to *look* like a real handoff bundle in a
-screenshot, nothing ever opens their content.
+
+Most of them are generated here: ~200 MB of incompressible filler, too big to
+commit, and the entries only have to *look* like a real handoff bundle in a
+screenshot — nothing ever opens their content. The exception is markdown-kit.zip,
+a genuinely working repository that is committed to the MacPacker-TestArchives
+submodule; this script only copies it into place.
+
+Nothing runs this for you. Run it by hand before a screenshot session:
 
     python3 assets/screenshots/make_demo_archives.py [--force]
 
@@ -16,11 +21,20 @@ assets that a recording is using.
 import datetime
 import hashlib
 import os
+import shutil
 import sys
 import zipfile
 
 MB = 1024 * 1024
 DEST = os.path.expanduser("~/Downloads/MacPacker-Demo")
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# The one archive that is committed rather than generated. It is a real,
+# buildable repository — `npm install` and `npm run build` in it produce the
+# node_modules/ and dist/ its .gitignore names — so it belongs with the other
+# test fixtures, not in a generator. Copied here only because the sandbox cannot
+# read it where it lives. Rebuild it with that repo's zip/make_markdown_kit.sh.
+FIXTURE = "Modules/Tests/CoreTests/TestArchives/zip/markdown-kit.zip"
 
 # How much of each entry survives compression, by extension. The point is the
 # Packed Size column: filler that is pure random data packs to 100% and every row
@@ -126,10 +140,25 @@ def build(filename: str, entries, nested=None) -> None:
     print(f"wrote  {filename} ({os.path.getsize(path) // MB} MB)")
 
 
+def stage(relative_path: str) -> None:
+    """Copies a committed fixture in, rather than generating one."""
+    source = os.path.join(REPO, relative_path)
+    name = os.path.basename(relative_path)
+    path = os.path.join(DEST, name)
+    if keep(path):
+        return
+    if not os.path.exists(source):
+        print(f"skip   {name} (no {relative_path} — run `git submodule update --init`)")
+        return
+    shutil.copy2(source, path)
+    print(f"copied {name} ({os.path.getsize(path) // 1024} KB)")
+
+
 if __name__ == "__main__":
     os.makedirs(os.path.join(DEST, "extra"), exist_ok=True)
     build("Handoff.zip", HANDOFF)
     build("Photo Delivery.zip", PHOTO_DELIVERY, nested=("Raw Files.zip", RAW_FILES))
+    stage(FIXTURE)
     stamp = datetime.datetime(*BASE_DATE).timestamp()
     for name, size in EXTRAS:
         path = os.path.join(DEST, "extra", name)
