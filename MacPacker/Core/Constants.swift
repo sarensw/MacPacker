@@ -8,6 +8,8 @@
 import Foundation
 
 class Constants {
+    static let appName: String = "MacPacker"
+    
     static let supportMail: String = "apps@sarensw.com"
     static let otherAppGitHub: String = "GitHub"
     

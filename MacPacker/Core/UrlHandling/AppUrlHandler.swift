@@ -19,7 +19,7 @@ extension AppUrlHandler {
         dirHint: URL.DirectoryHint,
         completion: @escaping (NSApplication.ModalResponse, URL?) -> Void
     ) {
-        let message = String(localized: "MacPacker needs access to \(fileUrl.lastPathComponent)", comment: "Message in the file-access panel explaining which item requires permission")
+        let message = String(localized: "\(Constants.appName) needs access to \(fileUrl.lastPathComponent)", comment: "Message in the file- and folder-access panel explaining why permission is required. The first placeholder is the app name MacPacker, the second is the name of the file or folder that needs access.")
         let openPanel = NSOpenPanel()
         openPanel.allowsMultipleSelection = false
         openPanel.canChooseFiles = dirHint == .notDirectory
