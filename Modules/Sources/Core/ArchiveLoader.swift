@@ -8,10 +8,8 @@
 import Foundation
 import tb
 
-/// The loader only ever reported through `yield(.processing(...))`, which lands
-/// in the UI status text and nowhere else — so a failed open left no trace of
-/// which type was detected or which engine ran. That is the first thing anyone
-/// needs from a bug report, hence a real logger.
+/// Loader diagnostics are logged independently of the semantic processing
+/// activities forwarded to the UI.
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "loader")
 
 struct ArchiveLoaderLoadResult: Sendable {
@@ -141,7 +139,10 @@ final actor ArchiveLoader {
                 throw ArchiveError.extractionFailed("Could not find engine for detected archive type")
             }
             self.engine = engine
-            yield(.processing(progress: nil, message: "engine loaded: \(String(describing: type(of: engine)))"))
+            yield(.processing(
+                progress: nil,
+                activity: .engineLoaded(name: String(describing: type(of: engine)), typeID: nil)
+            ))
             
             // build the status stream to forward the engine status to the UI
             let forwardTaskCompound = forwardStatus(from: engine)
@@ -152,7 +153,7 @@ final actor ArchiveLoader {
                 throw ArchiveError.extractionFailed("Could not create temporary directory")
             }
             compoundTempUrl = temp.url
-            yield(.processing(progress: nil, message: "temp dir created: \(temp.url)"))
+            yield(.processing(progress: nil, activity: .temporaryDirectoryCreated(temp.url)))
             
             let loaderResult = try await Sandbox.access(url: url) {
                 try await engine.loadArchive(
@@ -161,13 +162,13 @@ final actor ArchiveLoader {
                 )
             }
             let entries = loaderResult.items
-            yield(.processing(progress: nil, message: "entries found: \(entries.count)"))
+            yield(.processing(progress: nil, activity: .entriesFound(entries.count)))
             
             guard entries.count > 0 else {
                 throw ArchiveError.extractionFailed("Extraction of \(url.lastPathComponent) resulted in no files")
             }
             
-            archiveUrl = try await Sandbox.access(url: url) {
+            let extractedArchiveURL = try await Sandbox.access(url: url) {
                 try await engine.extract(
                     item: entries.first!.value,
                     from: url,
@@ -175,7 +176,8 @@ final actor ArchiveLoader {
                     passwordResolver: passwordResolver
                 )
             }
-            yield(.processing(progress: nil, message: "entry extracted: \(String(describing: archiveUrl))"))
+            archiveUrl = extractedArchiveURL
+            yield(.processing(progress: nil, activity: .entryExtracted(extractedArchiveURL)))
         } else if let split = detectorResult.split {
             // A split archive — same shape as the compound step: reduce any volume to
             // the real archive (its first segment). First the selected engine must be
@@ -191,19 +193,19 @@ final actor ArchiveLoader {
             }
             archiveUrl = firstVolume
             firstVolumeURL = firstVolume
-            yield(.processing(progress: nil, message: "split first volume: \(firstVolume.lastPathComponent)"))
+            yield(.processing(progress: nil, activity: .splitFirstVolume(firstVolume.lastPathComponent)))
         }
 
         guard let archiveUrl else {
-            yield(.processing(progress: nil, message: "archiveUrl lost: \(detectorResult.type.id)"))
+            yield(.processing(progress: nil, activity: .archiveURLLost(typeID: detectorResult.type.id)))
             throw ArchiveError.invalidArchive("Somehow we lost the archiveUrl while decompressing")
         }
         
         // This is either the original archive, or the extracted archive from the
         // compound
-        yield(.processing(progress: nil, message: "loading engine for: \(detectorResult.type.id)"))
+        yield(.processing(progress: nil, activity: .loadingEngine(typeID: detectorResult.type.id)))
         guard let engine = archiveEngineSelector.engine(for: detectorResult.type.id) else {
-            yield(.processing(progress: nil, message: "invalid archive type: \(detectorResult.type.id)"))
+            yield(.processing(progress: nil, activity: .invalidArchiveType(typeID: detectorResult.type.id)))
             log.error("No engine for archive type", context: ["type": detectorResult.type.id])
             throw ArchiveError.invalidArchive(
                 "No engine is configured for \(detectorResult.type.name).")
@@ -216,7 +218,10 @@ final actor ArchiveLoader {
             "type": detectorResult.type.id,
             "engine": archiveEngineSelector.engineType(for: detectorResult.type.id)?.configId ?? "unknown"
         ])
-        yield(.processing(progress: nil, message: "engine loaded: \(String(describing: type(of: engine))), for: \(detectorResult.type.id)"))
+        yield(.processing(
+            progress: nil,
+            activity: .engineLoaded(name: String(describing: type(of: engine)), typeID: detectorResult.type.id)
+        ))
         
         // build the status stream to forward the engine status to the UI
         let forwardTask = forwardStatus(from: engine)
@@ -229,7 +234,7 @@ final actor ArchiveLoader {
             selected: engine
         )
         self.entries = engineLoadResult.items
-        yield(.processing(progress: nil, message: "entries found: \(self.entries.count)"))
+        yield(.processing(progress: nil, activity: .entriesFound(self.entries.count)))
         
         // build the hierarchy
         let root = ArchiveItem(name: url.lastPathComponent, type: .root)
@@ -398,7 +403,7 @@ final actor ArchiveLoader {
         }
 
         // ── Pass 2: link every entry to its parent ──
-        yield(.processing(progress: nil, message: "building tree..."))
+        yield(.processing(progress: nil, activity: .buildingTree))
 
         var i = 0
         let total = entries.count
@@ -419,7 +424,7 @@ final actor ArchiveLoader {
             if i % 1000 == 0 {
                 yield(.processing(
                     progress: Double(i) / Double(total) * 100,
-                    message: "building tree..."
+                    activity: .buildingTree
                 ))
             }
             i += 1

@@ -85,7 +85,7 @@ struct MacPackerApp: App {
                     appDelegate.openArchiveUsingOpenPanel()
                 } label: {
                     Label {
-                        Text("Open…")
+                        Text("Open…", comment: "A label for a button that allows the user to open an archive from disk.")
                     } icon: {
                         Image(systemName: "arrow.up.right.square")
                     }

@@ -1,0 +1,105 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ is password protected. Open it in MacPacker to enter the password." : {
+      "comment" : "Error shown when an encrypted archive cannot request a password",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is password protected. Open it in MacPacker to enter the password."
+          }
+        }
+      }
+    },
+    "The archive" : {
+      "comment" : "Fallback archive name in a password-required error",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The archive"
+          }
+        }
+      }
+    },
+    "building tree..." : {
+      "comment" : "Archive operation status",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "building tree..."
+          }
+        }
+      }
+    },
+    "done" : {
+      "comment" : "Archive operation status",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "done"
+          }
+        }
+      }
+    },
+    "error: %@" : {
+      "comment" : "Archive operation status that includes an error description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "error: %@"
+          }
+        }
+      }
+    },
+    "extracting..." : {
+      "comment" : "Archive operation status",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "extracting..."
+          }
+        }
+      }
+    },
+    "failed to load" : {
+      "comment" : "Archive operation status",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "failed to load"
+          }
+        }
+      }
+    },
+    "loading..." : {
+      "comment" : "Archive operation status",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "loading..."
+          }
+        }
+      }
+    },
+    "saving..." : {
+      "comment" : "Archive operation status",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "saving..."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

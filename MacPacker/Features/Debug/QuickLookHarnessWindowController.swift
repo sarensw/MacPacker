@@ -8,6 +8,8 @@
 //  attached — no appex host, no `qlmanage`. Run MacPacker (⌘R) and open it from
 //  Settings ▸ Debug ▸ "Open Quick Look Harness…" (the Debug tab is DEBUG-only).
 //
+// Note: This is code only meant for development. Strings in here are not supposed to be translated.
+//
 
 import AppKit
 import ArchivePreviewUI

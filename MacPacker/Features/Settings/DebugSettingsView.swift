@@ -4,6 +4,8 @@
 //
 //  Created by Stephan Arenswald on 25.09.25.
 //
+// Note: This is code only meant for development. Strings in here are not supposed to be translated.
+//
 
 import AppKit
 import SwiftUI

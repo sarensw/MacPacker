@@ -10,9 +10,21 @@ import Foundation
 /// Describes the status of the engine when opening or extracting or doing any
 /// work in general.
 public enum EngineStatus: Sendable {
+    public enum ProcessingActivity: Sendable {
+        case loadingEngine(typeID: String)
+        case engineLoaded(name: String, typeID: String?)
+        case temporaryDirectoryCreated(URL)
+        case entriesFound(Int)
+        case entryExtracted(URL)
+        case splitFirstVolume(String)
+        case archiveURLLost(typeID: String)
+        case invalidArchiveType(typeID: String)
+        case buildingTree
+    }
+
     case cancelled
     case idle
-    case processing(progress: Double?, message: String)
+    case processing(progress: Double?, activity: ProcessingActivity)
     case done
     case error(Error)
 }
