@@ -3143,6 +3143,9 @@
         }
       }
     },
+    "Export failed" : {
+      "comment" : "Title of the alert shown when exporting logs fails"
+    },
     "Export Logs" : {
       "comment" : "A button that allows the user to export the app's recent logs",
       "localizations" : {
@@ -4108,6 +4111,9 @@
         }
       }
     },
+    "Give access to MacPacker" : {
+      "comment" : "Confirmation button in the file-access panel"
+    },
     "Go here to ..." : {
       "comment" : "This is the menu in the 'More' menu of the archive window to give customers a hint what they can do to reach the dev. A submenu will open with links to GitHub, a bug report form, and a mail to the developer.",
       "localizations" : {
@@ -4190,6 +4196,9 @@
           }
         }
       }
+    },
+    "Grant Access" : {
+      "comment" : "Confirmation button in the folder-access panel"
     },
     "Guides & documentation" : {
       "comment" : "Detail line of the documentation link on the start page",
@@ -4921,6 +4930,12 @@
           }
         }
       }
+    },
+    "MacPacker needs access to “%@” to work with the archive there. This is remembered so you won't be asked again for this folder." : {
+      "comment" : "Message in the folder-access panel explaining why permission is required"
+    },
+    "MacPacker needs access to %@" : {
+      "comment" : "Message in the file-access panel explaining which item requires permission"
     },
     "Manage in System Settings" : {
       "comment" : "A button label that, when tapped, shows the user how to manage the file provider extension in System Settings.",
@@ -6016,7 +6031,7 @@
       }
     },
     "Open…" : {
-      "comment" : "A label for a button that allows the user to open an archive from disk. The order depends on the language.",
+      "comment" : "A label for a button that allows the user to open an archive from disk.",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -4,6 +4,8 @@
 //
 //  Created by Stephan Arenswald on 25.09.25.
 //
+// Note: This is code only meant for development. Strings in here are not supposed to be translated.
+//
 
 import AppKit
 import SwiftUI
@@ -16,25 +18,25 @@ struct DebugSettingsView: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
-                Text("Windows:", comment: "Debug settings section for opening windows")
+                Text(verbatim: "Windows:")
                     .frame(width: 160, alignment: .trailing)
                 
                 VStack(alignment: .leading) {
                     Button {
                         WelcomeWindowController().show()
                     } label: {
-                        Text("Show Welcome window", comment: "Debug action that opens the welcome window")
+                        Text(verbatim: "Show Welcome window")
                     }
                     Button {
                         appState.selectedSettingsTab = .about
                         openSettings()
                     } label: {
-                        Text("Show About window", comment: "Debug action that opens the About settings window")
+                        Text(verbatim: "Show About window")
                     }
                     Button {
                         QuickLookHarnessWindowController().show()
                     } label: {
-                        Text("Open Quick Look Harness…", comment: "Debug action that opens the Quick Look test window")
+                        Text(verbatim: "Open Quick Look Harness…")
                     }
                 }
                 .padding(.leading, 8)
@@ -43,7 +45,7 @@ struct DebugSettingsView: View {
             }
             
             HStack(alignment: .top) {
-                Text("Meta:", comment: "Debug settings section for application metadata")
+                Text(verbatim: "Meta:")
                     .frame(width: 160, alignment: .trailing)
                 
                 VStack(alignment: .leading) {
@@ -62,16 +64,16 @@ struct DebugSettingsView: View {
             }
 
             HStack(alignment: .top) {
-                Text("Logs:", comment: "Debug settings section for logs")
+                Text(verbatim: "Logs:")
                     .frame(width: 160, alignment: .trailing)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Button {
                         exportLogs()
                     } label: {
-                        Text("Export Logs…", comment: "Debug action that exports the current session logs")
+                        Text(verbatim: "Export Logs…")
                     }
-                    Text("Saves this session's logs (notice level and above) as NDJSON you can send for diagnosis.", comment: "Explanation of the debug log export action")
+                    Text(verbatim: "Saves this session's logs (notice level and above) as NDJSON you can send for diagnosis.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -91,7 +93,7 @@ struct DebugSettingsView: View {
             NSWorkspace.shared.activateFileViewerSelecting([url])
         } catch {
             let alert = NSAlert()
-            alert.messageText = String(localized: "Could not export logs", comment: "Title of the alert shown when debug log export fails")
+            alert.messageText = "Could not export logs"
             alert.informativeText = error.localizedDescription
             alert.runModal()
         }
