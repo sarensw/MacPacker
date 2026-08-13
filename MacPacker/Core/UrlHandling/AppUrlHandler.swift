@@ -25,7 +25,7 @@ extension AppUrlHandler {
         openPanel.canChooseFiles = dirHint == .notDirectory
         openPanel.canChooseDirectories = dirHint == .isDirectory
         openPanel.allowsOtherFileTypes = false
-        openPanel.prompt = String(localized: "Give access to MacPacker", comment: "Confirmation button in the file-access panel")
+        openPanel.prompt = String(localized: "Grant Access", comment: "Confirmation button in the file- and folder-access panel")
         openPanel.message = message
         openPanel.directoryURL = fileUrl
         openPanel.level = .floating

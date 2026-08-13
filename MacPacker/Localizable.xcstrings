@@ -4122,9 +4122,6 @@
         }
       }
     },
-    "Give access to MacPacker" : {
-      "comment" : "Confirmation button in the file-access panel"
-    },
     "Go here to ..." : {
       "comment" : "This is the menu in the 'More' menu of the archive window to give customers a hint what they can do to reach the dev. A submenu will open with links to GitHub, a bug report form, and a mail to the developer.",
       "localizations" : {
@@ -4209,7 +4206,7 @@
       }
     },
     "Grant Access" : {
-      "comment" : "Confirmation button in the folder-access panel"
+      "comment" : "Confirmation button in the file- and folder-access panel"
     },
     "Guides & documentation" : {
       "comment" : "Detail line of the documentation link on the start page",
