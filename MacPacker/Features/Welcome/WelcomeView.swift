@@ -57,6 +57,7 @@ struct WelcomeView: View {
                         .padding(.bottom, 22)
                     
                     Text("❤️ Many thanks to all the PR contributors, translators and sponsors of this project!", comment: "Thanks shown to contributors, translators, and project sponsors on the welcome screen")
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 16)
                     
                     #if !STORE

@@ -51,6 +51,8 @@ public struct PillView: View {
 public enum PillStyle {
     // Changelog
     case feature, fix, core, release, lang
+    // Product status
+    case earlyAccess
 
     public var background: Color {
         switch self {
@@ -59,6 +61,7 @@ public enum PillStyle {
         case .core:        .pillCoreBackground
         case .release:     .pillReleaseBackground
         case .lang:        .pillLanguageBackground
+        case .earlyAccess: .pillEarlyAccessBackground
         }
     }
 
@@ -69,6 +72,7 @@ public enum PillStyle {
         case .core:        .pillCoreForeground
         case .release:     .pillReleaseForeground
         case .lang:        .pillLanguageForeground
+        case .earlyAccess: .pillEarlyAccessForeground
         }
     }
 
@@ -79,6 +83,7 @@ public enum PillStyle {
         case .core:        "Core"
         case .release:     "Release"
         case .lang:        "Language"
+        case .earlyAccess: "Early Access"
         }
     }
 }
@@ -101,6 +106,10 @@ public extension Color {
 
     static let pillLanguageBackground = Color.adaptive(light: 0xFAC775, dark: 0x7A4F08)
     static let pillLanguageForeground = Color.adaptive(light: 0x412402, dark: 0xFDDDA0)
+
+    // Product status
+    static let pillEarlyAccessBackground = Color.adaptive(light: 0xB3E3E0, dark: 0x0F5F5A)
+    static let pillEarlyAccessForeground = Color.adaptive(light: 0x0A3D3A, dark: 0xC2ECE9)
 }
 
 // MARK: - Adaptive Helper
@@ -171,6 +180,7 @@ private struct PillPreviewGrid: View {
                 PillView(.fix)
                 PillView(.core)
                 PillView(.release)
+                PillView(.earlyAccess)
             }
         }
         .padding(28)

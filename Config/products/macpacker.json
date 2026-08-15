@@ -209,6 +209,26 @@
             "issues": [
               "163"
             ]
+          },
+          {
+            "type": "release",
+            "title": {
+              "en": "FrameBison is available in early access",
+              "zh-Hans": "FrameBison 现已开放抢先体验",
+              "fr": "FrameBison est disponible en accès anticipé",
+              "de": "FrameBison ist im Early Access verfügbar",
+              "it": "FrameBison è disponibile in accesso anticipato",
+              "ja": "FrameBison が早期アクセスで利用可能に",
+              "fa": "FrameBison در دسترسی زودهنگام عرضه شد",
+              "pl": "FrameBison dostępny we wczesnym dostępie",
+              "pt-BR": "FrameBison já está em acesso antecipado",
+              "ru": "FrameBison доступен в раннем доступе",
+              "uk": "FrameBison доступний у ранньому доступі",
+              "es-MX": "FrameBison ya está en acceso anticipado",
+              "ko": "FrameBison, 얼리 액세스로 출시",
+              "nl": "FrameBison is beschikbaar in early access"
+            },
+            "issues": []
           }
         ]
       },
