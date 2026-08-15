@@ -228,7 +228,9 @@
               "ko": "FrameBison, 얼리 액세스로 출시",
               "nl": "FrameBison is beschikbaar in early access"
             },
-            "issues": []
+            "issues": [
+              "184"
+            ]
           }
         ]
       },
