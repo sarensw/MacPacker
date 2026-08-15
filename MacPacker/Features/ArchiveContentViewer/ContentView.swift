@@ -62,7 +62,6 @@ struct ContentView: View {
             get: { archiveState.searchText },
             set: { archiveState.search($0) }
         ))
-        .modifier(FocusSearchWhenLaunchedIntoOne())
         .onAppear {
             if self.archiveState.passwordProvider == nil {
                 let passwordProvider: ArchivePasswordUserProvider = { request in
@@ -119,27 +118,3 @@ struct ContentView: View {
     }
 }
 
-/// Puts the cursor in the search field when the window was launched straight
-/// into a search (`-SearchQuery`). An unfocused search field draws its text in
-/// the placeholder's grey, which is all but unreadable in the light appearance —
-/// and a window that opens showing filtered results should have the field live
-/// anyway. `searchFocused` is macOS 15+; below that the field simply stays as it
-/// is.
-private struct FocusSearchWhenLaunchedIntoOne: ViewModifier {
-    @FocusState private var focused: Bool
-
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if #available(macOS 15, *) {
-            content
-                .searchFocused($focused)
-                .task {
-                    if LaunchParameters.value(LaunchParameters.searchQueryKey) != nil {
-                        focused = true
-                    }
-                }
-        } else {
-            content
-        }
-    }
-}

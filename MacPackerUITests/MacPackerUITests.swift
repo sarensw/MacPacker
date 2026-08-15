@@ -282,6 +282,33 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// The screenshot plan focuses the search field by accessibility identifier
+    /// (`sandboxpilot.json`, scenario `04-search`), which SandboxPilotKit resolves
+    /// from MacPacker's own accessibility tree. SwiftUI gives the field behind
+    /// `.searchable` no identifier of its own, so `ArchiveWindowController`
+    /// publishes one; if that stops happening the plan captures an unfocused field
+    /// instead of failing, in fourteen languages at once.
+    ///
+    /// An identifier, not a label: labels are translated, identifiers are not.
+    func testSearchFieldPublishesItsAccessibilityIdentifier() throws {
+        let dir = try makeWorkDir("axid")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        let zip = dir.appendingPathComponent("fixture.zip")
+        try run("/usr/bin/zip", [zip.path, "one.txt"], cwd: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", zip.path])
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
+
+        // Spelled out rather than shared: a UI test drives the app as a black box
+        // and links none of its code. The same string appears in
+        // AccessibilityIdentifier.searchField and in sandboxpilot.json.
+        let search = app.windows.searchFields["archive.searchField"]
+        XCTAssertTrue(search.waitForExistence(timeout: 10),
+                      "the toolbar search field does not publish archive.searchField")
+        app.terminate()
+    }
+
     /// Dragging a file from Finder onto the upper half of an editable archive adds
     /// it — the drop zones replaced the old ⌥-modifier gesture, so the plain drag
     /// has to land in the archive without any key held.
