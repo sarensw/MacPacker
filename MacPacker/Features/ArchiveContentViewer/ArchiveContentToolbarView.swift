@@ -9,7 +9,7 @@ import Core
 import SwiftUI
 
 extension NSImage {
-    static func menuIcon(named name: String, pointSize: CGFloat = 16) -> NSImage {
+    static func menuIcon(named name: String, pointSize: CGFloat = 24) -> NSImage {
         let src = NSImage(imageLiteralResourceName: name)
         src.size = NSSize(width: pointSize, height: pointSize)
         return src
@@ -237,22 +237,35 @@ struct ArchiveContentToolbarView: ToolbarContent {
                         Label {
                             Text(verbatim: "\(Constants.otherAppFlowMoose)")
                         } icon: {
-                            Image(nsImage: .menuIcon(named: "AppIcon_FlowMoose", pointSize: 16))
+                            Image(nsImage: .menuIcon(named: "AppIcon_FlowMoose"))
                         }
                         .labelStyle(.titleAndIcon)
                         Text("Voice-2-Text working everywhere", comment: "Short description of the FlowMoose app")
                     }
                     
                     Button {
-                        openURL(URL(string: "https://filefillet.com/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui")!)
+                        openURL(Constants.otherAppFileFilletURL)
                     } label: {
                         Label {
                             Text(verbatim: "\(Constants.otherAppFileFillet)")
                         } icon: {
-                            Image(nsImage: .menuIcon(named: "AppIcon_FileFillet", pointSize: 16))
+                            Image(nsImage: .menuIcon(named: "AppIcon_FileFillet"))
                         }
                         .labelStyle(.titleAndIcon)
                         Text("Organize files. Fast.", comment: "Short description of the FileFillet app")
+                    }
+
+                    Button {
+                        openURL(Constants.otherAppFrameBisonURL)
+                    } label: {
+                        Label {
+                            Text(verbatim: "\(Constants.otherAppFrameBison)")
+                        } icon: {
+                            Image(nsImage: .menuIcon(named: "AppIcon_FrameBison"))
+                        }
+                        .labelStyle(.titleAndIcon)
+                        // Deliberately untranslated, see WelcomeMoreFromLeanBytesView.
+                        Text(verbatim: "App Store screenshots, made fast.")
                     }
                 } label: {
                     Label {
