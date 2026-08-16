@@ -967,5 +967,9 @@
 			</dict>
 		</dict>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<true/>
+	<key>ITSEncryptionExportComplianceCode</key>
+	<string>9eed8f58-eaf9-44e9-a757-f5e0a65c922a</string>
 </dict>
 </plist>
