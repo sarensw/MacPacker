@@ -46,7 +46,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
     }
 
     private var moreAppsTitle: AttributedString {
-        var title = AttributedString(localized: LocalizedStringResource("More Apps", comment: "Hint to the user that the submenu contains links for more apps that they might like."))
+        var title = AttributedString(localized: LocalizedStringResource("More Apps", table: "LeanBytes", comment: "Hint to the user that the submenu contains links for more apps that they might like."))
         title.append(AttributedString(stringLiteral: " "))
         
 //        var dot = AttributedString(stringLiteral: "●")
@@ -240,7 +240,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FlowMoose"))
                         }
                         .labelStyle(.titleAndIcon)
-                        Text("Voice-2-Text working everywhere", comment: "Short description of the FlowMoose app")
+                        Text("Do more with your voice", tableName: "LeanBytes", comment: "Short description of the FlowMoose app")
                     }
                     
                     Button {
@@ -252,7 +252,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FileFillet"))
                         }
                         .labelStyle(.titleAndIcon)
-                        Text("Organize files. Fast.", comment: "Short description of the FileFillet app")
+                        Text("Organize files. Fast.", tableName: "LeanBytes", comment: "Short description of the FileFillet app")
                     }
 
                     Button {
@@ -265,7 +265,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                         }
                         .labelStyle(.titleAndIcon)
                         // Deliberately untranslated, see WelcomeMoreFromLeanBytesView.
-                        Text(verbatim: "App Store screenshots, made fast.")
+                        Text("MacPackers app store & social media assets are made with this app", tableName: "LeanBytes", comment: "Short description of the FrameBison app")
                     }
                 } label: {
                     Label {

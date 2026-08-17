@@ -1,0 +1,238 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows." : {
+      "comment" : "Description of the FileFillet app",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiere oder verschiebe Dateien in deine bevorzugten Ordner und deren Unterordner. Ganz ohne zusätzliche Finder-Fenster."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копируйте или перемещайте файлы в ваши папки и их подпапки. Нет необходимости открывать новые окна Finder."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeni Finder pencereleri açmadan dosyaları favori klasörlerinize ve alt klasörlerine kopyalayın veya taşıyın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将文件复制或移动到常用文件夹及其子文件夹，无需打开新的访达窗口。"
+          }
+        }
+      }
+    },
+    "Do more with your voice" : {
+      "comment" : "Short description of the FlowMoose app"
+    },
+    "I made the App Store screenshots with this tool." : {
+      "comment" : "Description to the FrameBison app"
+    },
+    "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool." : {
+      "comment" : "Explains that supporting the listed LeanBytes apps supports MacPacker",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker wird durch meine eigene Arbeit bei LeanBytes finanziert. Wenn du die Apps unten unterstützt, unterstützt du damit direkt dieses Open-Source-Projekt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker создан благодаря моей работе в LeanBytes. Поддержка приложений, перечисленных ниже, напрямую способствует развитию этого инструмента с открытым исходным кодом."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker, LeanBytes bünyesindeki çalışmalarım sayesinde desteklenmektedir. Aşağıdaki uygulamaları destekleyerek bu açık kaynak aracına doğrudan katkıda bulunabilirsiniz."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker 由我在 LeanBytes 的工作赞助。支持以下应用即直接支持此开源工具。"
+          }
+        }
+      }
+    },
+    "MacPackers app store & social media assets are made with this app" : {
+      "comment" : "Short description of the FrameBison app"
+    },
+    "More Apps" : {
+      "comment" : "Hint to the user that the submenu contains links for more apps that they might like.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere Apps"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More Apps"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más Aplicaciones"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "برنامه های بیشتر"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus d’apps"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altre app"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "더 많은 앱"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Może Cię zainteresować"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше приложений"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diğer Uygulamalar"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Більше програм"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多应用"
+          }
+        }
+      }
+    },
+    "Organize files. Fast." : {
+      "comment" : "Short description of the FileFillet app",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organisiere Dateien. Schnell."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organize files. Fast."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Организовать файлы. Быстро."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosyalarınızı hızla düzenleyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整理文件，快速高效。"
+          }
+        }
+      }
+    },
+    "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only." : {
+      "comment" : "Description of the FlowMoose app",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache-zu-Text zur Entlastung von Handgelenken und Armen im Zeitalter von KI-Chats. Offline und ausschließlich lokal."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Функция преобразования голоса в текст для снижения нагрузки на запястья и руки в эпоху чатов с использованием ИИ. Работает в автономном режиме, полностью локально."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yapay zekâ sohbetleri çağında bilek ve kol yorgunluğunu azaltan Sesten Metne özelliği. Çevrimdışı çalışır; veriler yalnızca aygıtınızda kalır."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音转文字，减轻 AI 聊天时代手腕和手臂的压力。离线，仅限本地。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.3"
+}

@@ -70,6 +70,12 @@
             "value" : "... сообщить об ошибке"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... hata bildirmek"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -153,6 +159,12 @@
             "value" : "... запросить функцию"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... özellik istemek"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -228,6 +240,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "... отправить письмо по адресу %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "... %@ adresine e-posta göndermek"
           }
         },
         "uk" : {
@@ -307,6 +325,12 @@
             "value" : "“%@” защищён паролем."
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” parola korumalı."
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -341,16 +365,34 @@
             "state" : "translated",
             "value" : "%@ осталось"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kaldı"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "剩余 %@"
+          }
         }
       }
     },
     "%@ needs access to %@" : {
       "comment" : "Message in the file- and folder-access panel explaining why permission is required. The first placeholder is the app name MacPacker, the second is the name of the file or folder that needs access.",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ benötigt Zugriff auf %@"
+          }
+        },
         "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ needs access to %2$@"
+            "state" : "translated",
+            "value" : "%@ needs access to %@"
           }
         }
       }
@@ -510,6 +552,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld элементов"
+                }
+              }
+            }
+          }
+        },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld öğe"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : ""
                 }
               }
             }
@@ -719,6 +779,24 @@
             }
           }
         },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld seçili"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : ""
+                }
+              }
+            }
+          }
+        },
         "uk" : {
           "variations" : {
             "plural" : {
@@ -782,6 +860,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "❤️ Огромное спасибо всем, кто внес свой вклад посредством PR, переводчикам и спонсорам этого проекта!"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ Bu projeye katkıda bulunan, çeviri yapan ve sponsor olan herkese çok teşekkürler!"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ 衷心感谢本项目所有的 PR 贡献者、翻译人员和赞助商！"
           }
         }
       }
@@ -850,6 +940,12 @@
             "value" : "Информация"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hakkında"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -859,7 +955,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "关于本机"
+            "value" : "关于"
           }
         }
       }
@@ -927,6 +1023,12 @@
             "value" : "О %@"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Hakkında"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -990,6 +1092,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Благодарности"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teşekkürler"
           }
         },
         "uk" : {
@@ -1069,6 +1177,12 @@
             "value" : "Добавить"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ekle"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1101,6 +1215,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Добавить файлы или папки в архив"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşive dosya veya klasör ekle"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将文件或文件夹添加到压缩包"
           }
         }
       }
@@ -1160,6 +1286,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Добавить в “%@”"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” Arşivine Ekle"
           }
         },
         "uk" : {
@@ -1251,6 +1383,12 @@
             "value" : "Дополнительно"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İleri Düzey"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1284,6 +1422,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Распаковка в процессе"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çıkarma işlemi hâlâ sürüyor"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解压正在进行中"
           }
         }
       }
@@ -1339,6 +1489,12 @@
             "value" : "Форматы архивов"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşiv Biçimleri"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1348,7 +1504,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "归档格式"
+            "value" : "压缩格式"
           }
         }
       }
@@ -1422,6 +1578,12 @@
             "value" : "Информация об архиве"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşiv Bilgisi"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1431,7 +1593,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "存档信息"
+            "value" : "压缩文件信息"
           }
         }
       }
@@ -1456,6 +1618,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Автоматический выбор движка"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otomatik altyapı seçimi"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动选择引擎"
           }
         }
       }
@@ -1485,6 +1659,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Проверять обновления автоматически"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncellemeleri otomatik olarak denetle"
           }
         },
         "zh-Hans" : {
@@ -1564,6 +1744,12 @@
             "value" : "Внизу"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altta"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1641,6 +1827,12 @@
             "value" : "Положение строки навигации:"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İçerik yolu konumu:"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1650,7 +1842,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "路径栏位置："
+            "value" : "当前路径："
           }
         }
       }
@@ -1724,6 +1916,12 @@
             "value" : "Кэш:"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Önbellek:"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1764,6 +1962,18 @@
             "state" : "translated",
             "value" : "Отмена"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vazgeç"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
         }
       }
     },
@@ -1793,6 +2003,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Изменения"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Değişiklik Günlüğü"
           }
         },
         "zh-Hans" : {
@@ -1866,6 +2082,12 @@
             "value" : "Проверить наличие обновлений…"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Güncellemeleri Denetle…"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1900,6 +2122,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Очистить"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temizle"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
           }
         }
       }
@@ -1971,6 +2205,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Очистить кэш"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Önbelleği Temizle"
           }
         },
         "uk" : {
@@ -2056,6 +2296,12 @@
             "value" : "Очистить все содержимое кэша"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Önbellekteki tüm içeriği temizler"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2139,6 +2385,12 @@
             "value" : "Столбцы:"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sütunlar:"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2180,10 +2432,16 @@
             "value" : "В будущих обновлениях"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sırada Ne Var"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "即将发布"
+            "value" : "即将推出"
           }
         }
       }
@@ -2251,6 +2509,12 @@
             "value" : "Сжатие:"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sıkıştırma:"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2260,7 +2524,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "压缩："
+            "value" : "压缩级别："
           }
         }
       }
@@ -2327,6 +2591,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Свяжитесь с нами"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bize Ulaşın"
           }
         },
         "uk" : {
@@ -2407,6 +2677,12 @@
             "value" : "Продолжить"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sürdür"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2417,29 +2693,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "继续"
-          }
-        }
-      }
-    },
-    "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows." : {
-      "comment" : "Description of the FileFillet app",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kopiere oder verschiebe Dateien in deine bevorzugten Ordner und deren Unterordner. Ganz ohne zusätzliche Finder-Fenster."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Копируйте или перемещайте файлы в ваши папки и их подпапки. Нет необходимости открывать новые окна Finder."
           }
         }
       }
@@ -2465,6 +2718,18 @@
             "state" : "translated",
             "value" : "Невозможно открыть архив"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşiv açılamadı"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法打开压缩包"
+          }
         }
       }
     },
@@ -2487,6 +2752,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Создать новый архив"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeni Arşiv Oluştur"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "创建新压缩包"
           }
         }
       }
@@ -2560,6 +2837,12 @@
             "value" : "Дата изменения"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Değiştirilme Tarihi"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2623,6 +2906,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Состояние по умолчанию и настройки движка"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Varsayılan durum ve altyapı ayarları:"
           }
         },
         "uk" : {
@@ -2708,6 +2997,12 @@
             "value" : "Удалить"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sil"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2740,6 +3035,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Удалить выбранные объекты из архива"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçilen öğeleri arşivden sil"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从压缩包中删除所选项目"
           }
         }
       }
@@ -2808,6 +3115,12 @@
             "value" : "Отключено"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapalı"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2841,6 +3154,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вы хотите сохранить сделанные изменения в “%@”?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” üzerinde yaptığınız değişiklikleri kaydetmek istiyor musunuz?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "是否保存对“%@”所做的更改？"
           }
         }
       }
@@ -2912,6 +3237,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не сохранять"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaydetme"
           }
         },
         "uk" : {
@@ -2997,6 +3328,12 @@
             "value" : "Дата изменения"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Değiştirildi"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3006,7 +3343,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "修改时间"
+            "value" : "已修改"
           }
         }
       }
@@ -3075,6 +3412,12 @@
             "value" : "Включено"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Açık"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3140,6 +3483,12 @@
             "value" : "Движок"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altyapı"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3155,7 +3504,21 @@
       }
     },
     "Export failed" : {
-      "comment" : "Title of the alert shown when exporting logs fails"
+      "comment" : "Title of the alert shown when exporting logs fails",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export fehlgeschlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export failed"
+          }
+        }
+      }
     },
     "Export Logs" : {
       "comment" : "A button that allows the user to export the app's recent logs",
@@ -3218,6 +3581,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Экспорт логов"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Günlükleri Dışa Aktar"
           }
         },
         "uk" : {
@@ -3283,6 +3652,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Расширения"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uzantılar"
           }
         },
         "uk" : {
@@ -3368,6 +3743,12 @@
             "value" : "Распаковать"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çıkar"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3377,7 +3758,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "提取"
+            "value" : "解压"
           }
         }
       }
@@ -3451,6 +3832,12 @@
             "value" : "Распаковать архив"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşivi Çıkar"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3460,7 +3847,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解压存档"
+            "value" : "解压压缩包"
           }
         }
       }
@@ -3534,6 +3921,12 @@
             "value" : "Распаковать выбранное"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçilenleri Çıkar"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3543,7 +3936,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解压所选"
+            "value" : "解压选中项"
           }
         }
       }
@@ -3568,6 +3961,18 @@
             "state" : "translated",
             "value" : "Распаковать выбранное..."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçilenleri Çıkar…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解压选中项…"
+          }
         }
       }
     },
@@ -3590,6 +3995,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Распаковка"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çıkarılıyor"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在解压"
           }
         }
       }
@@ -3663,6 +4080,12 @@
             "value" : "Быстрое"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hızlı"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3734,6 +4157,12 @@
             "value" : "Формат файла"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosya Biçimi"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3797,6 +4226,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Расширение файлового менеджера"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosya sağlayıcı uzantısı"
           }
         },
         "uk" : {
@@ -3882,6 +4317,12 @@
             "value" : "Найти"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bul"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3940,6 +4381,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отслеживать"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Takip Et"
           }
         },
         "uk" : {
@@ -4025,6 +4472,12 @@
             "value" : "Формат:"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biçim:"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4106,6 +4559,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Общие"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genel"
           }
         },
         "uk" : {
@@ -4191,6 +4650,12 @@
             "value" : "Перейти сюда, чтобы ..."
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şunlar için buraya gidin..."
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4206,7 +4671,21 @@
       }
     },
     "Grant Access" : {
-      "comment" : "Confirmation button in the file- and folder-access panel"
+      "comment" : "Confirmation button in the file- and folder-access panel",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zugriff erlauben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grant Access"
+          }
+        }
+      }
     },
     "Guides & documentation" : {
       "comment" : "Detail line of the documentation link on the start page",
@@ -4283,6 +4762,12 @@
             "value" : "Руководства и документация"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kılavuzlar ve belgeler"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4316,6 +4801,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Помочь с переводом"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çeviriye Katkıda Bulun"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "帮助翻译"
           }
         }
       }
@@ -4369,6 +4866,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Как установить %@ по умолчанию?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ nasıl varsayılan yapılır?"
           }
         },
         "uk" : {
@@ -4454,6 +4957,12 @@
             "value" : "Правовая информация"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yasal Bildirim"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4494,6 +5003,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Включить бета обновления"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta güncellemelerini dahil et"
           }
         },
         "zh-Hans" : {
@@ -4553,6 +5068,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Информация о движках"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altyapılar Hakkında Bilgi"
           }
         },
         "uk" : {
@@ -4639,6 +5160,12 @@
             "value" : "Дополнительно…"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daha Fazla Bilgi…"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4673,6 +5200,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Научитесь пользоваться %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kullanımını öğrenin"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学习使用 %@"
           }
         }
       }
@@ -4746,6 +5285,12 @@
             "value" : "Оставить отзыв в App Store"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store’da Yorum Yap"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4759,9 +5304,6 @@
           }
         }
       }
-    },
-    "Licensed under the GNU General Public License v3.0 (GPL-3.0-or-later). This is free software: you can redistribute it and/or modify it under the terms of the GPL." : {
-      "comment" : "License notice shown in the About settings."
     },
     "Logs:" : {
       "comment" : "A label for the log related section in the advanced settings",
@@ -4826,6 +5368,12 @@
             "value" : "Журналирование:"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Günlükler:"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4859,6 +5407,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MacPacker выбирает движок для каждого архива и пробует другой, если первый не может его прочитать. Отключите эту функцию, чтобы выбирать движки самостоятельно."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker her arşiv için uygun altyapıyı seçer; ilk altyapı arşivi okuyamazsa başka birini dener. Altyapıları kendiniz seçmek için bu seçeneği kapatın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker 会为每个压缩包选择引擎，如果第一个无法读取，则会尝试另一个。关闭此选项可自行选择引擎。"
           }
         }
       }
@@ -4902,6 +5462,12 @@
             "value" : "MacPacker включает несколько архивных движков. Рекомендуется использовать движок по умолчанию; альтернативные движки могут помочь в решении проблем, связанных с конкретными форматами. Имейте в виду, что поддержка движков зависит от формата."
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker birden fazla arşiv altyapısı içerir. Varsayılan altyapının kullanılması önerilir; diğer altyapılar, belirli biçimlere özgü sorunları çözmeye yardımcı olabilir. Altyapı desteğinin biçime göre değiştiğini unutmayın."
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4911,30 +5477,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker 包含数种归档引擎。推荐使用默认引擎；如果你遇到特定格式的问题，可以尝试替代引擎。不过请注意，不同格式对引擎的支持可能有所不同。"
-          }
-        }
-      }
-    },
-    "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool." : {
-      "comment" : "Explains that supporting the listed LeanBytes apps supports MacPacker",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker wird durch meine eigene Arbeit bei LeanBytes finanziert. Wenn du die Apps unten unterstützt, unterstützt du damit direkt dieses Open-Source-Projekt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker создан благодаря моей работе в LeanBytes. Поддержка приложений, перечисленных ниже, напрямую способствует развитию этого инструмента с открытым исходным кодом."
+            "value" : "MacPacker 包含数种压缩引擎。推荐使用默认引擎；如果你遇到特定格式的问题，可以尝试替代引擎。不过请注意，不同格式对引擎的支持可能有所不同。"
           }
         }
       }
@@ -4988,6 +5531,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настроить в Системных настройках"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem Ayarları’nda Yönet"
           }
         },
         "uk" : {
@@ -5079,6 +5628,12 @@
             "value" : "Максимальное"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Yüksek"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5156,6 +5711,12 @@
             "value" : "Больше"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daha Fazla"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5166,83 +5727,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "更多"
-          }
-        }
-      }
-    },
-    "More Apps" : {
-      "comment" : "Hint to the user that the submenu contains links for more apps that they might like.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weitere Apps"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "More Apps"
-          }
-        },
-        "es-MX" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Más Aplicaciones"
-          }
-        },
-        "fa" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "برنامه های بیشتر"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plus d’apps"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Altre app"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "더 많은 앱"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Może Cię zainteresować"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mais apps"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Больше приложений"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Більше програм"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "更多应用"
           }
         }
       }
@@ -5310,6 +5794,12 @@
             "value" : "Наименование"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ad"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5370,6 +5860,12 @@
             "value" : "Новое окно %@"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeni %@ Penceresi"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5410,6 +5906,18 @@
             "state" : "translated",
             "value" : "Новый архив"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeni Arşiv"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新建压缩包"
+          }
         }
       }
     },
@@ -5433,11 +5941,20 @@
             "state" : "translated",
             "value" : "Недавних архивов нет."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son kullanılan arşiv yok."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有最近的压缩包。"
+          }
         }
       }
-    },
-    "No warranty. See LICENSE for details." : {
-      "comment" : "Warranty disclaimer shown in the About settings."
     },
     "None" : {
       "comment" : "Hide the breadcrumb in the archive window",
@@ -5506,6 +6023,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yok"
           }
         },
         "uk" : {
@@ -5597,6 +6120,12 @@
             "value" : "Нормальное"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5684,6 +6213,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamam"
           }
         },
         "uk" : {
@@ -5775,6 +6310,12 @@
             "value" : "Открыть"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aç"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5858,6 +6399,12 @@
             "value" : "Открыть архив..."
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşiv Aç…"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5933,6 +6480,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Открыть папку с кэшем"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Önbellek Klasörünü Aç"
           }
         },
         "uk" : {
@@ -6018,6 +6571,12 @@
             "value" : "Открыть в новом окне"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeni Pencerede Aç"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6089,6 +6648,12 @@
             "value" : "Открыть..."
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aç…"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6099,29 +6664,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打开..."
-          }
-        }
-      }
-    },
-    "Organize files. Fast." : {
-      "comment" : "Short description of the FileFillet app",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dateien organisieren. Schnell."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Organize files. Fast."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Организовать файлы. Быстро."
           }
         }
       }
@@ -6187,6 +6729,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сжатый размер"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sıkıştırılmış Boyut"
           }
         },
         "uk" : {
@@ -6266,6 +6814,12 @@
             "value" : "Пароль:"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parola:"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6343,6 +6897,12 @@
             "value" : "Разрешения"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İzinler"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6418,6 +6978,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Предварительный просмотр"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Önizle"
           }
         },
         "uk" : {
@@ -6503,6 +7069,12 @@
             "value" : "Конфиденциальность"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gizlilik"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6572,6 +7144,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Быстрый просмотр"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Göz At"
           }
         },
         "uk" : {
@@ -6657,6 +7235,12 @@
             "value" : "Все равно выйти"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yine de Çık"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6698,6 +7282,12 @@
             "value" : "Закрыть вместе с последним окном"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son pencere kapatıldığında uygulamadan çık:"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6725,6 +7315,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Выход останавливает извлечение и может оставить неполные файлы в пункте назначения."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şimdi çıkarsanız çıkarma işlemi durdurulur ve hedefte tamamlanmamış dosyalar kalabilir."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "现在退出将停止解压，并可能在目标位置留下不完整的文件。"
           }
         }
       }
@@ -6798,6 +7400,12 @@
             "value" : "Недавние"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son Kullanılanlar"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6861,6 +7469,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Обновить"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yenile"
           }
         },
         "uk" : {
@@ -6946,6 +7560,12 @@
             "value" : "Примечания к выпуску"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sürüm Notları"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7004,6 +7624,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Добавить отзыв"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yorum Yap"
           }
         },
         "uk" : {
@@ -7081,6 +7707,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сохранить"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaydet"
           }
         },
         "uk" : {
@@ -7166,6 +7798,12 @@
             "value" : "Сохранить как..."
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farklı Kaydet…"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7243,6 +7881,12 @@
             "value" : "Отправить улыбку"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bize Destek Olun"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7252,13 +7896,45 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "发送微笑"
+            "value" : "给我们鼓励"
           }
         }
       }
     },
     "Set MacPacker as the default app" : {
-      "comment" : "Title of the alert that explains how to set MacPacker as the default app for archive files."
+      "comment" : "Title of the alert that explains how to set MacPacker as the default app for archive files.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker als Standard setzen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set MacPacker as the default app"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Установите MacPacker в качестве приложения по умолчанию."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker’ı Varsayılan Uygulama Yapma"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将 MacPacker 设为默认应用"
+          }
+        }
+      }
     },
     "Settings..." : {
       "comment" : "Used to open the settings/preferences window",
@@ -7321,6 +7997,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройки..."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayarlar..."
           }
         },
         "uk" : {
@@ -7400,6 +8082,12 @@
             "value" : "Показать папку настроек программы"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uygulama Destek klasörünü göster"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7477,6 +8165,12 @@
             "value" : "Размер"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boyut"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7534,6 +8228,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Добавить в избранное"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yıldız Ver"
           }
         },
         "uk" : {
@@ -7613,6 +8313,12 @@
             "value" : "Отметить репозиторий на GitHub"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub Deposuna Yıldız Ver"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7688,7 +8394,13 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Старт"
+            "value" : "Начать"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Başlangıç"
           }
         },
         "uk" : {
@@ -7780,6 +8492,12 @@
             "value" : "Без сжатия"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sıkıştırma Yok"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7857,6 +8575,12 @@
             "value" : "Поддержать разработку..."
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geliştirmeye Destek Ol..."
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7866,7 +8590,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "支持开发…"
+            "value" : "赞助我们..."
           }
         }
       }
@@ -7940,6 +8664,12 @@
             "value" : "Положения и условия"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hüküm ve Koşullar"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7974,6 +8704,18 @@
             "state" : "translated",
             "value" : "Неверный пароль. Попробуйте еще раз."
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu parola yanlış. Yeniden deneyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "密码错误，请重试。"
+          }
         }
       }
     },
@@ -7997,11 +8739,55 @@
             "state" : "translated",
             "value" : "Архив"
           }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "arşiv"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "压缩包"
+          }
         }
       }
     },
     "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives." : {
-      "comment" : "Instructions in the alert explaining how to set MacPacker as the default app for archive files in Finder."
+      "comment" : "Instructions in the alert explaining how to set MacPacker as the default app for archive files in Finder.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um MacPacker als Standard-App für einen Datei-Typen zu setzen: Rechts-klick auf eine Datei → 'Info Über' → MacPacker auswählen unter 'Öffnen mit:'→ 'Alle ändern'"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чтобы установить MacPacker в качестве программы по умолчанию для определенного типа файлов: щелкните правой кнопкой мыши файл → «Свойства» → выберите MacPacker в разделе «Открывать в приложении:» → нажмите «Настроить», чтобы применить это изменение ко всем похожим архивам."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker’ı bir dosya türü için varsayılan uygulama yapmak üzere dosyayı sağ tıklayın → ‘Bilgi Ver’i seçin → ‘Birlikte aç:’ bölümünde MacPacker’ı seçin → aynı türdeki tüm arşivlere uygulamak için ‘Tümünü Değiştir…’i tıklayın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要将 MacPacker 设为某类文件的默认应用：右键点击文件 → “显示简介” → 在“打开方式”下选择 MacPacker → 点击“全部更改…”以应用于所有同类压缩包。"
+          }
+        }
+      }
     },
     "Top" : {
       "comment" : "Breadcrumb position at the top of the archive window",
@@ -8070,6 +8856,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сверху"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Üstte"
           }
         },
         "uk" : {
@@ -8156,6 +8948,12 @@
             "value" : "Перевести"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çevir"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8171,8 +8969,7 @@
       }
     },
     "Visit Website" : {
-      "comment" : "A button label that links to the LeanBytes website.",
-      "isCommentAutoGenerated" : true,
+      "comment" : "Button that opens the MacPacker website",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8234,6 +9031,12 @@
             "value" : "Посетить сайт"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Web Sitesini Ziyaret Et"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8244,52 +9047,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "访问网站"
-          }
-        }
-      }
-    },
-    "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only." : {
-      "comment" : "Description of the FlowMoose app",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sprache-zu-Text zur Entlastung von Handgelenken und Armen im Zeitalter von KI-Chats. Offline und ausschließlich lokal."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Функция преобразования голоса в текст для снижения нагрузки на запястья и руки в эпоху чатов с использованием ИИ. Работает в автономном режиме, полностью локально."
-          }
-        }
-      }
-    },
-    "Voice-2-Text working everywhere" : {
-      "comment" : "Short description of the FlowMoose app",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sprache-zu-Text, die überall funktioniert"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voice-2-Text working everywhere"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Функция преобразования голоса в текст работает повсюду."
           }
         }
       }
@@ -8355,6 +9112,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Веб-сайт"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Web Sitesi"
           }
         },
         "uk" : {
@@ -8434,6 +9197,12 @@
             "value" : "Добро пожаловать в %@"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@’a Hoş Geldiniz"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8511,6 +9280,12 @@
             "value" : "Что нового"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yenilikler"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8520,7 +9295,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新功能"
+            "value" : "版本新特性"
           }
         }
       }
@@ -8589,6 +9364,12 @@
             "value" : "Что нового"
           }
         },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yenilikler"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8622,6 +9403,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ваши изменения будут потеряны, если вы их не сохраните"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaydetmezseniz değişiklikleriniz kaybolacak."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果不保存，您的更改将丢失。"
           }
         }
       }

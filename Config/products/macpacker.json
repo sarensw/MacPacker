@@ -34,6 +34,33 @@
     },
     "versions": [
       {
+        "version": "0.21.0",
+        "items": [
+          {
+            "type": "lang",
+            "title": {
+              "en": "Language support for Turkish",
+              "zh-Hans": "支持土耳其语",
+              "fr": "Prise en charge du turc",
+              "de": "Unterstützung für Türkisch",
+              "it": "Supporto per il turco",
+              "ja": "トルコ語に対応",
+              "fa": "پشتیبانی از زبان ترکی",
+              "pl": "Obsługa języka tureckiego",
+              "pt-BR": "Suporte ao turco",
+              "ru": "Поддержка турецкого языка",
+              "uk": "Підтримка турецької мови",
+              "es-MX": "Soporte para turco",
+              "ko": "터키어 지원",
+              "nl": "Ondersteuning voor Turks",
+              "tr": "Türkçe dil desteği"
+            },
+            "issues": [
+            ]
+          }
+        ]
+      },
+      {
         "version": "0.20.0",
         "items": [
           {
