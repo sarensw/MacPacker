@@ -12,7 +12,7 @@ struct MoreFromLeanBytesProductView: View {
     
     let logo: String
     let title: String
-    let description: String
+    let description: LocalizedStringResource
     let openSource: Bool
     let url: URL
     /// Shown next to the title, e.g. `.earlyAccess` for a product that is not GA yet.
@@ -51,7 +51,7 @@ struct MoreFromLeanBytesProductView: View {
                                 PillView(pill)
                             }
                         }
-                        Text(verbatim: description)
+                        Text(description)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.leading)
@@ -107,18 +107,18 @@ struct MoreFromLeanBytesProductView: View {
 struct WelcomeMoreFromLeanBytesView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool.", comment: "Explains that supporting the listed LeanBytes apps supports MacPacker")
+            Text("MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool.", tableName: "LeanBytes", comment: "Explains that supporting the listed LeanBytes apps supports MacPacker")
                 .foregroundStyle(.secondary)
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
             
-            MoreFromLeanBytesProductView(logo: "AppIcon_FlowMoose", title: Constants.otherAppFlowMoose, description: String(localized: "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only.", comment: "Description of the FlowMoose app"), openSource: false, url: Constants.otherAppFlowMooseURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FlowMoose", title: Constants.otherAppFlowMoose, description: LocalizedStringResource("Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only.", table: "LeanBytes", comment: "Description of the FlowMoose app"), openSource: false, url: Constants.otherAppFlowMooseURL)
             
-            MoreFromLeanBytesProductView(logo: "AppIcon_FileFillet", title: Constants.otherAppFileFillet, description: String(localized: "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows.", comment: "Description of the FileFillet app"), openSource: true, url: Constants.otherAppFileFilletURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FileFillet", title: Constants.otherAppFileFillet, description: LocalizedStringResource("Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows.", table: "LeanBytes", comment: "Description of the FileFillet app"), openSource: false, url: Constants.otherAppFileFilletURL)
 
             // Deliberately untranslated: FrameBison is early access and its
             // pitch still changes, so it stays out of POEditor for now.
-            MoreFromLeanBytesProductView(logo: "AppIcon_FrameBison", title: Constants.otherAppFrameBison, description: "I made the App Store screenshots with this tool.", openSource: false, url: Constants.otherAppFrameBisonURL, pill: .earlyAccess, videoURL: Constants.otherAppFrameBisonVideoURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FrameBison", title: Constants.otherAppFrameBison, description: LocalizedStringResource("I made the App Store screenshots with this tool.", table: "LeanBytes", comment: "Description to the FrameBison app"), openSource: false, url: Constants.otherAppFrameBisonURL, pill: .earlyAccess, videoURL: Constants.otherAppFrameBisonVideoURL)
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
