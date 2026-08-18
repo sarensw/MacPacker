@@ -132,6 +132,34 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>cbz</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Comic Book ZIP Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>cbr</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Comic Book RAR Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>xz</string>
 			</array>
 			<key>CFBundleTypeName</key>
@@ -975,7 +1003,7 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<true/>
-    <key>ITSEncryptionExportComplianceCode</key>
-    <string>9eed8f58-eaf9-44e9-a757-f5e0a65c922a</string>
+	<key>ITSEncryptionExportComplianceCode</key>
+	<string>9eed8f58-eaf9-44e9-a757-f5e0a65c922a</string>
 </dict>
 </plist>

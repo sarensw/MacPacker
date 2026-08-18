@@ -37,6 +37,29 @@
         "version": "0.21.0",
         "items": [
           {
+            "type": "feat",
+            "title": {
+                "en": "cbz, cbr support",
+                "zh-Hans": "支持 cbz 和 cbr",
+                "fr": "Prise en charge de cbz et cbr",
+                "de": "Unterstützung für cbz und cbr",
+                "it": "Supporto per cbz e cbr",
+                "ja": "cbz、cbr に対応",
+                "fa": "پشتیبانی از cbz و cbr",
+                "pl": "Obsługa cbz i cbr",
+                "pt-BR": "Suporte a cbz e cbr",
+                "ru": "Поддержка cbz и cbr",
+                "uk": "Підтримка cbz і cbr",
+                "es-MX": "Compatibilidad con cbz y cbr",
+                "ko": "cbz, cbr 지원",
+                "nl": "Ondersteuning voor cbz en cbr",
+                "tr": "cbz ve cbr desteği"
+            },
+            "issues": [
+                "187"
+            ]
+          },
+          {
             "type": "lang",
             "title": {
               "en": "Language support for Turkish",
