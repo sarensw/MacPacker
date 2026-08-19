@@ -10,6 +10,7 @@
 #include <string>
 #include <deque>
 #include <vector>
+#include <set>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -309,8 +310,19 @@ public:
     /// order an archiver walking a directory tends to produce. finishExtract()
     /// drains this once every entry is on disk.
     std::vector<std::string> appleDoubleSidecars;
+    /// Every path this extraction created -- files as they finish, directories as
+    /// they are made. A sidecar is only ever folded into one of these. The
+    /// destination is not always empty: "Extract here" writes straight into a
+    /// folder of the user's own files, and "Extract to folder" reuses an existing
+    /// folder on a second run. A file already sitting there that happens to match
+    /// a sidecar's name is not ours to touch.
+    std::set<std::string> extractedPaths;
 
 private:
+    /// Records `dir` and every level above it up to the destination root.
+    /// CreateComplexDir makes the whole chain, so the whole chain is ours.
+    void rememberCreatedDirs(const FString &dir);
+
     IInArchive *_archive;
     FString _destDir;
     CMyComPtr<ISequentialOutStream> _outFileStream;
@@ -390,6 +402,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
 
     if (isDir) {
         NWindows::NFile::NDir::CreateComplexDir(fullPath);
+        rememberCreatedDirs(fullPath);
         return S_OK;
     }
 
@@ -398,6 +411,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     if (slashPos >= 0) {
         FString parentDir = fullPath.Left((unsigned)slashPos);
         NWindows::NFile::NDir::CreateComplexDir(parentDir);
+        rememberCreatedDirs(parentDir);
     }
 
     auto *outFileStreamSpec = new COutFileStream;
@@ -420,6 +434,20 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     _outFileStream = outStreamRef;
     *outStream = outStreamRef.Detach();
     return S_OK;
+}
+
+void CExtractCallback::rememberCreatedDirs(const FString &dir) {
+    const size_t rootLen = (size_t)_destDir.Len();
+    std::string path(dir.Ptr(), (size_t)dir.Len());
+
+    // Walk up to the destination root. insert() returning false means this level
+    // was recorded earlier, and so was everything above it -- stop there.
+    while (path.size() > rootLen && extractedPaths.insert(path).second) {
+        const size_t slash = path.rfind('/');
+        if (slash == std::string::npos || slash < rootLen)
+            break;
+        path.erase(slash);
+    }
 }
 
 /// Maps "dir/._name" to the file it describes, "dir/name". Empty when `path` is
@@ -461,10 +489,17 @@ static std::string appleDoubleTargetPath(const std::string &path) {
 /// Failures are silent by design. Anything not unpacked is left exactly where
 /// the extraction wrote it, so the worst case is the previous behaviour rather
 /// than a failed extraction.
-static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars) {
+static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars,
+                                      const std::set<std::string> &extractedPaths) {
     for (const std::string &sidecar : sidecars) {
         const std::string target = appleDoubleTargetPath(sidecar);
         if (target.empty())
+            continue;
+
+        // Only ever fold into something this extraction wrote. The destination
+        // can be a folder that already held the user's files, and one of them
+        // matching a sidecar's name by chance is not ours to modify.
+        if (extractedPaths.count(target) == 0)
             continue;
 
         // Directories carry metadata too -- macOS emits `._Resources` next to a
@@ -558,6 +593,8 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
     // Note a possible AppleDouble sidecar for finishExtract to fold in later. It
     // cannot be resolved here: the file it describes may still be ahead of us in
     // the archive.
+    extractedPaths.insert(path);
+
     if (!_currentIsSymlink && !appleDoubleTargetPath(path).empty())
         appleDoubleSidecars.push_back(path);
 
@@ -606,7 +643,7 @@ static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_ou
     // Every entry is on disk now, so a sidecar and the file it describes have
     // both landed whichever order the archive stored them in. Runs even when an
     // entry failed: the files that did extract should still come out complete.
-    unpackAppleDoubleSidecars(callback->appleDoubleSidecars);
+    unpackAppleDoubleSidecars(callback->appleDoubleSidecars, callback->extractedPaths);
 
     const Int32 opRes = callback->failedOpResult;
     const bool entryFailed = opRes != NArchive::NExtract::NOperationResult::kOK;

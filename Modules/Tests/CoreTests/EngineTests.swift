@@ -236,6 +236,15 @@ extension AllCoreTests {
             try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: tempDir) }
 
+            // "Extract here" writes straight into a folder of the user's own files,
+            // and "Extract to folder" reuses an existing folder on a second run — so
+            // the destination is not always empty. Plant a file the archive does not
+            // contain, whose name a sidecar in it happens to describe.
+            let fm = FileManager.default
+            let squatter = tempDir.appendingPathComponent("payload/orphan.bin")
+            try fm.createDirectory(at: squatter.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data("a file the user already had\n".utf8).write(to: squatter)
+
             _ = try await engine.extract(
                 items: items,
                 from: url,
@@ -244,7 +253,6 @@ extension AllCoreTests {
             )
 
             let payload = tempDir.appendingPathComponent("payload")
-            let fm = FileManager.default
 
             // 1. Both real sidecars are consumed, and both targets come out carrying
             //    what the sidecar held. The two differ only in storage order —
@@ -319,9 +327,15 @@ extension AllCoreTests {
                 fm.fileExists(atPath: payload.appendingPathComponent("._orphan.bin").path),
                 "._orphan.bin has no target to unpack into and must survive"
             )
+            // The planted file is not ours: the extraction never wrote it, so its
+            // contents and its metadata both have to come out exactly as they went in.
             #expect(
-                fm.fileExists(atPath: payload.appendingPathComponent("orphan.bin").path) == false,
-                "orphan.bin was never in the archive and must not be conjured from its sidecar"
+                (try? Data(contentsOf: squatter)) == Data("a file the user already had\n".utf8),
+                "a pre-existing orphan.bin must not be rewritten by the extraction"
+            )
+            #expect(
+                extendedAttribute("com.macpacker.test", at: squatter) == nil,
+                "._orphan.bin must not fold its metadata into a file the extraction did not create"
             )
         }
 
