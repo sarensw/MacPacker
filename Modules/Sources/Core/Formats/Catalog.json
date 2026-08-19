@@ -291,8 +291,8 @@
       "name": "RAR Archive",
       "kind": "archive",
       "uti": ["com.rarlab.rar-archive"],
-      "extensions": ["rar"],
-      "mime": ["application/x-rar-compressed", "application/vnd.rar"],
+      "extensions": ["rar", "cbr"],
+      "mime": ["application/x-rar-compressed", "application/vnd.rar", "application/vnd.comicbook-rar"],
       "rules": [
         { "policy": "any", "tests": [
           {"type": "signature", "bytes": "52 61 72 21 1A 07 00", "offset": 0},
@@ -515,8 +515,8 @@
       "name": "ZIP Archive",
       "kind": "archive",
       "uti": ["public.zip-archive", "com.pkware.zip-archive", "com.sun.java-archive", "com.android.package-archive"],
-      "extensions": ["zip", "jar", "aar", "apk"],
-      "mime": ["application/zip", "application/x-zip-compressed", "application/zip-compressed", "multipart/x-zip", "application/java-archive", "application/vnd.android.package-archive"],
+      "extensions": ["zip", "jar", "aar", "apk", "cbz"],
+      "mime": ["application/zip", "application/x-zip-compressed", "application/zip-compressed", "multipart/x-zip", "application/java-archive", "application/vnd.android.package-archive", "application/vnd.comicbook+zip"],
       "rules": [
         { "policy": "any", "tests": [
           {"type": "signature", "bytes": "50 4B 03 04", "offset": 0},

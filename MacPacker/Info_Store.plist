@@ -129,6 +129,34 @@
 			<key>LSTypeIsPackage</key>
 			<false/>
 		</dict>
+        <dict>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>cbz</string>
+            </array>
+            <key>CFBundleTypeName</key>
+            <string>Comic Book ZIP Archive</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Default</string>
+            <key>LSTypeIsPackage</key>
+            <false/>
+        </dict>
+        <dict>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>cbr</string>
+            </array>
+            <key>CFBundleTypeName</key>
+            <string>Comic Book RAR Archive</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>LSHandlerRank</key>
+            <string>Default</string>
+            <key>LSTypeIsPackage</key>
+            <false/>
+        </dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
