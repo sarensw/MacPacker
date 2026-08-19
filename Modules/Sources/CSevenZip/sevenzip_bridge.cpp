@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <copyfile.h>
 
 #include "Common/MyWindows.h"
 #include "Common/MyCom.h"
@@ -302,6 +303,12 @@ public:
     /// through SetOperationResult and *still* returns S_OK from Extract(), so
     /// without this the caller cannot tell a wrong password from a success.
     Int32 failedOpResult = NArchive::NExtract::NOperationResult::kOK;
+    /// Extracted files whose name starts with "._", i.e. candidate AppleDouble
+    /// sidecars. They cannot be resolved as they arrive: a sidecar may be stored
+    /// before the entry it describes, and `._x` sorts before `x`, so that is the
+    /// order an archiver walking a directory tends to produce. finishExtract()
+    /// drains this once every entry is on disk.
+    std::vector<std::string> appleDoubleSidecars;
 
 private:
     IInArchive *_archive;
@@ -415,6 +422,66 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     return S_OK;
 }
 
+/// Maps "dir/._name" to the file it describes, "dir/name". Empty when `path` is
+/// not of that shape, including a bare "._" with nothing after it -- that would
+/// name the parent directory, which must never be an unpack target.
+static std::string appleDoubleTargetPath(const std::string &path) {
+    const size_t slash = path.rfind('/');
+    const size_t base = (slash == std::string::npos) ? 0 : slash + 1;
+    if (path.size() < base + 3 || path.compare(base, 2, "._") != 0)
+        return std::string();
+
+    std::string target = path;
+    target.erase(base, 2);
+    return target;
+}
+
+/// Folds the AppleDouble sidecars collected during extraction into the files and
+/// directories they describe, then removes them.
+///
+/// When macOS has to keep extended attributes and a resource fork somewhere that
+/// cannot hold them -- a FAT stick, an SMB share -- it splits them out into a
+/// sibling "._name" file. From that point the sidecar is an ordinary file on
+/// disk, so any archiver that walks the folder stores it. Nothing here is
+/// zip-specific: this runs per entry, for every format the bridge reads, and tar
+/// and 7z carry the same sidecars. Left on disk it adds an entry to the
+/// extracted tree, and inside a signed .app that breaks the code-signature seal
+/// -- macOS then reports the app as damaged.
+///
+/// "._" is a naming convention, not a reservation, so a real file may be named
+/// that way and hold anything. Two guards keep those intact:
+///
+///   1. The file the sidecar describes has to already exist as a regular file.
+///      copyfile() with a missing destination *creates* it from the sidecar,
+///      conjuring a file the archive never contained.
+///   2. The sidecar is removed only once copyfile() reports success. It rejects
+///      a source that is not AppleDouble, which makes it the discriminator too:
+///      a plain file that merely starts with "._" fails here and stays put.
+///
+/// Failures are silent by design. Anything not unpacked is left exactly where
+/// the extraction wrote it, so the worst case is the previous behaviour rather
+/// than a failed extraction.
+static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars) {
+    for (const std::string &sidecar : sidecars) {
+        const std::string target = appleDoubleTargetPath(sidecar);
+        if (target.empty())
+            continue;
+
+        // Directories carry metadata too -- macOS emits `._Resources` next to a
+        // bundle's `Resources/` -- so both kinds are valid targets. A symlink is
+        // not: copyfile() follows it and would write to whatever it points at.
+        struct stat st;
+        if (lstat(target.c_str(), &st) != 0)
+            continue;
+        if (!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode))
+            continue;
+
+        if (copyfile(sidecar.c_str(), target.c_str(), nullptr,
+                     COPYFILE_UNPACK | COPYFILE_XATTR | COPYFILE_ACL) == 0)
+            unlink(sidecar.c_str());
+    }
+}
+
 // Runs once per entry after its stream is fully written. Restores POSIX metadata
 // that the plain file-write above drops: the execute bit (chmod) and symbolic
 // links (recreated from the target bytes 7-Zip wrote). Single choke point for all
@@ -488,6 +555,12 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
             errorMessage = "Failed to set file permissions";
     }
 
+    // Note a possible AppleDouble sidecar for finishExtract to fold in later. It
+    // cannot be resolved here: the file it describes may still be ahead of us in
+    // the archive.
+    if (!_currentIsSymlink && !appleDoubleTargetPath(path).empty())
+        appleDoubleSidecars.push_back(path);
+
     _currentIsSymlink = false;
     _currentMode = 0;
     _currentFilePath.Empty();
@@ -529,6 +602,11 @@ static const char *describeOpResult(Int32 opRes) {
 static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_out) {
     if (callback->aborted || hr == E_ABORT)
         return SZ_EXTRACT_ABORTED;
+
+    // Every entry is on disk now, so a sidecar and the file it describes have
+    // both landed whichever order the archive stored them in. Runs even when an
+    // entry failed: the files that did extract should still come out complete.
+    unpackAppleDoubleSidecars(callback->appleDoubleSidecars);
 
     const Int32 opRes = callback->failedOpResult;
     const bool entryFailed = opRes != NArchive::NExtract::NOperationResult::kOK;

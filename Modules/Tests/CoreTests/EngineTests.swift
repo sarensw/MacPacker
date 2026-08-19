@@ -212,6 +212,119 @@ extension AllCoreTests {
             )
         }
 
+        // Regression for #189: when macOS cannot store a file's xattrs and resource
+        // fork in place — a FAT stick, an SMB share — it splits them into a sibling
+        // `._name` file in AppleDouble format. That sidecar is then an ordinary
+        // file, so any archiver walking the folder stores it; nothing about it is
+        // zip-specific. Written out as a file it adds an entry to the tree, which
+        // inside a signed `.app` breaks the code-signature seal — the reported
+        // archive extracted to a bundle macOS called damaged. The sidecar has to be
+        // unpacked into the entry it describes and removed.
+        //
+        // `._` is a convention, not a reservation, so the fixture also carries
+        // files that only look like sidecars and must survive untouched. See
+        // `zip/make_appledouble.sh` in MacPacker-TestArchives for the full matrix.
+        @Test func extractionUnpacksAppleDoubleSidecarsAndSparesDecoys() async throws {
+            let engine = Archive7ZipEngine()
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("appledouble.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: tempDir) }
+
+            _ = try await engine.extract(
+                items: items,
+                from: url,
+                to: tempDir,
+                passwordResolver: { _ in nil }
+            )
+
+            let payload = tempDir.appendingPathComponent("payload")
+            let fm = FileManager.default
+
+            // 1. Both real sidecars are consumed, and both targets come out carrying
+            //    what the sidecar held. The two differ only in storage order —
+            //    `._icon.png` precedes its file, `._helper` follows it — because an
+            //    extractor that unpacks a sidecar the moment it reads it handles
+            //    only the second. Order means nothing in a zip, and `._x` sorts
+            //    before `x`, so the first form is what plain `zip -r` produces.
+            for target in ["Contents/Resources/icon.png", "Contents/MacOS/helper"] {
+                let fileURL = payload.appendingPathComponent(target)
+                let sidecarURL = fileURL
+                    .deletingLastPathComponent()
+                    .appendingPathComponent("._" + fileURL.lastPathComponent)
+
+                #expect(
+                    fm.fileExists(atPath: sidecarURL.path) == false,
+                    "\(sidecarURL.lastPathComponent) should have been unpacked into \(target) and removed"
+                )
+                #expect(
+                    extendedAttribute("com.apple.ResourceFork", at: fileURL)
+                        == Data("RESOURCE-FORK-PAYLOAD".utf8),
+                    "\(target) should carry the resource fork from its sidecar"
+                )
+                #expect(
+                    extendedAttribute("com.macpacker.test", at: fileURL)
+                        == Data("appledouble-fixture".utf8),
+                    "\(target) should carry the xattr from its sidecar"
+                )
+            }
+
+            // 2. Unpacking metadata must not touch the data fork. The fixture stores
+            //    a 1x1 PNG; applying the sidecar with the wrong copyfile flags would
+            //    overwrite these bytes with the AppleDouble instead.
+            let iconData = try Data(contentsOf: payload.appendingPathComponent("Contents/Resources/icon.png"))
+            #expect(iconData.count == 70, "icon.png data fork should be untouched, got \(iconData.count) bytes")
+            #expect(iconData.starts(with: [0x89, 0x50, 0x4E, 0x47]), "icon.png should still be a PNG")
+
+            // 3. A file that merely starts with `._` is a normal file. This one is
+            //    plain text and its sibling exists, so only its content separates it
+            //    from the two above — deleting it on the name alone loses user data.
+            let decoy = payload.appendingPathComponent("._notadouble.txt")
+            #expect(fm.fileExists(atPath: decoy.path), "._notadouble.txt is not AppleDouble and must survive")
+            #expect(
+                (try? Data(contentsOf: decoy)) == Data("A real file that merely starts with dot-underscore.\n".utf8),
+                "._notadouble.txt should come out byte-identical"
+            )
+
+            // 4. Directories carry extended attributes too, and macOS emits
+            //    `._Resources` beside a bundle's `Resources/` as readily as it does
+            //    for a file. Inside a bundle such a sidecar breaks the seal the same
+            //    way, so it has to go the same way — and `Resources/` has to survive
+            //    as a directory, with its contents untouched.
+            let resources = payload.appendingPathComponent("Contents/Resources")
+            #expect(
+                fm.fileExists(atPath: payload.appendingPathComponent("Contents/._Resources").path) == false,
+                "._Resources describes the Resources directory and should have been unpacked into it"
+            )
+            var resourcesIsDirectory: ObjCBool = false
+            #expect(
+                fm.fileExists(atPath: resources.path, isDirectory: &resourcesIsDirectory)
+                    && resourcesIsDirectory.boolValue,
+                "Resources should still be a directory"
+            )
+            #expect(
+                extendedAttribute("com.macpacker.dir", at: resources) == Data("appledouble-fixture".utf8),
+                "Resources should carry the xattr from its sidecar"
+            )
+
+            // 5. A real AppleDouble with no sibling stays put. `copyfile` with
+            //    COPYFILE_UNPACK happily creates a missing destination, which would
+            //    invent `orphan.bin` — a file the archive never contained.
+            #expect(
+                fm.fileExists(atPath: payload.appendingPathComponent("._orphan.bin").path),
+                "._orphan.bin has no target to unpack into and must survive"
+            )
+            #expect(
+                fm.fileExists(atPath: payload.appendingPathComponent("orphan.bin").path) == false,
+                "orphan.bin was never in the archive and must not be conjured from its sidecar"
+            )
+        }
+
         @Test func extractEmptyItemsThrows() async throws {
             let engine = Archive7ZipEngine()
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
@@ -890,4 +1003,21 @@ extension AllCoreTests {
             }
         }
     }
+}
+
+/// Reads one extended attribute, or nil when the file does not carry it.
+/// `FileManager` exposes no API for these, and the AppleDouble regression above
+/// is entirely about whether they arrive — including `com.apple.ResourceFork`,
+/// which is how macOS stores a resource fork.
+private func extendedAttribute(_ name: String, at url: URL) -> Data? {
+    let size = getxattr(url.path, name, nil, 0, 0, 0)
+    guard size >= 0 else { return nil }
+    guard size > 0 else { return Data() }
+
+    var buffer = Data(count: size)
+    let read = buffer.withUnsafeMutableBytes {
+        getxattr(url.path, name, $0.baseAddress, size, 0, 0)
+    }
+    guard read == size else { return nil }
+    return buffer
 }

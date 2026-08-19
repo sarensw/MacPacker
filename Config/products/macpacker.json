@@ -60,6 +60,29 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+              "en": "Extracted apps reported as damaged",
+              "zh-Hans": "解压后的应用提示已损坏",
+              "fr": "Apps extraites signalées comme endommagées",
+              "de": "Entpackte Apps werden als beschädigt gemeldet",
+              "it": "App estratte segnalate come danneggiate",
+              "ja": "展開したアプリが壊れていると表示される",
+              "fa": "برنامه‌های استخراج‌شده آسیب‌دیده گزارش می‌شوند",
+              "pl": "Wypakowane aplikacje zgłaszane jako uszkodzone",
+              "pt-BR": "Apps extraídos relatados como danificados",
+              "ru": "Извлечённые приложения считаются повреждёнными",
+              "uk": "Видобуті програми вважаються пошкодженими",
+              "es-MX": "Apps extraídas reportadas como dañadas",
+              "ko": "추출한 앱이 손상됨으로 표시됨",
+              "nl": "Uitgepakte apps gemeld als beschadigd",
+              "tr": "Çıkarılan uygulamalar hasarlı olarak bildiriliyor"
+            },
+            "issues": [
+                "189"
+            ]
+          },
+          {
             "type": "lang",
             "title": {
               "en": "Language support for Turkish",
