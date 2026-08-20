@@ -370,7 +370,6 @@ extension AllCoreTests {
             let bystanders: [(path: String, contents: String)] = [
                 ("payload/orphan.bin", "the file an archive sidecar names but never carries\n"),
                 ("payload/userfile.dat", "a file of the user's own\n"),
-                ("payload/._userfile.dat", "its sidecar, also the user's own\n"),
                 ("payload/Contents/Resources/keepme.png", "a bystander where the sidecars land\n")
             ]
             // Planting that last one also makes `payload/Contents/Resources/` a
@@ -384,6 +383,26 @@ extension AllCoreTests {
                 try fm.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
                 try Data(bystander.contents.utf8).write(to: fileURL)
             }
+
+            // `userfile.dat` gets a real sidecar of its own, packed by the same
+            // system call that unpacks one — plain bytes would not do, because a
+            // destination-walking implementation would reject them on content alone
+            // and this would pass without proving anything. Both halves are the
+            // user's, and the extraction has no business reading either: the drain
+            // works from the list of sidecars it wrote, never from what it finds on
+            // disk. Fold these together and the user loses `._userfile.dat`.
+            let userFile = tempDir.appendingPathComponent("payload/userfile.dat")
+            let userSidecar = tempDir.appendingPathComponent("payload/._userfile.dat")
+            setExtendedAttribute("com.macpacker.userown", Data("the user's own metadata".utf8), at: userFile)
+            #expect(
+                copyfile(userFile.path, userSidecar.path, nil,
+                         copyfile_flags_t(COPYFILE_PACK | COPYFILE_XATTR | COPYFILE_ACL)) == 0,
+                "could not pack the bystander sidecar"
+            )
+            let userSidecarBytes = try Data(contentsOf: userSidecar)
+            let userFileXattr = extendedAttribute("com.macpacker.userown", at: userFile)
+            #expect(userSidecarBytes.starts(with: [0x00, 0x05, 0x16, 0x07]), "bystander sidecar should be AppleDouble")
+            #expect(userFileXattr != nil)
 
             _ = try await engine.extract(
                 items: items,
@@ -403,6 +422,17 @@ extension AllCoreTests {
                     "\(bystander.path) must not receive metadata from the archive"
                 )
             }
+
+            // Neither half of the user's own AppleDouble pair may be read, rewritten
+            // or removed — not the sidecar, and not the metadata it describes.
+            #expect(
+                (try? Data(contentsOf: userSidecar)) == userSidecarBytes,
+                "a sidecar the extraction did not write must come out byte-identical"
+            )
+            #expect(
+                extendedAttribute("com.macpacker.userown", at: userFile) == userFileXattr,
+                "userfile.dat must keep the metadata it already had"
+            )
 
             // The directory the bystander sits in was the user's, not ours.
             let resources = tempDir.appendingPathComponent("payload/Contents/Resources")
@@ -1111,4 +1141,13 @@ private func extendedAttribute(_ name: String, at url: URL) -> Data? {
     }
     guard read == size else { return nil }
     return buffer
+}
+
+/// Sets one extended attribute. The counterpart to `extendedAttribute`, for
+/// seeding metadata a test then asserts survives untouched.
+private func setExtendedAttribute(_ name: String, _ value: Data, at url: URL) {
+    let result = value.withUnsafeBytes {
+        setxattr(url.path, name, $0.baseAddress, value.count, 0, 0)
+    }
+    precondition(result == 0, "setxattr \(name) failed on \(url.path)")
 }
