@@ -11,6 +11,7 @@
 #include <deque>
 #include <vector>
 #include <set>
+#include <unordered_map>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -121,6 +122,27 @@ struct SZArchiveHandle {
     UInt32 numItems;
     std::string password;
     bool hasPassword = false;
+
+    /// Entries that are AppleDouble sidecars for some other entry in this
+    /// archive, and so are metadata rather than files of their own. Kept out of
+    /// the listing -- the same treatment alternate streams already get, which is
+    /// where 7-Zip puts this metadata when the format carries it natively.
+    std::set<UInt32> hiddenSidecars;
+    /// For each visible entry, the sidecars describing it. An extraction of that
+    /// entry has to take them along, or its metadata is left in the archive.
+    std::unordered_map<UInt32, std::vector<UInt32>> companions;
+
+    /// Expands `requested` with the sidecars of everything in it. Sorted, and
+    /// without duplicates, which is what IInArchive::Extract wants.
+    std::vector<UInt32> withCompanions(const UInt32 *requested, UInt32 count) const {
+        std::set<UInt32> all(requested, requested + count);
+        for (UInt32 i = 0; i < count; i++) {
+            auto found = companions.find(requested[i]);
+            if (found != companions.end())
+                all.insert(found->second.begin(), found->second.end());
+        }
+        return std::vector<UInt32>(all.begin(), all.end());
+    }
 
     const char* storeString(const std::string &s) {
         storedStrings.push_back(s);
@@ -799,6 +821,87 @@ static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_ou
 
 extern "C" {
 
+/// Normalizes an archive entry path for matching: forward slashes, no leading
+/// separator, and no `__MACOSX/` prefix. That prefix is where
+/// `ditto --sequesterRsrc` -- and so Finder's "Compress" -- keeps a mirror of the
+/// tree holding nothing but sidecars, so an entry under it names the same thing
+/// as the entry without it.
+static std::string normalizedEntryPath(std::string path, bool *wasSequestered) {
+    for (char &c : path)
+        if (c == '\\') c = '/';
+    while (!path.empty() && path[0] == '/')
+        path.erase(0, 1);
+
+    // The mirror's own directory entry has no trailing separator, so match it
+    // both ways or the root is left behind as a visible empty folder.
+    static const std::string kMirror = "__MACOSX";
+    const bool sequestered =
+        path.compare(0, kMirror.size(), kMirror) == 0 &&
+        (path.size() == kMirror.size() || path[kMirror.size()] == '/');
+    if (sequestered)
+        path.erase(0, std::min(path.size(), kMirror.size() + 1));
+    if (wasSequestered)
+        *wasSequestered = sequestered;
+    return path;
+}
+
+/// Works out which entries are AppleDouble sidecars for other entries, so the
+/// listing can leave them out and an extraction can take them along.
+///
+/// An entry qualifies on its name and on a sibling existing under the name it
+/// describes -- the content is not read here, which would mean decompressing
+/// every candidate just to open an archive. Extraction still validates it, so a
+/// real file that merely starts with `._` is written out as itself. The one
+/// consequence is that such a file is missing from the listing and then appears
+/// on disk; nothing the listing promised ever fails to arrive.
+static void sz_indexAppleDoubleSidecars(SZArchiveHandle *handle) {
+    IInArchive *arc = handle->activeArchive();
+
+    std::unordered_map<std::string, UInt32> indexByPath;
+    std::vector<std::string> paths(handle->numItems);
+    std::vector<bool> sequestered(handle->numItems, false);
+
+    for (UInt32 i = 0; i < handle->numItems; i++) {
+        NWindows::NCOM::CPropVariant propPath;
+        if (arc->GetProperty(i, kpidPath, &propPath) != S_OK) continue;
+
+        bool fromMirror = false;
+        paths[i] = normalizedEntryPath(PropVariantToUTF8(propPath), &fromMirror);
+        sequestered[i] = fromMirror;
+        // A mirror entry never wins the name: the real entry owns it.
+        if (!fromMirror && !paths[i].empty())
+            indexByPath[paths[i]] = i;
+    }
+
+    for (UInt32 i = 0; i < handle->numItems; i++) {
+        const std::string &path = paths[i];
+
+        // The mirror holds sidecars and the directories leading to them, and
+        // nothing else -- so none of it is a file. That includes the `__MACOSX`
+        // root, whose path is empty once the prefix comes off.
+        if (sequestered[i])
+            handle->hiddenSidecars.insert(i);
+
+        if (path.empty()) continue;
+
+        const size_t slash = path.rfind('/');
+        const size_t base = (slash == std::string::npos) ? 0 : slash + 1;
+        if (path.size() < base + 3 || path.compare(base, 2, "._") != 0)
+            continue;
+
+        std::string described = path;
+        described.erase(base, 2);
+
+        // Nothing here for it to describe: a file like any other, however it is
+        // named. Left visible unless it came out of the mirror.
+        auto target = indexByPath.find(described);
+        if (target == indexByPath.end()) continue;
+
+        handle->hiddenSidecars.insert(i);
+        handle->companions[target->second].push_back(i);
+    }
+}
+
 SZArchiveRef sz_open(const char *path, const char *password,
                      bool *needs_password_out, char **error_out) {
     if (needs_password_out) *needs_password_out = false;
@@ -918,6 +1021,8 @@ SZArchiveRef sz_open(const char *path, const char *password,
         handle->activeArchive()->GetNumberOfItems(&numItems);
         handle->numItems = numItems;
 
+        sz_indexAppleDoubleSidecars(handle);
+
         // Cache IArchiveGetRawProps if the archive supports it
         handle->activeArchive()->QueryInterface(
             IID_IArchiveGetRawProps_Local,
@@ -982,6 +1087,14 @@ bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
     try {
         auto *handle = static_cast<SZArchiveHandle *>(archive);
         if (index >= handle->numItems) return false;
+
+        // Skip AppleDouble sidecars and the `__MACOSX/` mirror that holds them.
+        // They carry another entry's extended attributes and resource fork, not
+        // contents of their own, and extraction folds them into the entry they
+        // describe -- so listing them would promise files that deliberately do
+        // not arrive. Alternate streams below are the same metadata in the form
+        // 7-Zip models natively, and have always been skipped.
+        if (handle->hiddenSidecars.count(index) != 0) return false;
 
         // Skip alternate streams (macOS xattr, NTFS ADS)
         IInArchive *arc = handle->activeArchive();
@@ -1147,8 +1260,13 @@ int sz_extract_entries(SZArchiveRef archive, const uint32_t *indices,
                                                 progress, progress_context);
         CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
 
+        // Sidecars are not in the listing, so a selection cannot name them. Pull
+        // in the ones describing what was asked for, or the entries come out
+        // stripped of the metadata the archive was carrying for them.
+        const std::vector<UInt32> expanded = handle->withCompanions(indices, count);
+
         HRESULT hr = handle->activeArchive()->Extract(
-            indices, count, 0, callback);
+            expanded.data(), (UInt32)expanded.size(), 0, callback);
 
         return finishExtract(callback, hr, error_out);
     } catch (...) {

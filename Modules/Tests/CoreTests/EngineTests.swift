@@ -561,15 +561,18 @@ extension AllCoreTests {
                                          to: tempDir, passwordResolver: { _ in nil })
 
             // Nothing of the mirror survives — neither the sidecars nor the
-            // directories that only ever existed to hold them.
-            var leftovers: [String] = []
-            let walker = fm.enumerator(at: tempDir, includingPropertiesForKeys: nil)!
-            while let fileURL = walker.nextObject() as? URL {
-                if fileURL.path.contains("__MACOSX") || fileURL.lastPathComponent.hasPrefix("._") {
-                    leftovers.append(fileURL.lastPathComponent)
-                }
-            }
-            #expect(leftovers.isEmpty, "the __MACOSX mirror should be gone, found \(leftovers)")
+            // directories that only ever existed to hold them. The sidecars have to
+            // be looked for by name: FileManager's directory enumeration cannot see
+            // a `._` file at all, so scanning for them finds nothing whether they
+            // are there or not.
+            #expect(
+                appleDoubleLeftovers(in: tempDir).isEmpty,
+                "sidecars should be folded in, found \(appleDoubleLeftovers(in: tempDir))"
+            )
+            #expect(
+                fm.fileExists(atPath: tempDir.appendingPathComponent("__MACOSX").path) == false,
+                "the __MACOSX mirror holds nothing but sidecars and should be gone"
+            )
 
             // And the bundle it describes still verifies. This is the assertion that
             // matches what a user does with the archive: #189 was reported as an app
@@ -661,6 +664,43 @@ extension AllCoreTests {
                     "\(name) \(path): 7z produced \(sevenZip[path] ?? "<absent>"), xad produced \(xad[path] ?? "<absent>")"
                 )
             }
+        }
+
+        // The listing has to agree with the extraction, and both engines have to
+        // agree with each other. They did not: for an archive with inline sidecars
+        // the 7-Zip engine listed 43 entries and delivered 22, while XADMaster
+        // listed the 22 it delivers. Entries a user can see, select and delete —
+        // MacPacker edits zips — but that no extraction ever produces are worse
+        // than a cosmetic difference: deleting one silently discards the metadata
+        // of the file it belongs to.
+        @Test(arguments: [
+            "archivers/finder_compress.zip",
+            "archivers/ditto_inline.zip",
+            "archivers/infozip.zip",
+            "archivers/keka.zip",
+            "archivers/sevenzip.zip",
+            "zip/minimalApp.zip"
+        ])
+        func bothEnginesListTheSameEntries(name: String) async throws {
+            let parts = name.split(separator: "/")
+            let folder = Bundle.module.url(forResource: String(parts[0]), withExtension: nil)!
+            let url = folder.appendingPathComponent(String(parts[1]))
+
+            var listings: [String: [String]] = [:]
+            for (label, engine) in [("7z", Archive7ZipEngine() as ArchiveEngine),
+                                    ("xad", ArchiveXadEngine() as ArchiveEngine)] {
+                let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+                listings[label] = loadResult.items.values.map(\.name).sorted()
+            }
+
+            #expect(
+                listings["7z"]!.filter { $0.hasPrefix("._") }.isEmpty,
+                "sidecars are metadata, not entries, and should not be listed"
+            )
+            #expect(
+                listings["7z"]!.count == listings["xad"]!.count,
+                "\(name): 7z lists \(listings["7z"]!.count) entries, xad lists \(listings["xad"]!.count)"
+            )
         }
 
         @Test func extractEmptyItemsThrows() async throws {
@@ -1431,5 +1471,38 @@ private func extractionSnapshot(_ root: URL) -> [String: String] {
 
         snapshot[fileURL.path.replacingOccurrences(of: rootPath, with: "")] = facts.joined(separator: " ")
     }
+
+    // Directory enumeration cannot see a `._` file, so a sidecar left behind by
+    // one engine and not the other would go unnoticed — exactly the divergence
+    // this comparison exists for. Ask for them by name instead.
+    for path in snapshot.keys {
+        let fileURL = URL(fileURLWithPath: rootPath + path)
+        let sidecar = fileURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("._" + fileURL.lastPathComponent)
+        var info = stat()
+        if lstat(sidecar.path, &info) == 0 {
+            snapshot[sidecar.path.replacingOccurrences(of: rootPath, with: "")] =
+                "sidecar:\((try? Data(contentsOf: sidecar))?.count ?? -1)"
+        }
+    }
     return snapshot
+}
+
+/// AppleDouble sidecars still sitting next to the entries they describe. Found by
+/// name because `FileManager` cannot enumerate them: on macOS a `._` file is
+/// invisible to `contentsOfDirectory` and to directory enumerators, though
+/// `fileExists` and `lstat` see it perfectly well. A test that scans for them
+/// finds nothing whether or not they are there.
+private func appleDoubleLeftovers(in root: URL) -> [String] {
+    let fm = FileManager.default
+    var found: [String] = []
+    guard let walker = fm.enumerator(at: root, includingPropertiesForKeys: nil) else { return found }
+    while let fileURL = walker.nextObject() as? URL {
+        let sidecar = fileURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("._" + fileURL.lastPathComponent)
+        if fm.fileExists(atPath: sidecar.path) { found.append(sidecar.lastPathComponent) }
+    }
+    return found.sorted()
 }
