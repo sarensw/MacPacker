@@ -15,6 +15,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <copyfile.h>
+#include <sys/xattr.h>
+#include <cerrno>
 
 #include "Common/MyWindows.h"
 #include "Common/MyCom.h"
@@ -533,9 +535,32 @@ static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars,
         if (!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode))
             continue;
 
+        // COPYFILE_UNPACK replaces the target's extended attributes rather than
+        // merging into them, and macOS keeps Gatekeeper's verdict in one of them.
+        // Left alone, an archive could ship `Evil.app` beside a `._Evil.app`
+        // carrying no quarantine and have this extraction lift it off the bundle
+        // -- so the value is read first and put back afterwards, and whatever the
+        // archive had to say about it is discarded. Absent before means absent
+        // after, even if the sidecar tried to supply one.
+        static const char *const kQuarantine = "com.apple.quarantine";
+        char quarantine[1024];
+        const ssize_t quarantineLen = getxattr(target.c_str(), kQuarantine,
+                                               quarantine, sizeof(quarantine),
+                                               0, XATTR_NOFOLLOW);
+        // Anything other than "there is none" means we cannot restore what is
+        // there, so leave the sidecar alone rather than risk clearing it.
+        if (quarantineLen < 0 && errno != ENOATTR)
+            continue;
+
         if (copyfile(sidecar.c_str(), target.c_str(), nullptr,
-                     COPYFILE_UNPACK | COPYFILE_XATTR | COPYFILE_ACL) == 0)
+                     COPYFILE_UNPACK | COPYFILE_XATTR | COPYFILE_ACL) == 0) {
+            if (quarantineLen >= 0)
+                setxattr(target.c_str(), kQuarantine, quarantine,
+                         (size_t)quarantineLen, 0, XATTR_NOFOLLOW);
+            else
+                removexattr(target.c_str(), kQuarantine, XATTR_NOFOLLOW);
             unlink(sidecar.c_str());
+        }
     }
 }
 

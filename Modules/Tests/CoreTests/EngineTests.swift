@@ -446,6 +446,57 @@ extension AllCoreTests {
             )
         }
 
+        // Gatekeeper's verdict on a downloaded file lives in com.apple.quarantine,
+        // and copyfile's COPYFILE_UNPACK replaces a target's extended attributes
+        // rather than merging into them. So an archive shipping `Evil.app` beside a
+        // `._Evil.app` that carries no quarantine would have this extraction lift
+        // the quarantine off the bundle — the archive deciding, through metadata
+        // alone, that its own contents are trusted. Quarantine is the system's call,
+        // never the archive's.
+        //
+        // Extracting twice into one destination is what makes this observable: the
+        // second pass reopens the existing file with O_TRUNC, which keeps the inode
+        // and the attributes on it, so a quarantine set between the passes is still
+        // there when the sidecar is unpacked over it.
+        @Test func extractionDoesNotLetAnArchiveClearQuarantine() async throws {
+            let engine = Archive7ZipEngine()
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("appledouble.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            for _ in 0..<1 {
+                _ = try await engine.extract(items: items, from: url, to: tempDir,
+                                             passwordResolver: { _ in nil })
+            }
+
+            // Stand in for what the system does to anything MacPacker writes.
+            let helper = tempDir.appendingPathComponent("payload/Contents/MacOS/helper")
+            try #require(fm.fileExists(atPath: helper.path))
+            let verdict = Data("0083;68a1b2c3;Safari;E7A1-CAFE".utf8)
+            setExtendedAttribute("com.apple.quarantine", verdict, at: helper)
+
+            _ = try await engine.extract(items: items, from: url, to: tempDir,
+                                         passwordResolver: { _ in nil })
+
+            // The sidecar was unpacked again over the same file — proving the pass
+            // ran — but it has no say over the quarantine that was already there.
+            #expect(
+                extendedAttribute("com.macpacker.test", at: helper) == Data("appledouble-fixture".utf8),
+                "the sidecar should still have been unpacked on the second pass"
+            )
+            #expect(
+                extendedAttribute("com.apple.quarantine", at: helper) == verdict,
+                "an archive must not be able to clear Gatekeeper's quarantine"
+            )
+        }
+
         @Test func extractEmptyItemsThrows() async throws {
             let engine = Archive7ZipEngine()
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
