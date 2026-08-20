@@ -384,6 +384,15 @@ extension AllCoreTests {
                 try Data(bystander.contents.utf8).write(to: fileURL)
             }
 
+            // Two entries the archive *does* carry, planted first so the extraction
+            // overwrites them: one the archive has a sidecar for, one it does not.
+            for name in ["payload/Contents/MacOS/helper", "payload/notadouble.txt"] {
+                let fileURL = tempDir.appendingPathComponent(name)
+                try fm.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try Data("the user's own copy\n".utf8).write(to: fileURL)
+                setExtendedAttribute("com.macpacker.usertag", Data("a tag the user put there".utf8), at: fileURL)
+            }
+
             // `userfile.dat` gets a real sidecar of its own, packed by the same
             // system call that unpacks one — plain bytes would not do, because a
             // destination-walking implementation would reject them on content alone
@@ -433,6 +442,21 @@ extension AllCoreTests {
                 extendedAttribute("com.macpacker.userown", at: userFile) == userFileXattr,
                 "userfile.dat must keep the metadata it already had"
             )
+
+            // An entry that matches a file already in the destination replaces it,
+            // the same as `ditto` does — but the write keeps that file's extended
+            // attributes, so Finder tags and comments survive an overwrite. Folding
+            // a sidecar in must not change that: whether your tags survive cannot
+            // depend on whether the archive happened to ship a `._` file for that
+            // one path. `notadouble.txt` is the control, an overwritten entry with
+            // no sidecar of its own.
+            for name in ["payload/Contents/MacOS/helper", "payload/notadouble.txt"] {
+                #expect(
+                    extendedAttribute("com.macpacker.usertag", at: tempDir.appendingPathComponent(name))
+                        == Data("a tag the user put there".utf8),
+                    "\(name) was overwritten, but its own metadata is not the archive's to discard"
+                )
+            }
 
             // The directory the bystander sits in was the user's, not ours.
             let resources = tempDir.appendingPathComponent("payload/Contents/Resources")

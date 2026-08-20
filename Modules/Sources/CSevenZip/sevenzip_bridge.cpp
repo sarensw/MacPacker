@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <copyfile.h>
 #include <sys/xattr.h>
+#include <utility>
 #include <cerrno>
 
 #include "Common/MyWindows.h"
@@ -488,6 +489,39 @@ static std::string appleDoubleTargetPath(const std::string &path) {
     return target;
 }
 
+/// Name/value of every extended attribute on `path`. False means the set could
+/// not be read in full, which is the caller's cue to leave the file alone rather
+/// than run something over it that it cannot put back.
+static bool readExtendedAttributes(
+    const char *path, std::vector<std::pair<std::string, std::string>> &out)
+{
+    const ssize_t namesLen = listxattr(path, nullptr, 0, XATTR_NOFOLLOW);
+    if (namesLen < 0) return false;
+    if (namesLen == 0) return true;
+
+    std::string names((size_t)namesLen, '\0');
+    if (listxattr(path, &names[0], (size_t)namesLen, XATTR_NOFOLLOW) != namesLen)
+        return false;
+
+    // listxattr hands back NUL-separated names in one buffer.
+    for (size_t i = 0; i < (size_t)namesLen; ) {
+        const std::string name(names.c_str() + i);
+        i += name.size() + 1;
+        if (name.empty()) continue;
+
+        const ssize_t valueLen = getxattr(path, name.c_str(), nullptr, 0, 0, XATTR_NOFOLLOW);
+        if (valueLen < 0) return false;
+
+        std::string value((size_t)valueLen, '\0');
+        if (valueLen > 0 &&
+            getxattr(path, name.c_str(), &value[0], (size_t)valueLen, 0, XATTR_NOFOLLOW) != valueLen)
+            return false;
+
+        out.emplace_back(name, value);
+    }
+    return true;
+}
+
 /// Folds the AppleDouble sidecars collected during extraction into the files and
 /// directories they describe, then removes them.
 ///
@@ -535,32 +569,50 @@ static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars,
         if (!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode))
             continue;
 
-        // COPYFILE_UNPACK replaces the target's extended attributes rather than
-        // merging into them, and macOS keeps Gatekeeper's verdict in one of them.
-        // Left alone, an archive could ship `Evil.app` beside a `._Evil.app`
-        // carrying no quarantine and have this extraction lift it off the bundle
-        // -- so the value is read first and put back afterwards, and whatever the
-        // archive had to say about it is discarded. Absent before means absent
-        // after, even if the sidecar tried to supply one.
+        // COPYFILE_UNPACK *replaces* the target's extended attributes rather than
+        // merging into them, so everything the file already wore has to be caught
+        // first and put back after. Two different reasons for that:
+        //
+        //   Quarantine is where macOS keeps Gatekeeper's verdict. Without this an
+        //   archive could ship `Evil.app` beside a `._Evil.app` carrying no
+        //   quarantine and have this extraction lift it off the bundle -- the
+        //   archive deciding its own contents are trusted.
+        //
+        //   Everything else is the user's. An entry replaces a file that was
+        //   already there, the same as `ditto` does, but the plain write keeps that
+        //   file's attributes -- so Finder tags and comments survive an overwrite.
+        //   They must not stop surviving just because the archive happened to carry
+        //   a sidecar for that one file.
         static const char *const kQuarantine = "com.apple.quarantine";
-        char quarantine[1024];
-        const ssize_t quarantineLen = getxattr(target.c_str(), kQuarantine,
-                                               quarantine, sizeof(quarantine),
-                                               0, XATTR_NOFOLLOW);
-        // Anything other than "there is none" means we cannot restore what is
-        // there, so leave the sidecar alone rather than risk clearing it.
-        if (quarantineLen < 0 && errno != ENOATTR)
+        std::vector<std::pair<std::string, std::string>> before;
+        if (!readExtendedAttributes(target.c_str(), before))
             continue;
 
+        bool hadQuarantine = false;
+        for (const auto &attr : before)
+            hadQuarantine |= (attr.first == kQuarantine);
+
         if (copyfile(sidecar.c_str(), target.c_str(), nullptr,
-                     COPYFILE_UNPACK | COPYFILE_XATTR | COPYFILE_ACL) == 0) {
-            if (quarantineLen >= 0)
-                setxattr(target.c_str(), kQuarantine, quarantine,
-                         (size_t)quarantineLen, 0, XATTR_NOFOLLOW);
-            else
-                removexattr(target.c_str(), kQuarantine, XATTR_NOFOLLOW);
-            unlink(sidecar.c_str());
+                     COPYFILE_UNPACK | COPYFILE_XATTR | COPYFILE_ACL) != 0)
+            continue;
+
+        for (const auto &attr : before) {
+            // Where both speak, the sidecar wins -- it is describing this very
+            // file. Quarantine is the exception: it is the system's verdict on
+            // where the file came from, never the archive's to restate.
+            if (attr.first != kQuarantine &&
+                getxattr(target.c_str(), attr.first.c_str(), nullptr, 0, 0,
+                         XATTR_NOFOLLOW) >= 0)
+                continue;
+            setxattr(target.c_str(), attr.first.c_str(), attr.second.data(),
+                     attr.second.size(), 0, XATTR_NOFOLLOW);
         }
+
+        // No quarantine before means none after, whatever the sidecar supplied.
+        if (!hadQuarantine)
+            removexattr(target.c_str(), kQuarantine, XATTR_NOFOLLOW);
+
+        unlink(sidecar.c_str());
     }
 }
 
