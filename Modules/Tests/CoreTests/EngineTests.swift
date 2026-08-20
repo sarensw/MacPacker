@@ -373,6 +373,12 @@ extension AllCoreTests {
                 ("payload/._userfile.dat", "its sidecar, also the user's own\n"),
                 ("payload/Contents/Resources/keepme.png", "a bystander where the sidecars land\n")
             ]
+            // Planting that last one also makes `payload/Contents/Resources/` a
+            // directory the user already had. The archive carries `._Resources`
+            // describing exactly that path, and writes `icon.png` inside it — but
+            // `CreateComplexDir` is mkdir -p and reports success on a directory that
+            // was already there, so writing into it must not be mistaken for making
+            // it.
             for bystander in bystanders {
                 let fileURL = tempDir.appendingPathComponent(bystander.path)
                 try fm.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -397,6 +403,17 @@ extension AllCoreTests {
                     "\(bystander.path) must not receive metadata from the archive"
                 )
             }
+
+            // The directory the bystander sits in was the user's, not ours.
+            let resources = tempDir.appendingPathComponent("payload/Contents/Resources")
+            #expect(
+                extendedAttribute("com.macpacker.dir", at: resources) == nil,
+                "a directory the extraction only wrote into must not collect metadata from ._Resources"
+            )
+            #expect(
+                fm.fileExists(atPath: tempDir.appendingPathComponent("payload/Contents/._Resources").path),
+                "._Resources has no directory of ours to fold into and must stay put"
+            )
         }
 
         @Test func extractEmptyItemsThrows() async throws {

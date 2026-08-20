@@ -319,9 +319,11 @@ public:
     std::set<std::string> extractedPaths;
 
 private:
-    /// Records `dir` and every level above it up to the destination root.
-    /// CreateComplexDir makes the whole chain, so the whole chain is ours.
-    void rememberCreatedDirs(const FString &dir);
+    /// Creates `dir` and records the levels that did not exist beforehand.
+    /// CreateComplexDir is mkdir -p: it reports success on a directory that was
+    /// already there, so only a probe before the call can tell ours from the
+    /// user's.
+    void createDirsRecordingNew(const FString &dir);
 
     IInArchive *_archive;
     FString _destDir;
@@ -401,8 +403,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     fullPath += us2fs(safePath);
 
     if (isDir) {
-        NWindows::NFile::NDir::CreateComplexDir(fullPath);
-        rememberCreatedDirs(fullPath);
+        createDirsRecordingNew(fullPath);
         return S_OK;
     }
 
@@ -410,8 +411,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     int slashPos = (int)fullPath.ReverseFind_PathSepar();
     if (slashPos >= 0) {
         FString parentDir = fullPath.Left((unsigned)slashPos);
-        NWindows::NFile::NDir::CreateComplexDir(parentDir);
-        rememberCreatedDirs(parentDir);
+        createDirsRecordingNew(parentDir);
     }
 
     auto *outFileStreamSpec = new COutFileStream;
@@ -436,18 +436,40 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     return S_OK;
 }
 
-void CExtractCallback::rememberCreatedDirs(const FString &dir) {
+void CExtractCallback::createDirsRecordingNew(const FString &dir) {
     const size_t rootLen = (size_t)_destDir.Len();
     std::string path(dir.Ptr(), (size_t)dir.Len());
 
-    // Walk up to the destination root. insert() returning false means this level
-    // was recorded earlier, and so was everything above it -- stop there.
-    while (path.size() > rootLen && extractedPaths.insert(path).second) {
-        const size_t slash = path.rfind('/');
+    // Already ours, so every level above it is too -- the common case, since
+    // consecutive entries share a directory. Nothing left to work out.
+    if (path.size() <= rootLen || extractedPaths.count(path) != 0) {
+        NWindows::NFile::NDir::CreateComplexDir(dir);
+        return;
+    }
+
+    // Work out which levels this extraction is about to bring into being, before
+    // creating them. A directory already on disk belongs to whoever put it there:
+    // the destination can be a folder of the user's own files, and their
+    // `Resources/` must not collect metadata out of this archive just because an
+    // entry happens to sit inside it. Stops at the first level that exists or is
+    // already ours -- everything above that is settled.
+    std::vector<std::string> fresh;
+    std::string probe = path;
+    while (probe.size() > rootLen && extractedPaths.count(probe) == 0) {
+        struct stat st;
+        if (lstat(probe.c_str(), &st) == 0)
+            break;
+        fresh.push_back(probe);
+        const size_t slash = probe.rfind('/');
         if (slash == std::string::npos || slash < rootLen)
             break;
-        path.erase(slash);
+        probe.erase(slash);
     }
+
+    NWindows::NFile::NDir::CreateComplexDir(dir);
+
+    for (const std::string &level : fresh)
+        extractedPaths.insert(level);
 }
 
 /// Maps "dir/._name" to the file it describes, "dir/name". Empty when `path` is
