@@ -452,7 +452,10 @@ let package = Package(
                 .copy("TestArchives/lzx"),
                 .copy("TestArchives/stuffit"),
                 .copy("TestArchives/zip"),
-                .copy("TestArchives/password")
+                .copy("TestArchives/password"),
+                // Archives from the tools people actually use, so extraction can be
+                // checked against files nobody tailored to this implementation.
+                .copy("TestArchives/realworld")
             ]
         )
     ]

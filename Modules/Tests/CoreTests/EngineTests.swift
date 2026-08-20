@@ -580,6 +580,34 @@ extension AllCoreTests {
             #expect(codesignVerdict(app) == 0, "extracted bundle failed codesign")
         }
 
+        // codesign is the same judgement #189 was reported as — an app macOS called
+        // damaged — made by the system rather than by this test. Only the archives
+        // that can carry a bundle intact are listed: `realworld/ditto_inline.zip`
+        // and `realworld/sevenzip.zip` both lose framework version symlinks, and
+        // Archive Utility fails them the same way, so their bundles are broken
+        // before extraction begins. Those two are covered by the engine comparison
+        // instead.
+        @Test(arguments: ["realworld/finder_compress.zip", "realworld/infozip.zip"])
+        func realWorldArchivesExtractToAValidBundle(name: String) async throws {
+            let parts = name.split(separator: "/")
+            let folder = Bundle.module.url(forResource: String(parts[0]), withExtension: nil)!
+            let url = folder.appendingPathComponent(String(parts[1]))
+
+            let engine = Archive7ZipEngine()
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            _ = try await engine.extract(items: Array(loadResult.items.values), from: url,
+                                         to: tempDir, passwordResolver: { _ in nil })
+
+            let app = tempDir.appendingPathComponent("MinimalApp.app")
+            try #require(fm.fileExists(atPath: app.path))
+            #expect(codesignVerdict(app) == 0, "\(name) extracted to a bundle codesign rejects")
+        }
+
         // The tests above assert what this implementation was built to do, which is
         // worth only so much — they were written by the same hand that wrote the
         // code. This one asks a different question: does the 7-Zip engine agree with
@@ -593,10 +621,21 @@ extension AllCoreTests {
         // directory entries at all, which no real tool produces — XADMaster gets
         // wrong. Fixtures like that are what this test exists to compensate for, so
         // it is restricted to archives real tools actually made.
-        @Test(arguments: ["minimalApp.zip", "appbundle.zip"])
+        @Test(arguments: [
+            "zip/minimalApp.zip",
+            "zip/appbundle.zip",
+            // The corpus proper: one bundle, archived by Finder's "Compress", by
+            // ditto without sequestering, by Info-ZIP and by 7-Zip's writer. Nobody
+            // shaped these around this implementation.
+            "realworld/finder_compress.zip",
+            "realworld/ditto_inline.zip",
+            "realworld/infozip.zip",
+            "realworld/sevenzip.zip"
+        ])
         func sevenZipAgreesWithXadOnRealArchives(name: String) async throws {
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let url = zipFolder.appendingPathComponent(name)
+            let parts = name.split(separator: "/")
+            let folder = Bundle.module.url(forResource: String(parts[0]), withExtension: nil)!
+            let url = folder.appendingPathComponent(String(parts[1]))
             let fm = FileManager.default
 
             var snapshots: [String: [String: String]] = [:]
