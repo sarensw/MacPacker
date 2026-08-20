@@ -453,9 +453,9 @@ let package = Package(
                 .copy("TestArchives/stuffit"),
                 .copy("TestArchives/zip"),
                 .copy("TestArchives/password"),
-                // Archives from the tools people actually use, so extraction can be
-                // checked against files nobody tailored to this implementation.
-                .copy("TestArchives/realworld")
+                // One app bundle per archiver, so extraction can be checked against
+                // files nobody here tailored to it.
+                .copy("TestArchives/archivers")
             ]
         )
     ]

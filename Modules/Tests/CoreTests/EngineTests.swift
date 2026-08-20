@@ -582,12 +582,16 @@ extension AllCoreTests {
 
         // codesign is the same judgement #189 was reported as — an app macOS called
         // damaged — made by the system rather than by this test. Only the archives
-        // that can carry a bundle intact are listed: `realworld/ditto_inline.zip`
-        // and `realworld/sevenzip.zip` both lose framework version symlinks, and
+        // that can carry a bundle intact are listed: `archivers/ditto_inline.zip`
+        // and `archivers/sevenzip.zip` both lose framework version symlinks, and
         // Archive Utility fails them the same way, so their bundles are broken
         // before extraction begins. Those two are covered by the engine comparison
         // instead.
-        @Test(arguments: ["realworld/finder_compress.zip", "realworld/infozip.zip"])
+        @Test(arguments: [
+            "archivers/finder_compress.zip",
+            "archivers/infozip.zip",
+            "archivers/keka.zip"
+        ])
         func realWorldArchivesExtractToAValidBundle(name: String) async throws {
             let parts = name.split(separator: "/")
             let folder = Bundle.module.url(forResource: String(parts[0]), withExtension: nil)!
@@ -624,13 +628,13 @@ extension AllCoreTests {
         @Test(arguments: [
             "zip/minimalApp.zip",
             "zip/appbundle.zip",
-            // The corpus proper: one bundle, archived by Finder's "Compress", by
-            // ditto without sequestering, by Info-ZIP and by 7-Zip's writer. Nobody
-            // shaped these around this implementation.
-            "realworld/finder_compress.zip",
-            "realworld/ditto_inline.zip",
-            "realworld/infozip.zip",
-            "realworld/sevenzip.zip"
+            // One bundle per archiver — Finder's "Compress", ditto without
+            // sequestering, Info-ZIP, Keka, 7-Zip. Nobody here shaped these.
+            "archivers/finder_compress.zip",
+            "archivers/ditto_inline.zip",
+            "archivers/infozip.zip",
+            "archivers/keka.zip",
+            "archivers/sevenzip.zip"
         ])
         func sevenZipAgreesWithXadOnRealArchives(name: String) async throws {
             let parts = name.split(separator: "/")
