@@ -339,6 +339,66 @@ extension AllCoreTests {
             )
         }
 
+        // The general form of the guard above, and the one that does not depend on
+        // knowing which name is dangerous. An extraction owns what it writes and
+        // nothing else — but the destination is not always empty: "Extract here"
+        // writes into a folder of the user's own files, and "Extract to folder"
+        // reuses an existing folder on a second run. Post-processing passes are
+        // where this goes wrong, because they run over paths rather than over the
+        // stream they just wrote; the AppleDouble drain did exactly that.
+        //
+        // Deliberately not about name collisions: an entry that matches a file
+        // already there does replace it, the same as `ditto`. This is about the
+        // files an archive never mentions at all.
+        @Test func extractionLeavesFilesItDidNotCreateAlone() async throws {
+            let engine = Archive7ZipEngine()
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("appledouble.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            // Bystanders, none of them named by the archive, planted in the very
+            // directories the extraction writes into. The `._userfile.dat` pair is
+            // the sharp one: a complete AppleDouble pair the user already had, which
+            // an extractor working from names rather than from what it wrote would
+            // happily fold together and delete half of.
+            let bystanders: [(path: String, contents: String)] = [
+                ("payload/orphan.bin", "the file an archive sidecar names but never carries\n"),
+                ("payload/userfile.dat", "a file of the user's own\n"),
+                ("payload/._userfile.dat", "its sidecar, also the user's own\n"),
+                ("payload/Contents/Resources/keepme.png", "a bystander where the sidecars land\n")
+            ]
+            for bystander in bystanders {
+                let fileURL = tempDir.appendingPathComponent(bystander.path)
+                try fm.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try Data(bystander.contents.utf8).write(to: fileURL)
+            }
+
+            _ = try await engine.extract(
+                items: items,
+                from: url,
+                to: tempDir,
+                passwordResolver: { _ in nil }
+            )
+
+            for bystander in bystanders {
+                let fileURL = tempDir.appendingPathComponent(bystander.path)
+                #expect(
+                    (try? Data(contentsOf: fileURL)) == Data(bystander.contents.utf8),
+                    "\(bystander.path) was not written by this extraction and must come out untouched"
+                )
+                #expect(
+                    extendedAttribute("com.macpacker.test", at: fileURL) == nil,
+                    "\(bystander.path) must not receive metadata from the archive"
+                )
+            }
+        }
+
         @Test func extractEmptyItemsThrows() async throws {
             let engine = Archive7ZipEngine()
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
