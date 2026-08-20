@@ -7,6 +7,7 @@
 
 import Foundation
 import Testing
+import Swift7zip
 @testable import Core
 
 // MARK: - 1. Archive7ZipEngine Tests
@@ -700,6 +701,52 @@ extension AllCoreTests {
             #expect(
                 listings["7z"]!.count == listings["xad"]!.count,
                 "\(name): 7z lists \(listings["7z"]!.count) entries, xad lists \(listings["xad"]!.count)"
+            )
+        }
+
+        // A sidecar is its file's metadata, and it is no longer in the listing for
+        // a user to remove alongside the file. So removing the file has to remove
+        // it too — otherwise editing an archive leaves metadata describing
+        // something the archive no longer holds, which then reappears in the
+        // listing as a stray `._name` entry, in the place the user just cleared.
+        @Test func deletingAFileDeletesItsSidecar() async throws {
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let source = zipFolder.appendingPathComponent("appledouble.zip")
+
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            let archive = try SevenZipArchive(url: source)
+            let icon = try #require(try archive.entries.first { $0.path.hasSuffix("Resources/icon.png") })
+
+            let edited = tempDir.appendingPathComponent("edited.zip")
+            try SevenZipArchive.writeArchive(
+                source: source,
+                destination: edited,
+                items: [.remove(sourceIndex: icon.index)],
+                options: .init(format: .zip)
+            )
+
+            // Read the result with a tool that has no opinion about sidecars.
+            let listing = Process()
+            listing.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
+            listing.arguments = ["-Z1", edited.path]
+            let pipe = Pipe()
+            listing.standardOutput = pipe
+            try listing.run()
+            let raw = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+                .split(separator: "\n").map(String.init)
+            listing.waitUntilExit()
+
+            #expect(
+                raw.contains { $0.hasSuffix("/icon.png") } == false,
+                "icon.png was removed and should be gone"
+            )
+            #expect(
+                raw.contains { $0.hasSuffix("/._icon.png") } == false,
+                "._icon.png described icon.png and should have gone with it, found \(raw)"
             )
         }
 

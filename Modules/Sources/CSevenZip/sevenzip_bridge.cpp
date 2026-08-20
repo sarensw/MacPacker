@@ -131,15 +131,35 @@ struct SZArchiveHandle {
     /// For each visible entry, the sidecars describing it. An extraction of that
     /// entry has to take them along, or its metadata is left in the archive.
     std::unordered_map<UInt32, std::vector<UInt32>> companions;
+    /// Sidecars describing a directory, keyed by that directory's path. Kept
+    /// apart because a directory need not have an entry of its own: extracting
+    /// anything inside it is what brings the directory into being, so anything
+    /// inside it has to bring the sidecar too.
+    std::unordered_map<std::string, std::vector<UInt32>> directoryCompanions;
+    /// Normalized path per entry, for walking those directories back up.
+    std::vector<std::string> pathByIndex;
 
-    /// Expands `requested` with the sidecars of everything in it. Sorted, and
-    /// without duplicates, which is what IInArchive::Extract wants.
+    /// Expands `requested` with the sidecars of everything in it, and of every
+    /// directory leading to it. Sorted and without duplicates, which is what
+    /// IInArchive::Extract wants.
     std::vector<UInt32> withCompanions(const UInt32 *requested, UInt32 count) const {
         std::set<UInt32> all(requested, requested + count);
         for (UInt32 i = 0; i < count; i++) {
             auto found = companions.find(requested[i]);
             if (found != companions.end())
                 all.insert(found->second.begin(), found->second.end());
+
+            if (directoryCompanions.empty() || requested[i] >= pathByIndex.size())
+                continue;
+            std::string path = pathByIndex[requested[i]];
+            for (size_t slash = path.rfind('/'); slash != std::string::npos;
+                 slash = path.rfind('/')) {
+                path.erase(slash);
+                auto dir = directoryCompanions.find(path);
+                if (dir != directoryCompanions.end())
+                    all.insert(dir->second.begin(), dir->second.end());
+                if (path.empty()) break;
+            }
         }
         return std::vector<UInt32>(all.begin(), all.end());
     }
@@ -858,6 +878,10 @@ static void sz_indexAppleDoubleSidecars(SZArchiveHandle *handle) {
     IInArchive *arc = handle->activeArchive();
 
     std::unordered_map<std::string, UInt32> indexByPath;
+    // Directories an entry path implies. An archive need not store a directory
+    // entry for every level -- plenty do not -- but `._Resources` still describes
+    // the `Resources/` those levels stand for, and extraction creates it.
+    std::set<std::string> impliedDirs;
     std::vector<std::string> paths(handle->numItems);
     std::vector<bool> sequestered(handle->numItems, false);
 
@@ -871,7 +895,15 @@ static void sz_indexAppleDoubleSidecars(SZArchiveHandle *handle) {
         // A mirror entry never wins the name: the real entry owns it.
         if (!fromMirror && !paths[i].empty())
             indexByPath[paths[i]] = i;
+
+        for (size_t slash = paths[i].rfind('/'); slash != std::string::npos;
+             slash = paths[i].rfind('/', slash - 1)) {
+            impliedDirs.insert(paths[i].substr(0, slash));
+            if (slash == 0) break;
+        }
     }
+
+    handle->pathByIndex = paths;
 
     for (UInt32 i = 0; i < handle->numItems; i++) {
         const std::string &path = paths[i];
@@ -892,13 +924,27 @@ static void sz_indexAppleDoubleSidecars(SZArchiveHandle *handle) {
         std::string described = path;
         described.erase(base, 2);
 
+        auto target = indexByPath.find(described);
+        if (target != indexByPath.end()) {
+            handle->hiddenSidecars.insert(i);
+            handle->companions[target->second].push_back(i);
+            continue;
+        }
+
+        // No entry of that name, but the path is a directory the entries imply.
+        // Extraction creates it and folds the sidecar into it, so listing the
+        // sidecar would again promise a file that never arrives. Nothing to hang
+        // it off for selection either, so it is keyed by the directory and picked
+        // up by anything extracted from inside it.
+        if (impliedDirs.count(described) != 0) {
+            handle->hiddenSidecars.insert(i);
+            handle->directoryCompanions[described].push_back(i);
+            continue;
+        }
+
         // Nothing here for it to describe: a file like any other, however it is
         // named. Left visible unless it came out of the mirror.
-        auto target = indexByPath.find(described);
-        if (target == indexByPath.end()) continue;
-
-        handle->hiddenSidecars.insert(i);
-        handle->companions[target->second].push_back(i);
+        continue;
     }
 }
 
@@ -1080,6 +1126,15 @@ int32_t sz_entry_count(SZArchiveRef archive) {
     } catch (...) {
         return -1;
     }
+}
+
+int32_t sz_sidecar_target(SZArchiveRef archive, uint32_t index) {
+    if (!archive) return -1;
+    auto *handle = static_cast<SZArchiveHandle *>(archive);
+    for (const auto &pair : handle->companions)
+        for (UInt32 sidecar : pair.second)
+            if (sidecar == index) return (int32_t)pair.first;
+    return -1;
 }
 
 bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
