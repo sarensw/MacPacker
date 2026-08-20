@@ -321,6 +321,8 @@ public:
     /// a sidecar's name is not ours to touch.
     std::set<std::string> extractedPaths;
 
+    std::string destDir() const { return std::string(_destDir.Ptr(), (size_t)_destDir.Len()); }
+
 private:
     /// Creates `dir` and records the levels that did not exist beforehand.
     /// CreateComplexDir is mkdir -p: it reports success on a directory that was
@@ -475,10 +477,20 @@ void CExtractCallback::createDirsRecordingNew(const FString &dir) {
         extractedPaths.insert(level);
 }
 
-/// Maps "dir/._name" to the file it describes, "dir/name". Empty when `path` is
+/// The `__MACOSX/` mirror tree, as a path component under the destination root.
+static const char kSequesteredDir[] = "/__MACOSX/";
+
+/// Maps "dir/._name" to the entry it describes, "dir/name". Empty when `path` is
 /// not of that shape, including a bare "._" with nothing after it -- that would
 /// name the parent directory, which must never be an unpack target.
-static std::string appleDoubleTargetPath(const std::string &path) {
+///
+/// Sidecars come in two arrangements and both have to fold onto the real entry.
+/// Beside their file is one. The other is a top-level `__MACOSX/` mirror of the
+/// whole tree, which is what `ditto --sequesterRsrc` writes -- and therefore what
+/// Finder's "Compress" produces, so it is the common case rather than the exotic
+/// one. `rootLen` is the length of the destination path, which is what makes
+/// "top-level" meaningful; a `__MACOSX` further down is an ordinary directory.
+static std::string appleDoubleTargetPath(const std::string &path, size_t rootLen) {
     const size_t slash = path.rfind('/');
     const size_t base = (slash == std::string::npos) ? 0 : slash + 1;
     if (path.size() < base + 3 || path.compare(base, 2, "._") != 0)
@@ -486,6 +498,12 @@ static std::string appleDoubleTargetPath(const std::string &path) {
 
     std::string target = path;
     target.erase(base, 2);
+
+    const size_t sequesteredLen = sizeof(kSequesteredDir) - 1;
+    if (target.size() > rootLen + sequesteredLen &&
+        target.compare(rootLen, sequesteredLen, kSequesteredDir) == 0)
+        target.erase(rootLen + 1, sequesteredLen - 1);
+
     return target;
 }
 
@@ -548,9 +566,12 @@ static bool readExtendedAttributes(
 /// the extraction wrote it, so the worst case is the previous behaviour rather
 /// than a failed extraction.
 static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars,
-                                      const std::set<std::string> &extractedPaths) {
+                                      const std::set<std::string> &extractedPaths,
+                                      const std::string &destDir) {
+    const size_t rootLen = destDir.size();
+
     for (const std::string &sidecar : sidecars) {
-        const std::string target = appleDoubleTargetPath(sidecar);
+        const std::string target = appleDoubleTargetPath(sidecar, rootLen);
         if (target.empty())
             continue;
 
@@ -614,6 +635,17 @@ static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars,
 
         unlink(sidecar.c_str());
     }
+
+    // Emptying a `__MACOSX/` mirror leaves its directories behind, and they are
+    // nothing on their own -- they only ever held sidecars. Deepest first, since
+    // the set is sorted and a child sorts after its parent. rmdir refuses a
+    // directory that still holds something, which is exactly the guard wanted:
+    // anything the archive really kept in there stays, and so does its tree.
+    const std::string sequestered = destDir + kSequesteredDir;
+    for (auto it = extractedPaths.rbegin(); it != extractedPaths.rend(); ++it)
+        if (it->compare(0, sequestered.size(), sequestered) == 0)
+            rmdir(it->c_str());
+    rmdir((destDir + "/__MACOSX").c_str());
 }
 
 // Runs once per entry after its stream is fully written. Restores POSIX metadata
@@ -694,7 +726,8 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
     // the archive.
     extractedPaths.insert(path);
 
-    if (!_currentIsSymlink && !appleDoubleTargetPath(path).empty())
+    if (!_currentIsSymlink &&
+        !appleDoubleTargetPath(path, (size_t)_destDir.Len()).empty())
         appleDoubleSidecars.push_back(path);
 
     _currentIsSymlink = false;
@@ -742,7 +775,8 @@ static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_ou
     // Every entry is on disk now, so a sidecar and the file it describes have
     // both landed whichever order the archive stored them in. Runs even when an
     // entry failed: the files that did extract should still come out complete.
-    unpackAppleDoubleSidecars(callback->appleDoubleSidecars, callback->extractedPaths);
+    unpackAppleDoubleSidecars(callback->appleDoubleSidecars, callback->extractedPaths,
+                              callback->destDir());
 
     const Int32 opRes = callback->failedOpResult;
     const bool entryFailed = opRes != NArchive::NExtract::NOperationResult::kOK;

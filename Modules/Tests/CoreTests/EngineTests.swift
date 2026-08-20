@@ -320,7 +320,26 @@ extension AllCoreTests {
                 "Resources should carry the xattr from its sidecar"
             )
 
-            // 5. A real AppleDouble with no sibling stays put. `copyfile` with
+            // 5. Finder's "Compress" (`ditto --sequesterRsrc`) does not put sidecars
+            //    beside their files at all — it mirrors the tree under `__MACOSX/`.
+            //    That is the common shape, so folding only the inline form would do
+            //    nothing for most macOS-made zips. The attribute below appears
+            //    nowhere else in the archive, so it can only be here if the sidecar
+            //    was folded onto the real file rather than onto the mirror path —
+            //    which is also created by this extraction, and so is not
+            //    distinguishable by ownership alone.
+            #expect(
+                extendedAttribute("com.macpacker.sequestered",
+                                  at: payload.appendingPathComponent("Contents/Info.plist"))
+                    == Data("appledouble-fixture".utf8),
+                "a sidecar under __MACOSX/ describes the real file, not the mirror"
+            )
+            #expect(
+                fm.fileExists(atPath: tempDir.appendingPathComponent("__MACOSX").path) == false,
+                "the __MACOSX mirror holds nothing but sidecars and should not survive"
+            )
+
+            // 6. A real AppleDouble with no sibling stays put. `copyfile` with
             //    COPYFILE_UNPACK happily creates a missing destination, which would
             //    invent `orphan.bin` — a file the archive never contained.
             #expect(
@@ -519,6 +538,86 @@ extension AllCoreTests {
                 extendedAttribute("com.apple.quarantine", at: helper) == verdict,
                 "an archive must not be able to clear Gatekeeper's quarantine"
             )
+        }
+
+        // Finder's "Compress" is `ditto -c -k --sequesterRsrc`, which does not put
+        // sidecars beside their files — it puts them in a `__MACOSX/` mirror of the
+        // whole tree. That is the common shape, not the exotic one, so an
+        // implementation that only folds in the inline form does nothing at all for
+        // most macOS-made zips. `zip/minimalApp.zip` is a real ad-hoc-signed bundle
+        // compressed exactly that way: 21 sidecars, every one of them sequestered.
+        @Test func extractionFoldsInTheSequesteredMacOSXTree() async throws {
+            let engine = Archive7ZipEngine()
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("minimalApp.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            _ = try await engine.extract(items: Array(loadResult.items.values), from: url,
+                                         to: tempDir, passwordResolver: { _ in nil })
+
+            // Nothing of the mirror survives — neither the sidecars nor the
+            // directories that only ever existed to hold them.
+            var leftovers: [String] = []
+            let walker = fm.enumerator(at: tempDir, includingPropertiesForKeys: nil)!
+            while let fileURL = walker.nextObject() as? URL {
+                if fileURL.path.contains("__MACOSX") || fileURL.lastPathComponent.hasPrefix("._") {
+                    leftovers.append(fileURL.lastPathComponent)
+                }
+            }
+            #expect(leftovers.isEmpty, "the __MACOSX mirror should be gone, found \(leftovers)")
+
+            // And the bundle it describes still verifies. This is the assertion that
+            // matches what a user does with the archive: #189 was reported as an app
+            // macOS called damaged, and codesign is the same judgement, made by the
+            // system rather than by this test.
+            let app = tempDir.appendingPathComponent("MinimalApp.app")
+            try #require(fm.fileExists(atPath: app.path))
+            #expect(codesignVerdict(app) == 0, "extracted bundle failed codesign")
+        }
+
+        // The tests above assert what this implementation was built to do, which is
+        // worth only so much — they were written by the same hand that wrote the
+        // code. This one asks a different question: does the 7-Zip engine agree with
+        // XADMaster, which people have relied on for well over a decade? Both
+        // engines are already in this process, so the comparison is free, and it
+        // covers ground no hand-written assertion reaches — permissions, symlink
+        // targets, extended attributes, every path in the tree.
+        //
+        // `appledouble.zip` is deliberately not in this list. It is a synthetic
+        // fixture built to exercise edge cases, and one of them — an archive with no
+        // directory entries at all, which no real tool produces — XADMaster gets
+        // wrong. Fixtures like that are what this test exists to compensate for, so
+        // it is restricted to archives real tools actually made.
+        @Test(arguments: ["minimalApp.zip", "appbundle.zip"])
+        func sevenZipAgreesWithXadOnRealArchives(name: String) async throws {
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent(name)
+            let fm = FileManager.default
+
+            var snapshots: [String: [String: String]] = [:]
+            for (label, engine) in [("7z", Archive7ZipEngine() as ArchiveEngine),
+                                    ("xad", ArchiveXadEngine() as ArchiveEngine)] {
+                let dir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+                try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+                defer { try? fm.removeItem(at: dir) }
+                let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+                _ = try await engine.extract(items: Array(loadResult.items.values), from: url,
+                                             to: dir, passwordResolver: { _ in nil })
+                snapshots[label] = extractionSnapshot(dir)
+            }
+
+            let sevenZip = snapshots["7z"]!, xad = snapshots["xad"]!
+            for path in Set(sevenZip.keys).union(xad.keys).sorted() {
+                #expect(
+                    sevenZip[path] == xad[path],
+                    "\(name) \(path): 7z produced \(sevenZip[path] ?? "<absent>"), xad produced \(xad[path] ?? "<absent>")"
+                )
+            }
         }
 
         @Test func extractEmptyItemsThrows() async throws {
@@ -1225,4 +1324,69 @@ private func setExtendedAttribute(_ name: String, _ value: Data, at url: URL) {
         setxattr(url.path, name, $0.baseAddress, value.count, 0, 0)
     }
     precondition(result == 0, "setxattr \(name) failed on \(url.path)")
+}
+
+/// Runs codesign over a bundle and returns its exit status. The system's own
+/// judgement on whether an extraction produced something usable, which is what
+/// #189 was reported as -- an app macOS called damaged.
+private func codesignVerdict(_ bundle: URL) -> Int32 {
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
+    process.arguments = ["-v", "--deep", "--strict", bundle.path]
+    process.standardError = Pipe()
+    process.standardOutput = Pipe()
+    do { try process.run() } catch { return -1 }
+    process.waitUntilExit()
+    return process.terminationStatus
+}
+
+/// Everything about an extracted tree that two engines ought to agree on, keyed
+/// by path: what each entry is, its permissions, and which extended attributes
+/// it carries. Attribute *values* are left out deliberately -- the names are
+/// what a divergence shows up in, and some values carry timestamps.
+///
+/// The volatile ones are skipped: the system stamps `provenance` and
+/// `quarantine` on whatever a process writes, and `lastuseddate#PS` changes when
+/// a file is read, so all three say more about the test run than the engine.
+private func extractionSnapshot(_ root: URL) -> [String: String] {
+    let volatile: Set<String> = [
+        "com.apple.provenance", "com.apple.quarantine",
+        "com.apple.lastuseddate#PS", "com.apple.macl"
+    ]
+    let fm = FileManager.default
+    let rootPath = root.resolvingSymlinksInPath().path
+    var snapshot: [String: String] = [:]
+
+    guard let walker = fm.enumerator(at: root, includingPropertiesForKeys: nil) else { return snapshot }
+    while let fileURL = walker.nextObject() as? URL {
+        var facts: [String] = []
+
+        var info = stat()
+        if lstat(fileURL.path, &info) == 0 {
+            switch info.st_mode & S_IFMT {
+            case S_IFLNK:
+                facts.append("link -> " + ((try? fm.destinationOfSymbolicLink(atPath: fileURL.path)) ?? "?"))
+            case S_IFDIR:
+                facts.append("dir")
+            default:
+                facts.append("file:\((try? Data(contentsOf: fileURL))?.count ?? -1)")
+            }
+            facts.append(String(format: "mode=%o", info.st_mode & 0o777))
+        }
+
+        let size = listxattr(fileURL.path, nil, 0, XATTR_NOFOLLOW)
+        if size > 0 {
+            var buffer = [CChar](repeating: 0, count: size)
+            if listxattr(fileURL.path, &buffer, size, XATTR_NOFOLLOW) == size {
+                let names = buffer.split(separator: 0)
+                    .map { String(cString: Array($0) + [0]) }
+                    .filter { !volatile.contains($0) }
+                    .sorted()
+                if !names.isEmpty { facts.append("xattr=" + names.joined(separator: ",")) }
+            }
+        }
+
+        snapshot[fileURL.path.replacingOccurrences(of: rootPath, with: "")] = facts.joined(separator: " ")
+    }
+    return snapshot
 }
