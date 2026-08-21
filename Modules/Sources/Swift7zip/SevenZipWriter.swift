@@ -127,6 +127,13 @@ extension SevenZipArchive {
             }
             for i in 0..<UInt32(entryCount) {
                 if removedIndices.contains(i) { continue }
+                // A sidecar is its file's extended attributes and resource fork,
+                // not a file of its own, and it is not in the listing for the user
+                // to remove alongside. Dropping the file drops them with it, or the
+                // archive keeps metadata describing something it no longer holds —
+                // which then shows up as a stray `._name` entry.
+                let sidecarTarget = sz_sidecar_target(archive.handle.ref, i)
+                if sidecarTarget >= 0 && removedIndices.contains(UInt32(sidecarTarget)) { continue }
                 if let newPath = movedIndices[i] {
                     result.append(.move(sourceIndex: i, newPath: newPath))
                 } else {

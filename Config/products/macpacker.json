@@ -60,6 +60,52 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+              "en": "Extracted apps reported as damaged",
+              "zh-Hans": "解压后的应用提示已损坏",
+              "fr": "Apps extraites signalées comme endommagées",
+              "de": "Entpackte Apps werden als beschädigt gemeldet",
+              "it": "App estratte segnalate come danneggiate",
+              "ja": "展開したアプリが壊れていると表示される",
+              "fa": "برنامه‌های استخراج‌شده آسیب‌دیده گزارش می‌شوند",
+              "pl": "Wypakowane aplikacje zgłaszane jako uszkodzone",
+              "pt-BR": "Apps extraídos relatados como danificados",
+              "ru": "Извлечённые приложения считаются повреждёнными",
+              "uk": "Видобуті програми вважаються пошкодженими",
+              "es-MX": "Apps extraídas reportadas como dañadas",
+              "ko": "추출한 앱이 손상된 것으로 표시됨",
+              "nl": "Uitgepakte apps gemeld als beschadigd",
+              "tr": "Çıkarılan uygulamalar hasarlı olarak bildiriliyor"
+            },
+            "issues": [
+                "189"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+              "en": "macOS metadata files clutter the archive list",
+              "zh-Hans": "压缩包列表中显示 macOS 元数据文件",
+              "fr": "Les fichiers de métadonnées macOS encombrent la liste",
+              "de": "macOS-Metadatendateien überladen die Archivliste",
+              "it": "I file di metadati macOS ingombrano l'elenco",
+              "ja": "macOS のメタデータファイルが一覧を埋める",
+              "fa": "فایل‌های فراداده macOS فهرست آرشیو را شلوغ می‌کنند",
+              "pl": "Pliki metadanych macOS zaśmiecają listę archiwum",
+              "pt-BR": "Arquivos de metadados do macOS poluem a lista",
+              "ru": "Файлы метаданных macOS засоряют список архива",
+              "uk": "Файли метаданих macOS засмічують список архіву",
+              "es-MX": "Los archivos de metadatos de macOS saturan la lista",
+              "ko": "macOS 메타데이터 파일이 목록을 어지럽힘",
+              "nl": "macOS-metadatabestanden vervuilen de archieflijst",
+              "tr": "macOS meta veri dosyaları arşiv listesini dolduruyor"
+            },
+            "issues": [
+                "189"
+            ]
+          },
+          {
             "type": "lang",
             "title": {
               "en": "Language support for Turkish",

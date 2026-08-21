@@ -10,9 +10,15 @@
 #include <string>
 #include <deque>
 #include <vector>
+#include <set>
+#include <unordered_map>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <copyfile.h>
+#include <sys/xattr.h>
+#include <utility>
+#include <cerrno>
 
 #include "Common/MyWindows.h"
 #include "Common/MyCom.h"
@@ -116,6 +122,47 @@ struct SZArchiveHandle {
     UInt32 numItems;
     std::string password;
     bool hasPassword = false;
+
+    /// Entries that are AppleDouble sidecars for some other entry in this
+    /// archive, and so are metadata rather than files of their own. Kept out of
+    /// the listing -- the same treatment alternate streams already get, which is
+    /// where 7-Zip puts this metadata when the format carries it natively.
+    std::set<UInt32> hiddenSidecars;
+    /// For each visible entry, the sidecars describing it. An extraction of that
+    /// entry has to take them along, or its metadata is left in the archive.
+    std::unordered_map<UInt32, std::vector<UInt32>> companions;
+    /// Sidecars describing a directory, keyed by that directory's path. Kept
+    /// apart because a directory need not have an entry of its own: extracting
+    /// anything inside it is what brings the directory into being, so anything
+    /// inside it has to bring the sidecar too.
+    std::unordered_map<std::string, std::vector<UInt32>> directoryCompanions;
+    /// Normalized path per entry, for walking those directories back up.
+    std::vector<std::string> pathByIndex;
+
+    /// Expands `requested` with the sidecars of everything in it, and of every
+    /// directory leading to it. Sorted and without duplicates, which is what
+    /// IInArchive::Extract wants.
+    std::vector<UInt32> withCompanions(const UInt32 *requested, UInt32 count) const {
+        std::set<UInt32> all(requested, requested + count);
+        for (UInt32 i = 0; i < count; i++) {
+            auto found = companions.find(requested[i]);
+            if (found != companions.end())
+                all.insert(found->second.begin(), found->second.end());
+
+            if (directoryCompanions.empty() || requested[i] >= pathByIndex.size())
+                continue;
+            std::string path = pathByIndex[requested[i]];
+            for (size_t slash = path.rfind('/'); slash != std::string::npos;
+                 slash = path.rfind('/')) {
+                path.erase(slash);
+                auto dir = directoryCompanions.find(path);
+                if (dir != directoryCompanions.end())
+                    all.insert(dir->second.begin(), dir->second.end());
+                if (path.empty()) break;
+            }
+        }
+        return std::vector<UInt32>(all.begin(), all.end());
+    }
 
     const char* storeString(const std::string &s) {
         storedStrings.push_back(s);
@@ -302,8 +349,29 @@ public:
     /// through SetOperationResult and *still* returns S_OK from Extract(), so
     /// without this the caller cannot tell a wrong password from a success.
     Int32 failedOpResult = NArchive::NExtract::NOperationResult::kOK;
+    /// Extracted files whose name starts with "._", i.e. candidate AppleDouble
+    /// sidecars. They cannot be resolved as they arrive: a sidecar may be stored
+    /// before the entry it describes, and `._x` sorts before `x`, so that is the
+    /// order an archiver walking a directory tends to produce. finishExtract()
+    /// drains this once every entry is on disk.
+    std::vector<std::string> appleDoubleSidecars;
+    /// Every path this extraction created -- files as they finish, directories as
+    /// they are made. A sidecar is only ever folded into one of these. The
+    /// destination is not always empty: "Extract here" writes straight into a
+    /// folder of the user's own files, and "Extract to folder" reuses an existing
+    /// folder on a second run. A file already sitting there that happens to match
+    /// a sidecar's name is not ours to touch.
+    std::set<std::string> extractedPaths;
+
+    std::string destDir() const { return std::string(_destDir.Ptr(), (size_t)_destDir.Len()); }
 
 private:
+    /// Creates `dir` and records the levels that did not exist beforehand.
+    /// CreateComplexDir is mkdir -p: it reports success on a directory that was
+    /// already there, so only a probe before the call can tell ours from the
+    /// user's.
+    void createDirsRecordingNew(const FString &dir);
+
     IInArchive *_archive;
     FString _destDir;
     CMyComPtr<ISequentialOutStream> _outFileStream;
@@ -382,7 +450,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     fullPath += us2fs(safePath);
 
     if (isDir) {
-        NWindows::NFile::NDir::CreateComplexDir(fullPath);
+        createDirsRecordingNew(fullPath);
         return S_OK;
     }
 
@@ -390,7 +458,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     int slashPos = (int)fullPath.ReverseFind_PathSepar();
     if (slashPos >= 0) {
         FString parentDir = fullPath.Left((unsigned)slashPos);
-        NWindows::NFile::NDir::CreateComplexDir(parentDir);
+        createDirsRecordingNew(parentDir);
     }
 
     auto *outFileStreamSpec = new COutFileStream;
@@ -413,6 +481,213 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     _outFileStream = outStreamRef;
     *outStream = outStreamRef.Detach();
     return S_OK;
+}
+
+void CExtractCallback::createDirsRecordingNew(const FString &dir) {
+    const size_t rootLen = (size_t)_destDir.Len();
+    std::string path(dir.Ptr(), (size_t)dir.Len());
+
+    // Already ours, so every level above it is too -- the common case, since
+    // consecutive entries share a directory. Nothing left to work out.
+    if (path.size() <= rootLen || extractedPaths.count(path) != 0) {
+        NWindows::NFile::NDir::CreateComplexDir(dir);
+        return;
+    }
+
+    // Work out which levels this extraction is about to bring into being, before
+    // creating them. A directory already on disk belongs to whoever put it there:
+    // the destination can be a folder of the user's own files, and their
+    // `Resources/` must not collect metadata out of this archive just because an
+    // entry happens to sit inside it. Stops at the first level that exists or is
+    // already ours -- everything above that is settled.
+    std::vector<std::string> fresh;
+    std::string probe = path;
+    while (probe.size() > rootLen && extractedPaths.count(probe) == 0) {
+        struct stat st;
+        if (lstat(probe.c_str(), &st) == 0)
+            break;
+        fresh.push_back(probe);
+        const size_t slash = probe.rfind('/');
+        if (slash == std::string::npos || slash < rootLen)
+            break;
+        probe.erase(slash);
+    }
+
+    NWindows::NFile::NDir::CreateComplexDir(dir);
+
+    for (const std::string &level : fresh)
+        extractedPaths.insert(level);
+}
+
+/// The `__MACOSX/` mirror tree, as a path component under the destination root.
+static const char kSequesteredDir[] = "/__MACOSX/";
+
+/// Maps "dir/._name" to the entry it describes, "dir/name". Empty when `path` is
+/// not of that shape, including a bare "._" with nothing after it -- that would
+/// name the parent directory, which must never be an unpack target.
+///
+/// Sidecars come in two arrangements and both have to fold onto the real entry.
+/// Beside their file is one. The other is a top-level `__MACOSX/` mirror of the
+/// whole tree, which is what `ditto --sequesterRsrc` writes -- and therefore what
+/// Finder's "Compress" produces, so it is the common case rather than the exotic
+/// one. `rootLen` is the length of the destination path, which is what makes
+/// "top-level" meaningful; a `__MACOSX` further down is an ordinary directory.
+static std::string appleDoubleTargetPath(const std::string &path, size_t rootLen) {
+    const size_t slash = path.rfind('/');
+    const size_t base = (slash == std::string::npos) ? 0 : slash + 1;
+    if (path.size() < base + 3 || path.compare(base, 2, "._") != 0)
+        return std::string();
+
+    std::string target = path;
+    target.erase(base, 2);
+
+    const size_t sequesteredLen = sizeof(kSequesteredDir) - 1;
+    if (target.size() > rootLen + sequesteredLen &&
+        target.compare(rootLen, sequesteredLen, kSequesteredDir) == 0)
+        target.erase(rootLen + 1, sequesteredLen - 1);
+
+    return target;
+}
+
+/// Name/value of every extended attribute on `path`. False means the set could
+/// not be read in full, which is the caller's cue to leave the file alone rather
+/// than run something over it that it cannot put back.
+static bool readExtendedAttributes(
+    const char *path, std::vector<std::pair<std::string, std::string>> &out)
+{
+    const ssize_t namesLen = listxattr(path, nullptr, 0, XATTR_NOFOLLOW);
+    if (namesLen < 0) return false;
+    if (namesLen == 0) return true;
+
+    std::string names((size_t)namesLen, '\0');
+    if (listxattr(path, &names[0], (size_t)namesLen, XATTR_NOFOLLOW) != namesLen)
+        return false;
+
+    // listxattr hands back NUL-separated names in one buffer.
+    for (size_t i = 0; i < (size_t)namesLen; ) {
+        const std::string name(names.c_str() + i);
+        i += name.size() + 1;
+        if (name.empty()) continue;
+
+        const ssize_t valueLen = getxattr(path, name.c_str(), nullptr, 0, 0, XATTR_NOFOLLOW);
+        if (valueLen < 0) return false;
+
+        std::string value((size_t)valueLen, '\0');
+        if (valueLen > 0 &&
+            getxattr(path, name.c_str(), &value[0], (size_t)valueLen, 0, XATTR_NOFOLLOW) != valueLen)
+            return false;
+
+        out.emplace_back(name, value);
+    }
+    return true;
+}
+
+/// Folds the AppleDouble sidecars collected during extraction into the files and
+/// directories they describe, then removes them.
+///
+/// When macOS has to keep extended attributes and a resource fork somewhere that
+/// cannot hold them -- a FAT stick, an SMB share -- it splits them out into a
+/// sibling "._name" file. From that point the sidecar is an ordinary file on
+/// disk, so any archiver that walks the folder stores it. Nothing here is
+/// zip-specific: this runs per entry, for every format the bridge reads, and tar
+/// and 7z carry the same sidecars. Left on disk it adds an entry to the
+/// extracted tree, and inside a signed .app that breaks the code-signature seal
+/// -- macOS then reports the app as damaged.
+///
+/// "._" is a naming convention, not a reservation, so a real file may be named
+/// that way and hold anything. Two guards keep those intact:
+///
+///   1. The file the sidecar describes has to already exist as a regular file.
+///      copyfile() with a missing destination *creates* it from the sidecar,
+///      conjuring a file the archive never contained.
+///   2. The sidecar is removed only once copyfile() reports success. It rejects
+///      a source that is not AppleDouble, which makes it the discriminator too:
+///      a plain file that merely starts with "._" fails here and stays put.
+///
+/// Failures are silent by design. Anything not unpacked is left exactly where
+/// the extraction wrote it, so the worst case is the previous behaviour rather
+/// than a failed extraction.
+static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars,
+                                      const std::set<std::string> &extractedPaths,
+                                      const std::string &destDir) {
+    const size_t rootLen = destDir.size();
+
+    for (const std::string &sidecar : sidecars) {
+        const std::string target = appleDoubleTargetPath(sidecar, rootLen);
+        if (target.empty())
+            continue;
+
+        // Only ever fold into something this extraction wrote. The destination
+        // can be a folder that already held the user's files, and one of them
+        // matching a sidecar's name by chance is not ours to modify.
+        if (extractedPaths.count(target) == 0)
+            continue;
+
+        // Directories carry metadata too -- macOS emits `._Resources` next to a
+        // bundle's `Resources/` -- so both kinds are valid targets. A symlink is
+        // not: copyfile() follows it and would write to whatever it points at.
+        struct stat st;
+        if (lstat(target.c_str(), &st) != 0)
+            continue;
+        if (!S_ISREG(st.st_mode) && !S_ISDIR(st.st_mode))
+            continue;
+
+        // COPYFILE_UNPACK *replaces* the target's extended attributes rather than
+        // merging into them, so everything the file already wore has to be caught
+        // first and put back after. Two different reasons for that:
+        //
+        //   Quarantine is where macOS keeps Gatekeeper's verdict. Without this an
+        //   archive could ship `Evil.app` beside a `._Evil.app` carrying no
+        //   quarantine and have this extraction lift it off the bundle -- the
+        //   archive deciding its own contents are trusted.
+        //
+        //   Everything else is the user's. An entry replaces a file that was
+        //   already there, the same as `ditto` does, but the plain write keeps that
+        //   file's attributes -- so Finder tags and comments survive an overwrite.
+        //   They must not stop surviving just because the archive happened to carry
+        //   a sidecar for that one file.
+        static const char *const kQuarantine = "com.apple.quarantine";
+        std::vector<std::pair<std::string, std::string>> before;
+        if (!readExtendedAttributes(target.c_str(), before))
+            continue;
+
+        bool hadQuarantine = false;
+        for (const auto &attr : before)
+            hadQuarantine |= (attr.first == kQuarantine);
+
+        if (copyfile(sidecar.c_str(), target.c_str(), nullptr,
+                     COPYFILE_UNPACK | COPYFILE_XATTR | COPYFILE_ACL) != 0)
+            continue;
+
+        for (const auto &attr : before) {
+            // Where both speak, the sidecar wins -- it is describing this very
+            // file. Quarantine is the exception: it is the system's verdict on
+            // where the file came from, never the archive's to restate.
+            if (attr.first != kQuarantine &&
+                getxattr(target.c_str(), attr.first.c_str(), nullptr, 0, 0,
+                         XATTR_NOFOLLOW) >= 0)
+                continue;
+            setxattr(target.c_str(), attr.first.c_str(), attr.second.data(),
+                     attr.second.size(), 0, XATTR_NOFOLLOW);
+        }
+
+        // No quarantine before means none after, whatever the sidecar supplied.
+        if (!hadQuarantine)
+            removexattr(target.c_str(), kQuarantine, XATTR_NOFOLLOW);
+
+        unlink(sidecar.c_str());
+    }
+
+    // Emptying a `__MACOSX/` mirror leaves its directories behind, and they are
+    // nothing on their own -- they only ever held sidecars. Deepest first, since
+    // the set is sorted and a child sorts after its parent. rmdir refuses a
+    // directory that still holds something, which is exactly the guard wanted:
+    // anything the archive really kept in there stays, and so does its tree.
+    const std::string sequestered = destDir + kSequesteredDir;
+    for (auto it = extractedPaths.rbegin(); it != extractedPaths.rend(); ++it)
+        if (it->compare(0, sequestered.size(), sequestered) == 0)
+            rmdir(it->c_str());
+    rmdir((destDir + "/__MACOSX").c_str());
 }
 
 // Runs once per entry after its stream is fully written. Restores POSIX metadata
@@ -488,6 +763,15 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
             errorMessage = "Failed to set file permissions";
     }
 
+    // Note a possible AppleDouble sidecar for finishExtract to fold in later. It
+    // cannot be resolved here: the file it describes may still be ahead of us in
+    // the archive.
+    extractedPaths.insert(path);
+
+    if (!_currentIsSymlink &&
+        !appleDoubleTargetPath(path, (size_t)_destDir.Len()).empty())
+        appleDoubleSidecars.push_back(path);
+
     _currentIsSymlink = false;
     _currentMode = 0;
     _currentFilePath.Empty();
@@ -530,6 +814,12 @@ static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_ou
     if (callback->aborted || hr == E_ABORT)
         return SZ_EXTRACT_ABORTED;
 
+    // Every entry is on disk now, so a sidecar and the file it describes have
+    // both landed whichever order the archive stored them in. Runs even when an
+    // entry failed: the files that did extract should still come out complete.
+    unpackAppleDoubleSidecars(callback->appleDoubleSidecars, callback->extractedPaths,
+                              callback->destDir());
+
     const Int32 opRes = callback->failedOpResult;
     const bool entryFailed = opRes != NArchive::NExtract::NOperationResult::kOK;
 
@@ -550,6 +840,113 @@ static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_ou
 // --- Bridge Implementation ---
 
 extern "C" {
+
+/// Normalizes an archive entry path for matching: forward slashes, no leading
+/// separator, and no `__MACOSX/` prefix. That prefix is where
+/// `ditto --sequesterRsrc` -- and so Finder's "Compress" -- keeps a mirror of the
+/// tree holding nothing but sidecars, so an entry under it names the same thing
+/// as the entry without it.
+static std::string normalizedEntryPath(std::string path, bool *wasSequestered) {
+    for (char &c : path)
+        if (c == '\\') c = '/';
+    while (!path.empty() && path[0] == '/')
+        path.erase(0, 1);
+
+    // The mirror's own directory entry has no trailing separator, so match it
+    // both ways or the root is left behind as a visible empty folder.
+    static const std::string kMirror = "__MACOSX";
+    const bool sequestered =
+        path.compare(0, kMirror.size(), kMirror) == 0 &&
+        (path.size() == kMirror.size() || path[kMirror.size()] == '/');
+    if (sequestered)
+        path.erase(0, std::min(path.size(), kMirror.size() + 1));
+    if (wasSequestered)
+        *wasSequestered = sequestered;
+    return path;
+}
+
+/// Works out which entries are AppleDouble sidecars for other entries, so the
+/// listing can leave them out and an extraction can take them along.
+///
+/// An entry qualifies on its name and on a sibling existing under the name it
+/// describes -- the content is not read here, which would mean decompressing
+/// every candidate just to open an archive. Extraction still validates it, so a
+/// real file that merely starts with `._` is written out as itself. The one
+/// consequence is that such a file is missing from the listing and then appears
+/// on disk; nothing the listing promised ever fails to arrive.
+static void sz_indexAppleDoubleSidecars(SZArchiveHandle *handle) {
+    IInArchive *arc = handle->activeArchive();
+
+    std::unordered_map<std::string, UInt32> indexByPath;
+    // Directories an entry path implies. An archive need not store a directory
+    // entry for every level -- plenty do not -- but `._Resources` still describes
+    // the `Resources/` those levels stand for, and extraction creates it.
+    std::set<std::string> impliedDirs;
+    std::vector<std::string> paths(handle->numItems);
+    std::vector<bool> sequestered(handle->numItems, false);
+
+    for (UInt32 i = 0; i < handle->numItems; i++) {
+        NWindows::NCOM::CPropVariant propPath;
+        if (arc->GetProperty(i, kpidPath, &propPath) != S_OK) continue;
+
+        bool fromMirror = false;
+        paths[i] = normalizedEntryPath(PropVariantToUTF8(propPath), &fromMirror);
+        sequestered[i] = fromMirror;
+        // A mirror entry never wins the name: the real entry owns it.
+        if (!fromMirror && !paths[i].empty())
+            indexByPath[paths[i]] = i;
+
+        for (size_t slash = paths[i].rfind('/'); slash != std::string::npos;
+             slash = paths[i].rfind('/', slash - 1)) {
+            impliedDirs.insert(paths[i].substr(0, slash));
+            if (slash == 0) break;
+        }
+    }
+
+    handle->pathByIndex = paths;
+
+    for (UInt32 i = 0; i < handle->numItems; i++) {
+        const std::string &path = paths[i];
+
+        // The mirror holds sidecars and the directories leading to them, and
+        // nothing else -- so none of it is a file. That includes the `__MACOSX`
+        // root, whose path is empty once the prefix comes off.
+        if (sequestered[i])
+            handle->hiddenSidecars.insert(i);
+
+        if (path.empty()) continue;
+
+        const size_t slash = path.rfind('/');
+        const size_t base = (slash == std::string::npos) ? 0 : slash + 1;
+        if (path.size() < base + 3 || path.compare(base, 2, "._") != 0)
+            continue;
+
+        std::string described = path;
+        described.erase(base, 2);
+
+        auto target = indexByPath.find(described);
+        if (target != indexByPath.end()) {
+            handle->hiddenSidecars.insert(i);
+            handle->companions[target->second].push_back(i);
+            continue;
+        }
+
+        // No entry of that name, but the path is a directory the entries imply.
+        // Extraction creates it and folds the sidecar into it, so listing the
+        // sidecar would again promise a file that never arrives. Nothing to hang
+        // it off for selection either, so it is keyed by the directory and picked
+        // up by anything extracted from inside it.
+        if (impliedDirs.count(described) != 0) {
+            handle->hiddenSidecars.insert(i);
+            handle->directoryCompanions[described].push_back(i);
+            continue;
+        }
+
+        // Nothing here for it to describe: a file like any other, however it is
+        // named. Left visible unless it came out of the mirror.
+        continue;
+    }
+}
 
 SZArchiveRef sz_open(const char *path, const char *password,
                      bool *needs_password_out, char **error_out) {
@@ -670,6 +1067,8 @@ SZArchiveRef sz_open(const char *path, const char *password,
         handle->activeArchive()->GetNumberOfItems(&numItems);
         handle->numItems = numItems;
 
+        sz_indexAppleDoubleSidecars(handle);
+
         // Cache IArchiveGetRawProps if the archive supports it
         handle->activeArchive()->QueryInterface(
             IID_IArchiveGetRawProps_Local,
@@ -729,11 +1128,28 @@ int32_t sz_entry_count(SZArchiveRef archive) {
     }
 }
 
+int32_t sz_sidecar_target(SZArchiveRef archive, uint32_t index) {
+    if (!archive) return -1;
+    auto *handle = static_cast<SZArchiveHandle *>(archive);
+    for (const auto &pair : handle->companions)
+        for (UInt32 sidecar : pair.second)
+            if (sidecar == index) return (int32_t)pair.first;
+    return -1;
+}
+
 bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
     if (!archive || !entry_out) return false;
     try {
         auto *handle = static_cast<SZArchiveHandle *>(archive);
         if (index >= handle->numItems) return false;
+
+        // Skip AppleDouble sidecars and the `__MACOSX/` mirror that holds them.
+        // They carry another entry's extended attributes and resource fork, not
+        // contents of their own, and extraction folds them into the entry they
+        // describe -- so listing them would promise files that deliberately do
+        // not arrive. Alternate streams below are the same metadata in the form
+        // 7-Zip models natively, and have always been skipped.
+        if (handle->hiddenSidecars.count(index) != 0) return false;
 
         // Skip alternate streams (macOS xattr, NTFS ADS)
         IInArchive *arc = handle->activeArchive();
@@ -899,8 +1315,13 @@ int sz_extract_entries(SZArchiveRef archive, const uint32_t *indices,
                                                 progress, progress_context);
         CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
 
+        // Sidecars are not in the listing, so a selection cannot name them. Pull
+        // in the ones describing what was asked for, or the entries come out
+        // stripped of the metadata the archive was carrying for them.
+        const std::vector<UInt32> expanded = handle->withCompanions(indices, count);
+
         HRESULT hr = handle->activeArchive()->Extract(
-            indices, count, 0, callback);
+            expanded.data(), (UInt32)expanded.size(), 0, callback);
 
         return finishExtract(callback, hr, error_out);
     } catch (...) {

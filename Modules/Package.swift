@@ -452,7 +452,10 @@ let package = Package(
                 .copy("TestArchives/lzx"),
                 .copy("TestArchives/stuffit"),
                 .copy("TestArchives/zip"),
-                .copy("TestArchives/password")
+                .copy("TestArchives/password"),
+                // One app bundle per archiver, so extraction can be checked against
+                // files nobody here tailored to it.
+                .copy("TestArchives/archivers")
             ]
         )
     ]

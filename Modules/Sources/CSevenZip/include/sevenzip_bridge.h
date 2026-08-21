@@ -35,6 +35,13 @@ void sz_close(SZArchiveRef archive);
 /// Number of entries in the archive, or -1 on error.
 int32_t sz_entry_count(SZArchiveRef archive);
 
+/// Index of the entry an AppleDouble sidecar describes, or -1 when `index` is
+/// not a sidecar for another entry of this archive. Sidecars carry a file's
+/// extended attributes and resource fork, so they are that file's metadata: a
+/// rewrite that drops the file has to drop them with it, or the archive keeps
+/// metadata for something it no longer holds.
+int32_t sz_sidecar_target(SZArchiveRef archive, uint32_t index);
+
 typedef struct {
     uint32_t index;
     const char *path;        // UTF-8; pointer valid until sz_close()
