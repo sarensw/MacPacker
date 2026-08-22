@@ -24,6 +24,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     private var archiveWindowManager: ArchiveWindowManager? = nil
     private var extractionProgressWindowController: ExtractionProgressWindowController? = nil
+    private var dropMenuBarItem: DropMenuBarItem? = nil
+    /// The one compressor behind every "drop files to compress" surface — the
+    /// quick-compress window and the start page's compress column. Shared so the
+    /// settings apply wherever you drop and a job shows up in both.
+    private var dropCompressor: DropCompressor? = nil
+    private var dropWindowController: DropWindowController? = nil
     private var pendingOpenURLs: [URL] = []
 
     private static var isRunningInPreview: Bool {
@@ -131,8 +137,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // killed — clear stale extraction caches from previous runs here too
         CacheCleaner().clean()
 
-        archiveWindowManager = ArchiveWindowManager(appState: appState)
+        // Built before the window manager: the archive windows are handed the
+        // compressor and the way to open the quick-compress window, so their
+        // content can reach both from the environment.
+        let dropCompressor = DropCompressor(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        let dropWindowController = DropWindowController(compressor: dropCompressor)
+        self.dropCompressor = dropCompressor
+        self.dropWindowController = dropWindowController
+
+        archiveWindowManager = ArchiveWindowManager(
+            appState: appState,
+            dropCompressor: dropCompressor,
+            openQuickCompressWindow: { dropWindowController.show() }
+        )
         extractionProgressWindowController = ExtractionProgressWindowController(center: .shared)
+
+        // The window is cheap (the panel itself is built on first show); the menu
+        // bar item installs itself only if the user switched it on.
+        dropMenuBarItem = DropMenuBarItem(actions: .init(
+            quickCompress: { dropWindowController.show() },
+            openArchive: { [weak self] in self?.openArchiveUsingOpenPanel() },
+            newWindow: { [weak self] in self?.openNewArchiveWindow() }
+        ))
+        if LaunchParameters.opensDropWindow {
+            dropWindowController.show()
+            // -AddFiles alongside -DropWindow means "compress these now", the
+            // scripted equivalent of dropping them on the window.
+            let files = LaunchParameters.filesToAdd
+            if !files.isEmpty { dropWindowController.compress(files: files) }
+        }
 
         // When launched to open a specific archive (launch parameters) — or to
         // show the debug extraction preview — MacPacker shows that one window
@@ -282,5 +315,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
     func openCreateArchiveWindow() {
         self.archiveWindowManager?.openCreateArchiveWindow()
+    }
+
+    func showDropWindow() {
+        dropWindowController?.show()
     }
 }

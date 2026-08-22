@@ -23,6 +23,9 @@ import SandboxPilotKit
 ///   -SearchQuery  <text>    filter the listing by this text
 ///   -SelectItem   a,b,c     select these items in the final folder (comma-separated)
 ///   -NewArchive   1         open a window with a fresh, empty archive instead
+///   -DropWindow   1         open only the floating Compress (drop) window;
+///                           with -AddFiles it also compresses those files
+///                           right away, as if they had been dropped on it
 ///   -AddFiles     a,b,c     add these files — to the new archive, or to the
 ///                           opened one at the navigated-to path
 ///
@@ -42,6 +45,7 @@ enum LaunchParameters {
     static let searchQueryKey = "SearchQuery"
     static let selectItemKey = "SelectItem"
     static let newArchiveKey = "NewArchive"
+    static let dropWindowKey = "DropWindow"
     static let addFilesKey = "AddFiles"
     static let extractDemoKey = "ExtractDemo"
     static let dropZoneKey = "DropZone"
@@ -71,9 +75,14 @@ enum LaunchParameters {
     /// True when launch parameters ask for a fresh, empty archive to fill.
     static var createsArchive: Bool { flag(newArchiveKey) }
 
+    /// True when launch parameters ask for the floating drop window. On its own
+    /// it is the whole session: no archive window, no welcome screen — MacPacker
+    /// sits there and compresses what you drop on it.
+    static var opensDropWindow: Bool { flag(dropWindowKey) }
+
     /// True when launch parameters put a window on screen themselves — the app
     /// then skips the empty launch window and the welcome screen.
-    static var opensWindow: Bool { opensArchive || createsArchive }
+    static var opensWindow: Bool { opensArchive || createsArchive || opensDropWindow }
 
     /// True when launch parameters request the extraction preview (debug).
     static var isExtractDemo: Bool { flag(extractDemoKey) }
@@ -88,6 +97,11 @@ enum LaunchParameters {
         default: nil
         }
     }
+
+    /// Screenshot-only: pins the start page's compress area in its dragged-over
+    /// state. It is its own drop target now, so it is not one of `ArchiveView`'s
+    /// zones and needs its own switch.
+    static var pinsCompressArea: Bool { value(dropZoneKey) == "compress" }
     #endif
 
     /// True when launch parameters ask to skip the startup update check.
@@ -125,7 +139,7 @@ enum LaunchParameters {
     }
 
     /// The `-AddFiles` list, resolved to readable urls.
-    private static var filesToAdd: [URL] {
+    static var filesToAdd: [URL] {
         (value(addFilesKey) ?? "")
             .split(separator: ",")
             .map { resolveInputFile($0.trimmingCharacters(in: .whitespaces)) }

@@ -75,12 +75,23 @@ struct MacPackerApp: App {
                     }
                 }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
+
+                Button {
+                    appDelegate.showDropWindow()
+                } label: {
+                    Label {
+                        Text("Quick Compress Window", comment: "Opens the small floating window that compresses whatever is dropped on it. Used in the File menu and in the More menu of the archive window.")
+                    } icon: {
+                        Image(systemName: "shippingbox")
+                    }
+                }
+                .keyboardShortcut("d", modifiers: [.command, .option])
             }
 
             ArchiveCommands()
 
             CommandGroup(after: .newItem) {
-                
+
                 Button {
                     appDelegate.openArchiveUsingOpenPanel()
                 } label: {

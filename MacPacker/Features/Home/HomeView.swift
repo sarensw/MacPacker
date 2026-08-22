@@ -12,9 +12,37 @@
 import AppKit
 import Core
 import SwiftUI
+import UniformTypeIdentifiers
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "home")
+
+/// Numbers the home screen and the drag overlay both need: the overlay draws its
+/// "compress" card exactly over the compress column, so the two can't disagree
+/// about where dropping compresses.
+enum HomeLayout {
+    /// Wide enough for a long section title beside the header controls. German
+    /// "Schnelles Komprimieren" is the measure: 153pt at `.headline` vs 104pt en.
+    static let sideColumnWidth: CGFloat = 264
+
+    /// One height for every header, text or control — otherwise the column with a
+    /// control in its header starts lower and nothing below lines up.
+    /// ponytail: one number rather than measuring; raise it if a control needs more.
+    static let sectionHeaderHeight: CGFloat = 22
+}
 
 struct HomeView: View {
     @EnvironmentObject private var state: ArchiveState
+    @EnvironmentObject private var compressor: DropCompressor
+    @Environment(\.openQuickCompressWindow) private var openQuickCompressWindow
+
+    /// SwiftUI owns this binding and resets it when no drag is in flight, so the
+    /// screenshot pin has to be a separate flag.
+    @State private var isDropTargeted = false
+    /// Screenshot-only: forces the marked state with no drag in flight.
+    @State private var pinnedTarget = false
+
+    private var isCompressTargeted: Bool { isDropTargeted || pinnedTarget }
 
     /// Read once when the window appears: a window showing this view has no
     /// archive, so opening one from here replaces the view anyway.
@@ -32,8 +60,11 @@ struct HomeView: View {
                     }
                     .frame(maxWidth: 460, alignment: .leading)
 
-                    learnSection
-                        .frame(width: 220, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 24) {
+                        compressSection
+                        learnSection
+                    }
+                    .frame(width: HomeLayout.sideColumnWidth, alignment: .leading)
 
                     Spacer(minLength: 0)
                 }
@@ -45,7 +76,14 @@ struct HomeView: View {
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .onAppear { recents = Array(RecentArchives.urls.prefix(maxRecents)) }
+        .onAppear {
+            recents = Array(RecentArchives.urls.prefix(maxRecents))
+            #if DEBUG
+            // -DropZone compress pins the marked state for a screenshot: no drag
+            // is in flight, so nothing would arm it.
+            if LaunchParameters.pinsCompressArea { pinnedTarget = true }
+            #endif
+        }
     }
 
     // MARK: - Sections
@@ -81,6 +119,74 @@ struct HomeView: View {
         }
     }
 
+    /// The quick path: drop files, get an archive next to them. Its own drop
+    /// target — SwiftUI hit-tests to the innermost target that accepts, so a
+    /// release here compresses and a release anywhere else opens.
+    private var compressSection: some View {
+        section("Quick Compress", trailing: AnyView(compressHeaderControls), pinTrailingRight: true) {
+            Image(systemName: CompressDropIcon.name)
+                .font(.system(size: 26, weight: .light))
+                .foregroundStyle(isCompressTargeted ? AnyShapeStyle(.primary) : AnyShapeStyle(.tertiary))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 22)
+                .background(RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.primary.opacity(isCompressTargeted ? 0.09 : 0.04)))
+                .overlay(RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(Color.primary.opacity(isCompressTargeted ? 0.42 : 0.35),
+                                  style: StrokeStyle(lineWidth: 1.5, dash: isCompressTargeted ? [] : [5])))
+                .overlay(alignment: .bottom) {
+                    if isCompressTargeted {
+                        Text("Compress here",
+                             comment: "Drop zone shown while dragging files over the compress area: releasing here writes an archive next to those files, without opening a window.")
+                            .font(.callout.weight(.medium))
+                            .padding(.bottom, 10)
+                    }
+                }
+                .animation(.easeOut(duration: 0.08), value: isCompressTargeted)
+                .accessibilityIdentifier("home.compressDropArea")
+                .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
+                    handleCompressDrop(providers)
+                    return true
+                }
+                .padding(.horizontal, 8)
+
+            // Progress and failures stay here rather than opening a window: a drop
+            // on the start page should report on the start page.
+            CompressJobList(compressor: compressor)
+                .padding(.horizontal, 8)
+        }
+    }
+
+    /// One drop is one archive, so the urls are collected and handed over together.
+    private func handleCompressDrop(_ providers: [NSItemProvider]) {
+        let options = CompressSettings.current
+        let compressor = self.compressor
+        loadDroppedFileURLs(from: providers) { urls in
+            log.notice("Start page compress drop", context: ["files": "\(urls.count)"])
+            compressor.compress(files: urls, options: options)
+        }
+    }
+
+    private var compressHeaderControls: some View {
+        HStack(spacing: 2) {
+            CompressFormatMenu()
+
+            Button {
+                showDropWindow()
+            } label: {
+                Image(systemName: "macwindow.on.rectangle")
+            }
+            // .plain, not .borderless: a borderless button carries its own
+            // trailing inset, which pushes the icon past the right edge of the
+            // drop area below it.
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .contentShape(Rectangle())
+            .help(Text("Quick Compress Window",
+                       comment: "Opens the small floating window that compresses whatever is dropped on it. Used in the File menu and in the More menu of the archive window."))
+        }
+    }
+
     private var learnSection: some View {
         section("Learn") {
             DocLinkRow(icon: "book", title: String(localized: "Learn to use \(Bundle.main.displayName)"),
@@ -92,16 +198,23 @@ struct HomeView: View {
         }
     }
 
+    /// `pinTrailingRight` puts the trailing view at the column's right edge, where
+    /// a control belongs; "Recent ▸ Clear" reads as title and stays put.
     @ViewBuilder
     private func section<Content: View>(_ title: LocalizedStringKey, trailing: AnyView? = nil,
+                                        pinTrailingRight: Bool = false,
                                         @ViewBuilder _ content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Text(title)
                     .font(.headline)
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                if pinTrailingRight { Spacer(minLength: 4) }
                 if let trailing { trailing.font(.callout) }
             }
+            .controlSize(.small)
+            .frame(height: HomeLayout.sectionHeaderHeight)
             .padding(.horizontal, 8)
             content()
         }
@@ -113,6 +226,10 @@ struct HomeView: View {
     private func open(_ url: URL) {
         if state.isSupportedArchive(url: url) { RecentArchives.note(url) }
         state.openDropped(url: url)
+    }
+
+    private func showDropWindow() {
+        openQuickCompressWindow()
     }
 
     private func clearRecents() {
@@ -165,6 +282,23 @@ private struct StartCard: View {
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
+    }
+}
+
+/// Everything except finished successes: a running compress keeps its row so the
+/// write has a progress bar, a failure has nowhere else to show, and a finished
+/// archive announces itself by appearing in the Finder window the files came from.
+/// A type rather than inline lines because `@ObservedObject` needs a view.
+private struct CompressJobList: View {
+    @ObservedObject var compressor: DropCompressor
+
+    var body: some View {
+        let visible = compressor.jobs.filter { !$0.succeeded }
+        if !visible.isEmpty {
+            VStack(spacing: 4) {
+                ForEach(visible) { DropJobRow(job: $0) }
+            }
+        }
     }
 }
 

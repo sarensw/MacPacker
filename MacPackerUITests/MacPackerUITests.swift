@@ -356,6 +356,46 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// The drop window's whole point: drag files out of Finder onto the floating
+    /// window and an archive appears next to them, with no further questions.
+    ///
+    /// `-DropWindow 1` launches straight into it, so the panel is the only window
+    /// and the drag has nothing else to land on. The fixture folder is outside
+    /// the app's sandbox, so writing there needs the folder-access panel — which
+    /// is exactly what a real first drop from a new folder looks like.
+    func testDropWindowCompressesDroppedFile() throws {
+        let dir = try makeWorkDir("dropwindow")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "dropped".write(to: dir.appendingPathComponent("dropped.txt"), atomically: true, encoding: .utf8)
+
+        let app = launchApp(arguments: ["-DropWindow", "1"])
+        // by identifier, not by window title: the window is titled after the app,
+        // exactly like the archive windows
+        let dropArea = app.descendants(matching: .any)["quickCompress.dropArea"].firstMatch
+        XCTAssertTrue(dropArea.waitForExistence(timeout: 15), "the drop window did not open")
+
+        NSWorkspace.shared.open(dir)
+        let finder = XCUIApplication(bundleIdentifier: "com.apple.finder")
+        let source = finder.textFields.matching(NSPredicate(format: "value == %@", "dropped.txt")).firstMatch
+        XCTAssertTrue(source.waitForExistence(timeout: 15), "Finder does not show the file to drag")
+
+        let target = dropArea.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 1, thenDragTo: target)
+
+        confirmAccessPanel(app, button: "Grant Access")
+
+        let zip = dir.appendingPathComponent("dropped.zip")
+        let deadline = Date().addingTimeInterval(30)
+        while !FileManager.default.fileExists(atPath: zip.path), Date() < deadline {
+            usleep(200_000)
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: zip.path),
+                      "the drop did not produce dropped.zip next to the source file")
+        XCTAssertEqual(try zipEntries(zip), ["dropped.txt"])
+        app.terminate()
+    }
+
     /// Issue #141: the toolbar display mode picked from the toolbar's context menu
     /// survives a relaunch. Drives the reported repro in both directions, so the
     /// result can't come from state a previous run left behind.
