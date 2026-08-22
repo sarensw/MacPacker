@@ -15,6 +15,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
+    @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
 
@@ -42,7 +43,18 @@ struct GeneralSettingsView: View {
                 .toggleStyle(.checkbox)
                 .frame(width: 240, alignment: .leading)
             }
-            
+
+            HStack(alignment: .top) {
+                Text("Show .. parent row:", comment: "Setting that shows or hides the \"..\" row at the top of the archive window that leads back to the containing folder")
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $showParentRow) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
             Divider()
             
             HStack(alignment: .top) {
@@ -75,12 +87,8 @@ struct GeneralSettingsView: View {
                 Text("Show in the menu bar:", comment: "Setting that adds a MacPacker icon to the menu bar, which opens the Quick Compress window")
                     .frame(width: 200, alignment: .trailing)
 
-                VStack(alignment: .leading) {
+                HStack {
                     Toggle(isOn: $showMenuBarItem) {}
-                    Text("Opens the Quick Compress window from anywhere.",
-                         comment: "Explains what the menu bar icon does. The Quick Compress window is the small floating window that compresses whatever is dropped on it.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)

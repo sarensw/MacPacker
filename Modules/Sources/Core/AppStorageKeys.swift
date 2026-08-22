@@ -13,6 +13,7 @@ public enum Keys {
     public static let quitOnLastWindowClosed = "quitOnLastWindowClosed"
     
     // table settings
+    public static let showParentRow = "showParentRow"
     public static let showColumnCompressedSize = "showColumnCompressedSize"
     public static let showColumnUncompressedSize = "showColumnUncompressedSize"
     public static let showColumnModificationDate = "showColumnModificationDate"

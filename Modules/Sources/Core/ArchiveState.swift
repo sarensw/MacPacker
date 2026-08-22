@@ -296,12 +296,19 @@ extension ArchiveState {
 
     public var isSearching: Bool { !searchText.isEmpty }
 
-    /// Whether the table shows the ".." row at the top: browsing below the
-    /// root shows it, search results never do (they come from all levels at
-    /// once, so there is no single parent to go up to).
-    public var showsParentRow: Bool {
-        guard let selectedItem, !isSearching else { return false }
+    /// Whether there is an enclosing folder to go up to.
+    public var canGoUp: Bool {
+        guard let selectedItem else { return false }
         return selectedItem.type != .root
+    }
+
+    /// Whether the table shows the ".." row at the top: off unless the user
+    /// switches it on, and never in search results (they come from all levels
+    /// at once, so there is no single parent to go up to). The toolbar's back
+    /// button and ⌘↑ go up either way.
+    public var showsParentRow: Bool {
+        guard !isSearching, canGoUp else { return false }
+        return UserDefaults.standard.bool(forKey: Keys.showParentRow)
     }
 
     /// Updates the live search. Every change re-filters the entries; clearing

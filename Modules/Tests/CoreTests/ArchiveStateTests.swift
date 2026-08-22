@@ -253,6 +253,33 @@ extension AllCoreTests {
             state.openParent()
             #expect(state.selectedItem === state.root)
         }
+
+        @Test func parentRowFollowsTheSetting() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+
+            state.open(url: url)
+            try await state.openTask?.value
+
+            // At the root there is nothing above, whatever the setting says.
+            #expect(state.canGoUp == false)
+            #expect(state.showsParentRow == false)
+
+            let dirChild = state.root!.children!
+                .compactMap { state.entries[$0] }
+                .first(where: { $0.type == .directory })!
+            try await state.openAsync(item: dirChild)
+
+            // Off by default: the toolbar button and ⌘↑ are the way up.
+            #expect(state.canGoUp)
+            #expect(state.showsParentRow == false)
+
+            UserDefaults.standard.set(true, forKey: Keys.showParentRow)
+            defer { UserDefaults.standard.removeObject(forKey: Keys.showParentRow) }
+
+            #expect(state.showsParentRow)
+        }
     }
 
     // MARK: - open(item:) for directory
@@ -484,8 +511,12 @@ extension AllCoreTests {
 
             state.loadChildren()
 
-            // With parent row, index 0 is the parent; index 1 maps to childItems[0]
+            // With parent row, index 0 is the parent; index 1 maps to childItems[0].
+            // The row is off by default, so this test asks for it. No await until
+            // it is cleared again — the flag is global, the main actor is not.
+            UserDefaults.standard.set(true, forKey: Keys.showParentRow)
             state.changeSelection(selection: IndexSet(integer: 1))
+            UserDefaults.standard.removeObject(forKey: Keys.showParentRow)
 
             #expect(state.selectedItems.count == 1)
             #expect(state.selectedItems[0] === state.childItems![0])
@@ -544,9 +575,11 @@ extension AllCoreTests {
 
             try await state.openAsync(item: dirChild)
 
-            // Non-root: indices shift by +1
+            // Non-root with the parent row switched on: indices shift by +1
             let input = IndexSet([0, 1])
+            UserDefaults.standard.set(true, forKey: Keys.showParentRow)
             let result = state.selectionOffset(selection: input)
+            UserDefaults.standard.removeObject(forKey: Keys.showParentRow)
             #expect(result == IndexSet([1, 2]))
         }
     }
