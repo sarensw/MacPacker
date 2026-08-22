@@ -17,11 +17,22 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "lifecycle")
 class ArchiveWindowManager {
     private var windowControllers: [ArchiveWindowController] = []
     private let appState: AppState
-    
+    private let dropCompressor: DropCompressor
+    private let openQuickCompressWindow: @MainActor () -> Void
+
     /// Default constructor
-    /// - Parameter appState: The apps global state to not use AppStorage for every little global state setting that is not persisted
-    init(appState: AppState) {
+    /// - Parameters:
+    ///   - appState: The apps global state to not use AppStorage for every little global state setting that is not persisted
+    ///   - dropCompressor: The shared compressor every window's compress column renders
+    ///   - openQuickCompressWindow: Opens the floating quick-compress window
+    init(
+        appState: AppState,
+        dropCompressor: DropCompressor,
+        openQuickCompressWindow: @escaping @MainActor () -> Void
+    ) {
         self.appState = appState
+        self.dropCompressor = dropCompressor
+        self.openQuickCompressWindow = openQuickCompressWindow
         log.notice("ArchiveWindowManager initialised")
     }
     
@@ -53,6 +64,8 @@ class ArchiveWindowManager {
         let archiveWindowController = ArchiveWindowController(
             archiveState: archiveState,
             appState: appState,
+            dropCompressor: dropCompressor,
+            openQuickCompressWindow: openQuickCompressWindow,
             openArchiveInNewWindow: { [weak self] url in
                 self?.openDroppedInNewWindow(url)
             }

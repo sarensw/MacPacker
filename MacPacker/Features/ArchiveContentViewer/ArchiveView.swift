@@ -39,6 +39,8 @@ struct ArchiveView: View {
     /// read off the drag pasteboard (a promised file, say).
     @State private var draggedURL: URL?
     @State private var contentSize: CGSize = .zero
+    /// How far the archive window's drop cards sit inside the window.
+    private static let dropInset: CGFloat = 12
 
     /// Adding needs an archive that the format can write, and no in-flight save.
     private var canAdd: Bool {
@@ -120,8 +122,9 @@ struct ArchiveView: View {
         let state = self.state
         log.notice("File drop performed", context: [
             "providers": "\(providers.count)",
-            "zone": zone == .add ? "add" : "open"
+            "zone": zone.name
         ])
+
         for provider in providers {
             provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { data, _ in
                 guard let data = data as? Data,
@@ -152,7 +155,8 @@ struct ArchiveView: View {
 
     private var openZoneIcon: String {
         if dropCreatesArchive { return "doc.badge.plus" }
-        return state.hasArchive ? "macwindow.badge.plus" : "shippingbox.fill"
+        // outline weights, not filled: the whole overlay is hairlines and tints now
+        return state.hasArchive ? "macwindow.badge.plus" : "shippingbox"
     }
 
     private var openZoneTitle: String {
@@ -167,66 +171,56 @@ struct ArchiveView: View {
                      comment: "Drop zone shown while dragging an archive over an empty window: releasing here opens it.")
     }
 
+    /// The two cards an archive window offers. The start page shows nothing — its
+    /// compress area is its own drop target and marks itself.
     @ViewBuilder
     private func dropZones(active: ArchiveDropZone) -> some View {
+        if state.hasArchive {
+            mainZones(active: active)
+                .padding(Self.dropInset)
+                .background(.regularMaterial)
+        }
+    }
+
+    @ViewBuilder
+    private func mainZones(active: ArchiveDropZone) -> some View {
         VStack(spacing: 10) {
             if canAdd {
-                zoneCard(
-                    .add,
-                    active: active,
-                    icon: "plus.rectangle.on.folder.fill",
+                zoneShape(
+                    zone: .add, active: active,
+                    icon: "plus.rectangle.on.folder",
                     title: String(
                         localized: "Add to “\(state.name ?? "")”",
                         comment: "Drop zone shown while dragging a file over an editable archive: releasing here adds the file to that archive. The placeholder is the archive's file name."
-                    ),
-                    subtitle: nil
+                    )
                 )
             }
-            zoneCard(
-                .open,
-                active: active,
-                icon: openZoneIcon,
-                title: openZoneTitle,
-                subtitle: nil
-            )
+            zoneShape(zone: .open, active: active, icon: openZoneIcon, title: openZoneTitle)
         }
-        .padding(12)
-        .background(.regularMaterial)
     }
 
-    private func zoneCard(
-        _ zone: ArchiveDropZone,
+    /// One card, for a window that already holds an archive.
+    private func zoneShape(
+        zone: ArchiveDropZone,
         active: ArchiveDropZone,
         icon: String,
-        title: String,
-        subtitle: String?
+        title: String
     ) -> some View {
         let isActive = active == zone
-        return VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 28))
-            Text(verbatim: title)
-                .font(.headline)
-            if let subtitle {
-                Text(verbatim: subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+        return RoundedRectangle(cornerRadius: 12)
+            .fill(Color.primary.opacity(isActive ? 0.07 : 0.02))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.primary.opacity(isActive ? 0.42 : 0.14), lineWidth: 1.5)
+            )
+            .overlay {
+                VStack(spacing: 10) {
+                    Image(systemName: icon).font(.system(size: 30, weight: .light))
+                    Text(verbatim: title).font(.callout.weight(.medium))
+                }
+                .foregroundStyle(Color.primary.opacity(isActive ? 0.85 : 0.45))
             }
-        }
-        .foregroundStyle(isActive ? Color.accentColor : Color.secondary)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.accentColor.opacity(isActive ? 0.15 : 0.03))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(
-                    isActive ? Color.accentColor : Color.secondary.opacity(0.4),
-                    style: StrokeStyle(lineWidth: isActive ? 2 : 1, dash: isActive ? [] : [6, 4])
-                )
-        )
-        .animation(.easeOut(duration: 0.12), value: isActive)
+            .animation(.easeOut(duration: 0.12), value: isActive)
     }
 }
 

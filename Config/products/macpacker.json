@@ -60,6 +60,29 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+              "en": "New Compress window for quick archiving",
+              "zh-Hans": "全新“压缩”窗口，快速打包",
+              "fr": "Nouvelle fenêtre Compresser pour archiver vite",
+              "de": "Neues Komprimieren-Fenster für schnelles Archivieren",
+              "it": "Nuova finestra Comprimi per archiviare in fretta",
+              "ja": "すばやく圧縮できる新しい「圧縮」ウインドウ",
+              "fa": "پنجره‌ی جدید فشرده‌سازی برای بایگانی سریع",
+              "pl": "Nowe okno Kompresuj do szybkiego archiwizowania",
+              "pt-BR": "Nova janela Comprimir para arquivar rápido",
+              "ru": "Новое окно «Сжать» для быстрой архивации",
+              "uk": "Нове вікно «Стиснути» для швидкого архівування",
+              "es-MX": "Nueva ventana Comprimir para archivar rápido",
+              "ko": "빠른 압축을 위한 새 압축 창",
+              "nl": "Nieuw Comprimeren-venster voor snel archiveren",
+              "tr": "Hızlı arşivleme için yeni Sıkıştır penceresi"
+            },
+            "issues": [
+              "194"
+            ]
+          },
+          {
             "type": "fix",
             "title": {
               "en": "Extracted apps reported as damaged",

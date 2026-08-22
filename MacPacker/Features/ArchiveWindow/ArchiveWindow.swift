@@ -23,6 +23,8 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     init(
         archiveState: ArchiveState,
         appState: AppState,
+        dropCompressor: DropCompressor,
+        openQuickCompressWindow: @escaping @MainActor () -> Void,
         openArchiveInNewWindow: @escaping @MainActor (URL) -> Void
     ) {
         self.archiveState = archiveState
@@ -40,7 +42,9 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         let contentView = ContentView()
             .environmentObject(appState)
             .environmentObject(archiveState)
+            .environmentObject(dropCompressor)
             .environment(\.openArchiveInNewWindow, openArchiveInNewWindow)
+            .environment(\.openQuickCompressWindow, openQuickCompressWindow)
 
         window.contentView = NSHostingView(rootView: contentView)
 
@@ -168,5 +172,18 @@ extension EnvironmentValues {
     var openArchiveInNewWindow: @MainActor (URL) -> Void {
         get { self[OpenArchiveInNewWindowKey.self] }
         set { self[OpenArchiveInNewWindowKey.self] = newValue }
+    }
+}
+
+/// Opens the floating quick-compress window. An action, not state, so it travels
+/// as a closure rather than as an object a view has to hold.
+private struct OpenQuickCompressWindowKey: EnvironmentKey {
+    static let defaultValue: @MainActor () -> Void = { }
+}
+
+extension EnvironmentValues {
+    var openQuickCompressWindow: @MainActor () -> Void {
+        get { self[OpenQuickCompressWindowKey.self] }
+        set { self[OpenQuickCompressWindowKey.self] = newValue }
     }
 }

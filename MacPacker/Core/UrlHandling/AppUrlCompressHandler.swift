@@ -12,30 +12,6 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
-/// Names the zip a Finder "Compress to …" action produces:
-/// one selected item → its stem, several → the folder they sit in.
-/// Shared between the menu label (Finder extension builds it the same way)
-/// and the actual output file.
-func compressedArchiveName(files: [URL], target: URL) -> String {
-    if files.count == 1, let only = files.first {
-        return only.deletingPathExtension().lastPathComponent + ".zip"
-    }
-    return target.lastPathComponent + ".zip"
-}
-
-/// First non-existing variant of `name` in `dir`: "x.zip", "x 2.zip", "x 3.zip", …
-private func uniqueDestination(named name: String, in dir: URL) -> URL {
-    let stem = (name as NSString).deletingPathExtension
-    let ext = (name as NSString).pathExtension
-    var candidate = dir.appendingPathComponent(name)
-    var counter = 2
-    while FileManager.default.fileExists(atPath: candidate.path) {
-        candidate = dir.appendingPathComponent("\(stem) \(counter).\(ext)")
-        counter += 1
-    }
-    return candidate
-}
-
 /// Finder action "Compress to <name>.zip": creates the zip next to the
 /// selected files without further questions (one folder-access prompt is
 /// unavoidable under the sandbox).
@@ -58,8 +34,8 @@ class AppUrlCompressHandler: AppUrlHandler {
                 return
             }
             Task { @MainActor in
-                let dest = uniqueDestination(
-                    named: compressedArchiveName(files: appUrl.files, target: appUrl.target),
+                let dest = CompressDestination.unique(
+                    named: CompressDestination.name(files: appUrl.files, target: appUrl.target),
                     in: dir
                 )
                 log.notice("Compressing to \(dest.lastPathComponent)")

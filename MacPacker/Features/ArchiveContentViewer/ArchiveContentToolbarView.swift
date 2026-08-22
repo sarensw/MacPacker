@@ -18,6 +18,7 @@ extension NSImage {
 
 struct ArchiveContentToolbarView: ToolbarContent {
     @EnvironmentObject private var appState: AppState
+    @Environment(\.openQuickCompressWindow) private var openQuickCompressWindow
     @Environment(\.openURL) private var openURL
     @Environment(\.openSettings) private var openSettings
     @State private var isExportingItem: Bool = false
@@ -144,6 +145,19 @@ struct ArchiveContentToolbarView: ToolbarContent {
             Spacer()
             
             Menu {
+                Button {
+                    openQuickCompressWindow()
+                } label: {
+                    Label {
+                        Text("Quick Compress Window", comment: "Opens the small floating window that compresses whatever is dropped on it. Used in the File menu and in the More menu of the archive window.")
+                    } icon: {
+                        Image(systemName: "shippingbox")
+                    }
+                    .labelStyle(.titleAndIcon)
+                }
+
+                Divider()
+
                 Button {
                     appState.selectedSettingsTab = .general
                     openSettings()
