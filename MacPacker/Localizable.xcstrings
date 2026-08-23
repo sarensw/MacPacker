@@ -1675,6 +1675,9 @@
         }
       }
     },
+    "Back" : {
+      "comment" : "Button in the toolbar that leaves the current folder of the archive and shows the folder containing it."
+    },
     "Bottom" : {
       "comment" : "Breadcrumb position at the bottom of the archive window",
       "localizations" : {
@@ -3440,6 +3443,9 @@
           }
         }
       }
+    },
+    "Enclosing folder" : {
+      "comment" : "Tooltip of the toolbar's back button: it shows the folder that contains the one being browsed."
     },
     "Engine" : {
       "comment" : "The header for the \"Engine\" column in the format settings view.",
@@ -6684,9 +6690,6 @@
         }
       }
     },
-    "Opens the Quick Compress window from anywhere." : {
-      "comment" : "Explains what the menu bar icon does. The Quick Compress window is the small floating window that compresses whatever is dropped on it."
-    },
     "Options" : {
       "comment" : "Shows or hides the compression settings of the Quick Compress window."
     },
@@ -8047,6 +8050,9 @@
           }
         }
       }
+    },
+    "Show .. parent row:" : {
+      "comment" : "Setting that shows or hides the \"..\" row at the top of the archive window that leads back to the containing folder"
     },
     "Show application support folder" : {
       "comment" : "Help text shown in a tooltip when hovering the \"Open cache directory\" button",

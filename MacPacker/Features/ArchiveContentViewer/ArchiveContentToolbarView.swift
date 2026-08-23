@@ -59,6 +59,20 @@ struct ArchiveContentToolbarView: ToolbarContent {
     }
 
     var body: some ToolbarContent {
+        ToolbarItem(placement: .navigation) {
+            Button {
+                archiveState.openParent()
+            } label: {
+                Label {
+                    Text("Back", comment: "Button in the toolbar that leaves the current folder of the archive and shows the folder containing it.")
+                } icon: {
+                    Image(systemName: "chevron.backward")
+                }
+            }
+            .help(Text("Enclosing folder", comment: "Tooltip of the toolbar's back button: it shows the folder that contains the one being browsed."))
+            .disabled(!archiveState.canGoUp)
+        }
+
         ToolbarItemGroup(placement: .primaryAction) {
             Button {
                 addFilesViaOpenPanel()

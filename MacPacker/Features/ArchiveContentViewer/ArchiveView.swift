@@ -31,6 +31,7 @@ struct ArchiveView: View {
     @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
+    @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
 
     @State private var selection: IndexSet?
     /// nil while no file is over the window; otherwise the zone the pointer is in.
@@ -93,6 +94,9 @@ struct ArchiveView: View {
                 dropZones(active: activeZone)
             }
         }
+        // The row count changes with the setting, and the table only reloads on
+        // this flag — the toggle is in another window, so nothing else nudges it.
+        .onChange(of: showParentRow) { _, _ in state.isReloadNeeded = true }
         .onAppear {
             if state.openWithUrls.count > 0 {
                 state.openDropped(url: state.openWithUrls[0])

@@ -83,6 +83,29 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+              "en": "Back button replaces optional parent row",
+              "zh-Hans": "返回按钮取代可选的“..”行",
+              "fr": "Le bouton Retour remplace la ligne « .. » optionnelle",
+              "de": "Zurück-Button ersetzt optionale „..“-Zeile",
+              "it": "Il pulsante Indietro sostituisce la riga «..» opzionale",
+              "ja": "「戻る」ボタンが任意の「..」行を置き換え",
+              "fa": "دکمه بازگشت جایگزین ردیف اختیاری «..» شد",
+              "pl": "Przycisk Wstecz zastępuje opcjonalny wiersz „..”",
+              "pt-BR": "Botão Voltar substitui a linha “..” opcional",
+              "ru": "Кнопка «Назад» заменяет необязательную строку «..»",
+              "uk": "Кнопка «Назад» замінює необов’язковий рядок «..»",
+              "es-MX": "El botón Atrás sustituye la fila «..» opcional",
+              "ko": "뒤로 버튼이 선택 사항인 “..” 행을 대체",
+              "nl": "Terug-knop vervangt de optionele “..”-rij",
+              "tr": "Geri düğmesi isteğe bağlı “..” satırının yerini alır"
+            },
+            "issues": [
+              "153"
+            ]
+          },
+          {
             "type": "fix",
             "title": {
               "en": "Extracted apps reported as damaged",
