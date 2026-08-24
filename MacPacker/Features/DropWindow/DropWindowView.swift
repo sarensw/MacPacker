@@ -65,7 +65,7 @@ struct DropWindowView: View {
             Image(systemName: CompressDropIcon.name)
                 .font(.system(size: 30, weight: .light))
                 .foregroundStyle(isTargeted ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
-            Text("Drop files here to compress",
+            Text("Drop here to compress",
                  comment: "Caption of the Quick Compress window. Releasing files on the window creates an archive next to them.")
                 .font(.callout.weight(.medium))
         }
@@ -129,7 +129,7 @@ struct DropWindowView: View {
     /// 643pt against 248pt). A menu is bounded by the longest single name.
     private var optionsPanel: some View {
         HStack(spacing: 12) {
-            Text("Level", comment: "Row label in the Quick Compress options: how hard to compress.")
+            Text("Compression Level", comment: "Row label in the Quick Compress options: how hard to compress.")
             Spacer(minLength: 0)
             Picker(selection: $level) {
                 ForEach(CompressSettings.levels, id: \.self) { value in

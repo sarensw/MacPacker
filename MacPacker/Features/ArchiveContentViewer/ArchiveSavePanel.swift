@@ -39,7 +39,7 @@ struct ArchiveSavePanelAccessoryView: View {
                 Text("Normal", comment: "Compression level: normal").tag(UInt32(5))
                 Text("Maximum", comment: "Compression level: maximum").tag(UInt32(9))
             } label: {
-                Text("Compression:", comment: "Label of the compression level picker in the save panel")
+                Text("Compression Level", comment: "Label of the compression level picker in the save panel")
             }
             .fixedSize()
         }

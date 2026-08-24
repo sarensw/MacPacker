@@ -45,7 +45,7 @@ struct GeneralSettingsView: View {
             }
 
             HStack(alignment: .top) {
-                Text("Show .. parent row:", comment: "Setting that shows or hides the \"..\" row at the top of the archive window that leads back to the containing folder")
+                Text("Show parent folder entry (“..”):", comment: "Setting that shows or hides the \"..\" row at the top of the archive window that leads back to the containing folder")
                     .frame(width: 200, alignment: .trailing)
 
                 HStack {
@@ -84,7 +84,7 @@ struct GeneralSettingsView: View {
             }
 
             HStack(alignment: .top) {
-                Text("Show in the menu bar:", comment: "Setting that adds a MacPacker icon to the menu bar, which opens the Quick Compress window")
+                Text("Show in menu bar:", comment: "Setting that adds a MacPacker icon to the menu bar, which opens the Quick Compress window")
                     .frame(width: 200, alignment: .trailing)
 
                 HStack {
