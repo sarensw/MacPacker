@@ -33,7 +33,12 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         let window = ArchiveWindow()
         window.isRestorable = false
         window.setFrameAutosaveName("ArchiveWindow")
-        let onScreen = NSScreen.screens.contains { $0.visibleFrame.intersects(window.frame) }
+        let onScreen = NSScreen.screens.contains { screen in
+            let intersection = screen.visibleFrame.intersection(window.frame)
+            let minWidth = min(window.frame.width * 0.5, 300)
+            let minHeight = min(window.frame.height * 0.5, 200)
+            return !intersection.isNull && intersection.width >= minWidth && intersection.height >= minHeight
+        }
         if !onScreen || window.frame.origin == .zero {
             window.center()
         } else if let cascadeFrom {
