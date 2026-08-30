@@ -37,6 +37,28 @@
         "version": "0.21.0",
         "items": [
           {
+            "type": "fix",
+            "title": {
+              "en": "Remember window size and position",
+              "zh-Hans": "记住窗口大小和位置",
+              "fr": "Mémorisation de la taille et position de la fenêtre",
+              "de": "Fenstergröße und -position merken",
+              "it": "Memorizza dimensioni e posizione della finestra",
+              "ja": "ウインドウのサイズと位置を記憶",
+              "fa": "به خاطر سپردن اندازه و موقعیت پنجره",
+              "pl": "Zapamiętywanie rozmiaru i położenia okna",
+              "pt-BR": "Lembrar tamanho e posição da janela",
+              "ru": "Сохранение размера и положения окна",
+              "uk": "Збереження розміру та положення вікна",
+              "es-MX": "Recordar tamaño y posición de la ventana",
+              "ko": "창 크기 및 위치 기억",
+              "nl": "Venstergrootte en -positie onthouden",
+              "tr": "Pencere boyutunu ve konumunu hatırla"
+            },
+            "issues": [
+            ]
+          },
+          {
             "type": "feat",
             "title": {
                 "en": "cbz, cbr support",

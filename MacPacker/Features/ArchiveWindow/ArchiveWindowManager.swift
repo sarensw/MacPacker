@@ -68,7 +68,8 @@ class ArchiveWindowManager {
             openQuickCompressWindow: openQuickCompressWindow,
             openArchiveInNewWindow: { [weak self] url in
                 self?.openDroppedInNewWindow(url)
-            }
+            },
+            cascadeFrom: windowControllers.last?.window
         )
         windowControllers.append(archiveWindowController)
         archiveWindowController.willCloseHandler = { [weak self] in

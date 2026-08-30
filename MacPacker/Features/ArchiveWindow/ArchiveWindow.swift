@@ -25,13 +25,21 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         appState: AppState,
         dropCompressor: DropCompressor,
         openQuickCompressWindow: @escaping @MainActor () -> Void,
-        openArchiveInNewWindow: @escaping @MainActor (URL) -> Void
+        openArchiveInNewWindow: @escaping @MainActor (URL) -> Void,
+        cascadeFrom: NSWindow? = nil
     ) {
         self.archiveState = archiveState
 
         let window = ArchiveWindow()
         window.isRestorable = false
-        window.center()
+        window.setFrameAutosaveName("ArchiveWindow")
+        let onScreen = NSScreen.screens.contains { $0.visibleFrame.intersects(window.frame) }
+        if !onScreen || window.frame.origin == .zero {
+            window.center()
+        } else if let cascadeFrom {
+            let nextPoint = cascadeFrom.cascadeTopLeft(from: NSPoint(x: cascadeFrom.frame.minX, y: cascadeFrom.frame.maxY))
+            window.setFrameTopLeftPoint(nextPoint)
+        }
         super.init(window: window)
 
         window.delegate = self
