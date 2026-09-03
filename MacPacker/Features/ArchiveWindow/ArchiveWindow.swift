@@ -34,7 +34,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         window.isRestorable = false
         let didRestoreFrame = window.setFrameAutosaveName("ArchiveWindow")
         if let cascadeFrom {
-            let nextPoint = cascadeFrom.cascadeTopLeft(from: NSPoint(x: cascadeFrom.frame.minX, y: cascadeFrom.frame.maxY))
+            let nextPoint = window.cascadeTopLeft(from: NSPoint(x: cascadeFrom.frame.minX, y: cascadeFrom.frame.maxY))
             window.setFrameTopLeftPoint(nextPoint)
         } else if didRestoreFrame {
             let onScreen = NSScreen.screens.contains { screen in
