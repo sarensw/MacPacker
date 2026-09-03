@@ -69,7 +69,7 @@ class ArchiveWindowManager {
             openArchiveInNewWindow: { [weak self] url in
                 self?.openDroppedInNewWindow(url)
             },
-            cascadeFrom: windowControllers.last?.window
+            cascadeFrom: modelWindow
         )
         windowControllers.append(archiveWindowController)
         archiveWindowController.willCloseHandler = { [weak self] in
@@ -77,6 +77,14 @@ class ArchiveWindowManager {
         }
         archiveWindowController.showWindow(nil)
         return archiveState
+    }
+
+    /// The window a new one models itself on. Falls back to the newest when no
+    /// window is main (Finder's "Add to Archive…" keeps focus). Nil when none are
+    /// open — the new window then uses the remembered frame.
+    private var modelWindow: NSWindow? {
+        windowControllers.first { $0.window?.isMainWindow == true }?.window
+            ?? windowControllers.last?.window
     }
 
     /// During launch two things might happen. Either the app is launched with a url (e.g. via the Open With... menu

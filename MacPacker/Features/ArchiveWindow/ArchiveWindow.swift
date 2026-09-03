@@ -9,6 +9,9 @@ import AppKit
 import Combine
 import Core
 import SwiftUI
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "lifecycle")
 
 class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     let archiveState: ArchiveState
@@ -32,22 +35,21 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
 
         let window = ArchiveWindow()
         window.isRestorable = false
-        let didRestoreFrame = window.setFrameAutosaveName("ArchiveWindow")
         if let cascadeFrom {
-            let nextPoint = window.cascadeTopLeft(from: NSPoint(x: cascadeFrom.frame.minX, y: cascadeFrom.frame.maxY))
-            window.setFrameTopLeftPoint(nextPoint)
-        } else if didRestoreFrame {
-            let onScreen = NSScreen.screens.contains { screen in
-                let intersection = screen.visibleFrame.intersection(window.frame)
-                let minWidth = min(window.frame.width * 0.5, 300)
-                let minHeight = min(window.frame.height * 0.5, 200)
-                return !intersection.isNull && intersection.width >= minWidth && intersection.height >= minHeight
-            }
-            if !onScreen || window.frame.origin == .zero {
-                window.center()
-            }
-        } else {
+            // macOS convention: inherit the size of the window in use, step
+            // down-right. `.zero` asks for the next point without moving anything,
+            // so the existing window stays put.
+            window.setFrame(cascadeFrom.frame, display: false)
+            window.setFrameTopLeftPoint(window.cascadeTopLeft(from: .zero))
+            log.info("window placed cascaded frame=\(NSStringFromRect(window.frame))")
+        } else if !window.setFrameUsingName(Self.frameName)
+                    || !WindowFramePlacement.isUsable(window.frame, on: NSScreen.screens.map(\.visibleFrame)) {
+            // nothing remembered, or remembered on a display that is gone —
+            // an off-screen window looks like one that never opened
             window.center()
+            log.info("window placed centered frame=\(NSStringFromRect(window.frame))")
+        } else {
+            log.info("window placed restored frame=\(NSStringFromRect(window.frame))")
         }
         super.init(window: window)
 
@@ -83,6 +85,21 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     /// reliably does; the call is idempotent and cheap.
     func windowDidUpdate(_ notification: Notification) {
         (notification.object as? NSWindow)?.publishAccessibilityIdentifiers()
+    }
+
+    /// A single shared entry, not one per window: rewritten by whichever window the
+    /// user last moved or resized, and read only when no window is open. A new window
+    /// alongside others copies the main window instead. `setFrameAutosaveName` cannot
+    /// do this — one live window owns the name, every later one silently gets none.
+    private static let frameName = "ArchiveWindow"
+
+    func windowDidResize(_ notification: Notification) { rememberFrame(notification) }
+    func windowDidMove(_ notification: Notification) { rememberFrame(notification) }
+
+    private func rememberFrame(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow else { return }
+        window.saveFrame(usingName: Self.frameName)
+        log.info("window frame remembered \(NSStringFromRect(window.frame))")
     }
 
     /// Closing a window with unsaved edits asks to save first, like a document
