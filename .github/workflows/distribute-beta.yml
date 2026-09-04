@@ -1,4 +1,4 @@
-# ── Per-app beta shell (workflows-macos v0.4.6, product-file model) ───────────
+# ── Per-app beta shell (workflows-macos v0.5.2, product-file model) ───────────
 # Fires on push to main. The orchestrator discovers Config/products/*.json and
 # cuts a beta for each product whose OWN file changed and whose version is still
 # unreleased (primary MacPacker → bare v<ver>-beta.N). Channel toggles and the
@@ -18,7 +18,12 @@ permissions:
 
 jobs:
   beta:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.4.6
+    # Forks get a copy of this shell and `push: branches: [main]` fires on every
+    # fork sync, running the pipeline as far as signing before it dies red on
+    # secrets a fork never receives. A skipped `uses:` job never resolves the
+    # reusable workflow at all — no secret mapping, no jobs, no runner minutes.
+    if: github.repository == 'sarensw/MacPacker'
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.5.2
     secrets:
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
@@ -43,6 +48,14 @@ jobs:
       JIRA_API_TOKEN:                 ${{ secrets.JIRA_API_TOKEN }}
       SHARED_WORKFLOWS_TOKEN:         ${{ secrets.SHARED_WORKFLOWS_TOKEN }}
     with:
+      # From v0.5.2 every runs-on-* defaults to ["self-hosted","macOS"], and this
+      # repo has no self-hosted runner — unpinned jobs would queue forever, and a
+      # queued job never turns red. Pin explicitly.
+      runs-on-build-direct: '"macos-26"'
+      runs-on-build-store:  '"macos-26"'
+      runs-on-test:         '"macos-26"'
+      runs-on-publish:      '"macos-26"'
+
       artifact-retention-days: 90   # CI artifacts kept 90 days
       # The store leg MUST archive "Release Store" — the orchestrator default is
       # "Release", which would build the wrong flavor.
