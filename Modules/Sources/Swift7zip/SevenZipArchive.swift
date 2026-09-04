@@ -50,7 +50,7 @@ public class SevenZipArchive {
 
     // MARK: - Inspection
 
-    /// Version of the embedded 7-Zip library, e.g. `26.02`.
+    /// Version of the embedded 7-Zip library, e.g. `26.03`.
     ///
     /// Read from the vendored sources at compile time, so it follows the
     /// `Sources/CSevenZip/vendor/7zip` submodule automatically.

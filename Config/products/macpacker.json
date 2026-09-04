@@ -58,6 +58,29 @@
             "issues": [
               "165"
             ]
+          },
+          {
+            "type": "core",
+            "title": {
+              "en": "Update 7-Zip to v26.03",
+              "zh-Hans": "更新 7-Zip 至 v26.03",
+              "fr": "Mise à jour de 7-Zip vers la version 26.03",
+              "de": "7-Zip auf Version 26.03 aktualisiert",
+              "it": "Aggiornamento di 7-Zip alla versione 26.03",
+              "ja": "7-Zip を v26.03 に更新",
+              "fa": "به‌روزرسانی 7-Zip به نسخه 26.03",
+              "pl": "Aktualizacja 7-Zip do wersji 26.03",
+              "pt-BR": "Atualização do 7-Zip para a versão 26.03",
+              "ru": "Обновление 7-Zip до версии 26.03",
+              "uk": "Оновлення 7-Zip до версії 26.03",
+              "es-MX": "Actualización de 7-Zip a la versión 26.03",
+              "ko": "7-Zip을 v26.03으로 업데이트",
+              "nl": "7-Zip bijgewerkt naar v26.03",
+              "tr": "7-Zip v26.03'e güncellendi"
+            },
+            "issues": [
+              "201"
+            ]
           }
         ]
       },
