@@ -18,10 +18,7 @@ permissions:
 
 jobs:
   beta:
-    # Forks get a copy of this shell and `push: branches: [main]` fires on every
-    # fork sync, running the pipeline as far as signing before it dies red on
-    # secrets a fork never receives. A skipped `uses:` job never resolves the
-    # reusable workflow at all — no secret mapping, no jobs, no runner minutes.
+    # Make sure the beta job only runs in our own repo, not any fork repo.
     if: github.repository == 'sarensw/MacPacker'
     uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.5.3
     secrets:
@@ -48,9 +45,7 @@ jobs:
       JIRA_API_TOKEN:                 ${{ secrets.JIRA_API_TOKEN }}
       SHARED_WORKFLOWS_TOKEN:         ${{ secrets.SHARED_WORKFLOWS_TOKEN }}
     with:
-      # Every runs-on-* defaults to ["self-hosted","macOS"], and this repo has no
-      # self-hosted runner — an unpinned job queues forever, and a queued job
-      # never turns red. Pin every one of them.
+      # All jobs shall run on GitHub infrastructure, not LeanBytes infrastructure
       runs-on-prepare:      '"macos-26"'
       runs-on-build-direct: '"macos-26"'
       runs-on-build-store:  '"macos-26"'

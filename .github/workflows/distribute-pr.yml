@@ -20,9 +20,7 @@ jobs:
   pr:
     uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.5.3
     with:
-      # Every runs-on-* defaults to ["self-hosted","macOS"], and this repo has no
-      # self-hosted runner — an unpinned job queues forever, and a queued job
-      # never turns red. Pin every one of them.
+      # All jobs shall run on GitHub infrastructure, not LeanBytes infrastructure
       runs-on-discover: '"macos-26"'
       runs-on-build:    '"macos-26"'
       runs-on-test:     '"macos-26"'
