@@ -37,7 +37,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "... solleva un bug"
+            "value" : "... segnala un Bug"
           }
         },
         "ja" : {
@@ -360,6 +360,12 @@
             "value" : "%@ left"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ rimasti"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -401,6 +407,12 @@
             "value" : "%@ needs access to %@"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ richiede l'accesso a %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -411,6 +423,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ нужен доступ к %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 需要访问 %@"
           }
         }
       }
@@ -498,6 +516,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "éléments"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld files"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file"
                 }
               }
             }
@@ -725,6 +767,30 @@
             }
           }
         },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld selezionati"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld selezionato"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld selezionate"
+                }
+              }
+            }
+          }
+        },
         "ko" : {
           "variations" : {
             "plural" : {
@@ -872,6 +938,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ Grazie a tutti i collaboratori, traduttori e sponsor di questo progetto!"
           }
         },
         "pl" : {
@@ -1094,6 +1166,12 @@
             "value" : "Remerciements"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ringraziamenti"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1233,6 +1311,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add files or folders to the archive"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi file o cartelle all'archivio"
           }
         },
         "pl" : {
@@ -1380,7 +1464,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avanzato"
+            "value" : "Avanzate"
           }
         },
         "ja" : {
@@ -1454,6 +1538,12 @@
             "value" : "An extraction is still in progress"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un'estrazione è ancora in corso"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1505,6 +1595,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Formats d'archives"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato Archivi"
           }
         },
         "ko" : {
@@ -1656,6 +1752,12 @@
             "value" : "Automatic engine selection"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selezione automatica motore"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1683,8 +1785,7 @@
       }
     },
     "Automatically check for updates" : {
-      "comment" : "A toggle that lets the user choose whether FileFillet should automatically check for updates.",
-      "isCommentAutoGenerated" : true,
+      "comment" : "Toggle to enable or disable the automatic check for updates",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1696,6 +1797,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automatically check for updates"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca aggiornamenti automaticamente"
           }
         },
         "pl" : {
@@ -1843,7 +1950,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In basso"
+            "value" : "Sotto"
           }
         },
         "ja" : {
@@ -1938,7 +2045,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Posizione del breadcrumb:"
+            "value" : "Posizione del percorso:"
           }
         },
         "ko" : {
@@ -2089,6 +2196,12 @@
             "value" : "Cancel"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulla"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2135,6 +2248,30 @@
             "state" : "translated",
             "value" : "Cancelled - no access to that folder"
           }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annullato - Accesso alla cartella non consentito"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anulowano – brak dostępu do tego folderu"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отменено — нет доступа к этой папке."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已取消 — 无该文件夹的访问权限"
+          }
         }
       }
     },
@@ -2152,6 +2289,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Changelog"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cronologia versioni"
           }
         },
         "pl" : {
@@ -2277,6 +2420,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clear"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svuota"
           }
         },
         "pl" : {
@@ -2585,6 +2734,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coming next"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prossimamente"
           }
         },
         "pl" : {
@@ -2981,6 +3136,12 @@
             "value" : "Could not open archive"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile aprire l'archivio"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3020,6 +3181,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create a new archive"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea nuovo archivio"
           }
         },
         "pl" : {
@@ -3162,6 +3329,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Formats associés et paramètres de moteur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stato e impostazioni motore di default"
           }
         },
         "ko" : {
@@ -3311,6 +3484,12 @@
             "value" : "Delete the selected items from the archive"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi gli elementi selezionati dall'archivio"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3436,6 +3615,12 @@
             "value" : "Do you want to save the changes you made to “%@”?"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuoi salvare le modifiche a “%@”?:"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3492,7 +3677,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Non salvare"
+            "value" : "Non Salvare"
           }
         },
         "ja" : {
@@ -3581,7 +3766,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rilascia qui per comprimere"
+            "value" : "Trascina qui per comprimere"
           }
         },
         "ja" : {
@@ -3617,7 +3802,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Перетащите сюда для сжатия"
+            "value" : "Перетащите файлы для сжатия"
           }
         },
         "tr" : {
@@ -3843,7 +4028,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cartella dell’elemento"
+            "value" : "Cartella superiore"
           }
         },
         "ja" : {
@@ -3929,6 +4114,12 @@
             "value" : "Moteur"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Motore"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3988,6 +4179,12 @@
             "value" : "Export failed"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esportazione fallita"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3998,6 +4195,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ошибка экспорта"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出失败"
           }
         }
       }
@@ -4110,6 +4313,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Extensions"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estensioni"
           }
         },
         "ko" : {
@@ -4438,6 +4647,12 @@
             "value" : "Extract Selected…"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrai selezione…"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4477,6 +4692,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Extracting"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estrazione in corso"
           }
         },
         "pl" : {
@@ -4621,6 +4842,12 @@
             "value" : "Format de fichier"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato File"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4696,6 +4923,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Extension du fournisseur de fichiers"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fornitore estensione file"
           }
         },
         "ko" : {
@@ -4857,6 +5090,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suivre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segui"
           }
         },
         "ko" : {
@@ -5179,6 +5418,12 @@
             "value" : "Grant Access"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorizza Accesso"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5189,6 +5434,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Дать доступ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授予访问权限"
           }
         }
       }
@@ -5303,6 +5554,12 @@
             "value" : "Help with translation"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aiuto per la traduzione"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5354,6 +5611,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comment définir %@ par défaut?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come impostare %@ come predefinito?"
           }
         },
         "ko" : {
@@ -5505,6 +5768,12 @@
             "value" : "Include Beta updates"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Include aggiornamenti Beta"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5556,6 +5825,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Info sur les moteurs"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informazioni Motore"
           }
         },
         "ko" : {
@@ -5797,6 +6072,12 @@
             "value" : "Learn to use %@"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impara a usare %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6010,6 +6291,12 @@
             "value" : "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself."
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker sceglie il motore per ogni archivio e ne prova un altro se il primo non riesce a leggerlo. Disattiva questa opzione per scegliere i motori manualmente."
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6055,6 +6342,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MacPacker hace uso de varios motores de compresión. El motor predeterminado es el recomendado; motores adicionales pueden ayudar con problemas específicos de un formato. Ten en cuenta que soporte para cada motor varía dependiendo del formato."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker include diversi motori di archiviazione. È consigliato utilizzare quello predefinito; i motori alternativi possono aiutare a risolvere problemi specifici legati ai singoli formati. Ricorda che il supporto del motore varia in base al formato."
           }
         },
         "ko" : {
@@ -6120,6 +6413,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gérer dans les paramètres système"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestisci in Impostazioni"
           }
         },
         "ko" : {
@@ -6297,7 +6596,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Di più"
+            "value" : "Altro"
           }
         },
         "ko" : {
@@ -6455,6 +6754,12 @@
             "value" : "Nouvelle fenêtre %@"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuova %@ Finestra"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6508,6 +6813,12 @@
             "value" : "New Archive"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuovo Archivio"
+          }
+        },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6553,6 +6864,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No recent archives."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun archivio recente."
           }
         },
         "pl" : {
@@ -6611,7 +6928,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nessuna"
+            "value" : "Nulla"
           }
         },
         "ja" : {
@@ -6985,7 +7302,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apri archivio..."
+            "value" : "Apri Archivio..."
           }
         },
         "ja" : {
@@ -7157,7 +7474,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apri in una nuova finestra"
+            "value" : "Apri in una Nuova Finestra"
           }
         },
         "ja" : {
@@ -7418,7 +7735,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dimensioni imballate"
+            "value" : "Dimensione compressa"
           }
         },
         "ko" : {
@@ -7817,6 +8134,30 @@
             "state" : "translated",
             "value" : "Quick Compress"
           }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compressione Veloce"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szybka kompresja"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Быстрое сжатие"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速压缩"
+          }
         }
       }
     },
@@ -7833,6 +8174,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quick Compress Window"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finestra Compressione Rapida"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Okno szybkiej kompresji"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Окно быстрого сжатия"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速压缩窗口"
           }
         }
       }
@@ -7867,7 +8232,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Visualizzazione rapida"
+            "value" : "Visualizzazione Rapida"
           }
         },
         "ja" : {
@@ -7944,7 +8309,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esci comunque"
+            "value" : "Esci Comunque"
           }
         },
         "ja" : {
@@ -8018,6 +8383,12 @@
             "value" : "Quit on last window closed:"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esci alla chiusura dell'ultima finestra:"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8057,6 +8428,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quitting now stops the extraction and may leave incomplete files at the destination."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'uscita interrompe l'estrazione e può lasciare file incompleti nella destinazione."
           }
         },
         "pl" : {
@@ -8139,7 +8516,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ostatni"
+            "value" : "Ostatnie"
           }
         },
         "pt-BR" : {
@@ -8199,6 +8576,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rafraîchir"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricarica"
           }
         },
         "ko" : {
@@ -8275,7 +8658,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Note di uscita"
+            "value" : "Note di rilascio"
           }
         },
         "ja" : {
@@ -8360,6 +8743,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review"
           }
         },
         "ko" : {
@@ -8513,7 +8902,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salva col nome…"
+            "value" : "Salva con nome…"
           }
         },
         "ja" : {
@@ -8668,6 +9057,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Set MacPacker as the default app"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imposta MacPacker come applicazione predefinita"
           }
         },
         "pl" : {
@@ -8892,7 +9287,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostra nella barra dei menu:"
+            "value" : "Mostra nella Barra dei Menu:"
           }
         },
         "ja" : {
@@ -8965,6 +9360,30 @@
             "state" : "translated",
             "value" : "Show parent folder entry (“..”)"
           }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra la voce cartella superiore (“..”)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż wpis folderu nadrzędnego (“..”)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать запись родительской папки (“..”)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示父目录项（“..”）"
+          }
         }
       }
     },
@@ -9004,7 +9423,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dimensioni"
+            "value" : "Dimensione"
           }
         },
         "ko" : {
@@ -9076,6 +9495,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Étoile"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stella"
           }
         },
         "ko" : {
@@ -9224,7 +9649,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avvia"
+            "value" : "Start"
           }
         },
         "ja" : {
@@ -9319,7 +9744,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nessuna compressione"
+            "value" : "Memorizza"
           }
         },
         "ja" : {
@@ -9565,6 +9990,12 @@
             "value" : "That password is incorrect. Try again."
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La password non è corretta. Riprova."
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9606,6 +10037,12 @@
             "value" : "the archive"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'archivio"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9645,6 +10082,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per impostare MacPacker come predefinito per un tipo di file: fai clic destro sul file → “Ottieni informazioni” → scegli MacPacker sotto “Apri con:” → fai clic su “Modifica tutti…” per applicarlo a tutti gli archivi simili."
           }
         },
         "pl" : {
@@ -9703,7 +10146,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In alto"
+            "value" : "Sopra"
           }
         },
         "ja" : {
@@ -10281,6 +10724,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your changes will be lost if you don’t save them."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le modifiche non salvate andranno perse."
           }
         },
         "pl" : {
