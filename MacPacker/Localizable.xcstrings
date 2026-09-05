@@ -262,6 +262,9 @@
         }
       }
     },
+    "Smart extraction:" : {
+      "comment" : "When extracting an archive, automatically decide whether to extract into a folder named after the archive. Files are extracted into that folder unless the archive already has a single top-level folder."
+    },
     "“%@” is password protected." : {
       "comment" : "Explains that the named archive requires a password",
       "localizations" : {
