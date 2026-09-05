@@ -11,6 +11,7 @@ public enum Keys {
     // general settings
     public static let settingBreadcrumbPosition = "settingBreadcrumbPosition"
     public static let quitOnLastWindowClosed = "quitOnLastWindowClosed"
+    public static let smartExtraction = "smartExtraction"
     
     // table settings
     public static let showParentRow = "showParentRow"
@@ -52,6 +53,7 @@ public enum Keys {
             defaultOrderColumn: ArchiveSortOrder.name.rawValue,
             defaultOrderColumnAscending: true,
             dropWindowFloats: true,
+            smartExtraction: true,
         ])
     }
 }

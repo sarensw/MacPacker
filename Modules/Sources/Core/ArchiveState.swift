@@ -1342,6 +1342,19 @@ extension ArchiveState {
         }
     }
 
+    /// True when `items` selects every top-level entry of the archive — the
+    /// selection is the whole archive, so extraction behaves like
+    /// "Extract archive" and the smart folder rule applies.
+    private func coversWholeArchive(_ items: [ArchiveItem]) -> Bool {
+        guard let root else { return false }
+        let topLevel = entries.values.filter {
+            $0.parent == root.id || ($0.parent == nil && $0.type != .root)
+        }
+        guard !topLevel.isEmpty else { return false }
+        let selectedIDs = Set(items.map(\.id))
+        return topLevel.allSatisfy { selectedIDs.contains($0.id) }
+    }
+
     /// Extracts the given set of items to the given destination. This is usually triggered by the
     /// user from within the UI
     /// - Parameters:
@@ -1374,9 +1387,26 @@ extension ArchiveState {
         let task = Task {
             do {
                 let batches = try batchResolver.resolveBatches(for: items, in: entries, using: effectiveEngineSelector)
+                // "Extract selected" with the whole archive selected behaves
+                // like "Extract archive": the smart folder rule applies. A
+                // partial selection is extracted as picked, into the destination
+                // as-is — the user chose exactly those entries.
+                var target = destination
+                if UserDefaults.standard.bool(forKey: Keys.smartExtraction),
+                   coversWholeArchive(items) {
+                    let archiveUrl = url
+                    target = SmartExtraction.containerFolder(
+                        for: entries,
+                        archiveName: archiveUrl.map { archiveTypeDetector.getNameWithoutExtension(for: $0) } ?? "Archive",
+                        destination: destination
+                    ) ?? destination
+                    if target != destination {
+                        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
+                    }
+                }
                 let result = try await extractor.extract(
                     batches: batches,
-                    to: destination,
+                    to: target,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 tempDirectories.append(contentsOf: result.tempDirs)
@@ -1428,6 +1458,21 @@ extension ArchiveState {
                     throw ArchiveError.extractionFailed("No archive handler found")
                 }
 
+                var target = destination
+                if UserDefaults.standard.bool(forKey: Keys.smartExtraction) {
+                    // Folder name from the archive file, extension stripped —
+                    // compounds (tar.gz) and split parts included — so it
+                    // matches the "Extract to …" folder naming.
+                    target = SmartExtraction.containerFolder(
+                        for: entries,
+                        archiveName: archiveTypeDetector.getNameWithoutExtension(for: archiveUrl),
+                        destination: destination
+                    ) ?? destination
+                    if target != destination {
+                        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
+                    }
+                }
+
                 let extractor = ArchiveExtractor(
                     archiveEngineSelector: effectiveEngineSelector,
                     passwordResolver: makePasswordResolver()
@@ -1435,7 +1480,7 @@ extension ArchiveState {
                 try await extractor.extractAll(
                     archiveUrl,
                     archiveTypeId: archiveTypeId,
-                    to: destination,
+                    to: target,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 progressCenter.finish(jobId, .done)
