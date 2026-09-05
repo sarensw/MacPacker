@@ -16,6 +16,7 @@ public enum Keys {
     /// empties what was already collected — a history you can no longer see is one
     /// you should no longer keep.
     public static let rememberRecentArchives = "rememberRecentArchives"
+    public static let smartExtraction = "smartExtraction"
     
     // table settings
     public static let showParentRow = "showParentRow"
@@ -67,6 +68,7 @@ public enum Keys {
             defaultOrderColumnAscending: true,
             dropWindowFloats: true,
             rememberRecentArchives: true,
+            smartExtraction: true,
         ])
     }
 }
