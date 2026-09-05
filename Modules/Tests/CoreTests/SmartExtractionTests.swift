@@ -165,8 +165,18 @@ extension AllCoreTests {
             let dest = dir.appendingPathComponent("out")
             try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
 
+            // Capture the previous value and restore it — an unconditional
+            // `set(true)` would clobber a user's explicit off choice.
+            let hadValue = UserDefaults.standard.object(forKey: Keys.smartExtraction) != nil
+            let previous = UserDefaults.standard.bool(forKey: Keys.smartExtraction)
             UserDefaults.standard.set(false, forKey: Keys.smartExtraction)
-            defer { UserDefaults.standard.set(true, forKey: Keys.smartExtraction) }
+            defer {
+                if hadValue {
+                    UserDefaults.standard.set(previous, forKey: Keys.smartExtraction)
+                } else {
+                    UserDefaults.standard.removeObject(forKey: Keys.smartExtraction)
+                }
+            }
 
             let state = newState()
             try await extractFull(state, zip, to: dest)

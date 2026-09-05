@@ -1391,6 +1391,13 @@ extension ArchiveState {
                 // like "Extract archive": the smart folder rule applies. A
                 // partial selection is extracted as picked, into the destination
                 // as-is — the user chose exactly those entries.
+                // The smart folder is created below, before the extractor starts
+                // access on it — so the user-picked destination has to be held
+                // accessible from here on, or the directory creation fails for
+                // sandboxed destinations.
+                let didAccessDestination = destination.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
+
                 var target = destination
                 if UserDefaults.standard.bool(forKey: Keys.smartExtraction),
                    coversWholeArchive(items) {
@@ -1457,6 +1464,13 @@ extension ArchiveState {
                 guard let (archiveTypeId, archiveUrl) = ArchiveSupportUtilities().findHandlerAndUrl(for: root, in: entries) else {
                     throw ArchiveError.extractionFailed("No archive handler found")
                 }
+
+                // The smart folder is created below, before the extractor starts
+                // access on it — so the user-picked destination has to be held
+                // accessible from here on, or the directory creation fails for
+                // sandboxed destinations.
+                let didAccessDestination = destination.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
 
                 var target = destination
                 if UserDefaults.standard.bool(forKey: Keys.smartExtraction) {
