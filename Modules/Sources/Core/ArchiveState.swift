@@ -535,7 +535,19 @@ extension ArchiveState {
         loadChildren()
     }
 
+    /// The item currently sitting under `name` in `parent` — a real archive
+    /// entry or a pending addition — if there is one.
+    private func child(named name: String, under parent: ArchiveItem) -> ArchiveItem? {
+        parent.children?.lazy.compactMap { self.entries[$0] }.first { $0.name == name }
+    }
+
     private func addFile(url: URL, archivePath: String, under parent: ArchiveItem) {
+        // Adding over a name the archive already holds replaces it. Without
+        // dropping the old entry the archive keeps both, so the file the user
+        // meant to replace is still in there next to its replacement.
+        if let existing = child(named: url.lastPathComponent, under: parent) {
+            discard(items: [existing])
+        }
         diff.append(.addFile(archivePath: archivePath, diskPath: url))
         let item = ArchiveItem(url: url, archivePath: archivePath)
         item.parent = parent.id
@@ -560,11 +572,21 @@ extension ArchiveState {
             return
         }
 
-        diff.append(.addDirectory(archivePath: archivePath))
-        let item = ArchiveItem(url: url, archivePath: archivePath)
-        item.parent = parent.id
-        parent.addChild(item.id)
-        entries[item.id] = item
+        // A folder that is already there is merged into, not added a second
+        // time: only the files that collide inside it are replaced, the rest
+        // of what it holds stays. Anything else drops the whole folder.
+        let existing = child(named: url.lastPathComponent, under: parent)
+        let item: ArchiveItem
+        if let existing, existing.isFolder {
+            item = existing
+        } else {
+            if let existing { discard(items: [existing]) }
+            diff.append(.addDirectory(archivePath: archivePath))
+            item = ArchiveItem(url: url, archivePath: archivePath)
+            item.parent = parent.id
+            parent.addChild(item.id)
+            entries[item.id] = item
+        }
 
         for child in children.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
             if child.isDirectory {
@@ -585,6 +607,25 @@ extension ArchiveState {
             return
         }
 
+        let dropped = discard(items: items)
+
+        log.notice("Marked items for removal", context: [
+            "items": "\(items.count)",
+            "archiveEntries": "\(dropped.archiveEntries)",
+            "pendingAdds": "\(dropped.pendingAdds)"
+        ])
+
+        selectedItems = []
+        isReloadNeeded = true
+        loadChildren()
+    }
+
+    /// Takes the given items (and everything below them) out of the tree and
+    /// records that in the diff: entries that exist in the archive on disk
+    /// become removals, pending (unsaved) additions are dropped from the diff
+    /// again. Used both by delete and by an add that replaces an existing item.
+    @discardableResult
+    private func discard(items: [ArchiveItem]) -> (archiveEntries: Int, pendingAdds: Int) {
         var removedIndices: Set<UInt32> = []
         var droppedAddPaths: Set<String> = []
         for item in items {
@@ -608,15 +649,10 @@ extension ArchiveState {
         // entries that exist in the archive on disk are removed on save
         diff.append(contentsOf: removedIndices.sorted().map { .remove(sourceIndex: $0) })
 
-        log.notice("Marked items for removal", context: [
-            "items": "\(items.count)",
-            "archiveEntries": "\(removedIndices.count)",
-            "pendingAdds": "\(droppedAddPaths.count)"
-        ])
+        // a discarded item must not stay selected — it is gone from `entries`
+        selectedItems = selectedItems.filter { entries[$0.id] != nil }
 
-        selectedItems = []
-        isReloadNeeded = true
-        loadChildren()
+        return (removedIndices.count, droppedAddPaths.count)
     }
 
     /// Depth-first: collects the source indices (real archive entries) and
