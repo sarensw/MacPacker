@@ -104,6 +104,29 @@
             "issues": [
               "201"
             ]
+          },
+          {
+            "type": "lang",
+            "title": {
+              "en": "Updates to Italian, Polish, Russian & Chinese",
+              "zh-Hans": "更新意大利语、波兰语、俄语和中文翻译",
+              "fr": "Mises à jour des traductions italienne, polonaise, russe et chinoise",
+              "de": "Updates für Italienisch, Polnisch, Russisch & Chinesisch",
+              "it": "Aggiornamenti alle traduzioni italiana, polacca, russa e cinese",
+              "ja": "イタリア語・ポーランド語・ロシア語・中国語の翻訳を更新",
+              "fa": "به‌روزرسانی ترجمه‌های ایتالیایی، لهستانی، روسی و چینی",
+              "pl": "Aktualizacje tłumaczeń włoskiego, polskiego, rosyjskiego i chińskiego",
+              "pt-BR": "Atualizações das traduções italiana, polonesa, russa e chinesa",
+              "ru": "Обновления итальянского, польского, русского и китайского переводов",
+              "uk": "Оновлення італійського, польського, російського та китайського перекладів",
+              "es-MX": "Actualizaciones de las traducciones italiana, polaca, rusa y china",
+              "ko": "이탈리아어·폴란드어·러시아어·중국어 번역 업데이트",
+              "nl": "Updates voor Italiaans, Pools, Russisch & Chinees",
+              "tr": "İtalyanca, Lehçe, Rusça ve Çince çeviriler güncellendi"
+            },
+            "issues": [
+              "207"
+            ]
           }
         ]
       },
