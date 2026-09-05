@@ -57,10 +57,31 @@ private func makeSystemZipFixture(in dir: URL) throws -> URL {
     return zip
 }
 
+/// Entry paths as listed by the independent system tool (`unzip -Z1`), in
+/// file order and with duplicates kept — a `Set` would hide exactly the
+/// duplicate that an add over an existing name used to leave behind.
+private func systemZipEntries(_ zip: URL) throws -> [String] {
+    let out = try run("/usr/bin/unzip", ["-Z1", zip.path])
+    return out.split(separator: "\n").map(String.init)
+}
+
 /// Entry paths as listed by the independent system tool (`unzip -Z1`).
 private func systemZipList(_ zip: URL) throws -> Set<String> {
-    let out = try run("/usr/bin/unzip", ["-Z1", zip.path])
-    return Set(out.split(separator: "\n").map(String.init))
+    Set(try systemZipEntries(zip))
+}
+
+/// A jar fixture — a zip by another name, with the manifest a real one carries:
+/// META-INF/MANIFEST.MF, com/example/data.txt, readme.txt
+private func makeJarFixture(in dir: URL) throws -> URL {
+    let src = dir.appendingPathComponent("jarsrc")
+    try FileManager.default.createDirectory(at: src.appendingPathComponent("META-INF"), withIntermediateDirectories: true)
+    try FileManager.default.createDirectory(at: src.appendingPathComponent("com/example"), withIntermediateDirectories: true)
+    try "Manifest-Version: 1.0\n".write(to: src.appendingPathComponent("META-INF/MANIFEST.MF"), atomically: true, encoding: .utf8)
+    try "data".write(to: src.appendingPathComponent("com/example/data.txt"), atomically: true, encoding: .utf8)
+    try "old".write(to: src.appendingPathComponent("readme.txt"), atomically: true, encoding: .utf8)
+    let jar = dir.appendingPathComponent("fixture.jar")
+    try run("/usr/bin/zip", ["-r", jar.path, "META-INF", "com", "readme.txt"], cwd: src)
+    return jar
 }
 
 // MARK: - Writer-level tests (SevenZipArchive.writeArchive)
@@ -421,6 +442,84 @@ extension AllCoreTests {
             let pending = try #require(item("extra.txt", in: state))
             state.remove(items: [pending])
             #expect(!state.hasPendingChanges)
+        }
+
+        /// Adding a file the archive already holds under that name replaces it.
+        /// Issue #199: the old entry was kept, so the jar came out with two
+        /// entries for one path and the replacement did not take.
+        @Test func addingOverAnExistingFileReplacesIt() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let jar = try makeJarFixture(in: dir)
+
+            // the replacement, same name, elsewhere on disk
+            let newDir = dir.appendingPathComponent("new")
+            try FileManager.default.createDirectory(at: newDir, withIntermediateDirectories: true)
+            let replacement = newDir.appendingPathComponent("readme.txt")
+            try "new".write(to: replacement, atomically: true, encoding: .utf8)
+
+            let state = makeState()
+            state.open(url: jar)
+            try await state.openTask?.value
+            #expect(state.canBeEdited)
+
+            state.add(url: replacement)
+            let saveTask = try #require(state.save())
+            await saveTask.value
+            #expect(state.error == nil)
+
+            let listed = try systemZipEntries(jar)
+            #expect(listed.filter { $0 == "readme.txt" }.count == 1,
+                    "duplicate entry after replace: \(listed)")
+            #expect(listed.contains("com/example/data.txt"))
+            #expect(listed.contains("META-INF/MANIFEST.MF"))
+            try run("/usr/bin/unzip", ["-t", jar.path])
+
+            // the entry that survived is the new one
+            let out = dir.appendingPathComponent("out")
+            try run("/usr/bin/unzip", [jar.path, "-d", out.path])
+            #expect(try String(contentsOf: out.appendingPathComponent("readme.txt"), encoding: .utf8) == "new")
+
+            // and the archive shows one row for it, not two
+            #expect(state.entries.values.filter { $0.name == "readme.txt" }.count == 1)
+        }
+
+        /// Adding a folder that is already in the archive merges into it:
+        /// colliding files are replaced, the rest of the folder survives.
+        @Test func addingOverAnExistingFolderMergesIntoIt() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try makeSystemZipFixture(in: dir)   // folder/one.txt, folder/two.txt
+
+            // a folder of the same name on disk: one.txt replaced, three.txt new
+            let newFolder = dir.appendingPathComponent("new/folder")
+            try FileManager.default.createDirectory(at: newFolder, withIntermediateDirectories: true)
+            try "one v2".write(to: newFolder.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+            try "three".write(to: newFolder.appendingPathComponent("three.txt"), atomically: true, encoding: .utf8)
+
+            let state = makeState()
+            state.open(url: zip)
+            try await state.openTask?.value
+
+            state.add(url: newFolder)
+            let saveTask = try #require(state.save())
+            await saveTask.value
+            #expect(state.error == nil)
+
+            let listed = try systemZipEntries(zip)
+            #expect(listed.filter { $0 == "folder/one.txt" }.count == 1,
+                    "duplicate entry after replace: \(listed)")
+            #expect(listed.filter { $0 == "folder/" || $0 == "folder" }.count == 1,
+                    "duplicate folder entry: \(listed)")
+            #expect(listed.contains("folder/two.txt"))   // untouched sibling survives
+            #expect(listed.contains("folder/three.txt")) // new file arrived
+            #expect(listed.contains("root.txt"))
+            try run("/usr/bin/unzip", ["-t", zip.path])
+
+            let out = dir.appendingPathComponent("out")
+            try run("/usr/bin/unzip", [zip.path, "-d", out.path])
+            #expect(try String(contentsOf: out.appendingPathComponent("folder/one.txt"), encoding: .utf8) == "one v2")
+            #expect(try String(contentsOf: out.appendingPathComponent("folder/two.txt"), encoding: .utf8) == "two")
         }
     }
 }

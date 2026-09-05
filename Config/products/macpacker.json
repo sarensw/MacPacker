@@ -60,6 +60,29 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+              "en": "Replacing files in an archive fails",
+              "zh-Hans": "替换压缩包中的文件失败",
+              "fr": "Le remplacement de fichiers dans une archive échoue",
+              "de": "Ersetzen von Dateien in einem Archiv schlägt fehl",
+              "it": "La sostituzione di file in un archivio non riesce",
+              "ja": "アーカイブ内のファイルの置き換えに失敗する",
+              "fa": "جایگزینی فایل‌ها در یک آرشیو ناموفق است",
+              "pl": "Zastępowanie plików w archiwum nie działa",
+              "pt-BR": "Substituir arquivos em um arquivo compactado falha",
+              "ru": "Замена файлов в архиве не работает",
+              "uk": "Заміна файлів в архіві не працює",
+              "es-MX": "Reemplazar archivos en un archivo comprimido falla",
+              "ko": "아카이브 내 파일 교체가 실패함",
+              "nl": "Bestanden vervangen in een archief mislukt",
+              "tr": "Arşivdeki dosyaları değiştirme başarısız oluyor"
+            },
+            "issues": [
+              "199"
+            ]
+          },
+          {
             "type": "core",
             "title": {
               "en": "Update 7-Zip to v26.03",
