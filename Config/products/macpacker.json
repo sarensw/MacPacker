@@ -62,7 +62,7 @@
           {
             "type": "fix",
             "title": {
-              "en": "Replace files in an archive fails",
+              "en": "Replacing files in an archive fails",
               "zh-Hans": "替换压缩包中的文件失败",
               "fr": "Le remplacement de fichiers dans une archive échoue",
               "de": "Ersetzen von Dateien in einem Archiv schlägt fehl",
