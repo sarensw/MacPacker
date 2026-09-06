@@ -100,6 +100,12 @@ extension AllCoreTests {
             }
         }
 
+        @Test func legacyRarVolumeSuffixStripped() {
+            for file in ["MyArchive.r00", "MyArchive.r01", "MyArchive.r99", "MyArchive.r100"] {
+                #expect(folderName(file) == "MyArchive", "\(file)")
+            }
+        }
+
         /// Every part of one set must name the *same* folder — otherwise extracting
         /// two volumes of the same archive produces two folders.
         @Test func allPartsOfASetNameTheSameFolder() {
@@ -108,6 +114,9 @@ extension AllCoreTests {
             }
             for part in ["split_7zz.zip.001", "split_7zz.zip.002", "split_7zz.zip.003"] {
                 #expect(folderName(part) == "split_7zz", "\(part)")
+            }
+            for part in ["split_rar.rar", "split_rar.r00", "split_rar.r01"] {
+                #expect(folderName(part) == "split_rar", "\(part)")
             }
         }
 
@@ -192,7 +201,7 @@ extension AllCoreTests {
         /// Naming samples above are hand-written per scheme (a regex gives no
         /// sample name). A new split entry must arrive with its own cases.
         @Test func everySplitSchemeHasNamingSamples() {
-            #expect(Set(catalog.allSplits().map(\.id)) == ["zip-spanned", "zip-numeric"])
+            #expect(Set(catalog.allSplits().map(\.id)) == ["zip-spanned", "zip-numeric", "rar-legacy"])
         }
     }
 }

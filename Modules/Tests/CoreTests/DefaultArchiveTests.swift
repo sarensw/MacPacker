@@ -68,11 +68,16 @@ extension AllCoreTests {
             ("tar.gz", "tar", 5, 2),
             ("tar.xz", "tar", 5, 2),
             ("tar.Z", "tar", 5, 2),
+            ("tar.zst", "tar", 5, 2),
+            ("tar.lzma", "tar", 5, 2),
+            ("gtar", "tar", 6, 1),
             // comounds with one ending
             ("tbz2", "tar", 5, 2),
             ("tgz", "tar", 5, 2),
             ("txz", "tar", 5, 2),
-            ("taz", "tar", 5, 2)
+            ("taz", "tar", 5, 2),
+            ("tzst", "tar", 5, 2),
+            ("tlzma", "tar", 5, 2)
         ])
         func testAll7zipEngine(arg: (String, String, Int, Int)) async throws {
             let ext = arg.0
@@ -86,8 +91,6 @@ extension AllCoreTests {
             
             state.open(url: url)
             try await state.openTask?.value
-            
-            print("debug break point")
             
             #expect(state.type?.id == id)
             #expect(state.entries.count == entries)

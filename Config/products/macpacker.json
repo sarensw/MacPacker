@@ -37,6 +37,29 @@
         "version": "0.22.0",
         "items": [
           {
+            "type": "feat",
+            "title": {
+              "en": "Support for zstd, lzma, and more archive formats",
+              "zh-Hans": "支持 zstd、lzma 及更多压缩格式",
+              "fr": "Prise en charge de zstd, lzma et autres formats",
+              "de": "Unterstützung für zstd, lzma und weitere Formate",
+              "it": "Supporto per zstd, lzma e altri formati",
+              "ja": "zstd、lzma、その他のアーカイブ形式に対応",
+              "fa": "پشتیبانی از zstd، lzma و فرمت‌های دیگر آرشیو",
+              "pl": "Obsługa formatów zstd, lzma i innych archiwów",
+              "pt-BR": "Suporte a zstd, lzma e mais formatos de arquivo",
+              "ru": "Поддержка zstd, lzma и других форматов архивов",
+              "uk": "Підтримка zstd, lzma та інших форматів архівів",
+              "es-MX": "Compatibilidad con zstd, lzma y más formatos",
+              "ko": "zstd, lzma 및 추가 아카이브 형식 지원",
+              "nl": "Ondersteuning voor zstd, lzma en meer formaten",
+              "tr": "zstd, lzma ve daha fazla arşiv formatı desteği"
+            },
+            "issues": [
+              "TODO"
+            ]
+          },
+          {
             "type": "fix",
             "title": {
               "en": "Remember window size and position",

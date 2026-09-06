@@ -267,12 +267,59 @@ public:
 static HRESULT tryOpenStream(
     IInStream *stream,
     CMyComPtr<IInArchive> &archiveOut,
-    IArchiveOpenCallback *callback = nullptr)
+    IArchiveOpenCallback *callback = nullptr,
+    const char *extensionHint = nullptr)
 {
     UInt32 numFormats = 0;
     GetNumberOfFormats(&numFormats);
 
+    std::vector<UInt32> extFormats;
+    std::vector<UInt32> regularFormats;
+    std::vector<UInt32> fallbackFormats;
+
+    std::string hint = extensionHint ? extensionHint : "";
+    for (char &c : hint) c = (char)tolower((unsigned char)c);
+
     for (UInt32 i = 0; i < numFormats; i++) {
+        NWindows::NCOM::CPropVariant propName;
+        GetHandlerProperty2(i, NArchive::NHandlerPropID::kName, &propName);
+        std::string name = PropVariantToUTF8(propName);
+
+        if (!hint.empty()) {
+            NWindows::NCOM::CPropVariant propExt;
+            GetHandlerProperty2(i, NArchive::NHandlerPropID::kExtension, &propExt);
+            std::string extList = PropVariantToUTF8(propExt);
+            size_t start = 0;
+            bool matched = false;
+            while (start < extList.size()) {
+                size_t space = extList.find(' ', start);
+                std::string token = (space == std::string::npos) ? extList.substr(start) : extList.substr(start, space - start);
+                if (!token.empty() && token == hint) {
+                    matched = true;
+                    break;
+                }
+                if (space == std::string::npos) break;
+                start = space + 1;
+            }
+            if (matched) {
+                extFormats.push_back(i);
+                continue;
+            }
+        }
+
+        if (name == "zip") {
+            fallbackFormats.push_back(i);
+        } else {
+            regularFormats.push_back(i);
+        }
+    }
+
+    std::vector<UInt32> order = std::move(extFormats);
+    order.insert(order.end(), regularFormats.begin(), regularFormats.end());
+    order.insert(order.end(), fallbackFormats.begin(), fallbackFormats.end());
+
+    UInt64 newPos = 0;
+    for (UInt32 i : order) {
         NWindows::NCOM::CPropVariant propClassID;
         GetHandlerProperty2(i, NArchive::NHandlerPropID::kClassID, &propClassID);
         if (propClassID.vt != VT_BSTR || !propClassID.bstrVal)
@@ -286,7 +333,6 @@ static HRESULT tryOpenStream(
         if (hr != S_OK || !archive)
             continue;
 
-        UInt64 newPos;
         stream->Seek(0, STREAM_SEEK_SET, &newPos);
 
         UInt64 maxCheckStart = 1 << 22; // 4MB
@@ -700,7 +746,8 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
     // back, chmod it, or replace it with a symlink.
     _outFileStream.Release();
 
-    if (opRes != NArchive::NExtract::NOperationResult::kOK) {
+    if (opRes != NArchive::NExtract::NOperationResult::kOK &&
+        opRes != NArchive::NExtract::NOperationResult::kDataAfterEnd) {
         // The entry did not decode. Whatever bytes landed on disk are garbage —
         // usually zero of them — so remove the file instead of leaving an empty
         // one that looks like a successful extraction.
@@ -821,7 +868,8 @@ static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_ou
                               callback->destDir());
 
     const Int32 opRes = callback->failedOpResult;
-    const bool entryFailed = opRes != NArchive::NExtract::NOperationResult::kOK;
+    const bool entryFailed = opRes != NArchive::NExtract::NOperationResult::kOK &&
+                             opRes != NArchive::NExtract::NOperationResult::kDataAfterEnd;
 
     if (hr == S_OK && !entryFailed && callback->errorMessage.empty())
         return SZ_EXTRACT_OK;
@@ -994,7 +1042,12 @@ SZArchiveRef sz_open(const char *path, const char *password,
 
         // Try each registered format on the file stream
         CMyComPtr<IInArchive> firstArchive;
-        HRESULT hr = tryOpenStream(handle->fileStream, firstArchive, volCallback);
+        std::string extHint;
+        if (path) {
+            const char *dot = strrchr(path, '.');
+            if (dot) extHint = dot + 1;
+        }
+        HRESULT hr = tryOpenStream(handle->fileStream, firstArchive, volCallback, extHint.c_str());
         if (hr != S_OK || !firstArchive) {
             if (needs_password_out)
                 *needs_password_out = volCallbackSpec->passwordRequested;

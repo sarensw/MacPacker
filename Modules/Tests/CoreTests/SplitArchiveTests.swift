@@ -65,6 +65,15 @@ extension AllCoreTests {
             }
         }
 
+        @Test func detectLegacyRarParts() {
+            let detector = ArchiveTypeDetector(catalog: ArchiveTypeCatalog())
+            for part in ["archive.r00", "archive.r01", "archive.r99"] {
+                let result = detector.detect(for: URL(fileURLWithPath: "/x/\(part)"))
+                #expect(result?.type.id == "rar", "\(part)")
+                #expect(result?.split?.scheme == "legacy", "\(part)")
+            }
+        }
+
         @Test func detectorReportsBareSpannedZip() {
             let detector = ArchiveTypeDetector(catalog: ArchiveTypeCatalog())
             let dir = zipDir()
@@ -127,6 +136,15 @@ extension AllCoreTests {
                 let entry = SplitVolumeResolver.firstVolume(
                     for: dir.appendingPathComponent(part), split: split)
                 #expect(entry.lastPathComponent == "split_7zz.zip.001", "\(part)")
+            }
+        }
+
+        @Test func legacyRarResolvesToFirstVolume() throws {
+            let split = try #require(ArchiveTypeCatalog().allSplits().first { $0.id == "rar-legacy" })
+            for part in ["archive.r00", "archive.r01", "archive.r99"] {
+                let entry = SplitVolumeResolver.firstVolume(
+                    for: URL(fileURLWithPath: "/x/\(part)"), split: split)
+                #expect(entry.lastPathComponent == "archive.rar", "\(part)")
             }
         }
 
