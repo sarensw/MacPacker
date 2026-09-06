@@ -237,9 +237,7 @@
       "uti": ["org.tukaani.lzma-archive", "public.lzma-archive"],
       "extensions": ["lzma"],
       "mime": ["application/x-lzma"],
-      "rules": [
-        { "policy": "any", "tests": [{"type": "signature", "bytes": "5D 00 00", "offset": 0}] }
-      ],
+      "rules": [],
       "engines": [
         { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
       ]

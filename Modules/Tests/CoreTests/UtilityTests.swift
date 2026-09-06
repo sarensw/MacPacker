@@ -531,6 +531,28 @@ extension AllCoreTests {
             #expect(result?.type.id == "zip")
             #expect(result?.source == .magic)
         }
+
+        @Test func lzmaNearMissWithoutExtensionIsNotDetectedAsLzma() throws {
+            let catalog = ArchiveTypeCatalog()
+            let detector = ArchiveTypeDetector(catalog: catalog)
+
+            // 5D 00 00 prefix should not classify an unknown-extension file as lzma
+            let tempURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent("nearmiss_\(UUID().uuidString).bin")
+            let nearMissBytes = Data([0x5D, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00])
+            try nearMissBytes.write(to: tempURL)
+            defer { try? FileManager.default.removeItem(at: tempURL) }
+
+            let magicResult = detector.detectByMagicNumber(for: tempURL)
+            #expect(magicResult == nil)
+
+            let detectResult = detector.detect(for: tempURL)
+            #expect(detectResult == nil)
+
+            // lzma extension itself must still be detected
+            let lzmaExtResult = detector.detectBy(ext: "lzma")
+            #expect(lzmaExtResult?.type.id == "lzma")
+        }
     }
 
     // MARK: - 10. ArchiveEngineConfigStore
