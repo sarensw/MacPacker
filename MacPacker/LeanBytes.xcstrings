@@ -40,7 +40,7 @@
       "comment" : "Short description of the FlowMoose app"
     },
     "I made the App Store screenshots with this tool." : {
-      "comment" : "Description to the FrameBison app"
+      "comment" : "Description to the FrameBeast app"
     },
     "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool." : {
       "comment" : "Explains that supporting the listed LeanBytes apps supports MacPacker",
@@ -78,7 +78,7 @@
       }
     },
     "MacPackers app store & social media assets are made with this app" : {
-      "comment" : "Short description of the FrameBison app"
+      "comment" : "Short description of the FrameBeast app"
     },
     "More Apps" : {
       "comment" : "Hint to the user that the submenu contains links for more apps that they might like.",

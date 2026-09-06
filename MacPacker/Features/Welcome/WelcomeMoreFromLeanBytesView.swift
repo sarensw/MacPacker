@@ -116,9 +116,9 @@ struct WelcomeMoreFromLeanBytesView: View {
             
             MoreFromLeanBytesProductView(logo: "AppIcon_FileFillet", title: Constants.otherAppFileFillet, description: LocalizedStringResource("Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows.", table: "LeanBytes", comment: "Description of the FileFillet app"), openSource: false, url: Constants.otherAppFileFilletURL)
 
-            // Deliberately untranslated: FrameBison is early access and its
+            // Deliberately untranslated: FrameBeast is early access and its
             // pitch still changes, so it stays out of POEditor for now.
-            MoreFromLeanBytesProductView(logo: "AppIcon_FrameBison", title: Constants.otherAppFrameBison, description: LocalizedStringResource("I made the App Store screenshots with this tool.", table: "LeanBytes", comment: "Description to the FrameBison app"), openSource: false, url: Constants.otherAppFrameBisonURL, pill: .earlyAccess, videoURL: Constants.otherAppFrameBisonVideoURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FrameBeast", title: Constants.otherAppFrameBeast, description: LocalizedStringResource("I made the App Store screenshots with this tool.", table: "LeanBytes", comment: "Description to the FrameBeast app"), openSource: false, url: Constants.otherAppFrameBeastURL, pill: .earlyAccess, videoURL: Constants.otherAppFrameBeastVideoURL)
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)

@@ -284,16 +284,16 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     }
 
                     Button {
-                        openURL(Constants.otherAppFrameBisonURL)
+                        openURL(Constants.otherAppFrameBeastURL)
                     } label: {
                         Label {
-                            Text(verbatim: "\(Constants.otherAppFrameBison)")
+                            Text(verbatim: "\(Constants.otherAppFrameBeast)")
                         } icon: {
-                            Image(nsImage: .menuIcon(named: "AppIcon_FrameBison"))
+                            Image(nsImage: .menuIcon(named: "AppIcon_FrameBeast"))
                         }
                         .labelStyle(.titleAndIcon)
                         // Deliberately untranslated, see WelcomeMoreFromLeanBytesView.
-                        Text("MacPackers app store & social media assets are made with this app", tableName: "LeanBytes", comment: "Short description of the FrameBison app")
+                        Text("MacPackers app store & social media assets are made with this app", tableName: "LeanBytes", comment: "Short description of the FrameBeast app")
                     }
                 } label: {
                     Label {

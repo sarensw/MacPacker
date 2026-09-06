@@ -34,9 +34,9 @@ class Constants {
     public static let otherAppFlowMooseURL: URL = URL(string: "https://flowmoose.app/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui")!
     public static let otherAppFileFillet: String = "FileFillet"
     public static let otherAppFileFilletURL: URL = URL(string: "https://filefillet.com/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui")!
-    public static let otherAppFrameBison: String = "FrameBison"
+    public static let otherAppFrameBeast: String = "FrameBeast"
     /// The utm query has to sit before the fragment, otherwise it becomes part
     /// of the anchor and the section is not scrolled to.
-    public static let otherAppFrameBisonURL: URL = URL(string: "https://leanbytes.io/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui#framebison")!
-    public static let otherAppFrameBisonVideoURL: URL = URL(string: "https://youtu.be/v8MMui9zeoA")!
+    public static let otherAppFrameBeastURL: URL = URL(string: "https://leanbytes.io/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui#framebeast")!
+    public static let otherAppFrameBeastVideoURL: URL = URL(string: "https://youtu.be/v8MMui9zeoA")!
 }
