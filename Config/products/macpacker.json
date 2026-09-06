@@ -34,7 +34,7 @@
     },
     "versions": [
       {
-        "version": "0.22.0",
+        "version": "0.23.0",
         "items": [
           {
             "type": "feat",
@@ -58,7 +58,12 @@
             "issues": [
               "TODO"
             ]
-          },
+          }
+        ]
+      },
+      {
+        "version": "0.22.0",
+        "items": [
           {
             "type": "fix",
             "title": {
