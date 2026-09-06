@@ -11,6 +11,7 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
     @AppStorage(Keys.settingBreadcrumbPosition) var breadcrumbPosition: BreadcrumbPosition = .bottom
+    @AppStorage(Keys.archiveViewMode) var viewMode: ArchiveViewMode = .table
     @AppStorage(Keys.showColumnCompressedSize) var showCompressedSize: Bool = true
     @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
@@ -41,6 +42,21 @@ struct GeneralSettingsView: View {
                 }
                 .padding(.leading, 8)
                 .toggleStyle(.checkbox)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            HStack(alignment: .top) {
+                Text("Default view:", comment: "Setting that lets the user choose whether archives open in list or tree view by default")
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Picker(String(""), selection: $viewMode) {
+                        Text("List", comment: "Option in default view setting to use list/table view")
+                            .tag(ArchiveViewMode.table)
+                        Text("Tree", comment: "Option in default view setting to use tree/outline view")
+                            .tag(ArchiveViewMode.outline)
+                    }
+                }
                 .frame(width: 240, alignment: .leading)
             }
 

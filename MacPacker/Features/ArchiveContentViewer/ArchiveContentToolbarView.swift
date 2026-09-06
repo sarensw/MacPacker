@@ -21,6 +21,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
     @Environment(\.openQuickCompressWindow) private var openQuickCompressWindow
     @Environment(\.openURL) private var openURL
     @Environment(\.openSettings) private var openSettings
+    @AppStorage(Keys.archiveViewMode) private var viewMode: ArchiveViewMode = .table
     @State private var isExportingItem: Bool = false
     @State private var isExportingAll: Bool = false
     
@@ -70,7 +71,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .help(Text("Enclosing folder", comment: "Tooltip of the toolbar's back button: it shows the folder that contains the one being browsed."))
-            .disabled(!archiveState.canGoUp)
+            .disabled(!archiveState.canGoUp || viewMode == .outline)
         }
 
         ToolbarItemGroup(placement: .primaryAction) {
@@ -156,8 +157,24 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             
-            Spacer()
-            
+            Picker(selection: $viewMode) {
+                Label {
+                    Text("List", comment: "Label for segmented control button switching archive view to flat table/list view")
+                } icon: {
+                    Image(systemName: "list.bullet")
+                }
+                .tag(ArchiveViewMode.table)
+
+                Label {
+                    Text("Tree", comment: "Label for segmented control button switching archive view to hierarchical tree/outline view")
+                } icon: {
+                    Image(systemName: "list.bullet.indent")
+                }
+                .tag(ArchiveViewMode.outline)
+            }
+            .pickerStyle(.segmented)
+            .help(Text("Switch view mode", comment: "Tooltip for the view mode switcher in the archive window toolbar"))
+
             Menu {
                 Button {
                     openQuickCompressWindow()

@@ -7,10 +7,18 @@
 
 import Foundation
 
+public enum ArchiveViewMode: String, CaseIterable, Identifiable, Codable {
+    case table
+    case outline
+
+    public var id: String { rawValue }
+}
+
 public enum Keys {
     // general settings
     public static let settingBreadcrumbPosition = "settingBreadcrumbPosition"
     public static let quitOnLastWindowClosed = "quitOnLastWindowClosed"
+    public static let archiveViewMode = "archiveViewMode"
     
     // table settings
     public static let showParentRow = "showParentRow"
@@ -52,6 +60,7 @@ public enum Keys {
             defaultOrderColumn: ArchiveSortOrder.name.rawValue,
             defaultOrderColumnAscending: true,
             dropWindowFloats: true,
+            archiveViewMode: ArchiveViewMode.table.rawValue,
         ])
     }
 }

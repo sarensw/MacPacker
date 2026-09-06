@@ -374,7 +374,7 @@ extension ArchiveState {
         }
     }
 
-    private func sortedForDisplay(_ items: [ArchiveItem]) -> [ArchiveItem] {
+    public func sortedForDisplay(_ items: [ArchiveItem]) -> [ArchiveItem] {
         let defaultOrderColumn = UserDefaults.standard.string(forKey: Keys.defaultOrderColumn)
         let defaultOrderColumnAscending = UserDefaults.standard.bool(forKey: Keys.defaultOrderColumnAscending)
 

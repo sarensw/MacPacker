@@ -32,6 +32,7 @@ struct ArchiveView: View {
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
+    @AppStorage(Keys.archiveViewMode) var viewMode: ArchiveViewMode = .table
 
     @State private var selection: IndexSet?
     /// nil while no file is over the window; otherwise the zone the pointer is in.
@@ -60,14 +61,37 @@ struct ArchiveView: View {
     var body: some View {
         Group {
             if state.hasArchive {
-                ArchiveTableViewRepresentable(
-                    selection: $selection,
-                    isReloadNeeded: $state.isReloadNeeded,
-                    showCompressedSizeColumn: $showCompressedSize,
-                    showUncompressedSizeColumn: $showUncompressedSize,
-                    showModificationDateColumn: $showModificationDate,
-                    showPosixPermissionsColumn: $showPermissions
-                )
+                if !state.searchText.isEmpty {
+                    ArchiveTableViewRepresentable(
+                        selection: $selection,
+                        isReloadNeeded: $state.isReloadNeeded,
+                        showCompressedSizeColumn: $showCompressedSize,
+                        showUncompressedSizeColumn: $showUncompressedSize,
+                        showModificationDateColumn: $showModificationDate,
+                        showPosixPermissionsColumn: $showPermissions
+                    )
+                } else {
+                    switch viewMode {
+                    case .table:
+                        ArchiveTableViewRepresentable(
+                            selection: $selection,
+                            isReloadNeeded: $state.isReloadNeeded,
+                            showCompressedSizeColumn: $showCompressedSize,
+                            showUncompressedSizeColumn: $showUncompressedSize,
+                            showModificationDateColumn: $showModificationDate,
+                            showPosixPermissionsColumn: $showPermissions
+                        )
+                    case .outline:
+                        ArchiveOutlineViewRepresentable(
+                            selection: $selection,
+                            isReloadNeeded: $state.isReloadNeeded,
+                            showCompressedSizeColumn: $showCompressedSize,
+                            showUncompressedSizeColumn: $showUncompressedSize,
+                            showModificationDateColumn: $showModificationDate,
+                            showPosixPermissionsColumn: $showPermissions
+                        )
+                    }
+                }
             } else {
                 HomeView()
             }

@@ -79,5 +79,23 @@ struct ArchiveCommands: Commands {
             }
             .keyboardShortcut("f", modifiers: [.command])
         }
+
+        CommandGroup(after: .toolbar) {
+            Divider()
+
+            Button {
+                UserDefaults.standard.set(ArchiveViewMode.table.rawValue, forKey: Keys.archiveViewMode)
+            } label: {
+                Text("as List", comment: "View menu entry to switch archive window to list/table view")
+            }
+            .keyboardShortcut("2", modifiers: [.command])
+
+            Button {
+                UserDefaults.standard.set(ArchiveViewMode.outline.rawValue, forKey: Keys.archiveViewMode)
+            } label: {
+                Text("as Tree", comment: "View menu entry to switch archive window to tree/outline view")
+            }
+            .keyboardShortcut("3", modifiers: [.command])
+        }
     }
 }

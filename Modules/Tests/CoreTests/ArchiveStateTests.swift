@@ -1034,4 +1034,87 @@ extension AllCoreTests {
             #expect(state.childItems!.map { $0.virtualPath ?? $0.name } == paths)
         }
     }
+
+    // MARK: - ArchiveViewMode & Defaults
+
+    @MainActor struct ArchiveViewModeTests {
+
+        @Test func archiveViewModeRawValuesAndDefaults() {
+            #expect(ArchiveViewMode.table.rawValue == "table")
+            #expect(ArchiveViewMode.outline.rawValue == "outline")
+            #expect(ArchiveViewMode.table.id == "table")
+            #expect(ArchiveViewMode.outline.id == "outline")
+            #expect(Keys.archiveViewMode == "archiveViewMode")
+
+            UserDefaults.standard.removeObject(forKey: Keys.archiveViewMode)
+            Keys.registerDefaults()
+            let stored = UserDefaults.standard.string(forKey: Keys.archiveViewMode)
+            #expect(stored == ArchiveViewMode.table.rawValue)
+        }
+
+        @Test func archiveViewModeCaseIterable() {
+            #expect(ArchiveViewMode.allCases == [.table, .outline])
+        }
+    }
+
+    // MARK: - Sorted for display
+
+    @MainActor struct ArchiveStateSortedForDisplayTests {
+
+        @Test func foldersAlwaysPrecedeFilesWhenSortedByName() {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+
+            let fileA = ArchiveItem(index: 0, name: "aaa.txt", type: .file)
+            let folderZ = ArchiveItem(name: "zzz_folder", type: .directory)
+            let fileB = ArchiveItem(index: 1, name: "bbb.txt", type: .file)
+            let folderA = ArchiveItem(name: "aaa_folder", type: .directory)
+
+            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
+
+            let sortedAsc = state.sortedForDisplay([fileA, folderZ, fileB, folderA])
+            #expect(sortedAsc.map(\.name) == ["aaa_folder", "zzz_folder", "aaa.txt", "bbb.txt"])
+
+            UserDefaults.standard.set(false, forKey: Keys.defaultOrderColumnAscending)
+            let sortedDesc = state.sortedForDisplay([fileA, folderZ, fileB, folderA])
+            #expect(sortedDesc.map(\.name) == ["zzz_folder", "aaa_folder", "bbb.txt", "aaa.txt"])
+        }
+
+        @Test func sortedByUncompressedSize() {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+
+            let itemSmall = ArchiveItem(index: 0, name: "small.txt", type: .file, uncompressedSize: 100)
+            let itemLarge = ArchiveItem(index: 1, name: "large.txt", type: .file, uncompressedSize: 1000)
+            let itemMedium = ArchiveItem(index: 2, name: "medium.txt", type: .file, uncompressedSize: 500)
+
+            UserDefaults.standard.set(ArchiveSortOrder.uncompressedSize.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
+
+            let sortedAsc = state.sortedForDisplay([itemLarge, itemSmall, itemMedium])
+            #expect(sortedAsc.map(\.name) == ["small.txt", "medium.txt", "large.txt"])
+
+            UserDefaults.standard.set(false, forKey: Keys.defaultOrderColumnAscending)
+            let sortedDesc = state.sortedForDisplay([itemLarge, itemSmall, itemMedium])
+            #expect(sortedDesc.map(\.name) == ["large.txt", "medium.txt", "small.txt"])
+        }
+
+        @Test func nestedItemsSortedForDisplay() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+
+            state.open(url: url)
+            try await state.openTask?.value
+
+            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
+            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
+
+            let rootChildIDs = state.root?.children ?? []
+            let rootItems = rootChildIDs.compactMap { state.entries[$0] }
+            let sortedRoot = state.sortedForDisplay(rootItems)
+
+            #expect(!sortedRoot.isEmpty)
+            #expect(sortedRoot.first?.isFolder == true)
+        }
+    }
 }
