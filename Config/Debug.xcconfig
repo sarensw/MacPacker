@@ -27,3 +27,8 @@ PROVISIONING_PROFILE_SPECIFIER =
 // using it here would end this config's "clone and build, no signing setup" rule.
 // The two never need to agree — a debug build has its own bundle ID and settings.
 APP_GROUP_ID = ZJ2TSMMJWF.com.sarensx.MacPacker$(BUNDLE_ID_SUFFIX)
+
+// Optional local override, last so it wins. Copy SigningOverride.xcconfig.template
+// to SigningOverride.xcconfig to sign Debug builds with your own identity instead
+// of ad-hoc; the file is gitignored, so everyone else keeps the zero-setup build.
+#include? "SigningOverride.xcconfig"
