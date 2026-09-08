@@ -28,6 +28,11 @@ public final class ArchivePreviewViewController: NSViewController {
     /// would leave the user staring at nothing while we wait for their password.
     private var readyContinuation: CheckedContinuation<Void, Never>?
     private var passwordContinuation: CheckedContinuation<String?, Never>?
+    /// Bumped by every load. The harness loads a second archive into the same
+    /// controller, so a load can be superseded while it is still running: its
+    /// callbacks must not touch the UI the newer load owns, and must not resume
+    /// the newer load's continuations.
+    private var loadGeneration = 0
     /// What to go back to once a password has been entered.
     private var showedContentBeforePrompt = false
 
@@ -138,9 +143,19 @@ public final class ArchivePreviewViewController: NSViewController {
             scopedURL = url
         }
 
+        // Let go of whatever the previous load was waiting on before replacing
+        // it: an unresumed continuation hangs its caller forever.
+        passwordContinuation?.resume(returning: nil)
+        passwordContinuation = nil
+        readyContinuation?.resume()
+        readyContinuation = nil
+
+        loadGeneration += 1
+        let generation = loadGeneration
+
         let state = ArchivePreviewLoader.makeState()
         state.passwordProvider = { [weak self] request in
-            await self?.requestPassword(request) ?? nil
+            await self?.requestPassword(request, generation: generation) ?? nil
         }
         self.state = state
 
@@ -148,16 +163,17 @@ public final class ArchivePreviewViewController: NSViewController {
         let openTask = state.openTask
         Task { [weak self] in
             _ = try? await openTask?.value
-            self?.finishLoad()
+            self?.finishLoad(generation: generation)
         }
         await withCheckedContinuation { continuation in
             readyContinuation = continuation
         }
     }
 
-    /// Shows whatever the finished load produced.
-    private func finishLoad() {
-        guard let state else { return }
+    /// Shows whatever the finished load produced, unless a newer load has
+    /// taken over in the meantime.
+    private func finishLoad(generation: Int) {
+        guard generation == loadGeneration, let state else { return }
         hidePasswordPrompt()
 
         let entryCount = state.entries.count
@@ -187,7 +203,12 @@ public final class ArchivePreviewViewController: NSViewController {
     // MARK: - Password
 
     /// Asks the user for the archive's password, inline in the preview.
-    private func requestPassword(_ request: ArchivePasswordRequest) async -> String? {
+    ///
+    /// A superseded load gets no prompt and no password: answering nil ends it
+    /// as cancelled instead of leaving its engine waiting on a prompt that the
+    /// newer load's UI has replaced.
+    private func requestPassword(_ request: ArchivePasswordRequest, generation: Int) async -> String? {
+        guard generation == loadGeneration else { return nil }
         PreviewLog.general.info("Password requested", context: [
             "file": request.url.lastPathComponent,
             "attempt": "\(request.attempt)"
@@ -198,6 +219,8 @@ public final class ArchivePreviewViewController: NSViewController {
         signalReady()
 
         return await withCheckedContinuation { continuation in
+            // two prompts at once would strand the first one forever
+            passwordContinuation?.resume(returning: nil)
             passwordContinuation = continuation
         }
     }
