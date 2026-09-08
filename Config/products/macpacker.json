@@ -37,6 +37,29 @@
         "version": "1.0.0",
         "items": [
           {
+            "type": "fix",
+            "title": {
+                "en": "Extracting an opened nested archive does nothing",
+                "zh-Hans": "已打开的嵌套压缩包无法解压",
+                "fr": "L’extraction d’une archive imbriquée ouverte ne fait rien",
+                "de": "Entpacken eines geöffneten verschachtelten Archivs bewirkt nichts",
+                "it": "L’estrazione di un archivio annidato aperto non fa nulla",
+                "ja": "開いた入れ子のアーカイブを展開しても何も起きない",
+                "fa": "استخراج آرشیو تودرتوی بازشده هیچ کاری نمی‌کند",
+                "pl": "Wypakowanie otwartego zagnieżdżonego archiwum nic nie robi",
+                "pt-BR": "Extrair um arquivo aninhado já aberto não faz nada",
+                "ru": "Извлечение открытого вложенного архива ничего не даёт",
+                "uk": "Видобування відкритого вкладеного архіву нічого не робить",
+                "es-MX": "Extraer un archivo anidado ya abierto no hace nada",
+                "ko": "열어 본 중첩 압축 파일을 압축 해제해도 아무 일이 없음",
+                "nl": "Het uitpakken van een geopend genest archief doet niets",
+                "tr": "Açılmış iç içe arşivi çıkarmak hiçbir şey yapmıyor"
+            },
+            "issues": [
+                "214"
+            ]
+          },
+          {
             "type": "feat",
             "title": {
                 "en": "Quick Look follows your engine settings",

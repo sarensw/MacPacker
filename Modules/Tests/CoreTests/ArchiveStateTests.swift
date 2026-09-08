@@ -778,6 +778,47 @@ extension AllCoreTests {
             #expect(nestedNames.contains("taxes.xlsx"))
         }
 
+        /// A nested archive that has been opened is still an entry of the
+        /// archive around it, and extracting it has to write that file out.
+        ///
+        /// Opening one gives the item its own `url` and `archiveTypeId`, and the
+        /// handler lookup used to start at the item itself — so MacPacker tried
+        /// to extract NestedArchive.zip out of NestedArchive.zip and wrote
+        /// nothing at all.
+        @Test func extractOpenedNestedArchiveItself() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            state.open(url: folderURL.appendingPathComponent("defaultArchive.zip"))
+            try await state.openTask?.value
+
+            let dirChild = state.root!.children!
+                .compactMap { state.entries[$0] }
+                .first(where: { $0.type == .directory })!
+            try await state.openAsync(item: dirChild)
+
+            let nestedArchive = state.childItems!.first(where: { $0.name == "NestedArchive.zip" })!
+            try await state.openAsync(item: nestedArchive)   // unfolds it
+
+            let destination = FileManager.default.temporaryDirectory
+                .appendingPathComponent("ExtractNestedArchive_\(UUID().uuidString)")
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: destination) }
+
+            state.extract(items: [nestedArchive], to: destination)
+            try await Task.sleep(nanoseconds: 3_000_000_000)
+
+            let written = destination.appendingPathComponent("NestedArchive.zip")
+            #expect(FileManager.default.fileExists(atPath: written.path),
+                    "the nested archive itself was not extracted")
+
+            // and only that: its entries belong to a different archive, so they
+            // must not be unpacked into the destination alongside it
+            let names = try FileManager.default
+                .contentsOfDirectory(at: destination, includingPropertiesForKeys: nil)
+                .map(\.lastPathComponent)
+            #expect(names == ["NestedArchive.zip"], "unexpected extra output: \(names)")
+        }
+
         /// A zip holding jar/aar/apk packages: double-clicking one must unfold
         /// it in place (browse into it) instead of handing it to the system.
         @Test(arguments: ["jar", "aar", "apk"])
