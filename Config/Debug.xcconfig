@@ -17,3 +17,13 @@ APP_URL_SCHEME = app.macpacker.debug
 CODE_SIGN_STYLE = Manual
 CODE_SIGN_IDENTITY = -
 PROVISIONING_PROFILE_SPECIFIER =
+
+// App group that holds the engine settings, so the QuickLook extension reads
+// the picks the app writes (each has its own sandbox container otherwise).
+// Injected into the entitlements and into Info.plist as MPAppGroupIdentifier.
+//
+// Team-ID-prefixed, unlike the release configs' registered `group.app.macpacker`:
+// a `group.`-prefixed app group is only authorised by a provisioning profile, so
+// using it here would end this config's "clone and build, no signing setup" rule.
+// The two never need to agree — a debug build has its own bundle ID and settings.
+APP_GROUP_ID = ZJ2TSMMJWF.com.sarensx.MacPacker$(BUNDLE_ID_SUFFIX)

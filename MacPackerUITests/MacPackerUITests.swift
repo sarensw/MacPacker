@@ -448,4 +448,73 @@ final class MacPackerUITests: XCTestCase {
         XCTAssertEqual(restoredIconOnly, iconOnly, "Icon Only did not survive the relaunch")
         third.terminate()
     }
+
+    // MARK: - Quick Look preview
+
+    /// The Quick Look preview UI, driven through the debug harness
+    /// (`-QuickLookPreview`), which hosts the very controller the extension runs.
+    private func launchPreview(of archive: URL) -> XCUIApplication {
+        launchApp(arguments: ["-QuickLookPreview", archive.path])
+    }
+
+    /// Clicks the disclosure triangle of the row showing `name`. The triangle
+    /// sits left of the label and is not part of it, so it's reached by offset.
+    private func expandRow(_ app: XCUIApplication, _ name: String) {
+        app.staticTexts[name].firstMatch
+            .coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
+            .withOffset(CGVector(dx: -26, dy: 0))
+            .click()
+    }
+
+    /// A nested archive is browsable in the preview: its row offers a disclosure
+    /// triangle before anything is known about the contents, and opening it
+    /// unpacks the archive and lists what is inside.
+    func testQuickLookPreviewOpensNestedArchive() throws {
+        let dir = try makeWorkDir("ql-nested")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "inner".write(to: dir.appendingPathComponent("inner.txt"), atomically: true, encoding: .utf8)
+        try run("/usr/bin/zip", [dir.appendingPathComponent("inner.zip").path, "inner.txt"], cwd: dir)
+        let outer = dir.appendingPathComponent("outer.zip")
+        try run("/usr/bin/zip", [outer.path, "inner.zip"], cwd: dir)
+
+        let app = launchPreview(of: outer)
+        XCTAssertTrue(app.staticTexts["inner.zip"].waitForExistence(timeout: 15), "preview did not load")
+        XCTAssertFalse(app.staticTexts["inner.txt"].exists, "nested contents were listed before the archive was opened")
+
+        expandRow(app, "inner.zip")
+        XCTAssertTrue(app.staticTexts["inner.txt"].waitForExistence(timeout: 20),
+                      "the nested archive did not open")
+        app.terminate()
+    }
+
+    /// Reading a nested archive means unpacking it first, so an encrypted outer
+    /// archive asks for its password — inline, since an extension has no window
+    /// of its own to put a sheet on. Entering it continues the same open.
+    ///
+    /// The zip *listing* needs no password (only 7z `-mhe`/rar `-hp` headers do,
+    /// and neither tool is guaranteed on a CI runner), which is exactly why the
+    /// prompt is triggered here by opening the nested archive.
+    func testQuickLookPreviewAsksForThePasswordOfAnEncryptedArchive() throws {
+        let dir = try makeWorkDir("ql-password")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "inner".write(to: dir.appendingPathComponent("inner.txt"), atomically: true, encoding: .utf8)
+        try run("/usr/bin/zip", [dir.appendingPathComponent("inner.zip").path, "inner.txt"], cwd: dir)
+        let outer = dir.appendingPathComponent("outer.zip")
+        try run("/usr/bin/zip", ["-P", "password", outer.path, "inner.zip"], cwd: dir)
+
+        let app = launchPreview(of: outer)
+        XCTAssertTrue(app.staticTexts["inner.zip"].waitForExistence(timeout: 15), "preview did not load")
+
+        expandRow(app, "inner.zip")
+        let field = app.secureTextFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 20), "no password prompt for the encrypted archive")
+
+        field.click()
+        app.typeText("password")
+        app.buttons["Unlock"].firstMatch.click()
+
+        XCTAssertTrue(app.staticTexts["inner.txt"].waitForExistence(timeout: 20),
+                      "the nested archive did not open after the password was entered")
+        app.terminate()
+    }
 }

@@ -6,6 +6,8 @@
     <string>0.0</string>
     <key>CFBundleVersion</key>
     <string>0.0</string>
+    <key>MPAppGroupIdentifier</key>
+    <string>$(APP_GROUP_ID)</string>
     <key>NSExtension</key>
 	<dict>
 		<key>NSExtensionAttributes</key>

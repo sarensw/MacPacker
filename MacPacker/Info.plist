@@ -893,6 +893,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>MPAppGroupIdentifier</key>
+	<string>$(APP_GROUP_ID)</string>
 	<key>MacPackerURLScheme</key>
 	<string>$(APP_URL_SCHEME)</string>
 	<key>SUEnableInstallerLauncherService</key>
