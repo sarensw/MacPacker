@@ -17,6 +17,20 @@
       ]
     },
     {
+      "id": "ace",
+      "name": "ACE Archive",
+      "kind": "archive",
+      "uti": ["com.winace.ace-archive"],
+      "extensions": ["ace"],
+      "mime": ["application/x-ace-compressed"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "2A 2A 41 43 45 2A 2A", "offset": 7}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
       "id": "ar",
       "name": "Archiver Archive",
       "kind": "archive",
@@ -92,6 +106,20 @@
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
         { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "cpt",
+      "name": "Compact Pro Archive",
+      "kind": "archive",
+      "uti": ["com.cyclos.cpt-archive"],
+      "extensions": ["cpt"],
+      "mime": ["application/mac-compactpro"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "01 12", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"], "default": true }
       ]
     },
     {
@@ -203,6 +231,18 @@
       ]
     },
     {
+      "id": "lzma",
+      "name": "LZMA File",
+      "kind": "compression",
+      "uti": ["org.tukaani.lzma-archive", "public.lzma-archive"],
+      "extensions": ["lzma"],
+      "mime": ["application/x-lzma"],
+      "rules": [],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
       "id": "lzx",
       "name": "LZX Archive",
       "kind": "archive",
@@ -253,6 +293,18 @@
       "rules": [],
       "engines": [
         { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
+      "id": "pax",
+      "name": "PAX Archive",
+      "kind": "archive",
+      "uti": ["cx.c3.pax-archive", "public.pax-archive"],
+      "extensions": ["pax"],
+      "mime": ["application/x-pax"],
+      "rules": [],
+      "engines": [
+        { "id": "xad", "capabilities": ["listContents", "extractFiles"], "default": true }
       ]
     },
     {
@@ -379,8 +431,8 @@
       "id": "tar",
       "name": "Tar Archive",
       "kind": "archive",
-      "uti": ["public.tar-archive"],
-      "extensions": ["tar"],
+      "uti": ["public.tar-archive", "org.gnu.gnu-tar-archive", "com.synology.spk-archive"],
+      "extensions": ["tar", "gtar", "spk"],
       "mime": ["application/x-tar"],
       "rules": [
         { "policy": "any", "tests": [
@@ -469,7 +521,7 @@
       "name": "XAR Archive",
       "kind": "archive",
       "uti": ["com.apple.xar-archive"],
-      "extensions": ["xar"],
+      "extensions": ["xar", "safariextz"],
       "mime": ["application/x-xar"],
       "rules": [
         { "policy": "any", "tests": [{"type": "signature", "bytes": "78 61 72 21", "offset": 0}] }
@@ -514,9 +566,9 @@
       "id": "zip",
       "name": "ZIP Archive",
       "kind": "archive",
-      "uti": ["public.zip-archive", "com.pkware.zip-archive", "com.sun.java-archive", "com.android.package-archive"],
-      "extensions": ["zip", "jar", "aar", "apk", "cbz"],
-      "mime": ["application/zip", "application/x-zip-compressed", "application/zip-compressed", "multipart/x-zip", "application/java-archive", "application/vnd.android.package-archive", "application/vnd.comicbook+zip"],
+      "uti": ["public.zip-archive", "com.pkware.zip-archive", "com.sun.java-archive", "com.android.package-archive", "com.apple.itunes.ipa", "com.microsoft.appx-archive", "com.rileytestut.delta.skin"],
+      "extensions": ["zip", "jar", "aar", "apk", "cbz", "ipa", "war", "xpi", "appx", "appxbundle", "xapk", "epub", "kepub", "deltaskin", "wacz"],
+      "mime": ["application/zip", "application/x-zip-compressed", "application/zip-compressed", "multipart/x-zip", "application/java-archive", "application/vnd.android.package-archive", "application/vnd.comicbook+zip", "application/epub+zip", "application/x-xpinstall"],
       "rules": [
         { "policy": "any", "tests": [
           {"type": "signature", "bytes": "50 4B 03 04", "offset": 0},
@@ -547,6 +599,20 @@
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"], "default": true }
       ]
+    },
+    {
+      "id": "zstd",
+      "name": "Zstandard Archive",
+      "kind": "compression",
+      "uti": ["com.facebook.zstandard-archive", "public.zstandard-archive"],
+      "extensions": ["zst", "zstd"],
+      "mime": ["application/zstd"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "28 B5 2F FD", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
     }
   ],
   "compounds": [
@@ -572,6 +638,13 @@
       "components": ["tar","lz4"]
     },
     {
+      "id": "tar.lzma",
+      "name": "LZMA Tar Archive",
+      "uti": ["org.tukaani.tar-lzma-archive"],
+      "extensions": ["tlzma","tar.lzma"],
+      "components": ["tar","lzma"]
+    },
+    {
       "id": "tar.xz",
       "name": "XZ Tar Archive",
       "uti": ["org.tukaani.tar-xz-archive"],
@@ -584,6 +657,13 @@
       "uti": ["public.z-archive"],
       "extensions": ["taz","tar.z"],
       "components": ["tar","z"]
+    },
+    {
+      "id": "tar.zst",
+      "name": "Zstandard Tar Archive",
+      "uti": ["public.zstandard-tar-archive","com.facebook.zstandard-tar-archive"],
+      "extensions": ["tzst","tar.zst"],
+      "components": ["tar","zstd"]
     }
   ],
   "splits": [
@@ -596,6 +676,11 @@
     { "id": "zip-numeric", "name": "Split ZIP", "format": "zip", "scheme": "numeric",
       "pattern": "\\.zip\\.[0-9]{3,}$",
       "firstVolume": { "pattern": "\\.[0-9]{3,}$", "replacement": ".001" },
-      "label": ".zip.001" }
+      "label": ".zip.001" },
+
+    { "id": "rar-legacy", "name": "Legacy RAR Volume", "format": "rar", "scheme": "legacy",
+      "pattern": "\\.r[0-9]{2,}$",
+      "firstVolume": { "pattern": "\\.r[0-9]{2,}$", "replacement": ".rar" },
+      "label": ".rar" }
   ]
 }

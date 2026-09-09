@@ -14,10 +14,12 @@ extension AllCoreTests {
         
         @Test("Test magic numbers", arguments: [
             ("7z", "7zip"),
+            ("ace", "ace"),
             ("arj", "arj"),
             ("ar", "ar"),
             ("cab", "cab"),
             ("cpio", "cpio"),
+            ("gtar", "tar"),
             ("lzh", "lha"),
             ("rar", "rar"),
             ("tar", "tar"),
