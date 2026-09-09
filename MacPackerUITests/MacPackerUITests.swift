@@ -488,13 +488,14 @@ final class MacPackerUITests: XCTestCase {
     }
 
     /// Reading a nested archive means unpacking it first, so an encrypted outer
-    /// archive asks for its password — inline, since an extension has no window
-    /// of its own to put a sheet on. Entering it continues the same open.
+    /// archive needs its password — which the preview cannot take. Finder's Quick
+    /// Look panel keeps key focus, so a text field there never sees a keystroke;
+    /// the preview says so and offers to hand the archive to MacPacker instead.
     ///
     /// The zip *listing* needs no password (only 7z `-mhe`/rar `-hp` headers do,
-    /// and neither tool is guaranteed on a CI runner), which is exactly why the
-    /// prompt is triggered here by opening the nested archive.
-    func testQuickLookPreviewAsksForThePasswordOfAnEncryptedArchive() throws {
+    /// and neither tool is guaranteed on a CI runner), which is why the notice is
+    /// triggered here by opening the nested archive.
+    func testQuickLookPreviewOffersToOpenALockedArchiveInMacPacker() throws {
         let dir = try makeWorkDir("ql-password")
         defer { try? FileManager.default.removeItem(at: dir) }
         try "inner".write(to: dir.appendingPathComponent("inner.txt"), atomically: true, encoding: .utf8)
@@ -506,15 +507,13 @@ final class MacPackerUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["inner.zip"].waitForExistence(timeout: 15), "preview did not load")
 
         expandRow(app, "inner.zip")
-        let field = app.secureTextFields.firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: 20), "no password prompt for the encrypted archive")
 
-        field.click()
-        app.typeText("password")
-        app.buttons["Unlock"].firstMatch.click()
-
-        XCTAssertTrue(app.staticTexts["inner.txt"].waitForExistence(timeout: 20),
-                      "the nested archive did not open after the password was entered")
+        XCTAssertTrue(app.staticTexts["This archive is password protected."].waitForExistence(timeout: 20),
+                      "no locked-archive notice for the encrypted archive")
+        XCTAssertTrue(app.buttons["Open in MacPacker"].firstMatch.exists,
+                      "the notice does not offer the hand-off to MacPacker")
+        XCTAssertEqual(app.secureTextFields.count, 0,
+                       "a password field cannot be typed into inside the Quick Look panel")
         app.terminate()
     }
 }

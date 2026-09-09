@@ -85,24 +85,25 @@
           {
             "type": "feat",
             "title": {
-                "en": "Quick Look asks for the archive password",
-                "zh-Hans": "Quick Look 会询问压缩包密码",
-                "fr": "Quick Look demande le mot de passe de l’archive",
-                "de": "Quick Look fragt nach dem Archivpasswort",
-                "it": "Quick Look chiede la password dell’archivio",
-                "ja": "Quick Look がアーカイブのパスワードを尋ねるように",
-                "fa": "Quick Look رمز آرشیو را می‌پرسد",
-                "pl": "Quick Look pyta o hasło archiwum",
-                "pt-BR": "Quick Look pede a senha do arquivo",
-                "ru": "Quick Look запрашивает пароль архива",
-                "uk": "Quick Look запитує пароль архіву",
-                "es-MX": "Quick Look pide la contraseña del archivo",
-                "ko": "Quick Look이 압축 파일 암호를 요청합니다",
-                "nl": "Quick Look vraagt om het wachtwoord van het archief",
-                "tr": "Quick Look arşiv parolasını sorar"
+                "en": "Quick Look opens locked archives in MacPacker",
+                "zh-Hans": "Quick Look 在 MacPacker 中打开加密压缩包",
+                "fr": "Quick Look ouvre les archives protégées dans MacPacker",
+                "de": "Quick Look öffnet geschützte Archive in MacPacker",
+                "it": "Quick Look apre gli archivi protetti in MacPacker",
+                "ja": "Quick Look がパスワード付きアーカイブを MacPacker で開く",
+                "fa": "Quick Look آرشیوهای قفل‌شده را در MacPacker باز می‌کند",
+                "pl": "Quick Look otwiera zabezpieczone archiwa w MacPacker",
+                "pt-BR": "O Quick Look abre arquivos protegidos no MacPacker",
+                "ru": "Quick Look открывает защищённые архивы в MacPacker",
+                "uk": "Quick Look відкриває захищені архіви в MacPacker",
+                "es-MX": "Quick Look abre archivos protegidos en MacPacker",
+                "ko": "Quick Look이 암호로 보호된 압축 파일을 MacPacker에서 엽니다",
+                "nl": "Quick Look opent beveiligde archieven in MacPacker",
+                "tr": "Quick Look korumalı arşivleri MacPacker’da açar"
             },
             "issues": [
-                "149"
+                "149",
+                "218"
             ]
           }
         ]
