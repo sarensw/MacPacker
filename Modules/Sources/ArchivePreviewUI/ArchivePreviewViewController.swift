@@ -31,8 +31,6 @@ public final class ArchivePreviewViewController: NSViewController {
     /// callbacks must not touch the UI the newer load owns, and must not resume
     /// the newer load's continuations.
     private var loadGeneration = 0
-    /// The archive being previewed, for handing it over to MacPacker.
-    private var previewedURL: URL?
     /// Set once the locked-archive notice is up, so the finished load does not
     /// replace it with the engine's "could not read this" message.
     private var showsLockedNotice = false
@@ -59,15 +57,8 @@ public final class ArchivePreviewViewController: NSViewController {
     /// A locked archive is handed to MacPacker rather than unlocked here: the
     /// Quick Look panel keeps key focus, so a password field in this view never
     /// receives a keystroke. Clicks do arrive, so a button works.
-    private lazy var openInAppButton: PreviewButton = {
-        PreviewButton(
-            title: String(localized: "Open in MacPacker", bundle: .module, comment: "Button in the Quick Look preview that opens a password protected archive in the MacPacker app"),
-            target: self,
-            action: #selector(openInMacPacker))
-    }()
-
     private lazy var lockedNotice: NSStackView = {
-        let stack = NSStackView(views: [lockedLabel, openInAppButton])
+        let stack = NSStackView(views: [lockedLabel])
         stack.orientation = .vertical
         stack.alignment = .centerX
         stack.spacing = 8
@@ -142,7 +133,6 @@ public final class ArchivePreviewViewController: NSViewController {
         readyContinuation?.resume()
         readyContinuation = nil
         hideLockedNotice()
-        previewedURL = url
 
         loadGeneration += 1
         let generation = loadGeneration
@@ -226,77 +216,20 @@ public final class ArchivePreviewViewController: NSViewController {
             localized: "This archive is password protected.",
             bundle: .module,
             comment: "Shown in the Quick Look preview when an archive needs a password to be read")
+            + "\n"
+            + String(
+                localized: "Open this archive in MacPacker to enter the password.",
+                bundle: .module,
+                comment: "Shown in the Quick Look preview below the notice that an archive is password protected")
         showsLockedNotice = true
-        openInAppButton.isHidden = false
         lockedNotice.isHidden = false
         messageLabel.isHidden = true
         contentViewController.view.isHidden = true
     }
 
-    /// Neither route could start the app, so stop offering a button that does
-    /// nothing and say what to do instead.
-    private func showHandOffUnavailable() {
-        openInAppButton.isHidden = true
-        lockedLabel.stringValue = String(
-            localized: "Open this archive in MacPacker to enter the password.",
-            bundle: .module,
-            comment: "Shown in the Quick Look preview when a password protected archive cannot be handed to the app")
-    }
-
     private func hideLockedNotice() {
         showsLockedNotice = false
         lockedNotice.isHidden = true
-    }
-
-    /// Hands the archive to MacPacker through the app's url scheme, the same way
-    /// the Finder extension does, so the password can be entered there.
-    @objc private func openInMacPacker() {
-        guard let url = previewedURL,
-              let scheme = Bundle.main.object(forInfoDictionaryKey: "MacPackerURLScheme") as? String,
-              !scheme.isEmpty else {
-            PreviewLog.general.error("Cannot hand over: no url scheme in the extension's Info.plist")
-            return
-        }
-
-        // Encoded here and again by URLComponents, because the app decodes twice:
-        // once out of the query item, once with removingPercentEncoding. A path
-        // holding a literal % would otherwise arrive as nonsense — or as nil,
-        // which reads as "no files" and opens nothing. Same as FinderSync does.
-        guard let files = url.path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let target = url.deletingLastPathComponent().path
-                  .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            PreviewLog.general.error("Could not encode the archive path for the hand-off")
-            return
-        }
-
-        var components = URLComponents()
-        components.scheme = scheme
-        components.host = "open"
-        components.queryItems = [
-            URLQueryItem(name: "files", value: files),
-            URLQueryItem(name: "target", value: target)
-        ]
-        guard let appURL = components.url else { return }
-
-        PreviewLog.general.info("Handing the archive to MacPacker", context: ["file": url.lastPathComponent])
-        if NSWorkspace.shared.open(appURL) { return }
-
-        // Expected path in the extension: its sandbox denies LaunchServices
-        // (`deny(1) lsopen`), so the host is asked to open the url instead.
-        // There is no host in the in-app harness, where NSWorkspace works.
-        guard let extensionContext else {
-            PreviewLog.general.error("MacPacker did not open and there is no host to ask",
-                                     context: ["scheme": scheme])
-            showHandOffUnavailable()
-            return
-        }
-
-        PreviewLog.general.notice("NSWorkspace refused the hand-off, asking the host")
-        extensionContext.open(appURL) { [weak self] opened in
-            guard !opened else { return }
-            PreviewLog.general.error("MacPacker did not open", context: ["scheme": scheme])
-            Task { @MainActor in self?.showHandOffUnavailable() }
-        }
     }
 
     // MARK: - Helpers

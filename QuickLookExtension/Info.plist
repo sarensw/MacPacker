@@ -8,8 +8,6 @@
     <string>0.0</string>
     <key>MPAppGroupIdentifier</key>
     <string>$(APP_GROUP_ID)</string>
-    <key>MacPackerURLScheme</key>
-    <string>$(APP_URL_SCHEME)</string>
     <key>NSExtension</key>
 	<dict>
 		<key>NSExtensionAttributes</key>
