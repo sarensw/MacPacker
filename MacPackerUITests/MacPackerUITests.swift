@@ -509,7 +509,7 @@ final class MacPackerUITests: XCTestCase {
 
         expandRow(app, "inner.zip")
 
-        let notice = app.staticTexts.containing(
+        let notice = app.staticTexts.matching(
             NSPredicate(format: "value CONTAINS %@", "password protected")).firstMatch
         XCTAssertTrue(notice.waitForExistence(timeout: 20),
                       "no locked-archive notice for the encrypted archive")
