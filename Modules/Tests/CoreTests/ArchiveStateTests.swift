@@ -804,12 +804,26 @@ extension AllCoreTests {
             try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: destination) }
 
-            state.extract(items: [nestedArchive], to: destination)
-            try await Task.sleep(nanoseconds: 3_000_000_000)
+            // wait for the extraction task, the same way extractFullArchive does
+            await withCheckedContinuation { continuation in
+                state.onStatusChange = { status in
+                    if status == .done {
+                        continuation.resume()
+                    }
+                }
+                state.extract(items: [nestedArchive], to: destination)
+            }
 
+            // Byte-compare against the fixture: the extracted file is named after
+            // the item no matter what the engine produced, so a name check alone
+            // passes even when the wrong entry was read.
             let written = destination.appendingPathComponent("NestedArchive.zip")
             #expect(FileManager.default.fileExists(atPath: written.path),
                     "the nested archive itself was not extracted")
+            let fixture = Bundle.module.url(forResource: "defaultArchiveContent", withExtension: nil)!
+                .appendingPathComponent("folder/NestedArchive.zip")
+            #expect(try Data(contentsOf: written) == Data(contentsOf: fixture),
+                    "the extracted file is not the nested archive")
 
             // and only that: its entries belong to a different archive, so they
             // must not be unpacked into the destination alongside it
