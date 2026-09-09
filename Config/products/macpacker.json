@@ -39,6 +39,29 @@
           {
             "type": "feat",
             "title": {
+                "en": "Quick Look preview for cbz and cbr",
+                "zh-Hans": "cbz 和 cbr 的 Quick Look 预览",
+                "fr": "Aperçu Quick Look pour cbz et cbr",
+                "de": "Quick Look-Vorschau für cbz und cbr",
+                "it": "Anteprima Quick Look per cbz e cbr",
+                "ja": "cbz と cbr の Quick Look プレビュー",
+                "fa": "پیش‌نمایش Quick Look برای cbz و cbr",
+                "pl": "Podgląd Quick Look dla cbz i cbr",
+                "pt-BR": "Visualização do Quick Look para cbz e cbr",
+                "ru": "Просмотр cbz и cbr в Quick Look",
+                "uk": "Перегляд cbz і cbr у Quick Look",
+                "es-MX": "Vista previa de Quick Look para cbz y cbr",
+                "ko": "cbz 및 cbr의 Quick Look 미리보기",
+                "nl": "Quick Look-voorbeeld voor cbz en cbr",
+                "tr": "cbz ve cbr için Quick Look önizlemesi"
+            },
+            "issues": [
+                "187"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
                 "en": "Quick Look follows your engine settings",
                 "zh-Hans": "Quick Look 遵循引擎设置",
                 "fr": "Quick Look suit les réglages de moteur",

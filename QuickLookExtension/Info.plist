@@ -19,6 +19,8 @@
 			<key>QLSupportedContentTypes</key>
 			<array>
 				<string>cx.c3.lzx-archive</string>
+                <string>cx.c3.cbr-archive</string>
+                <string>cx.c3.cbz-archive</string>
                 <string>com.apple.self-extracting-archive</string>
                 <string>com.apple.xar-archive</string>
 				<string>com.microsoft.cab</string>
