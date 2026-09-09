@@ -488,14 +488,15 @@ final class MacPackerUITests: XCTestCase {
     }
 
     /// Reading a nested archive means unpacking it first, so an encrypted outer
-    /// archive needs its password — which the preview cannot take. Finder's Quick
-    /// Look panel keeps key focus, so a text field there never sees a keystroke;
-    /// the preview says so and offers to hand the archive to MacPacker instead.
+    /// archive needs its password — which the preview can neither take nor pass
+    /// on. Finder's Quick Look panel keeps key focus, so a text field there never
+    /// sees a keystroke, and the extension's sandbox denies it the LaunchServices
+    /// call that would hand the archive to the app. All it can do is say so.
     ///
     /// The zip *listing* needs no password (only 7z `-mhe`/rar `-hp` headers do,
     /// and neither tool is guaranteed on a CI runner), which is why the notice is
     /// triggered here by opening the nested archive.
-    func testQuickLookPreviewOffersToOpenALockedArchiveInMacPacker() throws {
+    func testQuickLookPreviewSaysWhenAnArchiveIsLocked() throws {
         let dir = try makeWorkDir("ql-password")
         defer { try? FileManager.default.removeItem(at: dir) }
         try "inner".write(to: dir.appendingPathComponent("inner.txt"), atomically: true, encoding: .utf8)
@@ -508,12 +509,14 @@ final class MacPackerUITests: XCTestCase {
 
         expandRow(app, "inner.zip")
 
-        XCTAssertTrue(app.staticTexts["This archive is password protected."].waitForExistence(timeout: 20),
+        let notice = app.staticTexts.containing(
+            NSPredicate(format: "value CONTAINS %@", "password protected")).firstMatch
+        XCTAssertTrue(notice.waitForExistence(timeout: 20),
                       "no locked-archive notice for the encrypted archive")
-        XCTAssertTrue(app.buttons["Open in MacPacker"].firstMatch.exists,
-                      "the notice does not offer the hand-off to MacPacker")
         XCTAssertEqual(app.secureTextFields.count, 0,
                        "a password field cannot be typed into inside the Quick Look panel")
+        XCTAssertFalse(app.buttons["Open in MacPacker"].firstMatch.exists,
+                       "the extension cannot launch the app, so it must not offer to")
         app.terminate()
     }
 }

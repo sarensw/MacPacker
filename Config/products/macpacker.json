@@ -104,30 +104,6 @@
             "issues": [
                 "212"
             ]
-          },
-          {
-            "type": "feat",
-            "title": {
-                "en": "Quick Look opens locked archives in MacPacker",
-                "zh-Hans": "Quick Look 在 MacPacker 中打开加密压缩包",
-                "fr": "Quick Look ouvre les archives protégées dans MacPacker",
-                "de": "Quick Look öffnet geschützte Archive in MacPacker",
-                "it": "Quick Look apre gli archivi protetti in MacPacker",
-                "ja": "Quick Look がパスワード付きアーカイブを MacPacker で開く",
-                "fa": "Quick Look آرشیوهای قفل‌شده را در MacPacker باز می‌کند",
-                "pl": "Quick Look otwiera zabezpieczone archiwa w MacPacker",
-                "pt-BR": "O Quick Look abre arquivos protegidos no MacPacker",
-                "ru": "Quick Look открывает защищённые архивы в MacPacker",
-                "uk": "Quick Look відкриває захищені архіви в MacPacker",
-                "es-MX": "Quick Look abre archivos protegidos en MacPacker",
-                "ko": "Quick Look이 암호로 보호된 압축 파일을 MacPacker에서 엽니다",
-                "nl": "Quick Look opent beveiligde archieven in MacPacker",
-                "tr": "Quick Look korumalı arşivleri MacPacker’da açar"
-            },
-            "issues": [
-                "149",
-                "218"
-            ]
           }
         ]
       },
