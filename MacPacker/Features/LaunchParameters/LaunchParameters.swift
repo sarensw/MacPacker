@@ -28,6 +28,7 @@ import SandboxPilotKit
 ///                           right away, as if they had been dropped on it
 ///   -AddFiles     a,b,c     add these files — to the new archive, or to the
 ///                           opened one at the navigated-to path
+///   -QuickLookPreview <path>  DEBUG: show this archive in the Quick Look harness
 ///
 /// This is a normal, shipping feature — not gated to debug builds. It also
 /// encapsulates *where a parameter comes from*: it resolves each one from two
@@ -48,6 +49,7 @@ enum LaunchParameters {
     static let dropWindowKey = "DropWindow"
     static let addFilesKey = "AddFiles"
     static let extractDemoKey = "ExtractDemo"
+    static let quickLookPreviewKey = "QuickLookPreview"
     static let dropZoneKey = "DropZone"
     static let disableUpdateChecksKey = "DisableUpdateChecks"
 
@@ -82,7 +84,20 @@ enum LaunchParameters {
 
     /// True when launch parameters put a window on screen themselves — the app
     /// then skips the empty launch window and the welcome screen.
-    static var opensWindow: Bool { opensArchive || createsArchive || opensDropWindow }
+    static var opensWindow: Bool {
+        opensArchive || createsArchive || opensDropWindow || previewsInQuickLookHarness
+    }
+
+    /// `-QuickLookPreview <path>`: opens the Quick Look harness on that archive,
+    /// the same UI the extension runs, without clicking through Settings ▸ Debug.
+    /// Debug-only, like the harness itself.
+    static var previewsInQuickLookHarness: Bool {
+        #if DEBUG
+        value(quickLookPreviewKey) != nil
+        #else
+        false
+        #endif
+    }
 
     /// True when launch parameters request the extraction preview (debug).
     static var isExtractDemo: Bool { flag(extractDemoKey) }
@@ -110,6 +125,12 @@ enum LaunchParameters {
     /// Opens the requested archive (if any), navigates to the requested path,
     /// and selects the requested item.
     static func applyIfNeeded(windowManager: ArchiveWindowManager) {
+        #if DEBUG
+        if let path = value(quickLookPreviewKey) {
+            QuickLookHarnessWindowController().show(preview: resolveInputFile(path))
+            return
+        }
+        #endif
         if createsArchive {
             // The window already holds the added files; drive it for the rest,
             // so -SearchQuery and -SelectItem mean the same thing here as they

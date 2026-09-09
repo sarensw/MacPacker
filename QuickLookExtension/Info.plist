@@ -6,6 +6,8 @@
     <string>0.0</string>
     <key>CFBundleVersion</key>
     <string>0.0</string>
+    <key>MPAppGroupIdentifier</key>
+    <string>$(APP_GROUP_ID)</string>
     <key>NSExtension</key>
 	<dict>
 		<key>NSExtensionAttributes</key>
@@ -15,6 +17,8 @@
 			<key>QLSupportedContentTypes</key>
 			<array>
 				<string>cx.c3.lzx-archive</string>
+                <string>cx.c3.cbr-archive</string>
+                <string>cx.c3.cbz-archive</string>
                 <string>com.apple.self-extracting-archive</string>
                 <string>com.apple.xar-archive</string>
 				<string>com.microsoft.cab</string>

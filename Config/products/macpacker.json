@@ -34,6 +34,103 @@
     },
     "versions": [
       {
+        "version": "1.0.0",
+        "items": [
+          {
+            "type": "feat",
+            "title": {
+                "en": "Recent archives can now be turned off",
+                "zh-Hans": "可关闭最近打开的压缩包列表",
+                "fr": "Liste des archives récentes désactivable",
+                "de": "Zuletzt geöffnete Archive abschaltbar",
+                "it": "Elenco archivi recenti disattivabile",
+                "ja": "最近使ったアーカイブの一覧をオフにできる",
+                "fa": "فهرست آرشیوهای اخیر را می‌توان غیرفعال کرد",
+                "pl": "Listę ostatnich archiwów można wyłączyć",
+                "pt-BR": "A lista de recentes pode ser desativada",
+                "ru": "Список недавних архивов можно отключить",
+                "uk": "Список нещодавніх архівів можна вимкнути",
+                "es-MX": "La lista de recientes se puede desactivar",
+                "ko": "최근 아카이브 목록을 끌 수 있음",
+                "nl": "Lijst met recente archieven uitschakelbaar",
+                "tr": "Son arşivler listesi kapatılabilir"
+            },
+            "issues": [
+                "215"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Quick Look preview for cbz and cbr",
+                "zh-Hans": "cbz 和 cbr 的 Quick Look 预览",
+                "fr": "Aperçu Quick Look pour cbz et cbr",
+                "de": "Quick Look-Vorschau für cbz und cbr",
+                "it": "Anteprima Quick Look per cbz e cbr",
+                "ja": "cbz と cbr の Quick Look プレビュー",
+                "fa": "پیش‌نمایش Quick Look برای cbz و cbr",
+                "pl": "Podgląd Quick Look dla cbz i cbr",
+                "pt-BR": "Visualização do Quick Look para cbz e cbr",
+                "ru": "Просмотр cbz и cbr в Quick Look",
+                "uk": "Перегляд cbz і cbr у Quick Look",
+                "es-MX": "Vista previa de Quick Look para cbz y cbr",
+                "ko": "cbz 및 cbr의 Quick Look 미리보기",
+                "nl": "Quick Look-voorbeeld voor cbz en cbr",
+                "tr": "cbz ve cbr için Quick Look önizlemesi"
+            },
+            "issues": [
+                "187"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Quick Look follows your engine settings",
+                "zh-Hans": "Quick Look 遵循引擎设置",
+                "fr": "Quick Look suit les réglages de moteur",
+                "de": "Quick Look folgt den Engine-Einstellungen",
+                "it": "Quick Look segue le impostazioni del motore",
+                "ja": "Quick Look がエンジン設定に従うように",
+                "fa": "Quick Look از تنظیمات موتور پیروی می‌کند",
+                "pl": "Quick Look korzysta z ustawień silnika",
+                "pt-BR": "Quick Look segue as configurações de motor",
+                "ru": "Quick Look учитывает настройки движка",
+                "uk": "Quick Look враховує налаштування рушія",
+                "es-MX": "Quick Look sigue la configuración del motor",
+                "ko": "Quick Look이 엔진 설정을 따릅니다",
+                "nl": "Quick Look volgt de engine-instellingen",
+                "tr": "Quick Look motor ayarlarını uygular"
+            },
+            "issues": [
+                "149"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Open nested archives in Quick Look",
+                "zh-Hans": "在 Quick Look 中打开嵌套压缩包",
+                "fr": "Ouvrir les archives imbriquées dans Quick Look",
+                "de": "Verschachtelte Archive in Quick Look öffnen",
+                "it": "Aprire gli archivi annidati in Quick Look",
+                "ja": "Quick Look で入れ子のアーカイブを開く",
+                "fa": "باز کردن آرشیوهای تودرتو در Quick Look",
+                "pl": "Otwieranie zagnieżdżonych archiwów w Quick Look",
+                "pt-BR": "Abrir arquivos aninhados no Quick Look",
+                "ru": "Открытие вложенных архивов в Quick Look",
+                "uk": "Відкриття вкладених архівів у Quick Look",
+                "es-MX": "Abrir archivos anidados en Quick Look",
+                "ko": "Quick Look에서 중첩된 압축 파일 열기",
+                "nl": "Geneste archieven openen in Quick Look",
+                "tr": "Quick Look’ta iç içe arşivleri açma"
+            },
+            "issues": [
+                "212"
+            ]
+          }
+        ]
+      },
+      {
         "version": "0.22.0",
         "items": [
           {

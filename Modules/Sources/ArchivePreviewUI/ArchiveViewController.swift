@@ -7,7 +7,6 @@
 
 import AppKit
 import Core
-import os
 import UniformTypeIdentifiers
 
 class ArchiveViewController: NSViewController {
@@ -16,7 +15,12 @@ class ArchiveViewController: NSViewController {
             outlineView.reloadData()
         }
     }
-    
+
+    /// Nested archives currently being extracted, so their row shows a spinner
+    /// while it happens — reading one means unpacking it first, which is not
+    /// instant for a large archive.
+    private var loadingItems: Set<UUID> = []
+
     var selectedItems: [ArchiveItem]? {
         guard outlineView.selectedRowIndexes.count > 0 else {
             return nil
@@ -73,23 +77,23 @@ class ArchiveViewController: NSViewController {
     
     func createColumns(_ outlineView: NSOutlineView) {
         let colName = NSTableColumn(identifier: ArchiveViewerColumn.name.identifier)
-        colName.title = NSLocalizedString("Name", comment: "Column that shows the name of the archive files")
+        colName.title = String(localized: "Name", bundle: .module, comment: "Column that shows the name of the archive files")
         colName.width = 300
         colName.resizingMask = .userResizingMask
         outlineView.addTableColumn(colName)
         
         let colSizeCompressed = NSTableColumn(identifier: ArchiveViewerColumn.compressedSize.identifier)
-        colSizeCompressed.title = NSLocalizedString("Packed Size", comment: "Column that shows the packed size of the archive files")
+        colSizeCompressed.title = String(localized: "Packed Size", bundle: .module, comment: "Column that shows the packed size of the archive files")
         colSizeCompressed.width = 100
         outlineView.addTableColumn(colSizeCompressed)
         
         let colSizeUncompressed = NSTableColumn(identifier: ArchiveViewerColumn.uncompressedSize.identifier)
-        colSizeUncompressed.title = NSLocalizedString("Size", comment: "Column that shows the unpacked size of the archive files")
+        colSizeUncompressed.title = String(localized: "Size", bundle: .module, comment: "Column that shows the unpacked size of the archive files")
         colSizeUncompressed.width = 100
         outlineView.addTableColumn(colSizeUncompressed)
         
         let colModDate = NSTableColumn(identifier: ArchiveViewerColumn.modificationDate.identifier)
-        colModDate.title = NSLocalizedString("Date Modified", comment: "Column that shows the date the file was modified")
+        colModDate.title = String(localized: "Date Modified", bundle: .module, comment: "Column that shows the date the file was modified")
         colModDate.width = 150
         outlineView.addTableColumn(colModDate)
     }
@@ -121,9 +125,59 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
     }
 
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        !resolvedChildren(of: item).isEmpty
+        if !resolvedChildren(of: item).isEmpty { return true }
+        return isUnopenedArchive(item)
     }
-    
+
+    /// A nested archive gets a disclosure triangle before anything is known
+    /// about its contents; the first click is what unpacks it.
+    private func isUnopenedArchive(_ item: Any) -> Bool {
+        guard let state,
+              let archiveItem = item as? ArchiveItem,
+              archiveItem.type == .file,
+              archiveItem.children == nil else { return false }
+        // Extension only — the entry is still inside the archive, so there are
+        // no bytes to sniff until it has been extracted.
+        return state.looksLikeArchive(url: URL(fileURLWithPath: archiveItem.name))
+    }
+
+    func outlineView(_ outlineView: NSOutlineView, shouldExpandItem item: Any) -> Bool {
+        guard let archiveItem = item as? ArchiveItem, isUnopenedArchive(item) else { return true }
+        // Nothing to expand yet: unpack first and expand when the entries are in.
+        openNestedArchive(archiveItem)
+        return false
+    }
+
+    /// Extracts a nested archive to a temporary location and hangs its contents
+    /// under the row, so the tree keeps going into it.
+    private func openNestedArchive(_ item: ArchiveItem) {
+        guard let state, loadingItems.insert(item.id).inserted else { return }
+        outlineView.reloadItem(item)
+        PreviewLog.general.info("Opening nested archive", context: ["name": item.name])
+
+        Task {
+            do {
+                try await state.openAsync(item: item)
+                PreviewLog.general.info("Nested archive opened", context: [
+                    "name": item.name,
+                    "items": "\(item.children?.count ?? 0)"
+                ])
+            } catch {
+                // The row stays collapsed and openable, so this is retryable.
+                PreviewLog.general.error("Nested archive failed to open", context: [
+                    "name": item.name,
+                    "error": error.localizedDescription
+                ])
+            }
+            loadingItems.remove(item.id)
+            outlineView.reloadItem(item, reloadChildren: true)
+            if !resolvedChildren(of: item).isEmpty {
+                outlineView.expandItem(item)
+            }
+        }
+    }
+
+
     func outlineView(
         _ outlineView: NSOutlineView,
         viewFor tableColumn: NSTableColumn?,
@@ -137,22 +191,36 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
         
         switch columnIdentifier {
         case ArchiveViewerColumn.name.identifier:
-            // Image
-            let iconView = NSImageView()
-            iconView.translatesAutoresizingMaskIntoConstraints = false
-            iconView.imageScaling = .scaleProportionallyDown
-            iconView.setContentHuggingPriority(.required, for: .horizontal)
-            iconView.setContentCompressionResistancePriority(.required, for: .horizontal)
+            // Image — or a spinner while this nested archive is being unpacked
+            let leadingView: NSView
+            if loadingItems.contains(archiveItem.id) {
+                let spinner = NSProgressIndicator()
+                spinner.style = .spinning
+                spinner.controlSize = .small
+                spinner.isIndeterminate = true
+                spinner.startAnimation(nil)
+                leadingView = spinner
+            } else {
+                let iconView = NSImageView()
+                iconView.imageScaling = .scaleProportionallyDown
 
-            let icon: NSImage? = {
-                if archiveItem.isFolder {
-                    return SystemHelper.shared.getNSImageForFolder()
-                } else {
-                    return SystemHelper.shared.getNSImageByExtension(fileName: archiveItem.name)
-                }
-            }()
-            iconView.image = icon
-            iconView.image?.size = NSSize(width: 16, height: 16)
+                let icon: NSImage? = {
+                    if archiveItem.isFolder {
+                        return SystemHelper.shared.getNSImageForFolder()
+                    } else {
+                        return SystemHelper.shared.getNSImageByExtension(fileName: archiveItem.name)
+                    }
+                }()
+                iconView.image = icon
+                iconView.image?.size = NSSize(width: 16, height: 16)
+
+                // Wire up standard properties (handy for accessibility/reuse expectations)
+                cellView.imageView = iconView
+                leadingView = iconView
+            }
+            leadingView.translatesAutoresizingMaskIntoConstraints = false
+            leadingView.setContentHuggingPriority(.required, for: .horizontal)
+            leadingView.setContentCompressionResistancePriority(.required, for: .horizontal)
 
             // Text
             let label = NSTextField(labelWithString: archiveItem.name)
@@ -160,20 +228,18 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
             label.usesSingleLineMode = true
             label.lineBreakMode = .byTruncatingTail
 
-            // Wire up standard properties (handy for accessibility/reuse expectations)
-            cellView.imageView = iconView
             cellView.textField = label
 
-            cellView.addSubview(iconView)
+            cellView.addSubview(leadingView)
             cellView.addSubview(label)
 
             NSLayoutConstraint.activate([
-                iconView.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: 2),
-                iconView.centerYAnchor.constraint(equalTo: cellView.centerYAnchor),
-                iconView.widthAnchor.constraint(equalToConstant: 16),
-                iconView.heightAnchor.constraint(equalToConstant: 16),
+                leadingView.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: 2),
+                leadingView.centerYAnchor.constraint(equalTo: cellView.centerYAnchor),
+                leadingView.widthAnchor.constraint(equalToConstant: 16),
+                leadingView.heightAnchor.constraint(equalToConstant: 16),
 
-                label.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 6),
+                label.leadingAnchor.constraint(equalTo: leadingView.trailingAnchor, constant: 6),
                 label.trailingAnchor.constraint(equalTo: cellView.trailingAnchor),
                 label.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
             ])

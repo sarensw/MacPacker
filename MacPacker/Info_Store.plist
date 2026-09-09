@@ -134,6 +134,10 @@
             <array>
                 <string>cbz</string>
             </array>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>cx.c3.cbz-archive</string>
+            </array>
             <key>CFBundleTypeName</key>
             <string>Comic Book ZIP Archive</string>
             <key>CFBundleTypeRole</key>
@@ -147,6 +151,10 @@
             <key>CFBundleTypeExtensions</key>
             <array>
                 <string>cbr</string>
+            </array>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>cx.c3.cbr-archive</string>
             </array>
             <key>CFBundleTypeName</key>
             <string>Comic Book RAR Archive</string>
@@ -893,6 +901,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>MPAppGroupIdentifier</key>
+	<string>$(APP_GROUP_ID)</string>
 	<key>MacPackerURLScheme</key>
 	<string>$(APP_URL_SCHEME)</string>
 	<key>UTExportedTypeDeclarations</key>
@@ -912,6 +922,48 @@
 	</array>
 	<key>UTImportedTypeDeclarations</key>
 	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.zip-archive</string>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Comic Book ZIP Archive</string>
+			<key>UTTypeIcons</key>
+			<dict/>
+			<key>UTTypeIdentifier</key>
+			<string>cx.c3.cbz-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>cbz</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.rarlab.rar-archive</string>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Comic Book RAR Archive</string>
+			<key>UTTypeIcons</key>
+			<dict/>
+			<key>UTTypeIdentifier</key>
+			<string>cx.c3.cbr-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>cbr</string>
+				</array>
+			</dict>
+		</dict>
 		<dict>
 			<key>UTTypeConformsTo</key>
 			<array>

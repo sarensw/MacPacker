@@ -24,10 +24,18 @@ final class AppState: ObservableObject {
     let archiveEngineConfigStore: ArchiveEngineConfigStore
     
     @Published var selectedSettingsTab: SettingsViewTab = .general
-    
+
+    /// The engine settings the QuickLook extension reads too, so a pick made
+    /// here shows up in the preview. Only the app migrates the older, app-local
+    /// settings into the shared store.
+    private static func makeEngineConfigStore(catalog: ArchiveTypeCatalog) -> ArchiveEngineConfigStore {
+        ArchiveEngineConfigStore.migrateToSharedDefaults()
+        return ArchiveEngineConfigStore(catalog: catalog, defaults: .macPackerShared)
+    }
+
 #if !STORE
     init(updaterController: SPUStandardUpdaterController? = nil) {
-        self.archiveEngineConfigStore = ArchiveEngineConfigStore(catalog: catalog)
+        self.archiveEngineConfigStore = AppState.makeEngineConfigStore(catalog: catalog)
         self.engineSelector = ArchiveEngineSelector(catalog: catalog, configStore: archiveEngineConfigStore)
 
         self.updaterController = updaterController
@@ -35,7 +43,7 @@ final class AppState: ObservableObject {
     }
 #else
     init() {
-        self.archiveEngineConfigStore = ArchiveEngineConfigStore(catalog: catalog)
+        self.archiveEngineConfigStore = AppState.makeEngineConfigStore(catalog: catalog)
         self.engineSelector = ArchiveEngineSelector(catalog: catalog, configStore: archiveEngineConfigStore)
         log.notice("AppState ready (catalog + engine selector initialised)")
     }

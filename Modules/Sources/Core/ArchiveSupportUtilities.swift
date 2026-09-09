@@ -38,6 +38,21 @@ final class ArchiveSupportUtilities {
         )
     }
     
+    /// The archive an item is stored *in*, for extracting that item.
+    ///
+    /// Not the same question as `findHandlerAndUrl`: once a nested archive has
+    /// been opened it carries its own url and type, so starting the search at
+    /// the item itself answers "which archive is this" — and extracting it then
+    /// means reading the file out of itself, which writes nothing. An entry is
+    /// always stored in the archive around it, so the search starts one level up.
+    /// An item without a parent is the archive, and answers for itself.
+    func findContainingHandlerAndUrl(for item: ArchiveItem, in entries: [UUID: ArchiveItem]) -> (String, URL)? {
+        guard let parent = item.parent.flatMap({ entries[$0] }) else {
+            return findHandlerAndUrl(for: item, in: entries)
+        }
+        return findHandlerAndUrl(for: parent, in: entries)
+    }
+
     func findHandlerAndUrl(for archiveItem: ArchiveItem, in entries: [UUID: ArchiveItem]) -> (String, URL)? {
         var item: ArchiveItem? = archiveItem
         var url: URL?
