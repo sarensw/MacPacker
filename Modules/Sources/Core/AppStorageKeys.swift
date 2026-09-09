@@ -11,6 +11,11 @@ public enum Keys {
     // general settings
     public static let settingBreadcrumbPosition = "settingBreadcrumbPosition"
     public static let quitOnLastWindowClosed = "quitOnLastWindowClosed"
+    /// Whether opened archives are remembered for the start page's Recent list
+    /// (and the Dock's Recent Documents menu). On by default; turning it off also
+    /// empties what was already collected — a history you can no longer see is one
+    /// you should no longer keep.
+    public static let rememberRecentArchives = "rememberRecentArchives"
     
     // table settings
     public static let showParentRow = "showParentRow"
@@ -52,6 +57,7 @@ public enum Keys {
             defaultOrderColumn: ArchiveSortOrder.name.rawValue,
             defaultOrderColumnAscending: true,
             dropWindowFloats: true,
+            rememberRecentArchives: true,
         ])
     }
 }

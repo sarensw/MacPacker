@@ -18,6 +18,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
+    @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
 
     var body: some View {
         VStack(spacing: 8) {
@@ -93,8 +94,24 @@ struct GeneralSettingsView: View {
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
             }
+
+            HStack(alignment: .top) {
+                Text("Remember recent archives:", comment: "Setting that keeps a list of the archives that were opened, shown under Recent on the start page")
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $rememberRecentArchives) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
         }
         .padding()
+        // Turning it off is a privacy switch, so what was collected goes with it —
+        // the start page's "Clear" is out of reach once the section is hidden.
+        .onChange(of: rememberRecentArchives) { _, isOn in
+            if !isOn { RecentArchives.clear() }
+        }
     }
     
     /// Returns the localized label for a breadcrumb position in the settings picker.

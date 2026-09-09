@@ -36,6 +36,10 @@ struct HomeView: View {
     @EnvironmentObject private var compressor: DropCompressor
     @Environment(\.openQuickCompressWindow) private var openQuickCompressWindow
 
+    /// Off hides the Recent section outright — an empty section for a list you
+    /// switched off is noise, not information.
+    @AppStorage(Keys.rememberRecentArchives) private var remembersRecents: Bool = true
+
     /// SwiftUI owns this binding and resets it when no drag is in flight, so the
     /// screenshot pin has to be a separate flag.
     @State private var isDropTargeted = false
@@ -56,7 +60,7 @@ struct HomeView: View {
                 HStack(alignment: .top, spacing: 32) {
                     VStack(alignment: .leading, spacing: 24) {
                         startSection
-                        recentSection
+                        if remembersRecents { recentSection }
                     }
                     .frame(maxWidth: 460, alignment: .leading)
 
