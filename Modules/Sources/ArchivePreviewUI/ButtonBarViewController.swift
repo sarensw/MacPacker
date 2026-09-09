@@ -28,7 +28,7 @@ final class ButtonBarViewController: NSViewController {
         stack.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(stack)
 
-        let extractSelectedButton = NSButton()
+        let extractSelectedButton = PreviewButton()
         extractSelectedButton.image = NSImage(systemSymbolName: "square.and.arrow.down", accessibilityDescription: nil)!
         extractSelectedButton.title = String(localized: "Extract selected", bundle: .module, comment: "Button in the tooblar that allows the user to extract the selected files.")
         extractSelectedButton.imagePosition = .imageLeading
@@ -38,7 +38,7 @@ final class ButtonBarViewController: NSViewController {
         extractSelectedButton.target = self
         extractSelectedButton.action = #selector(extractSelected)
         
-        let extractAllButton = NSButton()
+        let extractAllButton = PreviewButton()
         extractAllButton.image = NSImage(systemSymbolName: "square.and.arrow.down", accessibilityDescription: nil)!
         extractAllButton.title = String(localized: "Extract archive", bundle: .module, comment: "Button in the toolbar that allows the user to extract the full archive to a target directory.")
         extractAllButton.imagePosition = .imageLeading

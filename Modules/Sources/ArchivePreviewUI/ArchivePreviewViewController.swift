@@ -60,7 +60,7 @@ public final class ArchivePreviewViewController: NSViewController {
     /// Quick Look panel keeps key focus, so a password field in this view never
     /// receives a keystroke. Clicks do arrive, so a button works.
     private lazy var lockedNotice: NSStackView = {
-        let open = NSButton(
+        let open = PreviewButton(
             title: String(localized: "Open in MacPacker", bundle: .module, comment: "Button in the Quick Look preview that opens a password protected archive in the MacPacker app"),
             target: self,
             action: #selector(openInMacPacker))
@@ -266,8 +266,15 @@ public final class ArchivePreviewViewController: NSViewController {
         guard let appURL = components.url else { return }
 
         PreviewLog.general.info("Handing the archive to MacPacker", context: ["file": url.lastPathComponent])
-        if !NSWorkspace.shared.open(appURL) {
-            PreviewLog.general.error("MacPacker did not open", context: ["scheme": scheme])
+        if NSWorkspace.shared.open(appURL) { return }
+
+        // Some hosts refuse an extension's NSWorkspace launch; the extension
+        // context asks the host to open it on our behalf.
+        PreviewLog.general.notice("NSWorkspace refused the hand-off, asking the host")
+        extensionContext?.open(appURL) { opened in
+            if !opened {
+                PreviewLog.general.error("MacPacker did not open", context: ["scheme": scheme])
+            }
         }
     }
 
