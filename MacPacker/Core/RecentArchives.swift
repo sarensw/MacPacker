@@ -21,9 +21,15 @@ enum RecentArchives {
     private static let key = "recentArchives"
     private static let limit = 10
 
+    /// Off means nothing is remembered anywhere: no list entry, no bookmark, no
+    /// Dock entry. Settings empties the list when it is turned off, so a stale
+    /// list can't come back with it.
+    static var isEnabled: Bool { UserDefaults.standard.bool(forKey: Keys.rememberRecentArchives) }
+
     /// Remember `url`. Call it while access to the file is still granted — right
     /// after the open, not later.
     static func note(_ url: URL) {
+        guard isEnabled else { return }
         NSDocumentController.shared.noteNewRecentDocumentURL(url)
         // ponytail: one bookmark per opened archive, never evicted. A few KB in
         // UserDefaults; add pruning if that ever grows into a problem.

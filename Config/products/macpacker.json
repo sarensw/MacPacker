@@ -39,6 +39,29 @@
           {
             "type": "feat",
             "title": {
+                "en": "Recent archives can now be turned off",
+                "zh-Hans": "可关闭最近打开的压缩包列表",
+                "fr": "Liste des archives récentes désactivable",
+                "de": "Zuletzt geöffnete Archive abschaltbar",
+                "it": "Elenco archivi recenti disattivabile",
+                "ja": "最近使ったアーカイブの一覧をオフにできる",
+                "fa": "فهرست آرشیوهای اخیر را می‌توان غیرفعال کرد",
+                "pl": "Listę ostatnich archiwów można wyłączyć",
+                "pt-BR": "A lista de recentes pode ser desativada",
+                "ru": "Список недавних архивов можно отключить",
+                "uk": "Список нещодавніх архівів можна вимкнути",
+                "es-MX": "La lista de recientes se puede desactivar",
+                "ko": "최근 아카이브 목록을 끌 수 있음",
+                "nl": "Lijst met recente archieven uitschakelbaar",
+                "tr": "Son arşivler listesi kapatılabilir"
+            },
+            "issues": [
+                "215"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
                 "en": "Quick Look preview for cbz and cbr",
                 "zh-Hans": "cbz 和 cbr 的 Quick Look 预览",
                 "fr": "Aperçu Quick Look pour cbz et cbr",
