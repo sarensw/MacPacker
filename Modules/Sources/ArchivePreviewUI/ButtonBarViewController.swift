@@ -30,7 +30,7 @@ final class ButtonBarViewController: NSViewController {
 
         let extractSelectedButton = NSButton()
         extractSelectedButton.image = NSImage(systemSymbolName: "square.and.arrow.down", accessibilityDescription: nil)!
-        extractSelectedButton.title = String(localized: "Extract selected", comment: "Button in the tooblar that allows the user to extract the selected files.")
+        extractSelectedButton.title = String(localized: "Extract selected", bundle: .module, comment: "Button in the tooblar that allows the user to extract the selected files.")
         extractSelectedButton.imagePosition = .imageLeading
         extractSelectedButton.bezelStyle = .accessoryBar
         extractSelectedButton.isBordered = true
@@ -40,7 +40,7 @@ final class ButtonBarViewController: NSViewController {
         
         let extractAllButton = NSButton()
         extractAllButton.image = NSImage(systemSymbolName: "square.and.arrow.down", accessibilityDescription: nil)!
-        extractAllButton.title = String(localized: "Extract archive", comment: "Button in the toolbar that allows the user to extract the full archive to a target directory.")
+        extractAllButton.title = String(localized: "Extract archive", bundle: .module, comment: "Button in the toolbar that allows the user to extract the full archive to a target directory.")
         extractAllButton.imagePosition = .imageLeading
         extractAllButton.bezelStyle = .accessoryBar
         extractAllButton.isBordered = true

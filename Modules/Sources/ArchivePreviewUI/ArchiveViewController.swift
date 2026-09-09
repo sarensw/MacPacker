@@ -77,23 +77,23 @@ class ArchiveViewController: NSViewController {
     
     func createColumns(_ outlineView: NSOutlineView) {
         let colName = NSTableColumn(identifier: ArchiveViewerColumn.name.identifier)
-        colName.title = String(localized: "Name", comment: "Column that shows the name of the archive files")
+        colName.title = String(localized: "Name", bundle: .module, comment: "Column that shows the name of the archive files")
         colName.width = 300
         colName.resizingMask = .userResizingMask
         outlineView.addTableColumn(colName)
         
         let colSizeCompressed = NSTableColumn(identifier: ArchiveViewerColumn.compressedSize.identifier)
-        colSizeCompressed.title = String(localized: "Packed Size", comment: "Column that shows the packed size of the archive files")
+        colSizeCompressed.title = String(localized: "Packed Size", bundle: .module, comment: "Column that shows the packed size of the archive files")
         colSizeCompressed.width = 100
         outlineView.addTableColumn(colSizeCompressed)
         
         let colSizeUncompressed = NSTableColumn(identifier: ArchiveViewerColumn.uncompressedSize.identifier)
-        colSizeUncompressed.title = String(localized: "Size", comment: "Column that shows the unpacked size of the archive files")
+        colSizeUncompressed.title = String(localized: "Size", bundle: .module, comment: "Column that shows the unpacked size of the archive files")
         colSizeUncompressed.width = 100
         outlineView.addTableColumn(colSizeUncompressed)
         
         let colModDate = NSTableColumn(identifier: ArchiveViewerColumn.modificationDate.identifier)
-        colModDate.title = String(localized: "Date Modified", comment: "Column that shows the date the file was modified")
+        colModDate.title = String(localized: "Date Modified", bundle: .module, comment: "Column that shows the date the file was modified")
         colModDate.width = 150
         outlineView.addTableColumn(colModDate)
     }

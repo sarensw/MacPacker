@@ -67,7 +67,7 @@ public final class ArchivePreviewViewController: NSViewController {
     /// sheet to, and the QuickLook panel is not ours to put one on.
     private lazy var passwordPrompt: NSStackView = {
         let unlock = NSButton(
-            title: String(localized: "Unlock", comment: "Button that submits the password for an encrypted archive in the Quick Look preview"),
+            title: String(localized: "Unlock", bundle: .module, comment: "Button that submits the password for an encrypted archive in the Quick Look preview"),
             target: self,
             action: #selector(submitPassword))
         unlock.keyEquivalent = "\r"
@@ -231,8 +231,8 @@ public final class ArchivePreviewViewController: NSViewController {
         // up once the password is in).
         showedContentBeforePrompt = !contentViewController.view.isHidden
         passwordLabel.stringValue = retry
-            ? String(localized: "Wrong password. Try again.", comment: "Shown in the Quick Look preview when the entered archive password did not work")
-            : String(localized: "This archive is password protected.", comment: "Shown in the Quick Look preview when an archive needs a password to be read")
+            ? String(localized: "Wrong password. Try again.", bundle: .module, comment: "Shown in the Quick Look preview when the entered archive password did not work")
+            : String(localized: "This archive is password protected.", bundle: .module, comment: "Shown in the Quick Look preview when an archive needs a password to be read")
         passwordField.stringValue = ""
         passwordPrompt.isHidden = false
         messageLabel.isHidden = true
@@ -255,7 +255,7 @@ public final class ArchivePreviewViewController: NSViewController {
         if showedContentBeforePrompt {
             hideMessage()   // back to the tree; the nested row keeps spinning
         } else {
-            showMessage(String(localized: "Opening…", comment: "Shown in the Quick Look preview while the archive is being read"))
+            showMessage(String(localized: "Opening…", bundle: .module, comment: "Shown in the Quick Look preview while the archive is being read"))
         }
         continuation.resume(returning: password.isEmpty ? nil : password)
     }
