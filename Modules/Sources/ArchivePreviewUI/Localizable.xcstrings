@@ -120,6 +120,9 @@
     "Open in MacPacker" : {
       "comment" : "Button in the Quick Look preview that opens a password protected archive in the MacPacker app"
     },
+    "Open this archive in MacPacker to enter the password." : {
+      "comment" : "Shown in the Quick Look preview when a password protected archive cannot be handed to the app"
+    },
     "Packed Size" : {
       "comment" : "Column that shows the packed size of the archive files",
       "localizations" : {

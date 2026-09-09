@@ -59,13 +59,15 @@ public final class ArchivePreviewViewController: NSViewController {
     /// A locked archive is handed to MacPacker rather than unlocked here: the
     /// Quick Look panel keeps key focus, so a password field in this view never
     /// receives a keystroke. Clicks do arrive, so a button works.
-    private lazy var lockedNotice: NSStackView = {
-        let open = NSButton(
+    private lazy var openInAppButton: PreviewButton = {
+        PreviewButton(
             title: String(localized: "Open in MacPacker", bundle: .module, comment: "Button in the Quick Look preview that opens a password protected archive in the MacPacker app"),
             target: self,
             action: #selector(openInMacPacker))
+    }()
 
-        let stack = NSStackView(views: [lockedLabel, open])
+    private lazy var lockedNotice: NSStackView = {
+        let stack = NSStackView(views: [lockedLabel, openInAppButton])
         stack.orientation = .vertical
         stack.alignment = .centerX
         stack.spacing = 8
@@ -225,9 +227,20 @@ public final class ArchivePreviewViewController: NSViewController {
             bundle: .module,
             comment: "Shown in the Quick Look preview when an archive needs a password to be read")
         showsLockedNotice = true
+        openInAppButton.isHidden = false
         lockedNotice.isHidden = false
         messageLabel.isHidden = true
         contentViewController.view.isHidden = true
+    }
+
+    /// Neither route could start the app, so stop offering a button that does
+    /// nothing and say what to do instead.
+    private func showHandOffUnavailable() {
+        openInAppButton.isHidden = true
+        lockedLabel.stringValue = String(
+            localized: "Open this archive in MacPacker to enter the password.",
+            bundle: .module,
+            comment: "Shown in the Quick Look preview when a password protected archive cannot be handed to the app")
     }
 
     private func hideLockedNotice() {
@@ -266,8 +279,23 @@ public final class ArchivePreviewViewController: NSViewController {
         guard let appURL = components.url else { return }
 
         PreviewLog.general.info("Handing the archive to MacPacker", context: ["file": url.lastPathComponent])
-        if !NSWorkspace.shared.open(appURL) {
+        if NSWorkspace.shared.open(appURL) { return }
+
+        // Expected path in the extension: its sandbox denies LaunchServices
+        // (`deny(1) lsopen`), so the host is asked to open the url instead.
+        // There is no host in the in-app harness, where NSWorkspace works.
+        guard let extensionContext else {
+            PreviewLog.general.error("MacPacker did not open and there is no host to ask",
+                                     context: ["scheme": scheme])
+            showHandOffUnavailable()
+            return
+        }
+
+        PreviewLog.general.notice("NSWorkspace refused the hand-off, asking the host")
+        extensionContext.open(appURL) { [weak self] opened in
+            guard !opened else { return }
             PreviewLog.general.error("MacPacker did not open", context: ["scheme": scheme])
+            Task { @MainActor in self?.showHandOffUnavailable() }
         }
     }
 
