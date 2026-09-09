@@ -15,3 +15,8 @@ PROVISIONING_PROFILE_SPECIFIER = $(STORE_PROFILE_FOR_$(PRODUCT_BUNDLE_IDENTIFIER
 STORE_PROFILE_FOR_com_sarensx_MacPacker                    = MacPackerStore
 STORE_PROFILE_FOR_com_sarensx_MacPacker_FinderExtension    = MacPackerStoreFinder
 STORE_PROFILE_FOR_com_sarensx_MacPacker_QuickLookExtension = MacPackerStoreQuickLook
+
+// App group that holds the engine settings, so the QuickLook extension reads
+// the picks the app writes (each has its own sandbox container otherwise).
+// Injected into the entitlements and into Info.plist as MPAppGroupIdentifier.
+APP_GROUP_ID = group.app.macpacker

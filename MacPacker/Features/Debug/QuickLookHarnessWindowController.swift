@@ -49,15 +49,20 @@ final class QuickLookHarnessWindowController: NSWindowController, NSToolbarDeleg
         window.toolbar = toolbar
     }
 
-    /// Shows the harness window (and opens a file picker on first show so the
-    /// debug workflow is "open harness → pick archive → step through").
-    func show() {
+    /// Shows the harness window. Without an archive it opens a file picker on
+    /// first show, so the debug workflow is "open harness → pick archive → step
+    /// through"; `-QuickLookPreview <path>` passes one instead.
+    func show(preview url: URL? = nil) {
         let firstShow = window?.isVisible == false
         Self.retained = self
         showWindow(nil)
         window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-        if firstShow { presentOpenPanel() }
+        if let url {
+            load(url)
+        } else if firstShow {
+            presentOpenPanel()
+        }
     }
 
     func windowWillClose(_ notification: Notification) {

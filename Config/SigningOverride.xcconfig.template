@@ -1,5 +1,12 @@
-// Copy this file to SigningOverride.xcconfig and set your Apple Development Team ID.
-// Find your Team ID in Xcode: Settings > Accounts > select your team.
-// SigningOverride.xcconfig is gitignored and will not be committed.
+// Copy this file to SigningOverride.xcconfig and fill in your Team ID.
+// SigningOverride.xcconfig is gitignored and will not be committed; Config/Debug.xcconfig
+// includes it optionally, so leaving it out changes nothing.
+//
+// Why bother: a Debug build is signed ad-hoc, which carries no team identity. macOS
+// then cannot tell that the app group in its entitlements (ZJ2TSMMJWF.…) belongs to
+// the same team, and asks "MacPacker would like to access data from other apps" the
+// first time the engine settings are read. Signing with your own development identity
+// settles the question and the prompt stops.
 
 DEVELOPMENT_TEAM = YOUR_TEAM_ID_HERE
+CODE_SIGN_IDENTITY = Apple Development

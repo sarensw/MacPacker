@@ -34,6 +34,80 @@
     },
     "versions": [
       {
+        "version": "1.0.0",
+        "items": [
+          {
+            "type": "feat",
+            "title": {
+                "en": "Quick Look follows your engine settings",
+                "zh-Hans": "Quick Look 遵循引擎设置",
+                "fr": "Quick Look suit les réglages de moteur",
+                "de": "Quick Look folgt den Engine-Einstellungen",
+                "it": "Quick Look segue le impostazioni del motore",
+                "ja": "Quick Look がエンジン設定に従うように",
+                "fa": "Quick Look از تنظیمات موتور پیروی می‌کند",
+                "pl": "Quick Look korzysta z ustawień silnika",
+                "pt-BR": "Quick Look segue as configurações de motor",
+                "ru": "Quick Look учитывает настройки движка",
+                "uk": "Quick Look враховує налаштування рушія",
+                "es-MX": "Quick Look sigue la configuración del motor",
+                "ko": "Quick Look이 엔진 설정을 따릅니다",
+                "nl": "Quick Look volgt de engine-instellingen",
+                "tr": "Quick Look motor ayarlarını uygular"
+            },
+            "issues": [
+                "149"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Open nested archives in Quick Look",
+                "zh-Hans": "在 Quick Look 中打开嵌套压缩包",
+                "fr": "Ouvrir les archives imbriquées dans Quick Look",
+                "de": "Verschachtelte Archive in Quick Look öffnen",
+                "it": "Aprire gli archivi annidati in Quick Look",
+                "ja": "Quick Look で入れ子のアーカイブを開く",
+                "fa": "باز کردن آرشیوهای تودرتو در Quick Look",
+                "pl": "Otwieranie zagnieżdżonych archiwów w Quick Look",
+                "pt-BR": "Abrir arquivos aninhados no Quick Look",
+                "ru": "Открытие вложенных архивов в Quick Look",
+                "uk": "Відкриття вкладених архівів у Quick Look",
+                "es-MX": "Abrir archivos anidados en Quick Look",
+                "ko": "Quick Look에서 중첩된 압축 파일 열기",
+                "nl": "Geneste archieven openen in Quick Look",
+                "tr": "Quick Look’ta iç içe arşivleri açma"
+            },
+            "issues": [
+                "212"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Quick Look asks for the archive password",
+                "zh-Hans": "Quick Look 会询问压缩包密码",
+                "fr": "Quick Look demande le mot de passe de l’archive",
+                "de": "Quick Look fragt nach dem Archivpasswort",
+                "it": "Quick Look chiede la password dell’archivio",
+                "ja": "Quick Look がアーカイブのパスワードを尋ねるように",
+                "fa": "Quick Look رمز آرشیو را می‌پرسد",
+                "pl": "Quick Look pyta o hasło archiwum",
+                "pt-BR": "Quick Look pede a senha do arquivo",
+                "ru": "Quick Look запрашивает пароль архива",
+                "uk": "Quick Look запитує пароль архіву",
+                "es-MX": "Quick Look pide la contraseña del archivo",
+                "ko": "Quick Look이 압축 파일 암호를 요청합니다",
+                "nl": "Quick Look vraagt om het wachtwoord van het archief",
+                "tr": "Quick Look arşiv parolasını sorar"
+            },
+            "issues": [
+                "149"
+            ]
+          }
+        ]
+      },
+      {
         "version": "0.22.0",
         "items": [
           {

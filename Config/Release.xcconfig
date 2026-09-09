@@ -12,3 +12,8 @@ PROVISIONING_PROFILE_SPECIFIER = $(DIRECT_PROFILE_FOR_$(PRODUCT_BUNDLE_IDENTIFIE
 DIRECT_PROFILE_FOR_com_sarensx_MacPacker                    = MacPacker
 DIRECT_PROFILE_FOR_com_sarensx_MacPacker_FinderExtension    = MacPackerFinder
 DIRECT_PROFILE_FOR_com_sarensx_MacPacker_QuickLookExtension = MacPackerQuickLook
+
+// App group that holds the engine settings, so the QuickLook extension reads
+// the picks the app writes (each has its own sandbox container otherwise).
+// Injected into the entitlements and into Info.plist as MPAppGroupIdentifier.
+APP_GROUP_ID = group.app.macpacker

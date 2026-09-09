@@ -121,6 +121,69 @@ extension AllCoreTests {
             #expect(selector.allowsEngineFallback == false)
         }
 
+        // MARK: - Moving the settings into the app group
+
+        /// The settings moved to the app group so the QuickLook extension reads
+        /// them too. Whoever already picked engines must find them unchanged.
+        @Test func migrationCarriesTheExistingSettingsOver() {
+            let catalog = ArchiveTypeCatalog()
+            let local = isolatedDefaults("local")
+            let shared = isolatedDefaults("shared")
+
+            let before = ArchiveEngineConfigStore(catalog: catalog, defaults: local)
+            before.isAutomatic = false
+            before.setSelectedEngine(.xad, for: "rar")
+
+            ArchiveEngineConfigStore.migrateToSharedDefaults(from: local, to: shared)
+
+            let after = ArchiveEngineConfigStore(catalog: catalog, defaults: shared)
+            #expect(after.isAutomatic == false, "the mode was lost on the way into the app group")
+            #expect(after.selectedEngine(for: "rar") == .xad, "the choice was lost on the way into the app group")
+        }
+
+        /// It runs on every launch, so it must only ever fill in what is missing —
+        /// otherwise every restart would undo the pick made since.
+        @Test func migrationNeverOverwritesTheSharedSettings() {
+            let catalog = ArchiveTypeCatalog()
+            let local = isolatedDefaults("local")
+            let shared = isolatedDefaults("shared")
+
+            let stale = ArchiveEngineConfigStore(catalog: catalog, defaults: local)
+            stale.isAutomatic = false
+            stale.setSelectedEngine(.xad, for: "rar")
+
+            let current = ArchiveEngineConfigStore(catalog: catalog, defaults: shared)
+            current.isAutomatic = false
+            current.setSelectedEngine(.`7zip`, for: "rar")
+
+            ArchiveEngineConfigStore.migrateToSharedDefaults(from: local, to: shared)
+
+            let after = ArchiveEngineConfigStore(catalog: catalog, defaults: shared)
+            #expect(after.selectedEngine(for: "rar") == .`7zip`, "an old local setting overwrote the current one")
+        }
+
+        /// A Quick Look preview shown before the app was ever launched creates
+        /// the shared settings itself, with automatic on. The user's own choice
+        /// still has to win when the app then migrates.
+        @Test func migrationCorrectsTheModeThePreviewWroteFirst() {
+            let catalog = ArchiveTypeCatalog()
+            let local = isolatedDefaults("local")
+            let shared = isolatedDefaults("shared")
+
+            let before = ArchiveEngineConfigStore(catalog: catalog, defaults: local)
+            before.isAutomatic = false
+            before.setSelectedEngine(.xad, for: "rar")
+
+            // what the preview leaves behind: the flag, no picks
+            _ = ArchiveEngineConfigStore(catalog: catalog, defaults: shared)
+
+            ArchiveEngineConfigStore.migrateToSharedDefaults(from: local, to: shared)
+
+            let after = ArchiveEngineConfigStore(catalog: catalog, defaults: shared)
+            #expect(after.isAutomatic == false, "the preview's automatic mode outlived the user's choice")
+            #expect(after.selectedEngine(for: "rar") == .xad)
+        }
+
         /// The project's single-engine doubles must stay strict without opting
         /// out, so any test written against one engine really tests that engine.
         @Test func testDoublesAreStrictByDefault() {

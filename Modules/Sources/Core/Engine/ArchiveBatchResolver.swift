@@ -34,7 +34,7 @@ final class ArchiveBatchResolver {
 
         for item in expanded {
             guard
-                let (archiveTypeID, archiveURL) = utilities.findHandlerAndUrl(for: item, in: entries),
+                let (archiveTypeID, archiveURL) = utilities.findContainingHandlerAndUrl(for: item, in: entries),
                 let engineType = selector.engineType(for: archiveTypeID)
             else {
                 throw ArchiveError.extractionFailed("Could not determine engine for extraction")
@@ -65,7 +65,10 @@ final class ArchiveBatchResolver {
         func collect(_ item: ArchiveItem) {
             guard seen.insert(item.id).inserted else { return }
             result.append(item)
-            if let childIDs = item.children {
+            // An opened nested archive keeps its entries in a different archive:
+            // extracting the row means writing that one file out, not spraying
+            // everything inside it into the destination.
+            if item.archiveTypeId == nil, let childIDs = item.children {
                 for childID in childIDs {
                     if let child = entries[childID] {
                         collect(child)

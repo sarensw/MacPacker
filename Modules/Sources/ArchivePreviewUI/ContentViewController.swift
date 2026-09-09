@@ -7,7 +7,6 @@
 
 import AppKit
 import Core
-import os
 
 final class ContentViewController: NSViewController, ButtonBarDelegate {
     var state: ArchiveState? {
