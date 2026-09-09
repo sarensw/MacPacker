@@ -23,18 +23,19 @@ public final class ArchivePreviewViewController: NSViewController {
     private var scopedURL: URL?
 
     /// Resumed once the host has something worth showing: the loaded archive, a
-    /// failure message, or the password prompt. QuickLook only puts the view on
-    /// screen after `preparePreviewOfFile` returns, so waiting for the whole load
-    /// would leave the user staring at nothing while we wait for their password.
+    /// failure message, or the locked-archive notice. QuickLook only puts the
+    /// view on screen after `preparePreviewOfFile` returns.
     private var readyContinuation: CheckedContinuation<Void, Never>?
-    private var passwordContinuation: CheckedContinuation<String?, Never>?
     /// Bumped by every load. The harness loads a second archive into the same
     /// controller, so a load can be superseded while it is still running: its
     /// callbacks must not touch the UI the newer load owns, and must not resume
     /// the newer load's continuations.
     private var loadGeneration = 0
-    /// What to go back to once a password has been entered.
-    private var showedContentBeforePrompt = false
+    /// The archive being previewed, for handing it over to MacPacker.
+    private var previewedURL: URL?
+    /// Set once the locked-archive notice is up, so the finished load does not
+    /// replace it with the engine's "could not read this" message.
+    private var showsLockedNotice = false
 
     private lazy var messageLabel: NSTextField = {
         let label = NSTextField(labelWithString: "")
@@ -47,7 +48,7 @@ public final class ArchivePreviewViewController: NSViewController {
         return label
     }()
 
-    private lazy var passwordLabel: NSTextField = {
+    private lazy var lockedLabel: NSTextField = {
         let label = NSTextField(labelWithString: "")
         label.alignment = .center
         label.maximumNumberOfLines = 0
@@ -55,24 +56,16 @@ public final class ArchivePreviewViewController: NSViewController {
         return label
     }()
 
-    private lazy var passwordField: NSSecureTextField = {
-        let field = NSSecureTextField()
-        field.target = self
-        field.action = #selector(submitPassword)
-        field.translatesAutoresizingMaskIntoConstraints = false
-        return field
-    }()
-
-    /// Inline rather than a sheet: an appex has no window of its own to attach a
-    /// sheet to, and the QuickLook panel is not ours to put one on.
-    private lazy var passwordPrompt: NSStackView = {
-        let unlock = NSButton(
-            title: String(localized: "Unlock", bundle: .module, comment: "Button that submits the password for an encrypted archive in the Quick Look preview"),
+    /// A locked archive is handed to MacPacker rather than unlocked here: the
+    /// Quick Look panel keeps key focus, so a password field in this view never
+    /// receives a keystroke. Clicks do arrive, so a button works.
+    private lazy var lockedNotice: NSStackView = {
+        let open = NSButton(
+            title: String(localized: "Open in MacPacker", bundle: .module, comment: "Button in the Quick Look preview that opens a password protected archive in the MacPacker app"),
             target: self,
-            action: #selector(submitPassword))
-        unlock.keyEquivalent = "\r"
+            action: #selector(openInMacPacker))
 
-        let stack = NSStackView(views: [passwordLabel, passwordField, unlock])
+        let stack = NSStackView(views: [lockedLabel, open])
         stack.orientation = .vertical
         stack.alignment = .centerX
         stack.spacing = 8
@@ -102,7 +95,7 @@ public final class ArchivePreviewViewController: NSViewController {
         content.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(content)
         container.addSubview(messageLabel)
-        container.addSubview(passwordPrompt)
+        container.addSubview(lockedNotice)
 
         NSLayoutConstraint.activate([
             content.topAnchor.constraint(equalTo: container.topAnchor),
@@ -115,11 +108,10 @@ public final class ArchivePreviewViewController: NSViewController {
             messageLabel.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 16),
             messageLabel.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -16),
 
-            passwordPrompt.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-            passwordPrompt.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            passwordPrompt.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 16),
-            passwordPrompt.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -16),
-            passwordField.widthAnchor.constraint(equalToConstant: 220)
+            lockedNotice.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            lockedNotice.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            lockedNotice.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 16),
+            lockedNotice.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -16)
         ])
 
         view = container
@@ -145,10 +137,10 @@ public final class ArchivePreviewViewController: NSViewController {
 
         // Let go of whatever the previous load was waiting on before replacing
         // it: an unresumed continuation hangs its caller forever.
-        passwordContinuation?.resume(returning: nil)
-        passwordContinuation = nil
         readyContinuation?.resume()
         readyContinuation = nil
+        hideLockedNotice()
+        previewedURL = url
 
         loadGeneration += 1
         let generation = loadGeneration
@@ -174,7 +166,12 @@ public final class ArchivePreviewViewController: NSViewController {
     /// taken over in the meantime.
     private func finishLoad(generation: Int) {
         guard generation == loadGeneration, let state else { return }
-        hidePasswordPrompt()
+        // A locked archive ends as a failed load; its notice says more than the
+        // engine's error would, so leave it standing.
+        guard !showsLockedNotice else {
+            signalReady()
+            return
+        }
 
         let entryCount = state.entries.count
         let rootChildren = state.root?.children?.count ?? -1
@@ -200,64 +197,78 @@ public final class ArchivePreviewViewController: NSViewController {
         signalReady()
     }
 
-    // MARK: - Password
+    // MARK: - Locked archives
 
-    /// Asks the user for the archive's password, inline in the preview.
+    /// Reports that the archive needs a password, and offers to open it in
+    /// MacPacker — this preview cannot take one.
     ///
-    /// A superseded load gets no prompt and no password: answering nil ends it
-    /// as cancelled instead of leaving its engine waiting on a prompt that the
-    /// newer load's UI has replaced.
+    /// Finder's Quick Look panel keeps key focus, so a text field here never
+    /// receives a keystroke; clicks do arrive, which is why a button works. The
+    /// engine is answered `nil` right away rather than left waiting for an entry
+    /// that can never come.
     private func requestPassword(_ request: ArchivePasswordRequest, generation: Int) async -> String? {
         guard generation == loadGeneration else { return nil }
-        PreviewLog.general.info("Password requested", context: [
+        PreviewLog.general.info("Archive is locked, offering the hand-off", context: [
             "file": request.url.lastPathComponent,
             "attempt": "\(request.attempt)"
         ])
-        showPasswordPrompt(retry: request.attempt > 1)
-        // The prompt is only usable once the host shows the view, and it only
+        showLockedNotice()
+        // The notice is only on screen once the host shows the view, and it only
         // does that after `preparePreviewOfFile` returns.
         signalReady()
-
-        return await withCheckedContinuation { continuation in
-            // two prompts at once would strand the first one forever
-            passwordContinuation?.resume(returning: nil)
-            passwordContinuation = continuation
-        }
+        return nil
     }
 
-    private func showPasswordPrompt(retry: Bool) {
-        // A password is asked for twice: for the archive itself (nothing on
-        // screen yet) and for a nested one (the tree is showing, and goes back
-        // up once the password is in).
-        showedContentBeforePrompt = !contentViewController.view.isHidden
-        passwordLabel.stringValue = retry
-            ? String(localized: "Wrong password. Try again.", bundle: .module, comment: "Shown in the Quick Look preview when the entered archive password did not work")
-            : String(localized: "This archive is password protected.", bundle: .module, comment: "Shown in the Quick Look preview when an archive needs a password to be read")
-        passwordField.stringValue = ""
-        passwordPrompt.isHidden = false
+    private func showLockedNotice() {
+        lockedLabel.stringValue = String(
+            localized: "This archive is password protected.",
+            bundle: .module,
+            comment: "Shown in the Quick Look preview when an archive needs a password to be read")
+        showsLockedNotice = true
+        lockedNotice.isHidden = false
         messageLabel.isHidden = true
         contentViewController.view.isHidden = true
-        view.window?.makeFirstResponder(passwordField)
     }
 
-    private func hidePasswordPrompt() {
-        passwordPrompt.isHidden = true
-        passwordField.stringValue = ""
+    private func hideLockedNotice() {
+        showsLockedNotice = false
+        lockedNotice.isHidden = true
     }
 
-    /// An empty password is a "no thanks" — the engine reports the archive as
-    /// locked instead of retrying forever.
-    @objc private func submitPassword() {
-        guard let continuation = passwordContinuation else { return }
-        passwordContinuation = nil
-        let password = passwordField.stringValue
-        hidePasswordPrompt()
-        if showedContentBeforePrompt {
-            hideMessage()   // back to the tree; the nested row keeps spinning
-        } else {
-            showMessage(String(localized: "Opening…", bundle: .module, comment: "Shown in the Quick Look preview while the archive is being read"))
+    /// Hands the archive to MacPacker through the app's url scheme, the same way
+    /// the Finder extension does, so the password can be entered there.
+    @objc private func openInMacPacker() {
+        guard let url = previewedURL,
+              let scheme = Bundle.main.object(forInfoDictionaryKey: "MacPackerURLScheme") as? String,
+              !scheme.isEmpty else {
+            PreviewLog.general.error("Cannot hand over: no url scheme in the extension's Info.plist")
+            return
         }
-        continuation.resume(returning: password.isEmpty ? nil : password)
+
+        // Encoded here and again by URLComponents, because the app decodes twice:
+        // once out of the query item, once with removingPercentEncoding. A path
+        // holding a literal % would otherwise arrive as nonsense — or as nil,
+        // which reads as "no files" and opens nothing. Same as FinderSync does.
+        guard let files = url.path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let target = url.deletingLastPathComponent().path
+                  .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            PreviewLog.general.error("Could not encode the archive path for the hand-off")
+            return
+        }
+
+        var components = URLComponents()
+        components.scheme = scheme
+        components.host = "open"
+        components.queryItems = [
+            URLQueryItem(name: "files", value: files),
+            URLQueryItem(name: "target", value: target)
+        ]
+        guard let appURL = components.url else { return }
+
+        PreviewLog.general.info("Handing the archive to MacPacker", context: ["file": url.lastPathComponent])
+        if !NSWorkspace.shared.open(appURL) {
+            PreviewLog.general.error("MacPacker did not open", context: ["scheme": scheme])
+        }
     }
 
     // MARK: - Helpers

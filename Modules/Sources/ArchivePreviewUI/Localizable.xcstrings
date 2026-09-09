@@ -117,8 +117,8 @@
         }
       }
     },
-    "Opening…" : {
-      "comment" : "Shown in the Quick Look preview while the archive is being read"
+    "Open in MacPacker" : {
+      "comment" : "Button in the Quick Look preview that opens a password protected archive in the MacPacker app"
     },
     "Packed Size" : {
       "comment" : "Column that shows the packed size of the archive files",
@@ -180,12 +180,6 @@
     },
     "This archive is password protected." : {
       "comment" : "Shown in the Quick Look preview when an archive needs a password to be read"
-    },
-    "Unlock" : {
-      "comment" : "Button that submits the password for an encrypted archive in the Quick Look preview"
-    },
-    "Wrong password. Try again." : {
-      "comment" : "Shown in the Quick Look preview when the entered archive password did not work"
     }
   },
   "version" : "1.1"
