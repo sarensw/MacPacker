@@ -281,12 +281,18 @@ public final class ArchivePreviewViewController: NSViewController {
         PreviewLog.general.info("Handing the archive to MacPacker", context: ["file": url.lastPathComponent])
         if NSWorkspace.shared.open(appURL) { return }
 
-        // Some hosts refuse an extension's NSWorkspace launch; the extension
-        // context asks the host to open it on our behalf.
-        // The extension's sandbox denies LaunchServices (`deny(1) lsopen`), so
-        // this is the expected path: ask the host to open it for us.
+        // Expected path in the extension: its sandbox denies LaunchServices
+        // (`deny(1) lsopen`), so the host is asked to open the url instead.
+        // There is no host in the in-app harness, where NSWorkspace works.
+        guard let extensionContext else {
+            PreviewLog.general.error("MacPacker did not open and there is no host to ask",
+                                     context: ["scheme": scheme])
+            showHandOffUnavailable()
+            return
+        }
+
         PreviewLog.general.notice("NSWorkspace refused the hand-off, asking the host")
-        extensionContext?.open(appURL) { [weak self] opened in
+        extensionContext.open(appURL) { [weak self] opened in
             guard !opened else { return }
             PreviewLog.general.error("MacPacker did not open", context: ["scheme": scheme])
             Task { @MainActor in self?.showHandOffUnavailable() }
