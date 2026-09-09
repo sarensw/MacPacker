@@ -245,12 +245,23 @@ public final class ArchivePreviewViewController: NSViewController {
             return
         }
 
+        // Encoded here and again by URLComponents, because the app decodes twice:
+        // once out of the query item, once with removingPercentEncoding. A path
+        // holding a literal % would otherwise arrive as nonsense — or as nil,
+        // which reads as "no files" and opens nothing. Same as FinderSync does.
+        guard let files = url.path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+              let target = url.deletingLastPathComponent().path
+                  .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            PreviewLog.general.error("Could not encode the archive path for the hand-off")
+            return
+        }
+
         var components = URLComponents()
         components.scheme = scheme
         components.host = "open"
         components.queryItems = [
-            URLQueryItem(name: "files", value: url.path),
-            URLQueryItem(name: "target", value: url.deletingLastPathComponent().path)
+            URLQueryItem(name: "files", value: files),
+            URLQueryItem(name: "target", value: target)
         ]
         guard let appURL = components.url else { return }
 
