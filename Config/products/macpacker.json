@@ -37,52 +37,6 @@
         "version": "1.0.0",
         "items": [
           {
-            "type": "fix",
-            "title": {
-                "en": "Quick Look preview was always in English",
-                "zh-Hans": "Quick Look 预览始终显示英文",
-                "fr": "L’aperçu Quick Look était toujours en anglais",
-                "de": "Quick Look-Vorschau war immer auf Englisch",
-                "it": "L’anteprima Quick Look era sempre in inglese",
-                "ja": "Quick Look のプレビューが常に英語で表示される",
-                "fa": "پیش‌نمایش Quick Look همیشه انگلیسی بود",
-                "pl": "Podgląd Quick Look zawsze był po angielsku",
-                "pt-BR": "A visualização do Quick Look ficava sempre em inglês",
-                "ru": "Предпросмотр Quick Look всегда был на английском",
-                "uk": "Попередній перегляд Quick Look завжди був англійською",
-                "es-MX": "La vista previa de Quick Look siempre estaba en inglés",
-                "ko": "Quick Look 미리보기가 항상 영어로 표시됨",
-                "nl": "Quick Look-voorbeeld was altijd in het Engels",
-                "tr": "Quick Look önizlemesi hep İngilizceydi"
-            },
-            "issues": [
-                "217"
-            ]
-          },
-          {
-            "type": "fix",
-            "title": {
-                "en": "Extracting an opened nested archive does nothing",
-                "zh-Hans": "已打开的嵌套压缩包无法解压",
-                "fr": "L’extraction d’une archive imbriquée ouverte ne fait rien",
-                "de": "Entpacken eines geöffneten verschachtelten Archivs bewirkt nichts",
-                "it": "L’estrazione di un archivio annidato aperto non fa nulla",
-                "ja": "開いた入れ子のアーカイブを展開しても何も起きない",
-                "fa": "استخراج آرشیو تودرتوی بازشده هیچ کاری نمی‌کند",
-                "pl": "Wypakowanie otwartego zagnieżdżonego archiwum nic nie robi",
-                "pt-BR": "Extrair um arquivo aninhado já aberto não faz nada",
-                "ru": "Извлечение открытого вложенного архива ничего не даёт",
-                "uk": "Видобування відкритого вкладеного архіву нічого не робить",
-                "es-MX": "Extraer un archivo anidado ya abierto no hace nada",
-                "ko": "열어 본 중첩 압축 파일을 압축 해제해도 아무 일이 없음",
-                "nl": "Het uitpakken van een geopend genest archief doet niets",
-                "tr": "Açılmış iç içe arşivi çıkarmak hiçbir şey yapmıyor"
-            },
-            "issues": [
-                "214"
-            ]
-          },
-          {
             "type": "feat",
             "title": {
                 "en": "Quick Look follows your engine settings",
