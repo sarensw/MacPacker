@@ -60,11 +60,16 @@ public struct AppUrl: Equatable, Sendable {
         }
 
         // the extension percent-encodes the paths once more before the query
-        // encodes them, hence the extra decode
-        let files = (value("files") ?? "")
-            .split(separator: ",")
-            .map { URL(fileURLWithPath: String($0).removingPercentEncoding ?? "") }
-        guard let target = value("target"), !files.isEmpty else {
+        // encodes them, hence the extra decode. A path that doesn't decode to
+        // an absolute path would resolve against the app's working directory,
+        // so it rejects the whole request.
+        func decodedPath(_ encoded: String) -> String? {
+            guard let path = encoded.removingPercentEncoding, path.hasPrefix("/") else { return nil }
+            return path
+        }
+        let filePaths = (value("files") ?? "").split(separator: ",").map { decodedPath(String($0)) }
+        guard let targetPath = value("target").flatMap(decodedPath),
+              !filePaths.isEmpty, !filePaths.contains(nil) else {
             throw .missingFilesOrTarget
         }
         let format = value("format")
@@ -73,8 +78,8 @@ public struct AppUrl: Equatable, Sendable {
         }
 
         self.action = action
-        self.files = files
-        self.target = URL(fileURLWithPath: target.removingPercentEncoding ?? "")
+        self.files = filePaths.compactMap { $0 }.map { URL(fileURLWithPath: $0) }
+        self.target = URL(fileURLWithPath: targetPath)
         self.format = format
         if let dated = value("dated") {
             // digits only, so nothing but a date can reach the file name

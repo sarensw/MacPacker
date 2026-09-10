@@ -108,5 +108,31 @@ extension AllCoreTests {
                 try AppUrl(url: url("compress", extra: [URLQueryItem(name: "dated", value: "../soon")]), scheme: scheme)
             }
         }
+
+        @Test("A path that doesn't decode to an absolute path rejects the whole request")
+        func undecodablePathsAreRejected() {
+            // values as the extension's inner encoding would leave them
+            let requests: [(files: String, target: String)] = [
+                ("/Users/me/ok.zip,/Users/me/bad%ZZ.zip", "/Users/me"),   // one bad file of two
+                ("/Users/me/ok.zip", "/Users/me/%E0%A4%A"),               // truncated sequence in the target
+                ("photos.zip", "/Users/me"),                               // relative: resolves against the working directory
+                ("/Users/me/ok.zip", ""),                                  // empty target: the same
+            ]
+            for request in requests {
+                #expect(throws: AppUrl.ParseError.missingFilesOrTarget) {
+                    try AppUrl(url: url("compress", files: [], target: nil, extra: [
+                        URLQueryItem(name: "files", value: request.files),
+                        URLQueryItem(name: "target", value: request.target),
+                    ]), scheme: scheme)
+                }
+            }
+        }
+
+        @Test("Paths with spaces, percent signs and accents come through unchanged")
+        func unusualValidPathsSurvive() throws {
+            let parsed = try AppUrl(url: url("compress", files: ["/Users/me/100% done/Füße.zip"], target: "/Users/me/100% done"), scheme: scheme)
+            #expect(parsed.files == [URL(fileURLWithPath: "/Users/me/100% done/Füße.zip")])
+            #expect(parsed.target == URL(fileURLWithPath: "/Users/me/100% done"))
+        }
     }
 }
