@@ -455,7 +455,25 @@ final actor ArchiveXadEngine: ArchiveEngine {
         }
 
         var urlsByItemID: [UUID: URL] = [:]
-        var preexistingDirectories: Set<UUID> = []
+
+        // Directories that were already on disk before any of this ran, with the
+        // date they had. A directory sitting there belongs to whoever put it
+        // there — the destination is not always empty — and its date is not ours
+        // to rewrite.
+        //
+        // Taken up front rather than as each entry is reached, because entry order
+        // is not defined: a directory this extraction creates as the parent of an
+        // earlier file would otherwise look pre-existing by the time its own entry
+        // came round, and lose the date it should have had.
+        var preexistingDirectoryDates: [UUID: Date] = [:]
+        for item in items where item.type == .directory {
+            guard let virtualPath = item.virtualPath else { continue }
+            let url = destination.appendingPathComponent(virtualPath)
+            guard let date = try? url.resourceValues(forKeys: [.contentModificationDateKey])
+                .contentModificationDate
+            else { continue }
+            preexistingDirectoryDates[item.id] = date
+        }
 
         for item in items {
             try Task.checkCancellation()
@@ -467,15 +485,6 @@ final actor ArchiveXadEngine: ArchiveEngine {
             }
 
             let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: item.type == .directory)
-
-            // A directory already sitting there belongs to whoever put it there:
-            // the destination is not always empty, and its date is not ours to
-            // rewrite. Noted before extracting, which is the only moment the two
-            // are still distinguishable.
-            if item.type == .directory,
-               FileManager.default.fileExists(atPath: resultUrl.path) {
-                preexistingDirectories.insert(item.id)
-            }
 
             do {
                 try await archive.extractEntry(Int32(itemIndex), to: destination.path)
@@ -505,7 +514,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
             urlsByItemID[item.id] = resultUrl
         }
 
-        restoreDirectoryDates(for: items, at: urlsByItemID, skipping: preexistingDirectories)
+        restoreDirectoryDates(for: items, at: urlsByItemID, preexisting: preexistingDirectoryDates)
 
         return ArchiveExtractionResult(urlsByItemID: urlsByItemID)
     }
@@ -524,12 +533,29 @@ final actor ArchiveXadEngine: ArchiveEngine {
     private func restoreDirectoryDates(
         for items: [ArchiveItem],
         at urls: [UUID: URL],
-        skipping preexisting: Set<UUID>
+        preexisting: [UUID: Date]
     ) {
         for item in items where item.type == .directory {
-            guard !preexisting.contains(item.id) else { continue }
             guard let date = item.modificationDate, let url = urls[item.id] else { continue }
-            try? FileManager.default.setAttributes([.modificationDate: date],
+
+            guard let existingDate = preexisting[item.id] else {
+                // Ours to stamp: this extraction made the directory.
+                try? FileManager.default.setAttributes([.modificationDate: date],
+                                                       ofItemAtPath: url.path)
+                continue
+            }
+
+            // Not ours — but XADMaster has already stamped it with the archive's
+            // date on its way past, and it is a vendored library, so the only
+            // place to undo that is here. Undone precisely: a directory whose date
+            // now reads as the archive's is one that was overwritten, while one
+            // bumped by a file this extraction wrote into it reads as the present
+            // moment and is left alone, because writing into a folder legitimately
+            // changes its date and every other tool does the same.
+            let current = try? url.resourceValues(forKeys: [.contentModificationDateKey])
+                .contentModificationDate
+            guard let current, abs(current.timeIntervalSince(date)) < 2 else { continue }
+            try? FileManager.default.setAttributes([.modificationDate: existingDate],
                                                    ofItemAtPath: url.path)
         }
     }

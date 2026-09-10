@@ -699,6 +699,39 @@ extension AllCoreTests {
                     "link.txt should come back a symlink, got \(String(describing: destination))")
         }
 
+        // Metadata that cannot be read is not metadata that is not there, and the
+        // difference matters: silently writing the archive without it is exactly
+        // the bug this whole change fixes, arrived at from another direction. The
+        // sandbox makes this concrete — without a security-scoped grant `listxattr`
+        // fails with EACCES, and a swallowed error there would drop a folder's
+        // custom icon with nobody the wiser.
+        //
+        // A folder is the subject rather than a file because it isolates the
+        // metadata path: a directory entry stores no contents, so nothing else in
+        // the write can fail first and pass the test for the wrong reason.
+        @Test func createdArchiveReportsMetadataItCouldNotRead() async throws {
+            let dir = try makeTempDir()
+            let folder = dir.appendingPathComponent("Unreadable")
+            try makeFolderWithCustomIcon(at: folder, fork: Data("ICNS-STAND-IN".utf8))
+
+            // Restored before the directory is removed, or the cleanup cannot
+            // descend into it either.
+            defer {
+                chmod(folder.path, 0o755)
+                try? FileManager.default.removeItem(at: dir)
+            }
+            #expect(chmod(folder.path, 0o000) == 0, "could not make the folder unreadable")
+
+            let dest = dir.appendingPathComponent("created.zip")
+            #expect(throws: (any Error).self) {
+                try SevenZipArchive.writeArchive(
+                    destination: dest,
+                    items: [.addDirectory(archivePath: "Unreadable", diskPath: folder)],
+                    options: .init(format: .zip)
+                )
+            }
+        }
+
         // Every file would get a sidecar otherwise: `copyfile` packs a header and
         // an empty FinderInfo whether or not there was anything to say, so a naive
         // implementation roughly doubles the entry count of every archive anyone

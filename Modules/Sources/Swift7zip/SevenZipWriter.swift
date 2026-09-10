@@ -55,9 +55,11 @@ extension SevenZipArchive {
         // long as this write does.
         let scratch = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
-        try? FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        // Not `try?`: one failed directory would silently turn the whole of the
+        // above into a no-op, and the archive would come out stripped.
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: scratch) }
-        resolved.append(contentsOf: metadataSidecars(for: resolved, scratch: scratch))
+        resolved.append(contentsOf: try metadataSidecars(for: resolved, scratch: scratch))
 
         try performUpdate(
             source: source,
@@ -198,13 +200,31 @@ extension SevenZipArchive {
         "com.apple.TextEncoding",
     ]
 
+    /// A failure in the metadata path, carrying what the C call reported.
+    ///
+    /// Everything below reports rather than shrugs, because "could not read the
+    /// metadata" and "there was no metadata" produce the same archive and mean
+    /// opposite things. Treating the first as the second is how a custom folder
+    /// icon goes missing with nobody told — which is the bug this whole change
+    /// exists to fix, reached from a different direction. Under the sandbox it is
+    /// not hypothetical: without a security-scoped grant `listxattr` fails with
+    /// EACCES on a folder whose contents are never read.
+    private static func metadataError(_ call: String, _ url: URL) -> SevenZipError {
+        .writeFailed("\(call) failed for \(url.lastPathComponent): "
+                     + String(cString: strerror(errno)))
+    }
+
     /// The names of every extended attribute on `url`.
-    private static func attributeNames(of url: URL) -> [String] {
+    private static func attributeNames(of url: URL) throws -> [String] {
         let size = listxattr(url.path, nil, 0, XATTR_NOFOLLOW)
+        guard size >= 0 else { throw metadataError("listxattr", url) }
         guard size > 0 else { return [] }
 
         var buffer = [CChar](repeating: 0, count: size)
-        guard listxattr(url.path, &buffer, size, XATTR_NOFOLLOW) == size else { return [] }
+        // A shrinking set between the two calls is a race, not an empty one.
+        guard listxattr(url.path, &buffer, size, XATTR_NOFOLLOW) == size else {
+            throw metadataError("listxattr", url)
+        }
 
         // listxattr returns the names NUL-separated in one buffer.
         return buffer.split(separator: 0).map { String(cString: Array($0) + [0]) }
@@ -212,7 +232,7 @@ extension SevenZipArchive {
 
     /// Serializes what macOS keeps outside a file's contents — resource fork,
     /// extended attributes, and the FinderInfo that carries a custom-icon or
-    /// invisible flag — into AppleDouble. Returns the file written, or `nil`.
+    /// invisible flag — into AppleDouble. Returns the file written.
     ///
     /// `copyfile` with COPYFILE_PACK is the same call `ditto` makes and the exact
     /// reverse of the COPYFILE_UNPACK the extraction path already runs, so the
@@ -224,22 +244,30 @@ extension SevenZipArchive {
     /// no way to leave an attribute out and some of them must not travel. The
     /// stand-in is given exactly the attributes worth keeping and then packed, so
     /// what lands in the archive is the same format either way.
-    private static func packMetadata(of source: URL, into scratch: URL) -> URL? {
+    private static func packMetadata(of source: URL, into scratch: URL) throws -> URL {
         let donor = scratch.appendingPathComponent(UUID().uuidString)
-        guard FileManager.default.createFile(atPath: donor.path, contents: nil) else { return nil }
+        guard FileManager.default.createFile(atPath: donor.path, contents: nil) else {
+            throw metadataError("create", donor)
+        }
 
-        for name in attributeNames(of: source) where !systemOwnedAttributes.contains(name) {
+        for name in try attributeNames(of: source) where !systemOwnedAttributes.contains(name) {
             let size = getxattr(source.path, name, nil, 0, 0, XATTR_NOFOLLOW)
-            guard size >= 0 else { continue }
+            guard size >= 0 else { throw metadataError("getxattr \(name)", source) }
 
             var value = [UInt8](repeating: 0, count: max(size, 1))
-            guard getxattr(source.path, name, &value, size, 0, XATTR_NOFOLLOW) == size else { continue }
-            setxattr(donor.path, name, value, size, 0, XATTR_NOFOLLOW)
+            guard getxattr(source.path, name, &value, size, 0, XATTR_NOFOLLOW) == size else {
+                throw metadataError("getxattr \(name)", source)
+            }
+            guard setxattr(donor.path, name, value, size, 0, XATTR_NOFOLLOW) == 0 else {
+                throw metadataError("setxattr \(name)", donor)
+            }
         }
 
         let destination = scratch.appendingPathComponent(UUID().uuidString)
         let flags = copyfile_flags_t(COPYFILE_PACK | COPYFILE_XATTR)
-        guard copyfile(donor.path, destination.path, nil, flags) == 0 else { return nil }
+        guard copyfile(donor.path, destination.path, nil, flags) == 0 else {
+            throw metadataError("copyfile", source)
+        }
         return destination
     }
 
@@ -254,12 +282,15 @@ extension SevenZipArchive {
     /// `copyfile` emits shows up as sidecars that are kept, rather than as real
     /// metadata quietly thrown away.
     private struct EmptyMetadata {
-        private let sample: Data?
+        private let sample: Data
 
-        init(scratch: URL) {
+        /// Throws rather than falling back to "nothing matches": a missing sample
+        /// would quietly give every entry in the archive a sidecar carrying
+        /// nothing, which is the failure this comparison exists to prevent.
+        init(scratch: URL) throws {
             let file = scratch.appendingPathComponent("empty-metadata-sample")
-            try? Data().write(to: file)
-            sample = packMetadata(of: file, into: scratch).flatMap { try? Data(contentsOf: $0) }
+            try Data().write(to: file)
+            sample = try Data(contentsOf: packMetadata(of: file, into: scratch))
         }
 
         func describesNothing(_ sidecar: Data) -> Bool { sidecar == sample }
@@ -276,8 +307,8 @@ extension SevenZipArchive {
     /// Symlinks are skipped: a link has no metadata worth carrying, and the
     /// extraction side refuses to unpack onto one anyway, since `copyfile` would
     /// follow it and write to whatever it points at.
-    private static func metadataSidecars(for items: [ResolvedItem], scratch: URL) -> [ResolvedItem] {
-        let empty = EmptyMetadata(scratch: scratch)
+    private static func metadataSidecars(for items: [ResolvedItem], scratch: URL) throws -> [ResolvedItem] {
+        let empty = try EmptyMetadata(scratch: scratch)
         var sidecars: [ResolvedItem] = []
 
         for item in items {
@@ -294,14 +325,15 @@ extension SevenZipArchive {
                 continue
             }
 
-            let values = try? source.resourceValues(
+            let values = try source.resourceValues(
                 forKeys: [.isSymbolicLinkKey, .contentModificationDateKey])
-            if values?.isSymbolicLink == true { continue }
+            if values.isSymbolicLink == true { continue }
 
-            guard let packed = packMetadata(of: source, into: scratch),
-                  let bytes = try? Data(contentsOf: packed),
-                  !empty.describesNothing(bytes)
-            else { continue }
+            // The only reason to leave a sidecar out: it was packed, and what came
+            // back says nothing. A failure above is a failure, not an absence.
+            let packed = try packMetadata(of: source, into: scratch)
+            let bytes = try Data(contentsOf: packed)
+            if empty.describesNothing(bytes) { continue }
 
             sidecars.append(.addFile(
                 archivePath: sidecarPath(for: archivePath),
@@ -309,7 +341,7 @@ extension SevenZipArchive {
                 // The sidecar carries the date of what it describes, as ditto's
                 // do — its own would be the moment the archive happened to be
                 // written, which says nothing about the file.
-                modificationDate: date ?? values?.contentModificationDate,
+                modificationDate: date ?? values.contentModificationDate,
                 posixPermissions: nil))
         }
 
