@@ -348,6 +348,7 @@ let package = Package(
     products: [
         .library(name: "Core", targets: ["Core"]),
         .library(name: "ArchivePreviewUI", targets: ["ArchivePreviewUI"]),
+        .library(name: "FinderMenu", targets: ["FinderMenu"]),
         //.library(name: "SevenZipBridge", targets: ["SevenZipBridge"])
     ],
     dependencies: [
@@ -371,6 +372,15 @@ let package = Package(
             resources: [
                 .copy("Formats/Catalog.json"),
                 .process("Localizable.xcstrings")
+            ]
+        ),
+        // Shared by the app and the Finder extension. Stays dependency-free on
+        // purpose: the extension must not link Core, which drags 7-Zip and
+        // XADMaster into a process Finder loads.
+        .target(
+            name: "FinderMenu",
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
             ]
         ),
         .target(
@@ -441,6 +451,7 @@ let package = Package(
             name: "CoreTests",
             dependencies: [
                 "Core",
+                "FinderMenu",
                 .product(name: "tb", package: "TailBeatKit")
             ],
             resources: [

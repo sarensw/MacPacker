@@ -7,6 +7,7 @@
 
 import AppKit
 import Core
+import FinderMenu
 import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")

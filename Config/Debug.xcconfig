@@ -1,5 +1,7 @@
 #include "Version.xcconfig"
 
+INFOPLIST_KEY_CFBundleDisplayName = MacPacker Debug
+
 // ── Debug identity overrides ─────────────────────────────────────────────────
 // Give Debug builds a distinct Launch Services / QuickLook / FinderSync identity
 // so they no longer collide with an installed Release build. Defined here on the

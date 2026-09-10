@@ -5,12 +5,16 @@
 //  Created by Stephan Arenswald on 24.09.25.
 //
 
-import Foundation
+import AppKit
 import Core
+import FinderMenu
+import Foundation
 import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
+/// Finder action "Extract Here": extracts every selected archive next to it,
+/// then selects what came out in Finder.
 class AppUrlExtractHereHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
@@ -21,24 +25,19 @@ class AppUrlExtractHereHandler: AppUrlHandler {
     }
     
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
-        for fileUrl in appUrl.files {
-            log.debug("Extracting \(fileUrl) here... \(appUrl.target)")
-            
-            requestAccessToDir(for: appUrl.target) { response, url in
-                if response == .OK {
-                    log.debug("Found archive handler for \(fileUrl.lastPathComponent)")
-                    if let url {
-                        Task {
-                            // The loader resolves a split to its first volume and asks
-                            // for source-folder access itself, via the provider — like
-                            // a password. We just hand it the file.
-                            let state = ArchiveState(catalog: self.catalog, engineSelector: self.engineSelector)
-                            state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
-                            state.open(url: fileUrl)
-                            try await state.openTask?.value
-                            state.extract(to: url)
-                        }
-                    }
+        log.debug("Extracting \(appUrl.files.count) archive(s) here: \(appUrl.target)")
+
+        // the selected archives share one folder: a single grant covers
+        // reading them and writing next to them
+        requestAccessToDir(for: appUrl.target) { response, url in
+            guard response == .OK, let url else { return }
+            Task { @MainActor in
+                var extracted: [URL] = []
+                for fileUrl in appUrl.files {
+                    extracted += await self.extractArchive(fileUrl, into: url, catalog: self.catalog, engineSelector: self.engineSelector)
+                }
+                if !extracted.isEmpty {
+                    NSWorkspace.shared.activateFileViewerSelecting(extracted)
                 }
             }
         }

@@ -5,12 +5,16 @@
 //  Created by Stephan Arenswald on 24.09.25.
 //
 
-import Foundation
+import AppKit
 import Core
+import FinderMenu
+import Foundation
 import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
+/// Finder action "Extract to "<name>"": extracts each selected archive into a
+/// new folder named after it, then selects those folders in Finder.
 class AppUrlExtractToFolderHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
@@ -21,39 +25,30 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
     }
     
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
-        for fileUrl in appUrl.files {
-            log.debug("Extracting \(fileUrl) to folder \(appUrl.target)")
-            
-            requestAccessToDir(for: appUrl.target) { response, url in
-                if response == .OK {
-                    if let url {
-                        // `url` is the folder the user granted access to — the
-                        // destination. The folder we create inside it is named
-                        // after the archive, so the name comes from `fileUrl`.
-                        let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
-                        let folderUrl = url.appendingPathComponent(folderName)
-                        do {
-                            try FileManager.default.createDirectory(
-                                at: folderUrl,
-                                withIntermediateDirectories: true
-                            )
-                            
-                            log.debug("Found archive handler for \(fileUrl.lastPathComponent)")
-                            
-                            Task {
-                                // The loader resolves a split to its first volume and
-                                // asks for source-folder access itself, via the
-                                // provider — like a password. We just hand it the file.
-                                let state = ArchiveState(catalog: self.catalog, engineSelector: self.engineSelector)
-                                state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
-                                state.open(url: fileUrl)
-                                try await state.openTask?.value
-                                state.extract(to: folderUrl)
-                            }
-                        } catch {
-                            log.error(error.localizedDescription)
-                        }
+        log.debug("Extracting \(appUrl.files.count) archive(s) to folders in \(appUrl.target)")
+
+        // the selected archives share one folder: a single grant covers them all
+        requestAccessToDir(for: appUrl.target) { response, url in
+            guard response == .OK, let url else { return }
+            Task { @MainActor in
+                var folders: [URL] = []
+                for fileUrl in appUrl.files {
+                    // `url` is the folder the user granted access to — the
+                    // destination. The folder we create inside it is named
+                    // after the archive, so the name comes from `fileUrl`.
+                    let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
+                    let folderUrl = url.appendingPathComponent(folderName)
+                    do {
+                        try FileManager.default.createDirectory(at: folderUrl, withIntermediateDirectories: true)
+                    } catch {
+                        log.error(error.localizedDescription)
+                        continue
                     }
+                    _ = await self.extractArchive(fileUrl, into: folderUrl, catalog: self.catalog, engineSelector: self.engineSelector)
+                    folders.append(folderUrl)
+                }
+                if !folders.isEmpty {
+                    NSWorkspace.shared.activateFileViewerSelecting(folders)
                 }
             }
         }

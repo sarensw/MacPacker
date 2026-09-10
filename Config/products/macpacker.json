@@ -37,27 +37,26 @@
         "version": "1.0.0",
         "items": [
           {
-            "type": "fix",
+            "type": "feat",
             "title": {
-                "en": "Archiving strips Mac file information",
-                "zh-Hans": "压缩会丢失 Mac 文件信息",
-                "fr": "L’archivage supprime les informations de fichier Mac",
-                "de": "Archivieren entfernt Mac-Dateiinformationen",
-                "it": "L’archiviazione rimuove le informazioni file Mac",
-                "ja": "圧縮すると Mac のファイル情報が失われる",
-                "fa": "بایگانی‌کردن اطلاعات فایل Mac را حذف می‌کند",
-                "pl": "Archiwizacja usuwa informacje o plikach Mac",
-                "pt-BR": "Arquivar remove as informações de arquivo do Mac",
-                "ru": "Архивация удаляет информацию о файлах Mac",
-                "uk": "Архівування видаляє інформацію про файли Mac",
-                "es-MX": "Al archivar se pierde la información de archivo de Mac",
-                "ko": "압축하면 Mac 파일 정보가 사라짐",
-                "nl": "Archiveren verwijdert Mac-bestandsinformatie",
-                "tr": "Arşivleme Mac dosya bilgilerini siliyor"
+                "en": "New options in Finder integration",
+                "zh-Hans": "Finder 集成新增选项",
+                "fr": "Nouvelles options dans l’intégration Finder",
+                "de": "Neue Optionen in der Finder-Integration",
+                "it": "Nuove opzioni nell’integrazione Finder",
+                "ja": "Finder 統合に新しいオプションを追加",
+                "fa": "گزینه‌های جدید در یکپارچه‌سازی Finder",
+                "pl": "Nowe opcje w integracji z Finderem",
+                "pt-BR": "Novas opções na integração com o Finder",
+                "ru": "Новые параметры интеграции с Finder",
+                "uk": "Нові параметри інтеграції Finder",
+                "es-MX": "Nuevas opciones en la integración con Finder",
+                "ko": "Finder 통합에 새 옵션 추가",
+                "nl": "Nieuwe opties in de Finder-integratie",
+                "tr": "Finder entegrasyonunda yeni seçenekler"
             },
             "issues": [
-                "216",
-                "191"
+                "238"
             ]
           },
           {
@@ -150,6 +149,30 @@
             },
             "issues": [
                 "212"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Archiving strips Mac file information",
+                "zh-Hans": "压缩会丢失 Mac 文件信息",
+                "fr": "L’archivage supprime les informations de fichier Mac",
+                "de": "Archivieren entfernt Mac-Dateiinformationen",
+                "it": "L’archiviazione rimuove le informazioni file Mac",
+                "ja": "圧縮すると Mac のファイル情報が失われる",
+                "fa": "بایگانی‌کردن اطلاعات فایل Mac را حذف می‌کند",
+                "pl": "Archiwizacja usuwa informacje o plikach Mac",
+                "pt-BR": "Arquivar remove as informações de arquivo do Mac",
+                "ru": "Архивация удаляет информацию о файлах Mac",
+                "uk": "Архівування видаляє інформацію про файли Mac",
+                "es-MX": "Al archivar se pierde la información de archivo de Mac",
+                "ko": "압축하면 Mac 파일 정보가 사라짐",
+                "nl": "Archiveren verwijdert Mac-bestandsinformatie",
+                "tr": "Arşivleme Mac dosya bilgilerini siliyor"
+            },
+            "issues": [
+                "216",
+                "191"
             ]
           }
         ]
