@@ -73,6 +73,24 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         }
     }
 
+    /// Whether the entry works on archives, which are files.
+    public var actsOnArchives: Bool {
+        switch self {
+        case .open, .extractHere, .extractToFolder, .extractToChosenFolder:
+            true
+        case .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z,
+             .compressEachSeparately, .compressFolderContents:
+            false
+        }
+    }
+
+    /// The part of a Finder selection this entry sends to the app: archive
+    /// entries leave out the folders of a mixed selection, the compress entries
+    /// take all of it.
+    public func items(from selection: [URL], isDirectory: (URL) -> Bool) -> [URL] {
+        actsOnArchives ? selection.filter { !isDirectory($0) } : selection
+    }
+
     /// What this item asks the main app to do.
     public var action: AppUrlAction {
         switch self {
