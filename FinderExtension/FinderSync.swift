@@ -270,8 +270,13 @@ class FinderSync: FIFinderSync {
             log.error("MacPackerURLScheme missing from the extension's Info.plist — cannot reach the main app")
         }
 
-        guard let items = FIFinderSyncController.default().selectedItemURLs() else {
+        guard let selection = FIFinderSyncController.default().selectedItemURLs() else {
             log.error("No items selected for action '\(action)'")
+            return
+        }
+        let items = item.items(from: selection, isDirectory: isDirectory)
+        guard !items.isEmpty else {
+            log.error("Nothing in the selection for action '\(action)'")
             return
         }
         guard let target = FIFinderSyncController.default().targetedURL() else {

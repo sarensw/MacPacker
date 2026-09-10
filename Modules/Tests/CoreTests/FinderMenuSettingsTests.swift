@@ -104,6 +104,22 @@ extension AllCoreTests {
             }
         }
 
+        @Test("Archive entries send only the files of a mixed selection; compress entries send all of it")
+        func mixedSelection() {
+            let archive = URL(fileURLWithPath: "/Users/me/a.zip")
+            let folder = URL(fileURLWithPath: "/Users/me/photos")
+            let other = URL(fileURLWithPath: "/Users/me/b.7z")
+            let selection = [archive, folder, other]
+            let isDirectory: (URL) -> Bool = { $0 == folder }
+
+            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder] {
+                #expect(item.items(from: selection, isDirectory: isDirectory) == [archive, other])
+            }
+            for item in [FinderMenuItem.addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z, .compressEachSeparately] {
+                #expect(item.items(from: selection, isDirectory: isDirectory) == selection)
+            }
+        }
+
         @Test("Only the compress entries name an output format")
         func onlyCompressItemsCarryAnExtension() {
             #expect(FinderMenuItem.compressToZip.archiveExtension == "zip")
