@@ -48,7 +48,16 @@ extension SevenZipArchive {
         }
 
         // Resolve the diff into a full item list for the C bridge.
-        let resolved = try resolveDiff(source: source, items: items)
+        var resolved = try resolveDiff(source: source, items: items)
+
+        // Everything macOS keeps outside a file's contents travels as an extra
+        // entry per file, packed into a scratch directory that lives exactly as
+        // long as this write does.
+        let scratch = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+        try? FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        resolved.append(contentsOf: metadataSidecars(for: resolved, scratch: scratch))
 
         try performUpdate(
             source: source,
@@ -79,7 +88,7 @@ extension SevenZipArchive {
                      modificationDate: Date?, posixPermissions: UInt16?)
         case addData(archivePath: String, data: Data,
                      modificationDate: Date?, posixPermissions: UInt16?)
-        case addDirectory(archivePath: String,
+        case addDirectory(archivePath: String, diskPath: URL?,
                           modificationDate: Date?, posixPermissions: UInt16?)
     }
 
@@ -108,9 +117,9 @@ extension SevenZipArchive {
                 additions.append(.addData(
                     archivePath: p, data: data,
                     modificationDate: d, posixPermissions: perms))
-            case .addDirectory(let p, let d, let perms):
+            case .addDirectory(let p, let url, let d, let perms):
                 additions.append(.addDirectory(
-                    archivePath: p, modificationDate: d,
+                    archivePath: p, diskPath: url, modificationDate: d,
                     posixPermissions: perms))
             }
         }
@@ -144,6 +153,167 @@ extension SevenZipArchive {
 
         result.append(contentsOf: additions)
         return result
+    }
+
+    // MARK: - macOS Metadata
+
+    /// Where the sidecar for `archivePath` goes: `dir/name` becomes
+    /// `__MACOSX/dir/._name`.
+    ///
+    /// The mirror rather than a `._name` beside the file it describes. Both forms
+    /// are read back, but an extractor that does not fold them in writes the
+    /// sidecar out as an ordinary file — and inside a signed `.app` that extra
+    /// file breaks the code-signature seal and macOS calls the app damaged. That
+    /// is issue #189 seen from the writing end. `__MACOSX/` keeps every sidecar
+    /// outside the bundle, and it is what Finder's "Compress" produces, so it is
+    /// also the shape other tools already expect.
+    private static func sidecarPath(for archivePath: String) -> String {
+        var parts = archivePath.split(separator: "/", omittingEmptySubsequences: true)
+        guard let name = parts.popLast() else { return archivePath }
+        let directory = parts.joined(separator: "/")
+        return directory.isEmpty
+            ? "__MACOSX/._\(name)"
+            : "__MACOSX/\(directory)/._\(name)"
+    }
+
+    /// Extended attributes that describe this Mac rather than the file, and so
+    /// have no business in an archive that will be opened on another one.
+    ///
+    /// `com.apple.quarantine` is the one that matters: it is Gatekeeper's verdict
+    /// on where the file came from, and `copyfile` packs it like any other
+    /// attribute. Storing it would put the machine's browsing history into every
+    /// archive MacPacker writes, and hand the extracting side a verdict the
+    /// archive was never entitled to make — the same argument the extraction path
+    /// already makes for refusing to apply one.
+    ///
+    /// The rest are noise that would otherwise earn a sidecar all by themselves.
+    /// `com.apple.TextEncoding` in particular is written by Cocoa whenever a text
+    /// file is saved, so without this every `.txt` in every archive would carry a
+    /// second entry to say it is UTF-8.
+    private static let systemOwnedAttributes: Set<String> = [
+        "com.apple.quarantine",
+        "com.apple.provenance",
+        "com.apple.lastuseddate#PS",
+        "com.apple.macl",
+        "com.apple.TextEncoding",
+    ]
+
+    /// The names of every extended attribute on `url`.
+    private static func attributeNames(of url: URL) -> [String] {
+        let size = listxattr(url.path, nil, 0, XATTR_NOFOLLOW)
+        guard size > 0 else { return [] }
+
+        var buffer = [CChar](repeating: 0, count: size)
+        guard listxattr(url.path, &buffer, size, XATTR_NOFOLLOW) == size else { return [] }
+
+        // listxattr returns the names NUL-separated in one buffer.
+        return buffer.split(separator: 0).map { String(cString: Array($0) + [0]) }
+    }
+
+    /// Serializes what macOS keeps outside a file's contents — resource fork,
+    /// extended attributes, and the FinderInfo that carries a custom-icon or
+    /// invisible flag — into AppleDouble. Returns the file written, or `nil`.
+    ///
+    /// `copyfile` with COPYFILE_PACK is the same call `ditto` makes and the exact
+    /// reverse of the COPYFILE_UNPACK the extraction path already runs, so the
+    /// bytes are macOS's own rather than our idea of the format. Deliberately
+    /// without COPYFILE_DATA: the contents travel as the entry itself, and a
+    /// sidecar that repeated them would double the size of the archive.
+    ///
+    /// It packs a stand-in rather than the file itself, because `copyfile` offers
+    /// no way to leave an attribute out and some of them must not travel. The
+    /// stand-in is given exactly the attributes worth keeping and then packed, so
+    /// what lands in the archive is the same format either way.
+    private static func packMetadata(of source: URL, into scratch: URL) -> URL? {
+        let donor = scratch.appendingPathComponent(UUID().uuidString)
+        guard FileManager.default.createFile(atPath: donor.path, contents: nil) else { return nil }
+
+        for name in attributeNames(of: source) where !systemOwnedAttributes.contains(name) {
+            let size = getxattr(source.path, name, nil, 0, 0, XATTR_NOFOLLOW)
+            guard size >= 0 else { continue }
+
+            var value = [UInt8](repeating: 0, count: max(size, 1))
+            guard getxattr(source.path, name, &value, size, 0, XATTR_NOFOLLOW) == size else { continue }
+            setxattr(donor.path, name, value, size, 0, XATTR_NOFOLLOW)
+        }
+
+        let destination = scratch.appendingPathComponent(UUID().uuidString)
+        let flags = copyfile_flags_t(COPYFILE_PACK | COPYFILE_XATTR)
+        guard copyfile(donor.path, destination.path, nil, flags) == 0 else { return nil }
+        return destination
+    }
+
+    /// What an AppleDouble looks like when there was nothing to put in it.
+    ///
+    /// A packed sidecar is never empty: `copyfile` writes a header and a zeroed
+    /// FinderInfo whether or not the file had anything to say. Storing one per
+    /// entry would roughly double the entry count of every archive for no gain,
+    /// so a sidecar matching this sample is dropped instead.
+    ///
+    /// Sampled rather than hard-coded as a byte count, so that a change in what
+    /// `copyfile` emits shows up as sidecars that are kept, rather than as real
+    /// metadata quietly thrown away.
+    private struct EmptyMetadata {
+        private let sample: Data?
+
+        init(scratch: URL) {
+            let file = scratch.appendingPathComponent("empty-metadata-sample")
+            try? Data().write(to: file)
+            sample = packMetadata(of: file, into: scratch).flatMap { try? Data(contentsOf: $0) }
+        }
+
+        func describesNothing(_ sidecar: Data) -> Bool { sidecar == sample }
+    }
+
+    /// The sidecar entries to store alongside `items`.
+    ///
+    /// Both files and directories get one. A directory is not an afterthought
+    /// here: a folder's custom icon is a picture in a hidden `Icon\r` file *plus*
+    /// a flag on the folder itself, and restoring only the file leaves the folder
+    /// looking generic. `ditto` writes no sidecar for a directory, which is why a
+    /// round trip through Finder's "Compress" loses a custom folder icon.
+    ///
+    /// Symlinks are skipped: a link has no metadata worth carrying, and the
+    /// extraction side refuses to unpack onto one anyway, since `copyfile` would
+    /// follow it and write to whatever it points at.
+    private static func metadataSidecars(for items: [ResolvedItem], scratch: URL) -> [ResolvedItem] {
+        let empty = EmptyMetadata(scratch: scratch)
+        var sidecars: [ResolvedItem] = []
+
+        for item in items {
+            let archivePath: String
+            let source: URL
+            let date: Date?
+
+            switch item {
+            case .addFile(let path, let url, let modificationDate, _):
+                (archivePath, source, date) = (path, url, modificationDate)
+            case .addDirectory(let path, let url?, let modificationDate, _):
+                (archivePath, source, date) = (path, url, modificationDate)
+            default:
+                continue
+            }
+
+            let values = try? source.resourceValues(
+                forKeys: [.isSymbolicLinkKey, .contentModificationDateKey])
+            if values?.isSymbolicLink == true { continue }
+
+            guard let packed = packMetadata(of: source, into: scratch),
+                  let bytes = try? Data(contentsOf: packed),
+                  !empty.describesNothing(bytes)
+            else { continue }
+
+            sidecars.append(.addFile(
+                archivePath: sidecarPath(for: archivePath),
+                diskPath: packed,
+                // The sidecar carries the date of what it describes, as ditto's
+                // do — its own would be the moment the archive happened to be
+                // written, which says nothing about the file.
+                modificationDate: date ?? values?.contentModificationDate,
+                posixPermissions: nil))
+        }
+
+        return sidecars
     }
 
     // MARK: - Bridge Call
@@ -200,7 +370,7 @@ extension SevenZipArchive {
             case .move(_, let p): return p
             case .addFile(let p, _, _, _): return p
             case .addData(let p, _, _, _): return p
-            case .addDirectory(let p, _, _): return p
+            case .addDirectory(let p, _, _, _): return p
             default: return nil
             }
         }
@@ -229,7 +399,7 @@ extension SevenZipArchive {
                     // no permissions given: default to a regular 644 file —
                     // leaving them unset stores mode 000, which extracts as unreadable
                     cItems[i].posix_permissions = p.map(UInt32.init) ?? 0o100644
-                case .addDirectory(_, let d, let p):
+                case .addDirectory(_, _, let d, let p):
                     if let d { cItems[i].mtime = Int64(d.timeIntervalSince1970) }
                     cItems[i].posix_permissions = p.map(UInt32.init) ?? 0o40755
                 }

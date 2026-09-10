@@ -7,9 +7,12 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <deque>
 #include <string>
 #include <vector>
+#include <climits>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "Common/MyWindows.h"
 #include "Common/MyCom.h"
@@ -76,10 +79,39 @@ static UInt32 EffectivePosixMode(const SZUpdateItem &item) {
         return (UInt32)item.posix_permissions;
     if (item.op == SZ_UPDATE_ADD_FILE && item.disk_path) {
         struct stat st;
-        if (stat(item.disk_path, &st) == 0)
+        // lstat, not stat: a symbolic link has to reach the archive as a link.
+        // Following it here would store S_IFREG plus a copy of whatever it points
+        // at -- and inside a framework or an .app, the version symlinks are what
+        // hold the bundle together.
+        if (lstat(item.disk_path, &st) == 0)
             return (UInt32)(st.st_mode & 0xFFFF);
     }
     return 0;
+}
+
+/// The target of `path` when it is a symbolic link; empty for anything else.
+///
+/// 7-Zip stores a symlink as an entry whose *contents* are the target path, with
+/// S_IFLNK set in the POSIX mode -- the same shape the extraction side turns back
+/// into a real link. So a link needs both its size and its stream to come from
+/// here rather than from the file it points at.
+static std::string ReadLinkTarget(const char *path) {
+    if (!path)
+        return std::string();
+
+    struct stat st;
+    if (lstat(path, &st) != 0 || !S_ISLNK(st.st_mode))
+        return std::string();
+
+    // st_size is the target length on every filesystem that bothers to fill it
+    // in, but not all do, so ask for a full path's worth and trust readlink's
+    // return value instead.
+    char buffer[PATH_MAX];
+    const ssize_t length = readlink(path, buffer, sizeof(buffer));
+    if (length <= 0)
+        return std::string();
+
+    return std::string(buffer, (size_t)length);
 }
 
 static FILETIME UnixEpochToFileTime(int64_t unixTime) {
@@ -149,6 +181,10 @@ public:
     void *progressContext = nullptr;
     UInt64 progressTotal = 0;
     bool aborted = false;
+    /// Backing store for the symlink targets handed to 7-Zip as entry contents.
+    /// A deque because CBufInStream keeps a pointer into what it is given, and a
+    /// deque never relocates the elements already in it.
+    std::deque<std::string> linkTargets;
 
     CUpdateCallback(const SZUpdateItem *items_, UInt32 count)
         : items(items_), itemCount(count) {}
@@ -235,8 +271,14 @@ Z7_COM7F_IMF(CUpdateCallback::GetProperty(UInt32 index, PROPID propID, PROPVARIA
             if (item.op == SZ_UPDATE_ADD_DATA) {
                 prop = (UInt64)item.data_size;
             } else if (item.op == SZ_UPDATE_ADD_FILE && !item.is_directory) {
+                // A symlink's content is its target path, so that is its size
+                // too -- lstat's st_size agrees, but readlink is the one that
+                // GetStream will hand over, so measure the same thing twice.
+                const std::string link = ReadLinkTarget(item.disk_path);
                 struct stat st;
-                if (item.disk_path && stat(item.disk_path, &st) == 0)
+                if (!link.empty())
+                    prop = (UInt64)link.size();
+                else if (item.disk_path && stat(item.disk_path, &st) == 0)
                     prop = (UInt64)st.st_size;
                 else
                     prop = (UInt64)0;
@@ -251,7 +293,9 @@ Z7_COM7F_IMF(CUpdateCallback::GetProperty(UInt32 index, PROPID propID, PROPVARIA
                 prop = ft;
             } else if (item.op == SZ_UPDATE_ADD_FILE && item.disk_path) {
                 struct stat st;
-                if (stat(item.disk_path, &st) == 0) {
+                // lstat for the same reason as the mode: a link's own time, not
+                // the time of whatever it points at.
+                if (lstat(item.disk_path, &st) == 0) {
                     FILETIME ft = UnixEpochToFileTime(st.st_mtime);
                     prop = ft;
                 }
@@ -297,6 +341,22 @@ Z7_COM7F_IMF(CUpdateCallback::GetStream(UInt32 index, ISequentialInStream **inSt
             errorMessage = "Missing disk path for ADD_FILE item";
             return E_FAIL;
         }
+
+        // A symbolic link is stored as its target path, not as the bytes of the
+        // file it points at. The string has to outlive this call -- CBufInStream
+        // holds the buffer rather than copying it -- and a deque never moves what
+        // it already holds, so earlier entries stay valid as later ones arrive.
+        const std::string link = ReadLinkTarget(item.disk_path);
+        if (!link.empty()) {
+            linkTargets.push_back(link);
+            const std::string &stored = linkTargets.back();
+            CBufInStream *bufStream = new CBufInStream;
+            CMyComPtr<ISequentialInStream> streamLoc(bufStream);
+            bufStream->Init((const Byte *)stored.data(), stored.size());
+            *inStream = streamLoc.Detach();
+            return S_OK;
+        }
+
         CInFileStream *fileStream = new CInFileStream;
         CMyComPtr<ISequentialInStream> streamLoc(fileStream);
         FString fpath = us2fs(UTF8ToUString(item.disk_path));

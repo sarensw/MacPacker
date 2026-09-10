@@ -84,6 +84,34 @@ private func makeJarFixture(in dir: URL) throws -> URL {
     return jar
 }
 
+/// How Info-ZIP prints `name` in a listing: control characters come out in caret
+/// notation, so the carriage return ending `Icon\r` is shown as the two ordinary
+/// characters `^M`.
+///
+/// Gone through rather than around, because the independent check is worth
+/// keeping. It is also a fair warning about the tool: the same `unzip` silently
+/// *drops* that byte when it extracts, writing a file called `Icon`.
+private func infoZipListingName(_ name: String) -> String {
+    name.replacingOccurrences(of: "\r", with: "^M")
+}
+
+/// Extracts everything with our own reader.
+///
+/// The metadata tests need this rather than `unzip`, because putting the sidecars
+/// back onto the files they describe is half of what they are asserting — `unzip`
+/// leaves them lying around as literal `._` files instead.
+private func extractWithOurEngine(_ archive: URL, to destination: URL) async throws {
+    let engine = Archive7ZipEngine()
+    let loaded = try await engine.loadArchive(url: archive, passwordResolver: { _ in nil })
+    try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+    _ = try await engine.extract(
+        items: Array(loaded.items.values),
+        from: archive,
+        to: destination,
+        passwordResolver: { _ in nil }
+    )
+}
+
 // MARK: - Writer-level tests (SevenZipArchive.writeArchive)
 
 extension AllCoreTests {
@@ -520,6 +548,183 @@ extension AllCoreTests {
             try run("/usr/bin/unzip", [zip.path, "-d", out.path])
             #expect(try String(contentsOf: out.appendingPathComponent("folder/one.txt"), encoding: .utf8) == "one v2")
             #expect(try String(contentsOf: out.appendingPathComponent("folder/two.txt"), encoding: .utf8) == "two")
+        }
+
+        // MARK: - macOS metadata (#191, #216)
+
+        // A zip has nowhere to keep a resource fork or an extended attribute, so
+        // every Mac archiver smuggles them in as a second entry per file, in
+        // AppleDouble format. MacPacker read those back from #189 onwards but
+        // never wrote any, so anything added through MacPacker came out stripped:
+        // Finder tags gone, comments gone, custom icons gone.
+        //
+        // Asserted through our own reader rather than `unzip`, because putting
+        // the metadata back on the file is the other half of the round trip —
+        // `unzip` would leave the sidecars lying around as literal `._` files,
+        // which is the behaviour under test rather than a way to test it. What
+        // the system tool is asked instead is whether the entries are in the
+        // archive at all, which our reader hides by design.
+        @Test func createdArchiveKeepsExtendedAttributes() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let file = dir.appendingPathComponent("tagged.txt")
+            try "contents".write(to: file, atomically: true, encoding: .utf8)
+
+            // A Finder tag and a Finder comment are ordinary extended attributes
+            // under long names — nothing about them is special to the format, so
+            // storing them is storing any attribute. They are named here because
+            // they are what a user would notice missing.
+            let attributes: [String: Data] = [
+                "com.apple.metadata:_kMDItemUserTags": Data("bplist-stand-in-tags".utf8),
+                "com.apple.metadata:kMDItemFinderComment": Data("a comment".utf8),
+                "com.apple.ResourceFork": Data("RESOURCE-FORK-PAYLOAD".utf8),
+                "com.macpacker.test": Data("arbitrary".utf8),
+            ]
+            for (name, value) in attributes {
+                setExtendedAttribute(name, value, at: file)
+            }
+
+            let dest = dir.appendingPathComponent("created.zip")
+            try SevenZipArchive.writeArchive(
+                destination: dest,
+                items: [.addFile(archivePath: "tagged.txt", diskPath: file)],
+                options: .init(format: .zip)
+            )
+
+            #expect(try systemZipList(dest).contains("__MACOSX/._tagged.txt"),
+                    "the archive should carry a sidecar for a file that has metadata")
+            try run("/usr/bin/unzip", ["-t", dest.path])
+
+            let out = dir.appendingPathComponent("out")
+            try await extractWithOurEngine(dest, to: out)
+
+            let extracted = out.appendingPathComponent("tagged.txt")
+            for (name, value) in attributes {
+                #expect(extendedAttribute(name, at: extracted) == value,
+                        "\(name) should survive the round trip")
+            }
+            #expect(try String(contentsOf: extracted, encoding: .utf8) == "contents",
+                    "the data fork must come through untouched")
+            #expect(FileManager.default.fileExists(
+                atPath: out.appendingPathComponent("__MACOSX").path) == false,
+                    "the sidecar tree is metadata, not files, and must not survive extraction")
+        }
+
+        // Issue #216: a folder with a custom picture came out of MacPacker with a
+        // visible `Icon?` file and a generic folder. Three separate pieces of
+        // metadata make that icon and all three have to be stored — including the
+        // flag on the folder itself, which `ditto` does not write, and which is
+        // why a round trip through Finder's "Compress" loses the icon too.
+        //
+        // Driven through ArchiveState rather than the writer directly: adding a
+        // folder is what a user does, and the folder's own URL reaching the entry
+        // is the part that was missing.
+        @Test func createdArchiveKeepsACustomFolderIcon() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let fork = Data("ICNS-STAND-IN".utf8)
+            let folder = dir.appendingPathComponent("CustomFolder")
+            try makeFolderWithCustomIcon(at: folder, fork: fork)
+            try "a folder is more than its icon".write(
+                to: folder.appendingPathComponent("note.txt"), atomically: true, encoding: .utf8)
+
+            let state = makeState()
+            state.create()
+            state.add(url: folder)
+
+            let dest = dir.appendingPathComponent("created.zip")
+            let saveTask = try #require(state.save(to: dest))
+            await saveTask.value
+            #expect(state.error == nil)
+
+            let listed = try systemZipList(dest)
+            #expect(listed.contains("__MACOSX/._CustomFolder"),
+                    "the folder's own metadata carries the custom-icon flag: \(listed)")
+            #expect(listed.contains(
+                        infoZipListingName("__MACOSX/CustomFolder/._\(customIconFileName)")),
+                    "the icon file's metadata carries the picture: \(listed)")
+
+            let out = dir.appendingPathComponent("out")
+            try await extractWithOurEngine(dest, to: out)
+
+            let extractedFolder = out.appendingPathComponent("CustomFolder")
+            let extractedIcon = extractedFolder.appendingPathComponent(customIconFileName)
+
+            #expect(finderFlags(at: extractedFolder) == FinderFlag.hasCustomIcon,
+                    "without this flag Finder never looks for the icon file")
+            #expect(finderFlags(at: extractedIcon) == FinderFlag.invisible,
+                    "without this flag the icon file shows up as `Icon?` — the reported symptom")
+            #expect(extendedAttribute("com.apple.ResourceFork", at: extractedIcon) == fork,
+                    "the picture itself lives in the icon file's resource fork")
+        }
+
+        // The write path used to `stat` what it was given and open it as a file,
+        // so a symlink went into the archive as a full copy of whatever it pointed
+        // at. Inside a framework or an .app the version symlinks are what hold the
+        // bundle together, and extraction has restored links since #121 — so this
+        // was the one direction that still flattened them.
+        @Test func createdArchiveStoresSymlinksAsLinks() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let target = dir.appendingPathComponent("target.txt")
+            try "the real file".write(to: target, atomically: true, encoding: .utf8)
+            let link = dir.appendingPathComponent("link.txt")
+            // By path, not by URL: a URL destination is resolved against the
+            // working directory, which would make the link absolute and stop it
+            // saying anything about what the archive stored.
+            try FileManager.default.createSymbolicLink(
+                atPath: link.path, withDestinationPath: "target.txt")
+
+            let dest = dir.appendingPathComponent("created.zip")
+            try SevenZipArchive.writeArchive(
+                destination: dest,
+                items: [
+                    .addFile(archivePath: "target.txt", diskPath: target),
+                    .addFile(archivePath: "link.txt", diskPath: link),
+                ],
+                options: .init(format: .zip)
+            )
+            try run("/usr/bin/unzip", ["-t", dest.path])
+
+            let out = dir.appendingPathComponent("out")
+            try await extractWithOurEngine(dest, to: out)
+
+            let extractedLink = out.appendingPathComponent("link.txt")
+            let destination = try? FileManager.default.destinationOfSymbolicLink(
+                atPath: extractedLink.path)
+            #expect(destination == "target.txt",
+                    "link.txt should come back a symlink, got \(String(describing: destination))")
+        }
+
+        // Every file would get a sidecar otherwise: `copyfile` packs a header and
+        // an empty FinderInfo whether or not there was anything to say, so a naive
+        // implementation roughly doubles the entry count of every archive anyone
+        // ever makes, to store nothing.
+        @Test func createdArchiveAddsNoSidecarForOrdinaryFiles() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let file = dir.appendingPathComponent("plain.txt")
+            try "nothing special".write(to: file, atomically: true, encoding: .utf8)
+            let folder = dir.appendingPathComponent("plainfolder")
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+            let state = makeState()
+            state.create()
+            state.add(url: file)
+            state.add(url: folder)
+
+            let dest = dir.appendingPathComponent("created.zip")
+            let saveTask = try #require(state.save(to: dest))
+            await saveTask.value
+            #expect(state.error == nil)
+
+            let listed = try systemZipEntries(dest)
+            #expect(listed.contains { $0.hasPrefix("__MACOSX") } == false,
+                    "nothing here has metadata worth storing: \(listed)")
         }
     }
 }

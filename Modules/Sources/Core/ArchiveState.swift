@@ -581,7 +581,9 @@ extension ArchiveState {
             item = existing
         } else {
             if let existing { discard(items: [existing]) }
-            diff.append(.addDirectory(archivePath: archivePath))
+            // The folder's own URL travels with the entry: a custom folder icon
+            // is a flag on the folder itself, not only the hidden file inside it.
+            diff.append(.addDirectory(archivePath: archivePath, diskPath: url))
             item = ArchiveItem(url: url, archivePath: archivePath)
             item.parent = parent.id
             parent.addChild(item.id)
@@ -639,7 +641,7 @@ extension ArchiveState {
         if !droppedAddPaths.isEmpty {
             diff.removeAll { entry in
                 switch entry {
-                case .addFile(let p, _, _, _), .addDirectory(let p, _, _), .addData(let p, _, _, _):
+                case .addFile(let p, _, _, _), .addDirectory(let p, _, _, _), .addData(let p, _, _, _):
                     return droppedAddPaths.contains(p)
                 default:
                     return false
