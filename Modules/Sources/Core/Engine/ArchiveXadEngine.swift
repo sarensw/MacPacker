@@ -456,7 +456,38 @@ final actor ArchiveXadEngine: ArchiveEngine {
 
         var urlsByItemID: [UUID: URL] = [:]
 
+        // Directories that were already on disk before any of this ran, with the
+        // date they had. A directory sitting there belongs to whoever put it
+        // there — the destination is not always empty — and its date is not ours
+        // to rewrite.
+        //
+        // Taken up front rather than as each entry is reached, because entry order
+        // is not defined: a directory this extraction creates as the parent of an
+        // earlier file would otherwise look pre-existing by the time its own entry
+        // came round, and lose the date it should have had.
+        var preexistingDirectoryDates: [UUID: Date] = [:]
+        var entriesToCreate: Set<UUID> = []
         for item in items {
+            guard let virtualPath = item.virtualPath else { continue }
+            let url = destination.appendingPathComponent(virtualPath)
+            let existing = try? url.resourceValues(forKeys: [.contentModificationDateKey])
+                .contentModificationDate
+
+            if existing == nil {
+                // Nothing there yet, so this extraction brings it into being — and
+                // that is what moves the date of the directory holding it.
+                entriesToCreate.insert(item.id)
+            } else if item.type == .directory, let existing {
+                preexistingDirectoryDates[item.id] = existing
+            }
+        }
+
+        // Parents before their contents. Entry order otherwise comes out of a
+        // dictionary and is not defined, so whether a directory ended up with the
+        // date of the files written into it was a coin toss.
+        let ordered = items.sorted { ($0.virtualPath ?? "") < ($1.virtualPath ?? "") }
+
+        for item in ordered {
             try Task.checkCancellation()
             guard let virtualPath = item.virtualPath else {
                 throw ArchiveError.extractionFailed("Could not extract file: missing virtual path")
@@ -495,7 +526,78 @@ final actor ArchiveXadEngine: ArchiveEngine {
             urlsByItemID[item.id] = resultUrl
         }
 
+        restoreDirectoryDates(for: items, at: urlsByItemID,
+                              preexisting: preexistingDirectoryDates,
+                              creating: entriesToCreate)
+
         return ArchiveExtractionResult(urlsByItemID: urlsByItemID)
+    }
+
+    /// Stamps extracted directories with the date the archive gave them.
+    ///
+    /// XADMaster restores dates for files but leaves directories carrying the
+    /// moment of extraction — every other tool on the platform (`ditto`, `unzip`,
+    /// `tar`, Keka, The Unarchiver) puts the original back, so the gap is ours to
+    /// close rather than something to match.
+    ///
+    /// It runs after every entry has landed, and it has to: writing a file into a
+    /// directory sets that directory's modification time again, so a date applied
+    /// while the extraction was still going would not have survived its own
+    /// contents.
+    /// Whether this extraction creates an entry *directly* inside `directory`,
+    /// which is the only thing that moves that directory's own date.
+    ///
+    /// Not "somewhere below": adding a file to `a/b` moves `b` and leaves `a`
+    /// exactly as it was. And not merely "an entry names this directory": an entry
+    /// that was already on disk is rewritten in place, which the directory holding
+    /// it never notices.
+    private func extractionCreatesEntry(
+        directlyIn directory: ArchiveItem,
+        among items: [ArchiveItem],
+        creating: Set<UUID>
+    ) -> Bool {
+        guard let path = directory.virtualPath else { return false }
+        let prefix = path.hasSuffix("/") ? path : path + "/"
+        return items.contains { other in
+            guard other.id != directory.id, creating.contains(other.id),
+                  let otherPath = other.virtualPath, otherPath.hasPrefix(prefix)
+            else { return false }
+            return !otherPath.dropFirst(prefix.count).contains("/")
+        }
+    }
+
+    private func restoreDirectoryDates(
+        for items: [ArchiveItem],
+        at urls: [UUID: URL],
+        preexisting: [UUID: Date],
+        creating: Set<UUID>
+    ) {
+        for item in items where item.type == .directory {
+            guard let date = item.modificationDate, let url = urls[item.id] else { continue }
+
+            guard let existingDate = preexisting[item.id] else {
+                // Ours to stamp: this extraction made the directory.
+                try? FileManager.default.setAttributes([.modificationDate: date],
+                                                       ofItemAtPath: url.path)
+                continue
+            }
+
+            // Not ours. XADMaster stamps a directory with the archive's date on
+            // its way past whether or not it created it, and it is vendored, so
+            // the only place to undo that is here.
+            //
+            // Whether it needs undoing is decided by what this extraction wrote,
+            // not by comparing dates: a folder that received files has moved on
+            // for a real reason and every tool on the platform would have moved it
+            // the same way, while a folder that received nothing should read
+            // exactly as it did before. Proximity cannot tell those apart — an
+            // archive made moments ago carries dates a legitimate write is
+            // indistinguishable from.
+            guard !extractionCreatesEntry(directlyIn: item, among: items, creating: creating)
+            else { continue }
+            try? FileManager.default.setAttributes([.modificationDate: existingDate],
+                                                   ofItemAtPath: url.path)
+        }
     }
     
     func extract(

@@ -51,10 +51,17 @@ public enum ArchiveUpdateItem: Sendable {
     /// Add an empty directory entry.
     /// - Parameters:
     ///   - archivePath: Directory path within the output archive.
+    ///   - diskPath: URL of the folder on disk this entry stands for, when there
+    ///     is one. Nothing is read from it — the entry is empty either way — but
+    ///     a folder carries macOS metadata of its own, and a custom folder icon
+    ///     lives there rather than on the `Icon\r` file inside it. Without this
+    ///     the icon cannot come back. `nil` for a directory that exists only in
+    ///     the archive.
     ///   - modificationDate: Optional modification date.
     ///   - posixPermissions: Optional POSIX permission bits.
     case addDirectory(
         archivePath: String,
+        diskPath: URL? = nil,
         modificationDate: Date? = nil,
         posixPermissions: UInt16? = nil
     )

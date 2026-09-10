@@ -490,6 +490,51 @@ extension AllCoreTests {
             )
         }
 
+        // The same rule, for the dates an extraction now applies. "Extract here"
+        // writes into a folder of the user's own files, and "Extract to folder"
+        // reuses an existing folder on a second run, so a directory named by the
+        // archive is not always one this extraction made. Restamping it would
+        // rewrite the date on a folder that was never ours — visible to anyone
+        // who sorts by date, and impossible to undo.
+        //
+        // The folder does not come out untouched, and cannot: writing a file into
+        // a directory bumps its modification time, and the extraction does write
+        // `folder/README.md`. What it must not do is hand it the *archive's* date.
+        @Test(arguments: ZipReader.allCases)
+        func extractionLeavesTheDatesOfFoldersItDidNotCreateAlone(reader: ZipReader) async throws {
+            let engine = reader.engine
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            // The archive names `folder`. Plant one first, as a user's own.
+            let planted = tempDir.appendingPathComponent("folder")
+            try fm.createDirectory(at: planted, withIntermediateDirectories: true)
+
+            let archiveDate = try #require(
+                items.first { $0.name == "folder" }?.modificationDate,
+                "the fixture's directory entry should carry a date to be tempted by")
+
+            _ = try await engine.extract(
+                items: items, from: url, to: tempDir, passwordResolver: { _ in nil })
+
+            let onDisk = try #require(
+                planted.resourceValues(forKeys: [.contentModificationDateKey])
+                    .contentModificationDate)
+
+            #expect(
+                abs(onDisk.timeIntervalSince(archiveDate)) >= 2,
+                "a folder the extraction did not create was restamped with the archive's date \(archiveDate)"
+            )
+        }
+
         // Gatekeeper's verdict on a downloaded file lives in com.apple.quarantine,
         // and copyfile's COPYFILE_UNPACK replaces a target's extended attributes
         // rather than merging into them. So an archive shipping `Evil.app` beside a
@@ -582,6 +627,183 @@ extension AllCoreTests {
             let app = tempDir.appendingPathComponent("MinimalApp.app")
             try #require(fm.fileExists(atPath: app.path))
             #expect(codesignVerdict(app) == 0, "extracted bundle failed codesign")
+        }
+
+        // Finder tags and Finder comments are ordinary extended attributes under
+        // long names, so nothing in the extraction path treats them specially and
+        // `appledouble.zip` already proves the mechanism. They are asserted by
+        // name anyway, because they are what a user notices missing, and a test
+        // that says so is worth more than a comment explaining that tags are
+        // really just attributes.
+        //
+        // The values are real binary plists — decoded here rather than compared
+        // as bytes, so a failure says which tag went missing.
+        //
+        // Note on comments: Finder keeps a second copy in the enclosing folder's
+        // `.DS_Store` and Get Info reads *that*, so a comment can be restored on
+        // the file and still look blank to the user. Nothing an archiver can do.
+        @Test(arguments: ZipReader.allCases)
+        func extractionRestoresFinderTagsAndComments(reader: ZipReader) async throws {
+            let engine = reader.engine
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("macextras.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            _ = try await engine.extract(
+                items: items, from: url, to: tempDir, passwordResolver: { _ in nil })
+
+            let tagData = try #require(
+                extendedAttribute("com.apple.metadata:_kMDItemUserTags",
+                                  at: tempDir.appendingPathComponent("tagged.txt")),
+                "tagged.txt should carry its Finder tags")
+            let tags = try PropertyListSerialization.propertyList(
+                from: tagData, format: nil) as? [String]
+            #expect(tags == ["Red\n6", "MacPacker\n0"],
+                    "both tags should arrive, got \(String(describing: tags))")
+
+            let commentData = try #require(
+                extendedAttribute("com.apple.metadata:kMDItemFinderComment",
+                                  at: tempDir.appendingPathComponent("commented.txt")),
+                "commented.txt should carry its Finder comment")
+            let comment = try PropertyListSerialization.propertyList(
+                from: commentData, format: nil) as? String
+            #expect(comment == "Kept in Get Info, and in the folder's .DS_Store.",
+                    "got \(String(describing: comment))")
+
+            #expect(appleDoubleLeftovers(in: tempDir).isEmpty,
+                    "found \(appleDoubleLeftovers(in: tempDir))")
+            #expect(fm.fileExists(atPath: tempDir.appendingPathComponent("__MACOSX").path) == false)
+        }
+
+        // Issue #216, from the reading end. A folder shows a custom picture only
+        // when three separate pieces of metadata survive together, and the fixture
+        // holds all three: the picture in the resource fork of a hidden `Icon\r`
+        // file, kIsInvisible on that file, and kHasCustomIcon on the folder.
+        //
+        // The folder's own flag is the one nothing else writes — `ditto` emits no
+        // sidecar for the folder it is told to archive, so a round trip through
+        // Finder's "Compress" brings the icon file back and still shows a generic
+        // folder. See `zip/make_customicon.sh`.
+        //
+        // The entry name is the other half: `Icon\r` ends in a carriage return,
+        // which stock Info-ZIP silently drops on the way out.
+        //
+        // Both readers, and getting there took a fixture fix. XADMaster folds
+        // these sidecars itself, but it refuses an archive whose folder sidecar
+        // describes a directory the archive never declares — it tries to write
+        // the metadata to a file that is not there and abandons the extraction.
+        // The fixture originally had no `CustomFolder/` entry, which is not what
+        // any real archiver produces: Finder writes one, and so does MacPacker.
+        // Narrowed with two archives differing in nothing but that entry.
+        @Test(arguments: ZipReader.allCases)
+        func extractionRestoresACustomFolderIcon(reader: ZipReader) async throws {
+            let engine = reader.engine
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+            let url = zipFolder.appendingPathComponent("customicon.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            _ = try await engine.extract(
+                items: items, from: url, to: tempDir, passwordResolver: { _ in nil })
+
+            let folder = tempDir.appendingPathComponent("CustomFolder")
+            let icon = folder.appendingPathComponent(customIconFileName)
+
+            try #require(fm.fileExists(atPath: icon.path),
+                         "the icon file's name survived the carriage return")
+
+            #expect(finderFlags(at: folder) == FinderFlag.hasCustomIcon,
+                    "Finder looks for the icon file only when the folder is flagged")
+            #expect(finderFlags(at: icon) == FinderFlag.invisible,
+                    "without this the file shows up as `Icon?` — the reported symptom")
+
+            // The user-visible form of the same thing, asked of the system rather
+            // than of the bytes.
+            #expect(try icon.resourceValues(forKeys: [.isHiddenKey]).isHidden == true,
+                    "the icon file must not be visible in Finder")
+
+            let fork = extendedAttribute("com.apple.ResourceFork", at: icon)
+            #expect(fork?.isEmpty == false, "the picture lives in the resource fork")
+            #expect(fork.map { $0.range(of: Data("icns".utf8)) != nil } == true,
+                    "the resource fork should still hold an icns resource")
+
+            #expect(try String(contentsOf: folder.appendingPathComponent("note.txt"),
+                               encoding: .utf8) == "A folder is more than its icon.\n",
+                    "ordinary contents come through untouched")
+            #expect(appleDoubleLeftovers(in: tempDir).isEmpty,
+                    "found \(appleDoubleLeftovers(in: tempDir))")
+            #expect(fm.fileExists(atPath: tempDir.appendingPathComponent("__MACOSX").path) == false,
+                    "the mirror holds nothing but metadata and should be gone")
+        }
+
+        // Every extraction used to stamp its files with the moment they were
+        // written, because nothing ever applied the date the archive carries. A
+        // folder restored from a backup came out claiming to be seconds old —
+        // losing the one piece of metadata zip has been able to hold since 1989.
+        //
+        // `defaultArchive.zip` is the fixture because its entries do not share a
+        // date: `hello world.txt` and `README.md` are from November, `folder/` and
+        // the nested archive from December. A single stamp applied to everything
+        // would pass a same-date fixture and fail a user.
+        @Test(arguments: ZipReader.allCases)
+        func extractionRestoresModificationDates(reader: ZipReader) async throws {
+            let engine = reader.engine
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            let result = try await engine.extract(
+                items: items, from: url, to: tempDir, passwordResolver: { _ in nil })
+
+            var checked: [String] = []
+            for item in items {
+                guard let stored = item.modificationDate,
+                      let extracted = result.urlsByItemID[item.id],
+                      fm.fileExists(atPath: extracted.path)
+                else { continue }
+
+                let onDisk = try #require(
+                    extracted.resourceValues(forKeys: [.contentModificationDateKey])
+                        .contentModificationDate)
+
+                // Two seconds, because that is the resolution of a zip's own date
+                // field — DOS time counts in even seconds.
+                #expect(
+                    abs(onDisk.timeIntervalSince(stored)) < 2,
+                    "\(item.name) should carry the archive's date \(stored), got \(onDisk)"
+                )
+                checked.append(item.name)
+            }
+
+            #expect(checked.count >= 3, "expected the fixture's entries to carry dates, checked \(checked)")
+
+            // A directory is the awkward one: writing its contents bumps its time
+            // again, so the date has to go on after everything else has landed.
+            // XADMaster leaves directories stamped with the moment of extraction,
+            // so the XAD engine puts them right itself once the entries have all
+            // arrived — both readers are held to the same result.
+            #expect(checked.contains("folder"),
+                    "the directory entry should be dated too, checked \(checked)")
         }
 
         // codesign is the same judgement #189 was reported as — an app macOS called
@@ -1428,32 +1650,6 @@ extension AllCoreTests {
             }
         }
     }
-}
-
-/// Reads one extended attribute, or nil when the file does not carry it.
-/// `FileManager` exposes no API for these, and the AppleDouble regression above
-/// is entirely about whether they arrive — including `com.apple.ResourceFork`,
-/// which is how macOS stores a resource fork.
-private func extendedAttribute(_ name: String, at url: URL) -> Data? {
-    let size = getxattr(url.path, name, nil, 0, 0, 0)
-    guard size >= 0 else { return nil }
-    guard size > 0 else { return Data() }
-
-    var buffer = Data(count: size)
-    let read = buffer.withUnsafeMutableBytes {
-        getxattr(url.path, name, $0.baseAddress, size, 0, 0)
-    }
-    guard read == size else { return nil }
-    return buffer
-}
-
-/// Sets one extended attribute. The counterpart to `extendedAttribute`, for
-/// seeding metadata a test then asserts survives untouched.
-private func setExtendedAttribute(_ name: String, _ value: Data, at url: URL) {
-    let result = value.withUnsafeBytes {
-        setxattr(url.path, name, $0.baseAddress, value.count, 0, 0)
-    }
-    precondition(result == 0, "setxattr \(name) failed on \(url.path)")
 }
 
 /// Runs codesign over a bundle and returns its exit status. The system's own

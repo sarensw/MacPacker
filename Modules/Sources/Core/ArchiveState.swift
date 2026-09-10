@@ -581,7 +581,9 @@ extension ArchiveState {
             item = existing
         } else {
             if let existing { discard(items: [existing]) }
-            diff.append(.addDirectory(archivePath: archivePath))
+            // The folder's own URL travels with the entry: a custom folder icon
+            // is a flag on the folder itself, not only the hidden file inside it.
+            diff.append(.addDirectory(archivePath: archivePath, diskPath: url))
             item = ArchiveItem(url: url, archivePath: archivePath)
             item.parent = parent.id
             parent.addChild(item.id)
@@ -639,7 +641,7 @@ extension ArchiveState {
         if !droppedAddPaths.isEmpty {
             diff.removeAll { entry in
                 switch entry {
-                case .addFile(let p, _, _, _), .addDirectory(let p, _, _), .addData(let p, _, _, _):
+                case .addFile(let p, _, _, _), .addDirectory(let p, _, _, _), .addData(let p, _, _, _):
                     return droppedAddPaths.contains(p)
                 default:
                     return false
@@ -749,9 +751,21 @@ extension ArchiveState {
         // the write is a long synchronous C call — keep it off the
         // cooperative pool; bracket any stored security-scoped grant
         let performWrite: @MainActor () async throws -> Void = {
+            // Directories as well as files: a folder entry stores no contents,
+            // but the writer reads the folder's own extended attributes to store
+            // its metadata — a custom folder icon lives there. Without the grant
+            // that read is refused under the sandbox and the metadata is dropped
+            // silently, which is invisible to the unit tests because they do not
+            // run sandboxed.
             var accessedFiles: [URL] = []
-            for case let .addFile(_, diskPath, _, _) in items {
-                if diskPath.startAccessingSecurityScopedResource() {
+            for item in items {
+                let diskPath: URL?
+                switch item {
+                case .addFile(_, let url, _, _): diskPath = url
+                case .addDirectory(_, let url, _, _): diskPath = url
+                default: diskPath = nil
+                }
+                if let diskPath, diskPath.startAccessingSecurityScopedResource() {
                     accessedFiles.append(diskPath)
                 }
             }

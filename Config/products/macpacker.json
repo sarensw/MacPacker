@@ -37,6 +37,30 @@
         "version": "1.0.0",
         "items": [
           {
+            "type": "fix",
+            "title": {
+                "en": "Archiving strips Mac file information",
+                "zh-Hans": "压缩会丢失 Mac 文件信息",
+                "fr": "L’archivage supprime les informations de fichier Mac",
+                "de": "Archivieren entfernt Mac-Dateiinformationen",
+                "it": "L’archiviazione rimuove le informazioni file Mac",
+                "ja": "圧縮すると Mac のファイル情報が失われる",
+                "fa": "بایگانی‌کردن اطلاعات فایل Mac را حذف می‌کند",
+                "pl": "Archiwizacja usuwa informacje o plikach Mac",
+                "pt-BR": "Arquivar remove as informações de arquivo do Mac",
+                "ru": "Архивация удаляет информацию о файлах Mac",
+                "uk": "Архівування видаляє інформацію про файли Mac",
+                "es-MX": "Al archivar se pierde la información de archivo de Mac",
+                "ko": "압축하면 Mac 파일 정보가 사라짐",
+                "nl": "Archiveren verwijdert Mac-bestandsinformatie",
+                "tr": "Arşivleme Mac dosya bilgilerini siliyor"
+            },
+            "issues": [
+                "216",
+                "191"
+            ]
+          },
+          {
             "type": "feat",
             "title": {
                 "en": "Recent archives can now be turned off",
