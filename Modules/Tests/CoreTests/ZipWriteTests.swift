@@ -229,7 +229,8 @@ extension AllCoreTests {
             try SevenZipArchive.writeArchive(
                 source: zip,
                 destination: dest,
-                items: [.move(sourceIndex: orig.index, newPath: "renamed.txt")]
+                items: [.move(sourceIndex: orig.index, newPath: "renamed.txt")],
+                options: .init(format: .zip)
             )
 
             // the renamed entry must still carry 0o750, not 000
@@ -895,6 +896,395 @@ extension AllCoreTests {
             let listed = try systemZipEntries(dest)
             #expect(listed.contains { $0.hasPrefix("__MACOSX") } == false,
                     "nothing here has metadata worth storing: \(listed)")
+        }
+    }
+}
+
+// MARK: - Save As rebuilds the archive
+
+/// What a file is by its first bytes: `zip`, `7z`, or the bytes in hex.
+private func archiveFormat(of url: URL) throws -> String {
+    let handle = try FileHandle(forReadingFrom: url)
+    defer { try? handle.close() }
+    let head = try handle.read(upToCount: 6) ?? Data()
+    if head.starts(with: [0x50, 0x4B, 0x03, 0x04]) { return "zip" }
+    if head.starts(with: [0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C]) { return "7z" }
+    return head.map { String(format: "%02x", $0) }.joined(separator: " ")
+}
+
+/// Each entry's compression method as the independent `zipinfo` records it
+/// (`defN`, `lzma`, `stor`, …), by entry name.
+private func zipMethods(_ zip: URL) throws -> [String: String] {
+    var methods: [String: String] = [:]
+    for line in try run("/usr/bin/zipinfo", [zip.path]).split(separator: "\n") {
+        // entry lines: mode, version, host, size, flags, method, date, time, name
+        let fields = line.split(separator: " ")
+        guard fields.count >= 9, fields[1].contains(".") else { continue }
+        methods[String(fields[fields.count - 1])] = String(fields[5])
+    }
+    return methods
+}
+
+/// Extracts everything with the given engine.
+private func extractEverything(_ archive: URL, with reader: ZipReader, to out: URL) async throws {
+    let engine = reader.engine
+    let loaded = try await engine.loadArchive(url: archive, passwordResolver: { _ in nil })
+    try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+    _ = try await engine.extract(
+        items: Array(loaded.items.values), from: archive, to: out, passwordResolver: { _ in nil })
+}
+
+private func passwordFixture(_ name: String) -> URL {
+    Bundle.module.url(forResource: "password", withExtension: nil)!.appendingPathComponent(name)
+}
+
+extension AllCoreTests {
+    /// Save As to another file writes the archive again from its contents, in the
+    /// format and with the options it was asked for. An update copies what it
+    /// keeps byte for byte — right for Save, wrong here: a zip saved as 7z came out
+    /// a zip under a `.7z` name, and a Deflate zip saved with LZMA kept Deflate for
+    /// everything it already held.
+    struct SaveAsRebuildTests {
+
+        /// Big and repetitive enough that every method beats storing: 7-Zip stores an
+        /// entry its method would not shrink, and `zipinfo` then says `stor`.
+        private static let alpha = String(repeating: "alpha alpha alpha alpha\n", count: 200)
+        private static let bravo = String(repeating: "bravo bravo bravo bravo\n", count: 200)
+
+        /// a.txt, folder/b.txt and an empty folder, in the format's default method.
+        private func makeSource(_ format: SevenZipCompressionOptions.Format, in dir: URL) throws -> URL {
+            let source = dir.appendingPathComponent("source.\(format.rawValue)")
+            try SevenZipArchive.writeArchive(
+                destination: source,
+                items: [
+                    .addData(archivePath: "a.txt", data: Data(Self.alpha.utf8)),
+                    .addDirectory(archivePath: "folder"),
+                    .addData(archivePath: "folder/b.txt", data: Data(Self.bravo.utf8)),
+                    .addDirectory(archivePath: "empty"),
+                ],
+                options: .init(format: format)
+            )
+            return source
+        }
+
+        @Test(arguments: zip([SevenZipCompressionOptions.Format.zip, .sevenZ],
+                             [SevenZipCompressionOptions.Format.sevenZ, .zip]))
+        func saveAsWritesTheFormatItWasAskedFor(
+            from: SevenZipCompressionOptions.Format,
+            to: SevenZipCompressionOptions.Format
+        ) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = try makeSource(from, in: dir)
+            let saved = dir.appendingPathComponent("saved.\(to.rawValue)")
+
+            try SevenZipArchive.writeArchive(
+                source: source, destination: saved, items: [], options: .init(format: to))
+
+            let format = try archiveFormat(of: saved)
+            #expect(format == to.rawValue, "saved as \(to.rawValue), but the file is \(format)")
+
+            // XAD shares no code with the writer, so its reading counts for more
+            for reader in ZipReader.allCases {
+                let out = dir.appendingPathComponent("out-\(reader.rawValue)")
+                try await extractEverything(saved, with: reader, to: out)
+                #expect(try String(contentsOf: out.appendingPathComponent("a.txt"), encoding: .utf8)
+                        == Self.alpha, "a.txt through \(reader)")
+                #expect(try String(contentsOf: out.appendingPathComponent("folder/b.txt"), encoding: .utf8)
+                        == Self.bravo, "folder/b.txt through \(reader)")
+            }
+            let paths = try SevenZipArchive(url: saved).entries
+                .filter(\.isDirectory)
+                .map { $0.path.trimmingCharacters(in: CharacterSet(charactersIn: "/")) }
+            #expect(paths.contains("empty"), "the empty folder must survive: \(paths)")
+        }
+
+        @Test func saveAsCompressesCarriedOverEntriesWithTheNewOptions() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = try makeSource(.zip, in: dir)
+            #expect(try zipMethods(source)["a.txt"] == "defN", "the source should start out Deflate")
+
+            let saved = dir.appendingPathComponent("saved.zip")
+            try SevenZipArchive.writeArchive(
+                source: source, destination: saved, items: [],
+                options: .init(format: .zip, level: 9, method: .lzma))
+
+            let methods = try zipMethods(saved)
+            for name in ["a.txt", "folder/b.txt"] {
+                #expect(methods[name] == "lzma",
+                        "\(name) came out \(methods[name] ?? "missing"): the new options never reached it")
+            }
+            let out = dir.appendingPathComponent("out")
+            try await extractEverything(saved, with: .xad, to: out)
+            #expect(try String(contentsOf: out.appendingPathComponent("folder/b.txt"), encoding: .utf8)
+                    == Self.bravo)
+        }
+
+        @Test(arguments: [SevenZipCompressionOptions.Format.zip, .sevenZ])
+        func saveAsKeepsWhatTheEntriesCarry(into format: SevenZipCompressionOptions.Format) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let fm = FileManager.default
+            let files = dir.appendingPathComponent("files")
+            let dated = files.appendingPathComponent("dated")
+            try fm.createDirectory(at: dated, withIntermediateDirectories: true)
+
+            let script = files.appendingPathComponent("run.sh")
+            try "#!/bin/sh\necho hi\n".write(to: script, atomically: true, encoding: .utf8)
+            try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: script.path)
+            let target = files.appendingPathComponent("target.txt")
+            try "pointed at".write(to: target, atomically: true, encoding: .utf8)
+            let link = files.appendingPathComponent("link.txt")
+            try fm.createSymbolicLink(atPath: link.path, withDestinationPath: "target.txt")
+            let tagged = files.appendingPathComponent("tagged.txt")
+            try "tagged".write(to: tagged, atomically: true, encoding: .utf8)
+            setExtendedAttribute("com.macpacker.test", Data("kept".utf8), at: tagged)
+            // the folder's date goes on after the file inside it, which would bump it
+            let old = Date(timeIntervalSince1970: 1_577_836_800)  // 2020-01-01
+            let oldFile = dated.appendingPathComponent("old.txt")
+            try "old".write(to: oldFile, atomically: true, encoding: .utf8)
+            try fm.setAttributes([.modificationDate: old], ofItemAtPath: oldFile.path)
+            try fm.setAttributes([.modificationDate: old], ofItemAtPath: dated.path)
+
+            let source = dir.appendingPathComponent("source.zip")
+            try SevenZipArchive.writeArchive(
+                destination: source,
+                items: [
+                    .addFile(archivePath: "run.sh", diskPath: script),
+                    .addFile(archivePath: "target.txt", diskPath: target),
+                    .addFile(archivePath: "link.txt", diskPath: link),
+                    .addFile(archivePath: "tagged.txt", diskPath: tagged),
+                    .addDirectory(archivePath: "dated", diskPath: dated),
+                    .addFile(archivePath: "dated/old.txt", diskPath: oldFile),
+                ],
+                options: .init(format: .zip)
+            )
+
+            let saved = dir.appendingPathComponent("saved.\(format.rawValue)")
+            try SevenZipArchive.writeArchive(
+                source: source, destination: saved, items: [], options: .init(format: format))
+
+            let out = dir.appendingPathComponent("out")
+            try await extractWithOurEngine(saved, to: out)
+
+            // MacPacker's 7z reader only asks for kpidPosixAttrib, which the 7z
+            // handler does not report — the mode sits in kpidAttrib's high bits —
+            // so any 7z extracts without execute bits or links, however it was
+            // written. 7zz, below, shows the archive itself is right.
+            try withKnownIssue("7z extraction drops unix modes and symlinks") {
+                let mode = try fm.attributesOfItem(atPath: out.appendingPathComponent("run.sh").path)[.posixPermissions] as? Int
+                #expect(mode == 0o755, "the execute bit must survive, got \(String(mode ?? 0, radix: 8))")
+                #expect(try fm.destinationOfSymbolicLink(atPath: out.appendingPathComponent("link.txt").path)
+                        == "target.txt", "link.txt must stay a link")
+            } when: { format == .sevenZ }
+
+            if format == .sevenZ,
+               let sevenZip = ["/opt/homebrew/bin/7zz", "/usr/local/bin/7zz"].first(where: fm.isExecutableFile(atPath:)) {
+                let blocks = try run(sevenZip, ["l", "-slt", saved.path]).components(separatedBy: "\n\n")
+                func attributes(_ path: String) -> String {
+                    blocks.first { $0.contains("Path = \(path)\n") }?
+                        .components(separatedBy: "\n").first { $0.hasPrefix("Attributes = ") } ?? "none"
+                }
+                #expect(attributes("run.sh").hasSuffix("-rwxr-xr-x"), "7zz sees \(attributes("run.sh"))")
+                #expect(attributes("link.txt").contains("lrwx"), "7zz sees \(attributes("link.txt"))")
+            }
+            #expect(extendedAttribute("com.macpacker.test", at: out.appendingPathComponent("tagged.txt"))
+                    == Data("kept".utf8), "the Mac metadata must survive")
+            for path in ["dated/old.txt", "dated"] {
+                let date = try out.appendingPathComponent(path)
+                    .resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+                #expect(abs(date?.timeIntervalSince(old) ?? .infinity) <= 2,
+                        "\(path) should keep its 2020 date, got \(String(describing: date))")
+            }
+        }
+
+        @Test func saveAsAppliesPendingChanges() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let a = dir.appendingPathComponent("a.txt")
+            let b = dir.appendingPathComponent("b.txt")
+            try "a".write(to: a, atomically: true, encoding: .utf8)
+            try "b".write(to: b, atomically: true, encoding: .utf8)
+            setExtendedAttribute("com.macpacker.test", Data("b's".utf8), at: b)
+            let source = dir.appendingPathComponent("source.zip")
+            try SevenZipArchive.writeArchive(
+                destination: source,
+                items: [
+                    .addFile(archivePath: "a.txt", diskPath: a),
+                    .addFile(archivePath: "b.txt", diskPath: b),
+                ],
+                options: .init(format: .zip)
+            )
+            #expect(try systemZipList(source).contains("__MACOSX/._b.txt"))
+
+            let bIndex = try #require(try SevenZipArchive(url: source).entries.first { $0.path == "b.txt" }?.index)
+            let saved = dir.appendingPathComponent("saved.zip")
+            try SevenZipArchive.writeArchive(
+                source: source, destination: saved,
+                items: [
+                    .remove(sourceIndex: bIndex),
+                    .addData(archivePath: "c.txt", data: Data("c".utf8)),
+                ],
+                options: .init(format: .zip, method: .lzma))
+
+            #expect(try systemZipEntries(saved).sorted() == ["a.txt", "c.txt"],
+                    "b.txt goes, and its sidecar goes with it")
+        }
+
+        // A real file named `._x.txt` beside `x.txt` is hidden from the listing like
+        // a sidecar would be, and extraction writes it out as itself — so a rebuild
+        // that only follows the listing would drop it.
+        @Test func saveAsKeepsAFileThatOnlyLooksLikeASidecar() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source.zip")
+            try SevenZipArchive.writeArchive(
+                destination: source,
+                items: [
+                    .addData(archivePath: "x.txt", data: Data("real".utf8)),
+                    .addData(archivePath: "._x.txt", data: Data("not AppleDouble, just a file".utf8)),
+                ],
+                options: .init(format: .zip)
+            )
+
+            let saved = dir.appendingPathComponent("saved.zip")
+            try SevenZipArchive.writeArchive(
+                source: source, destination: saved, items: [], options: .init(format: .zip, level: 9))
+
+            let listed = try systemZipList(saved)
+            #expect(listed.contains("x.txt") && listed.contains("._x.txt"), "\(listed)")
+            #expect(try run("/usr/bin/unzip", ["-p", saved.path, "._x.txt"]) == "not AppleDouble, just a file")
+        }
+
+        // The disk under the rebuild is case-insensitive; the archive is not.
+        @Test func saveAsKeepsNamesThatDifferOnlyInCase() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source.zip")
+            try SevenZipArchive.writeArchive(
+                destination: source,
+                items: [
+                    .addData(archivePath: "Readme.txt", data: Data("quiet".utf8)),
+                    .addData(archivePath: "README.txt", data: Data("SHOUTING".utf8)),
+                ],
+                options: .init(format: .zip)
+            )
+
+            let saved = dir.appendingPathComponent("saved.zip")
+            try SevenZipArchive.writeArchive(
+                source: source, destination: saved, items: [], options: .init(format: .zip, level: 9))
+
+            #expect(try run("/usr/bin/unzip", ["-p", saved.path, "Readme.txt"]) == "quiet")
+            #expect(try run("/usr/bin/unzip", ["-p", saved.path, "README.txt"]) == "SHOUTING")
+        }
+
+        // Save (in place) is an update on purpose: what it doesn't touch it copies as is.
+        @Test func saveInPlaceLeavesUntouchedEntriesAsTheyWere() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = try makeSource(.zip, in: dir)
+
+            try SevenZipArchive.writeArchive(
+                source: source, destination: source,
+                items: [.addData(archivePath: "new.txt", data: Data(Self.alpha.utf8))],
+                options: .init(format: .zip, method: .lzma))
+
+            let methods = try zipMethods(source)
+            #expect(methods["a.txt"] == "defN", "an untouched entry keeps its bytes on Save")
+            #expect(methods["new.txt"] == "lzma")
+        }
+
+        // Until the sheet can set a password, rebuilding would write an encrypted
+        // archive out in plain. Keeping its format keeps it as it was.
+        @Test func saveAsKeepsAnEncryptedSourceEncrypted() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source.zip")
+            try FileManager.default.copyItem(at: passwordFixture("zip_aes256.zip"), to: source)
+            let before = try SevenZipArchive(url: source).entries.filter(\.isEncrypted).count
+            #expect(before > 0)
+
+            let saved = dir.appendingPathComponent("saved.zip")
+            try SevenZipArchive.writeArchive(
+                source: source, destination: saved, items: [], options: .init(format: .zip))
+
+            let after = try SevenZipArchive(url: saved).entries.filter(\.isEncrypted).count
+            #expect(after == before, "Save As must never turn an encrypted archive into a plain one")
+            let out = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+            try SevenZipArchive(url: saved, password: "password").extractAll(to: out)
+        }
+
+        @Test func saveAsRefusesToConvertAnEncryptedSource() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source.zip")
+            try FileManager.default.copyItem(at: passwordFixture("zip_aes256.zip"), to: source)
+
+            let saved = dir.appendingPathComponent("saved.7z")
+            #expect(throws: SevenZipError.self) {
+                try SevenZipArchive.writeArchive(
+                    source: source, destination: saved, items: [], options: .init(format: .sevenZ))
+            }
+            #expect(!FileManager.default.fileExists(atPath: saved.path),
+                    "nothing may be left behind under the new name")
+        }
+
+        // Made by `zip`, not by us: sidecars beside their files and under the
+        // `__MACOSX/` mirror, one for a folder the archive only implies, a real file
+        // named like a sidecar, and a sidecar with nothing to describe.
+        @Test(arguments: [SevenZipCompressionOptions.Format.zip, .sevenZ])
+        func saveAsKeepsTheMacMetadataOfAFinderStyleArchive(
+            into format: SevenZipCompressionOptions.Format
+        ) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = Bundle.module.url(forResource: "zip", withExtension: nil)!
+                .appendingPathComponent("appledouble.zip")
+            let saved = dir.appendingPathComponent("saved.\(format.rawValue)")
+            try SevenZipArchive.writeArchive(
+                source: source, destination: saved, items: [], options: .init(format: format))
+
+            let out = dir.appendingPathComponent("out")
+            try await extractWithOurEngine(saved, to: out)
+            let payload = out.appendingPathComponent("payload")
+            for target in ["Contents/Resources/icon.png", "Contents/MacOS/helper"] {
+                let file = payload.appendingPathComponent(target)
+                #expect(extendedAttribute("com.apple.ResourceFork", at: file)
+                        == Data("RESOURCE-FORK-PAYLOAD".utf8), "\(target) keeps its resource fork")
+                #expect(extendedAttribute("com.macpacker.test", at: file)
+                        == Data("appledouble-fixture".utf8), "\(target) keeps its attribute")
+            }
+            #expect(extendedAttribute("com.macpacker.dir", at: payload.appendingPathComponent("Contents/Resources"))
+                    == Data("appledouble-fixture".utf8), "the implied Resources folder keeps its metadata")
+            #expect(extendedAttribute("com.macpacker.sequestered", at: payload.appendingPathComponent("Contents/Info.plist"))
+                    == Data("appledouble-fixture".utf8), "the sidecar from the __MACOSX mirror still applies")
+            #expect((try? Data(contentsOf: payload.appendingPathComponent("._notadouble.txt")))
+                    == Data("A real file that merely starts with dot-underscore.\n".utf8),
+                    "a real file named like a sidecar survives")
+            #expect(FileManager.default.fileExists(atPath: payload.appendingPathComponent("._orphan.bin").path),
+                    "a sidecar with nothing to describe stays a file")
+            #expect(!FileManager.default.fileExists(atPath: out.appendingPathComponent("__MACOSX").path))
+        }
+
+        @MainActor @Test func saveAsThroughTheWindowWritesTheChosenFormat() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try makeSystemZipFixture(in: dir)
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: zip)
+            try await state.openTask?.value
+
+            let saved = dir.appendingPathComponent("copy.7z")
+            await state.save(to: saved)?.value
+
+            #expect(state.error == nil, "\(state.error ?? "")")
+            let format = try archiveFormat(of: saved)
+            #expect(format == "7z", "Save As .7z wrote a \(format)")
+            #expect(state.url == saved)
+            #expect(state.entries.values.contains { $0.virtualPath == "folder/one.txt" })
         }
     }
 }
