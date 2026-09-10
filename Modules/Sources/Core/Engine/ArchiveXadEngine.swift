@@ -475,7 +475,12 @@ final actor ArchiveXadEngine: ArchiveEngine {
             preexistingDirectoryDates[item.id] = date
         }
 
-        for item in items {
+        // Parents before their contents. Entry order otherwise comes out of a
+        // dictionary and is not defined, so whether a directory ended up with the
+        // date of the files written into it was a coin toss.
+        let ordered = items.sorted { ($0.virtualPath ?? "") < ($1.virtualPath ?? "") }
+
+        for item in ordered {
             try Task.checkCancellation()
             guard let virtualPath = item.virtualPath else {
                 throw ArchiveError.extractionFailed("Could not extract file: missing virtual path")
@@ -530,6 +535,15 @@ final actor ArchiveXadEngine: ArchiveEngine {
     /// directory sets that directory's modification time again, so a date applied
     /// while the extraction was still going would not have survived its own
     /// contents.
+    /// Whether any other entry in this extraction lands inside `directory`.
+    private func extractionWrote(into directory: ArchiveItem, among items: [ArchiveItem]) -> Bool {
+        guard let path = directory.virtualPath else { return false }
+        let prefix = path.hasSuffix("/") ? path : path + "/"
+        return items.contains { other in
+            other.id != directory.id && (other.virtualPath ?? "").hasPrefix(prefix)
+        }
+    }
+
     private func restoreDirectoryDates(
         for items: [ArchiveItem],
         at urls: [UUID: URL],
@@ -545,16 +559,18 @@ final actor ArchiveXadEngine: ArchiveEngine {
                 continue
             }
 
-            // Not ours — but XADMaster has already stamped it with the archive's
-            // date on its way past, and it is a vendored library, so the only
-            // place to undo that is here. Undone precisely: a directory whose date
-            // now reads as the archive's is one that was overwritten, while one
-            // bumped by a file this extraction wrote into it reads as the present
-            // moment and is left alone, because writing into a folder legitimately
-            // changes its date and every other tool does the same.
-            let current = try? url.resourceValues(forKeys: [.contentModificationDateKey])
-                .contentModificationDate
-            guard let current, abs(current.timeIntervalSince(date)) < 2 else { continue }
+            // Not ours. XADMaster stamps a directory with the archive's date on
+            // its way past whether or not it created it, and it is vendored, so
+            // the only place to undo that is here.
+            //
+            // Whether it needs undoing is decided by what this extraction wrote,
+            // not by comparing dates: a folder that received files has moved on
+            // for a real reason and every tool on the platform would have moved it
+            // the same way, while a folder that received nothing should read
+            // exactly as it did before. Proximity cannot tell those apart — an
+            // archive made moments ago carries dates a legitimate write is
+            // indistinguishable from.
+            guard !extractionWrote(into: item, among: items) else { continue }
             try? FileManager.default.setAttributes([.modificationDate: existingDate],
                                                    ofItemAtPath: url.path)
         }

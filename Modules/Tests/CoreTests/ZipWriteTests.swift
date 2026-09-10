@@ -699,6 +699,64 @@ extension AllCoreTests {
                     "link.txt should come back a symlink, got \(String(describing: destination))")
         }
 
+        // Extracting into a folder that already exists writes files into it, and
+        // that legitimately changes its date — every tool on the platform does the
+        // same. Reverting it would hide a modification the user can see.
+        //
+        // The archive is built here rather than taken from the corpus because the
+        // hazard is an archive whose dates are close to the present: a fixture
+        // stamped in 2026 cannot express it. Told apart by proximity to the
+        // archive's date, a folder bumped a moment after that archive was made
+        // looks exactly like one that was overwritten.
+        @Test(arguments: ZipReader.allCases)
+        func extractionDoesNotRevertAFolderItWroteInto(reader: ZipReader) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let fm = FileManager.default
+
+            let source = dir.appendingPathComponent("src/Shared")
+            try fm.createDirectory(at: source, withIntermediateDirectories: true)
+            try "arrived".write(to: source.appendingPathComponent("note.txt"),
+                                atomically: true, encoding: .utf8)
+
+            // Written now, so every entry date sits within seconds of the
+            // extraction that follows.
+            let archive = dir.appendingPathComponent("fresh.zip")
+            try SevenZipArchive.writeArchive(
+                destination: archive,
+                items: [
+                    .addDirectory(archivePath: "Shared", diskPath: source),
+                    .addFile(archivePath: "Shared/note.txt",
+                             diskPath: source.appendingPathComponent("note.txt")),
+                ],
+                options: .init(format: .zip)
+            )
+
+            // The user's own folder, of an age nothing in the archive resembles.
+            let destination = dir.appendingPathComponent("out")
+            let planted = destination.appendingPathComponent("Shared")
+            try fm.createDirectory(at: planted, withIntermediateDirectories: true)
+            let plantedDate = Date(timeIntervalSince1970: 1_577_836_800)  // 2020-01-01
+            try fm.setAttributes([.modificationDate: plantedDate], ofItemAtPath: planted.path)
+
+            let engine = reader.engine
+            let loaded = try await engine.loadArchive(url: archive, passwordResolver: { _ in nil })
+            _ = try await engine.extract(
+                items: Array(loaded.items.values), from: archive,
+                to: destination, passwordResolver: { _ in nil })
+
+            #expect(fm.fileExists(atPath: planted.appendingPathComponent("note.txt").path),
+                    "the extraction should have written into the folder")
+
+            let onDisk = try #require(
+                planted.resourceValues(forKeys: [.contentModificationDateKey])
+                    .contentModificationDate)
+            #expect(
+                onDisk.timeIntervalSince(plantedDate) > 60,
+                "a file was written into this folder, so its date must move — got \(onDisk)"
+            )
+        }
+
         // Metadata that cannot be read is not metadata that is not there, and the
         // difference matters: silently writing the archive without it is exactly
         // the bug this whole change fixes, arrived at from another direction. The
