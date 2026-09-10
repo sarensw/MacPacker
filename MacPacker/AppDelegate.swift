@@ -92,9 +92,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             switch appUrl.action {
             case .open:
                 handler = AppUrlOpenHandler(catalog: appState.catalog)
-            case .extractFiles:
-//                handler = AppUrlExtractFilesHandler()
-                break
             case .extractHere:
                 handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .extractToFolder:
@@ -103,6 +100,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 handler = AppUrlCompressHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .addToArchive:
                 handler = AppUrlAddToArchiveHandler()
+            case .extractTo:
+                handler = AppUrlExtractToChosenFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+            case .compressEach:
+                handler = AppUrlCompressEachHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+            case .compressContents:
+                handler = AppUrlCompressContentsHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             }
 
             guard let handler else {

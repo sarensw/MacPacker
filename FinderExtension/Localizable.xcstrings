@@ -90,8 +90,14 @@
         }
       }
     },
+    "Compress Contents of \"%@\"" : {
+      "comment" : "Finder context menu: compress what is inside the selected folder, without the folder itself, into a zip next to it"
+    },
+    "Compress Each Item Separately" : {
+      "comment" : "Finder context menu: compress every selected item into its own zip next to it"
+    },
     "Compress to \"%@\"" : {
-      "comment" : "Finder context menu: compress the selection directly to the named zip in the current directory",
+      "comment" : "Finder context menu: compress the selection directly to the named archive in the current directory",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -356,6 +362,9 @@
           }
         }
       }
+    },
+    "Extract to…" : {
+      "comment" : "Finder context menu: ask where to extract the selected archives, then extract them there"
     },
     "Nothing selected" : {
       "comment" : "Disabled Finder toolbar menu item shown when no files are selected",

@@ -7,6 +7,7 @@
 
 import AppKit
 import Cocoa
+import FinderMenu
 import FinderSync
 import Foundation
 import tb
@@ -128,29 +129,70 @@ class FinderSync: FIFinderSync {
             return NSMenu()
         }
 
-        let menu = NSMenu(title: "")
-
-        // Submenu for MacPacker
 #if DEBUG
         let title: String = "MacPacker Debug"
 #else
         let title: String = "MacPacker"
 #endif
-        let macPackerItem = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+
+        // The user picks the entries in Settings ▸ Extensions; the extension only
+        // drops the ones the current selection cannot serve.
+        let entries = FinderMenuSettings.visibleItems(
+            files: fileItems.count,
+            folders: allItems.count - fileItems.count
+        )
+        log.debug("showing \(entries.count) of \(FinderMenuItem.allCases.count) menu item(s)")
+        guard !entries.isEmpty else { return NSMenu() }
+
         let macPackerSubmenu = NSMenu(title: title)
-        
-        // Archive section (files only)
-        if !fileItems.isEmpty {
+        for entry in entries {
+            macPackerSubmenu.addItem(
+                withTitle: menuTitle(for: entry, allItems: allItems, fileItems: fileItems),
+                action: selector(for: entry),
+                keyEquivalent: ""
+            )
+        }
+
+        // The toolbar button is already labelled "MacPacker", and a flat menu
+        // (7-Zip's "cascaded context menu" turned off) splices the entries
+        // straight into Finder's own menu. Both want the bare list.
+        if menuKind == .toolbarItemMenu || !FinderMenuSettings.isCascaded() {
+            return macPackerSubmenu
+        }
+
+        let menu = NSMenu(title: "")
+        let macPackerItem = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        menu.setSubmenu(macPackerSubmenu, for: macPackerItem)
+        menu.addItem(macPackerItem)
+
+        return menu
+    }
+
+    private func selector(for item: FinderMenuItem) -> Selector {
+        switch item {
+        case .open: #selector(openArchive(_:))
+        case .extractHere: #selector(extractHere(_:))
+        case .extractToFolder: #selector(extractToFolder(_:))
+        case .extractToChosenFolder: #selector(extractToChosenFolder(_:))
+        case .addToArchive: #selector(addToArchive(_:))
+        case .compressToZip: #selector(compressToZip(_:))
+        case .compressToDatedZip: #selector(compressToDatedZip(_:))
+        case .compressTo7z: #selector(compressTo7z(_:))
+        case .compressEachSeparately: #selector(compressEachSeparately(_:))
+        case .compressFolderContents: #selector(compressFolderContents(_:))
+        }
+    }
+
+    private func menuTitle(for item: FinderMenuItem, allItems: [URL], fileItems: [URL]) -> String {
+        switch item {
+        case .open:
             let count = fileItems.count
+            return String(localized: "Open \(count) Archive", comment: "Opens the archive in an archive window")
 
-            macPackerSubmenu.addItem(withTitle: String(localized: "Open \(count) Archive", comment: "Opens the archive in an archive window"),
-                                     action: #selector(openArchive(_:)),
-                                     keyEquivalent: "")
+        case .extractHere:
+            return String(localized: "Extract Here", comment: "Tell the user in the Finder context menu to extract the archive in the current directory as is")
 
-            macPackerSubmenu.addItem(withTitle: NSLocalizedString("Extract Here", comment: "Tell the user in the Finder context menu to extract the archive in the current directory as is"),
-                                     action: #selector(extractHere(_:)),
-                                     keyEquivalent: "")
-
+        case .extractToFolder:
             // "Extract to "*\"" > if multiple archives files are selected
             // "Extract to defaultArchive\"" > if one archive is selected
             var folderName: String = ""
@@ -166,39 +208,39 @@ class FinderSync: FIFinderSync {
             } else if fileItems.count > 1 {
                 folderName = "*/"
             }
-            macPackerSubmenu.addItem(withTitle: String(localized: "Extract to \"\(folderName)\"", comment: "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to."),
-                                     action: #selector(extractToFolder(_:)),
-                                     keyEquivalent: "")
+            return String(localized: "Extract to \"\(folderName)\"", comment: "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to.")
+
+        case .addToArchive:
+            return String(localized: "Add to Archive…", comment: "Finder context menu: open a new-archive window pre-filled with the selection so name, format and compression can be picked")
+
+        case .extractToChosenFolder:
+            return String(localized: "Extract to…", comment: "Finder context menu: ask where to extract the selected archives, then extract them there")
+
+        case .compressToZip, .compressToDatedZip, .compressTo7z:
+            let ext = item.archiveExtension ?? "zip"
+            var name = compressedArchiveName(for: allItems, pathExtension: ext)
+            if item.isDated {
+                name = FinderMenuItem.datedName(name, extension: ext, at: Date())
+            }
+            return String(localized: "Compress to \"\(name)\"", comment: "Finder context menu: compress the selection directly to the named archive in the current directory")
+
+        case .compressEachSeparately:
+            return String(localized: "Compress Each Item Separately", comment: "Finder context menu: compress every selected item into its own zip next to it")
+
+        case .compressFolderContents:
+            let folder = allItems.first?.lastPathComponent ?? ""
+            return String(localized: "Compress Contents of \"\(folder)\"", comment: "Finder context menu: compress what is inside the selected folder, without the folder itself, into a zip next to it")
         }
-
-        // Compression section (7-Zip/NanaZip style, works for files and folders)
-        macPackerSubmenu.addItem(withTitle: String(localized: "Add to Archive…", comment: "Finder context menu: open a new-archive window pre-filled with the selection so name, format and compression can be picked"),
-                                 action: #selector(addToArchive(_:)),
-                                 keyEquivalent: "")
-
-        macPackerSubmenu.addItem(withTitle: String(localized: "Compress to \"\(compressedZipName(for: allItems))\"", comment: "Finder context menu: compress the selection directly to the named zip in the current directory"),
-                                 action: #selector(compressToZip(_:)),
-                                 keyEquivalent: "")
-
-        // Attach submenu
-        if menuKind == .toolbarItemMenu {
-            return macPackerSubmenu
-        }
-
-        menu.setSubmenu(macPackerSubmenu, for: macPackerItem)
-        menu.addItem(macPackerItem)
-
-        return menu
     }
 
     /// Same naming rule as the main app's compress handler: one item → its
     /// stem, several → the surrounding folder's name.
-    private func compressedZipName(for items: [URL]) -> String {
+    private func compressedArchiveName(for items: [URL], pathExtension: String) -> String {
         if items.count == 1, let only = items.first {
-            return only.deletingPathExtension().lastPathComponent + ".zip"
+            return only.deletingPathExtension().lastPathComponent + "." + pathExtension
         }
         let target = FIFinderSyncController.default().targetedURL()
-        return (target?.lastPathComponent ?? "Archive") + ".zip"
+        return (target?.lastPathComponent ?? "Archive") + "." + pathExtension
     }
 
     
@@ -215,7 +257,11 @@ class FinderSync: FIFinderSync {
     
     // MARK: - Actions
     
-    private func communicateWithMainApp(action: String) {
+    private func communicateWithMainApp(item: FinderMenuItem) {
+        communicateWithMainApp(action: item.action, format: item.archiveExtension, dated: item.isDated)
+    }
+
+    private func communicateWithMainApp(action: String, format: String? = nil, dated: Bool = false) {
         log.notice("Finder action '\(action)' requested", context: ["scheme": appScheme])
         if appScheme.isEmpty {
             log.error("MacPackerURLScheme missing from the extension's Info.plist — cannot reach the main app")
@@ -239,10 +285,16 @@ class FinderSync: FIFinderSync {
         }
 
         var urlComponents = URLComponents(string: "\(appScheme)://\(action)")
-        let queryItems: [URLQueryItem] = [
+        var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "files", value: encodedPaths),
             URLQueryItem(name: "target", value: encodedTarget)
         ]
+        if let format {
+            queryItems.append(URLQueryItem(name: "format", value: format))
+        }
+        if dated {
+            queryItems.append(URLQueryItem(name: "dated", value: "1"))
+        }
         urlComponents?.queryItems = queryItems
 
         guard let url = urlComponents?.url else {
@@ -261,32 +313,52 @@ class FinderSync: FIFinderSync {
 
     @objc func openArchive(_ sender: Any?) {
         log.notice("Finder menu: Open archive")
-        communicateWithMainApp(action: "open")
-    }
-
-    @objc func extractFiles(_ sender: Any?) {
-        communicateWithMainApp(action: "extractFiles")
-        log.debug("Extract Files…")
+        communicateWithMainApp(item: .open)
     }
 
     @objc func extractHere(_ sender: Any?) {
-        communicateWithMainApp(action: "extractHere")
         log.debug("Extract Here")
+        communicateWithMainApp(item: .extractHere)
     }
 
     @objc func extractToFolder(_ sender: Any?) {
-        communicateWithMainApp(action: "extractToFolder")
         log.debug("Extract to “%FOLDER%/”")
+        communicateWithMainApp(item: .extractToFolder)
     }
 
     @objc func addToArchive(_ sender: Any?) {
         log.notice("Finder menu: Add to Archive…")
-        communicateWithMainApp(action: "addToArchive")
+        communicateWithMainApp(item: .addToArchive)
     }
 
     @objc func compressToZip(_ sender: Any?) {
         log.notice("Finder menu: Compress to zip")
-        communicateWithMainApp(action: "compress")
+        communicateWithMainApp(item: .compressToZip)
+    }
+
+    @objc func compressTo7z(_ sender: Any?) {
+        log.notice("Finder menu: Compress to 7z")
+        communicateWithMainApp(item: .compressTo7z)
+    }
+
+    @objc func extractToChosenFolder(_ sender: Any?) {
+        log.notice("Finder menu: Extract to…")
+        communicateWithMainApp(item: .extractToChosenFolder)
+    }
+
+    @objc func compressToDatedZip(_ sender: Any?) {
+        log.notice("Finder menu: Compress to dated zip")
+        communicateWithMainApp(item: .compressToDatedZip)
+    }
+
+    @objc func compressEachSeparately(_ sender: Any?) {
+        log.notice("Finder menu: Compress each item separately")
+        communicateWithMainApp(item: .compressEachSeparately)
+    }
+
+    @objc func compressFolderContents(_ sender: Any?) {
+        log.notice("Finder menu: Compress folder contents")
+        communicateWithMainApp(item: .compressFolderContents)
     }
 
 }

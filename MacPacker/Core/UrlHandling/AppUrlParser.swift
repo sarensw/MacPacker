@@ -13,10 +13,12 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 enum AppUrlAction: String {
     case open
-    case extractFiles
     case extractHere
     case extractToFolder
+    case extractTo
     case compress
+    case compressEach
+    case compressContents
     case addToArchive
 }
 
@@ -24,6 +26,10 @@ struct AppUrl {
     var action: AppUrlAction
     var files: [URL]
     var target: URL
+    /// Extension of the archive to produce, for `compress`. `nil` means zip.
+    var format: String?
+    /// Whether the archive's name carries the date and time, for `compress`.
+    var dated: Bool = false
 }
 
 class UrlParser {
@@ -51,7 +57,9 @@ class UrlParser {
         
         var files: [URL] = []
         var target: URL? = nil
-        
+        var format: String? = nil
+        var dated = false
+
         if let comps = URLComponents(
             url: appUrl,
             resolvingAgainstBaseURL: false),
@@ -70,6 +78,9 @@ class UrlParser {
                 let queryTarget = queryTargetString.removingPercentEncoding ?? ""
                 target = URL(fileURLWithPath: queryTarget)
             }
+
+            format = queryItems.first(where: { $0.name == "format" })?.value
+            dated = queryItems.first(where: { $0.name == "dated" })?.value == "1"
         }
         
         guard let target,
@@ -82,9 +93,11 @@ class UrlParser {
         let appUrl = AppUrl(
             action: action,
             files: files,
-            target: target
+            target: target,
+            format: format,
+            dated: dated
         )
-        log.notice("Parsed app url: action=\(action.rawValue), files=\(files.count), target=\(target.lastPathComponent)")
+        log.notice("Parsed app url: action=\(action.rawValue), files=\(files.count), target=\(target.lastPathComponent), format=\(format ?? "-"), dated=\(dated)")
         return appUrl
     }
     
