@@ -43,14 +43,38 @@ extension AllCoreTests {
         func parsesFinderUrl() throws {
             let parsed = try AppUrl(url: url("compress", files: ["/Users/me/My Photos", "/Users/me/notes.txt"], extra: [
                 URLQueryItem(name: "format", value: "7z"),
-                URLQueryItem(name: "dated", value: "1"),
+                URLQueryItem(name: "dated", value: "1789050600"),
             ]), scheme: scheme)
 
             #expect(parsed.action == .compress)
             #expect(parsed.files == [URL(fileURLWithPath: "/Users/me/My Photos"), URL(fileURLWithPath: "/Users/me/notes.txt")])
             #expect(parsed.target == URL(fileURLWithPath: "/Users/me"))
             #expect(parsed.format == "7z")
-            #expect(parsed.dated)
+            #expect(parsed.datedAt == Date(timeIntervalSince1970: 1_789_050_600))
+        }
+
+        @Test("The dated archive gets the name the menu showed, even after a minute boundary")
+        func datedNameMatchesTheMenu() throws {
+            // the menu opens a second before the minute turns; the archive is
+            // written after it — every time zone's minutes turn together
+            let minuteBoundary = Date(timeIntervalSince1970: 60 * 29_817_510)
+            let menuShownAt = minuteBoundary.addingTimeInterval(-1)
+            let writtenAt = minuteBoundary.addingTimeInterval(1)
+            let displayed = FinderMenuItem.datedName("photos.zip", extension: "zip", at: menuShownAt)
+
+            let parsed = try AppUrl(url: url("compress", extra: [
+                URLQueryItem(name: "format", value: "zip"),
+                URLQueryItem(name: "dated", value: String(Int(menuShownAt.timeIntervalSince1970))),
+            ]), scheme: scheme)
+
+            #expect(parsed.archiveName("photos.zip", extension: "zip") == displayed)
+            // what the old code produced by taking the time again when writing
+            #expect(FinderMenuItem.datedName("photos.zip", extension: "zip", at: writtenAt) != displayed)
+        }
+
+        @Test("An undated request keeps the plain name")
+        func undatedNameIsUnchanged() throws {
+            #expect(try AppUrl(url: url("compress"), scheme: scheme).archiveName("photos.zip", extension: "zip") == "photos.zip")
         }
 
         @Test("A format that is not the menu's own rejects the whole url",
@@ -79,6 +103,9 @@ extension AllCoreTests {
             }
             #expect(throws: AppUrl.ParseError.missingFilesOrTarget) {
                 try AppUrl(url: url("compress", files: []), scheme: scheme)
+            }
+            #expect(throws: AppUrl.ParseError.invalidDate("../soon")) {
+                try AppUrl(url: url("compress", extra: [URLQueryItem(name: "dated", value: "../soon")]), scheme: scheme)
             }
         }
     }

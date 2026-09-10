@@ -63,10 +63,10 @@ class AppUrlCompressHandler: AppUrlHandler {
             }
             Task { @MainActor in
                 let ext = appUrl.format ?? "zip"
-                var name = CompressDestination.name(files: appUrl.files, target: appUrl.target, ext: ext)
-                if appUrl.dated {
-                    name = FinderMenuItem.datedName(name, extension: ext, at: Date())
-                }
+                let name = appUrl.archiveName(
+                    CompressDestination.name(files: appUrl.files, target: appUrl.target, ext: ext),
+                    extension: ext
+                )
                 let dest = CompressDestination.unique(named: name, in: dir)
                 if await writeArchive(appUrl.files, to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
                     NSWorkspace.shared.activateFileViewerSelecting([dest])

@@ -23,7 +23,7 @@ class UrlParser {
     func parse(appUrl: URL) -> AppUrl? {
         do {
             let parsed = try AppUrl(url: appUrl, scheme: UrlParser.appScheme)
-            log.notice("Parsed app url: action=\(parsed.action.rawValue), files=\(parsed.files.count), target=\(parsed.target.lastPathComponent), format=\(parsed.format ?? "-"), dated=\(parsed.dated)")
+            log.notice("Parsed app url: action=\(parsed.action.rawValue), files=\(parsed.files.count), target=\(parsed.target.lastPathComponent), format=\(parsed.format ?? "-"), datedAt=\(parsed.datedAt.map { "\($0)" } ?? "-")")
             return parsed
         } catch {
             log.warning("Not an app url: \(error)")

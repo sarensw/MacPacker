@@ -108,7 +108,13 @@ class FinderSync: FIFinderSync {
         (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory ?? false
     }
 
+    /// When the menu was last built. The dated entry shows a name with this
+    /// moment and sends it along, so the archive gets exactly that name.
+    /// Finder builds menus and calls actions on the main thread.
+    nonisolated(unsafe) private static var menuShownAt = Date()
+
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
+        Self.menuShownAt = Date()
         let allItems = FIFinderSyncController.default().selectedItemURLs() ?? []
         // archive actions only make sense for files; compression takes everything
         let fileItems = allItems.filter { !isDirectory($0) }
@@ -220,7 +226,7 @@ class FinderSync: FIFinderSync {
             let ext = item.archiveExtension ?? "zip"
             var name = compressedArchiveName(for: allItems, pathExtension: ext)
             if item.isDated {
-                name = FinderMenuItem.datedName(name, extension: ext, at: Date())
+                name = FinderMenuItem.datedName(name, extension: ext, at: Self.menuShownAt)
             }
             return String(localized: "Compress to \"\(name)\"", comment: "Finder context menu: compress the selection directly to the named archive in the current directory")
 
@@ -258,10 +264,10 @@ class FinderSync: FIFinderSync {
     // MARK: - Actions
     
     private func communicateWithMainApp(item: FinderMenuItem) {
-        communicateWithMainApp(action: item.action, format: item.archiveExtension, dated: item.isDated)
+        communicateWithMainApp(action: item.action, format: item.archiveExtension, datedAt: item.isDated ? Self.menuShownAt : nil)
     }
 
-    private func communicateWithMainApp(action: String, format: String? = nil, dated: Bool = false) {
+    private func communicateWithMainApp(action: String, format: String? = nil, datedAt: Date? = nil) {
         log.notice("Finder action '\(action)' requested", context: ["scheme": appScheme])
         if appScheme.isEmpty {
             log.error("MacPackerURLScheme missing from the extension's Info.plist — cannot reach the main app")
@@ -292,8 +298,8 @@ class FinderSync: FIFinderSync {
         if let format {
             queryItems.append(URLQueryItem(name: "format", value: format))
         }
-        if dated {
-            queryItems.append(URLQueryItem(name: "dated", value: "1"))
+        if let datedAt {
+            queryItems.append(URLQueryItem(name: "dated", value: String(Int(datedAt.timeIntervalSince1970))))
         }
         urlComponents?.queryItems = queryItems
 

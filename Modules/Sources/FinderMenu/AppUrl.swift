@@ -20,7 +20,7 @@ public enum AppUrlAction: String, Sendable {
 }
 
 /// A request from the Finder extension, sent as
-/// `<scheme>://<action>?files=…&target=…[&format=…][&dated=1]`.
+/// `<scheme>://<action>?files=…&target=…[&format=…][&dated=<seconds since 1970>]`.
 ///
 /// The scheme is registered with Launch Services, so any app or web page can
 /// open such a url: all of it is untrusted input, and parsing is where it gets
@@ -32,14 +32,17 @@ public struct AppUrl: Equatable, Sendable {
     /// Extension of the archive to produce, for `compress`; `nil` means zip.
     /// Always one the menu itself produces — it ends up in a file name.
     public var format: String?
-    /// Whether the archive's name carries the date and time, for `compress`.
-    public var dated: Bool
+    /// When the menu showed the dated entry, for `compress`; `nil` for an
+    /// undated archive. The name is built from this moment, not from when the
+    /// archive gets written, so it matches what the menu displayed.
+    public var datedAt: Date?
 
     public enum ParseError: Error, Equatable {
         case wrongScheme(String?)
         case unknownAction(String?)
         case missingFilesOrTarget
         case unsupportedFormat(String)
+        case invalidDate(String)
     }
 
     /// Parses a url in the Finder extension's format; throws for anything else.
@@ -73,6 +76,21 @@ public struct AppUrl: Equatable, Sendable {
         self.files = files
         self.target = URL(fileURLWithPath: target.removingPercentEncoding ?? "")
         self.format = format
-        self.dated = value("dated") == "1"
+        if let dated = value("dated") {
+            // digits only, so nothing but a date can reach the file name
+            guard let seconds = Int(dated) else {
+                throw .invalidDate(dated)
+            }
+            self.datedAt = Date(timeIntervalSince1970: TimeInterval(seconds))
+        } else {
+            self.datedAt = nil
+        }
+    }
+
+    /// The archive's file name for this request: `base` as the compress rule
+    /// builds it, plus the menu's moment when the dated entry sent it.
+    public func archiveName(_ base: String, extension ext: String) -> String {
+        guard let datedAt else { return base }
+        return FinderMenuItem.datedName(base, extension: ext, at: datedAt)
     }
 }
