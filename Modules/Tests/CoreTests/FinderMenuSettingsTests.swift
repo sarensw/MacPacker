@@ -95,6 +95,15 @@ extension AllCoreTests {
             #expect(FinderMenuItem.datedName("photos", extension: "zip", at: date, timeZone: utc) == "photos 2026-09-10 14.30.zip")
         }
 
+        @Test("Only the extensions the menu produces pass as a format")
+        func formatAllowlist() {
+            #expect(FinderMenuItem.isArchiveExtension("zip"))
+            #expect(FinderMenuItem.isArchiveExtension("7z"))
+            for unsafe in ["", "rar", "..", "../zip", "zip/../../evil", "7z/x"] {
+                #expect(!FinderMenuItem.isArchiveExtension(unsafe))
+            }
+        }
+
         @Test("Only the compress entries name an output format")
         func onlyCompressItemsCarryAnExtension() {
             #expect(FinderMenuItem.compressToZip.archiveExtension == "zip")

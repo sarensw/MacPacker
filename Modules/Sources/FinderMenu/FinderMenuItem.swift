@@ -97,6 +97,13 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         }
     }
 
+    /// Whether `value` is an extension one of the entries produces — the
+    /// allowlist for the `format` the app takes from its url scheme, which any
+    /// app or web page can call and which ends up in a file name.
+    public static func isArchiveExtension(_ value: String) -> Bool {
+        allCases.contains { $0.archiveExtension == value }
+    }
+
     /// Whether the archive's name carries the date and time of compressing.
     public var isDated: Bool {
         self == .compressToDatedZip

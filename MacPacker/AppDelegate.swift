@@ -7,6 +7,7 @@
 
 import AppKit
 import Core
+import FinderMenu
 import Foundation
 #if !STORE
 import Sparkle
