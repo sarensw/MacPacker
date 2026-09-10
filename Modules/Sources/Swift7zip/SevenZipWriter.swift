@@ -408,10 +408,17 @@ extension SevenZipArchive {
         }
 
         let diskPaths = resolvedItems.map { item -> String? in
-            if case .addFile(_, let url, _, _) = item {
+            switch item {
+            case .addFile(_, let url, _, _):
                 return url.path
+            case .addDirectory(_, let url, _, _):
+                // Nothing is read from a folder for its contents, but its date is
+                // taken from here. Without it the entry stores no date at all and
+                // the folder extracts stamped 1980.
+                return url?.path
+            default:
+                return nil
             }
-            return nil
         }
 
         let progressBox = progress.map(WriteProgressBox.init)

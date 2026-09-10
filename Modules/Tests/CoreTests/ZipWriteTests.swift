@@ -658,6 +658,18 @@ extension AllCoreTests {
                     "without this flag the icon file shows up as `Icon?` — the reported symptom")
             #expect(extendedAttribute("com.apple.ResourceFork", at: extractedIcon) == fork,
                     "the picture itself lives in the icon file's resource fork")
+
+            // A folder entry carries a date like any other. Nothing stored one, so
+            // every folder in an archive MacPacker made came out stamped 1980 —
+            // the zip epoch, which is what "no date" looks like on the way back.
+            let sourceDate = try #require(
+                folder.resourceValues(forKeys: [.contentModificationDateKey])
+                    .contentModificationDate)
+            let extractedDate = try #require(
+                extractedFolder.resourceValues(forKeys: [.contentModificationDateKey])
+                    .contentModificationDate)
+            #expect(abs(extractedDate.timeIntervalSince(sourceDate)) < 2,
+                    "the folder should keep its own date, got \(extractedDate)")
         }
 
         // The write path used to `stat` what it was given and open it as a file,

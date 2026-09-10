@@ -291,7 +291,11 @@ Z7_COM7F_IMF(CUpdateCallback::GetProperty(UInt32 index, PROPID propID, PROPVARIA
             if (item.mtime >= 0) {
                 FILETIME ft = UnixEpochToFileTime(item.mtime);
                 prop = ft;
-            } else if (item.op == SZ_UPDATE_ADD_FILE && item.disk_path) {
+            } else if ((item.op == SZ_UPDATE_ADD_FILE || item.op == SZ_UPDATE_ADD_DIR)
+                       && item.disk_path) {
+                // Directories as well as files: a folder entry carries no contents
+                // but it does carry a date, and leaving it unset stores the zip
+                // epoch, so every folder in the archive extracts stamped 1980.
                 struct stat st;
                 // lstat for the same reason as the mode: a link's own time, not
                 // the time of whatever it points at.
