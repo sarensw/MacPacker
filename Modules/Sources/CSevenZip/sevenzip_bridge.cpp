@@ -300,6 +300,56 @@ static HRESULT tryOpenStream(
     return S_FALSE;
 }
 
+/// The modification time an archive gives an entry.
+///
+/// kpidMTime is a FILETIME: 100-nanosecond ticks since 1601-01-01 UTC. An entry
+/// that carries no time at all is not the same as one stamped at the epoch, so
+/// `valid` keeps them apart -- a format with no time field must leave the
+/// extracted file with the time it was written, not with 1601.
+struct EntryTime {
+    bool valid = false;
+    struct timespec ts {};
+};
+
+/// Reads kpidMTime off `index`, if the archive carries one.
+static EntryTime readEntryTime(IInArchive *archive, UInt32 index) {
+    EntryTime out;
+    NWindows::NCOM::CPropVariant prop;
+    if (archive->GetProperty(index, kpidMTime, &prop) != S_OK || prop.vt != VT_FILETIME)
+        return out;
+
+    const UInt64 ticks = ((UInt64)prop.filetime.dwHighDateTime << 32)
+                       | (UInt64)prop.filetime.dwLowDateTime;
+
+    // 1601 -> 1970. A zero FILETIME is how several formats spell "no time", and
+    // anything below the epoch would wrap the subtraction.
+    static const UInt64 kEpochTicks = 116444736000000000ULL;
+    if (ticks < kEpochTicks)
+        return out;
+
+    const UInt64 sinceEpoch = ticks - kEpochTicks;
+    out.ts.tv_sec = (time_t)(sinceEpoch / 10000000ULL);
+    out.ts.tv_nsec = (long)((sinceEpoch % 10000000ULL) * 100);
+    out.valid = true;
+    return out;
+}
+
+/// Stamps `path` with the entry's modification time, leaving the access time
+/// alone. NOFOLLOW so a symlink entry gets its own time rather than passing it
+/// on to whatever it points at.
+///
+/// Silent on failure, like the rest of the post-extraction metadata work: a
+/// wrong timestamp is not worth failing an extraction that otherwise succeeded.
+static void applyEntryTime(const char *path, const EntryTime &time) {
+    if (!time.valid)
+        return;
+    struct timespec times[2];
+    times[0].tv_sec = 0;
+    times[0].tv_nsec = UTIME_OMIT;
+    times[1] = time.ts;
+    utimensat(AT_FDCWD, path, times, AT_SYMLINK_NOFOLLOW);
+}
+
 // --- Minimal extract callback ---
 
 class CExtractCallback final :
@@ -362,6 +412,12 @@ public:
     /// folder on a second run. A file already sitting there that happens to match
     /// a sidecar's name is not ours to touch.
     std::set<std::string> extractedPaths;
+    /// Directories this extraction created, with the time the archive gave them.
+    /// Applied once every entry is on disk rather than as each directory is made:
+    /// writing a file into a directory bumps its modification time again, and so
+    /// does removing a sidecar from it, so a time set on creation never survives
+    /// the directory's own contents.
+    std::vector<std::pair<std::string, EntryTime>> directoryTimes;
 
     std::string destDir() const { return std::string(_destDir.Ptr(), (size_t)_destDir.Len()); }
 
@@ -377,6 +433,7 @@ private:
     CMyComPtr<ISequentialOutStream> _outFileStream;
     FString _currentFilePath;
     UInt32 _currentMode = 0;         // POSIX mode from kpidPosixAttrib; 0 if unknown
+    EntryTime _currentTime;          // kpidMTime of the entry being written
     bool _currentIsSymlink = false;  // entry is a Unix symlink (S_IFLNK)
     bool _currentIsEncrypted = false; // entry is encrypted (kpidEncrypted)
     std::string _password;
@@ -395,6 +452,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     // fills these in below for an actually-extracted file.
     _currentFilePath.Empty();
     _currentMode = 0;
+    _currentTime = EntryTime();
     _currentIsSymlink = false;
 
     // Remember whether this entry is encrypted: 7z AES carries no password
@@ -451,6 +509,9 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
 
     if (isDir) {
         createDirsRecordingNew(fullPath);
+        directoryTimes.emplace_back(
+            std::string(fullPath.Ptr(), (size_t)fullPath.Len()),
+            readEntryTime(_archive, index));
         return S_OK;
     }
 
@@ -476,6 +537,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     _archive->GetProperty(index, kpidPosixAttrib, &propPosix);
     _currentMode = (propPosix.vt == VT_UI4) ? propPosix.ulVal : 0;
     _currentIsSymlink = S_ISLNK(_currentMode);
+    _currentTime = readEntryTime(_archive, index);
     _currentFilePath = fullPath;
 
     _outFileStream = outStreamRef;
@@ -722,6 +784,7 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
             failedOpResult = opRes;
         _currentIsSymlink = false;
         _currentMode = 0;
+        _currentTime = EntryTime();
         _currentIsEncrypted = false;
         _currentFilePath.Empty();
         return S_OK;
@@ -730,6 +793,7 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
     if (_currentFilePath.IsEmpty()) {
         _currentIsSymlink = false;
         _currentMode = 0;
+        _currentTime = EntryTime();
         return S_OK;
     }
 
@@ -763,6 +827,11 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
             errorMessage = "Failed to set file permissions";
     }
 
+    // Last, because writing the file set the time to now and the symlink branch
+    // above replaced the file outright. Extended attributes go on after this in
+    // finishExtract, but setting those does not touch the modification time.
+    applyEntryTime(path, _currentTime);
+
     // Note a possible AppleDouble sidecar for finishExtract to fold in later. It
     // cannot be resolved here: the file it describes may still be ahead of us in
     // the archive.
@@ -774,6 +843,7 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
 
     _currentIsSymlink = false;
     _currentMode = 0;
+    _currentTime = EntryTime();
     _currentFilePath.Empty();
     return S_OK;
 }
@@ -819,6 +889,12 @@ static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_ou
     // entry failed: the files that did extract should still come out complete.
     unpackAppleDoubleSidecars(callback->appleDoubleSidecars, callback->extractedPaths,
                               callback->destDir());
+
+    // Directory times go on last of all. Every file written into a directory
+    // bumps its modification time, and so does every sidecar removed from it by
+    // the fold above -- a time applied any earlier would not have survived.
+    for (const auto &directory : callback->directoryTimes)
+        applyEntryTime(directory.first.c_str(), directory.second);
 
     const Int32 opRes = callback->failedOpResult;
     const bool entryFailed = opRes != NArchive::NExtract::NOperationResult::kOK;

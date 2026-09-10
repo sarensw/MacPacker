@@ -495,7 +495,28 @@ final actor ArchiveXadEngine: ArchiveEngine {
             urlsByItemID[item.id] = resultUrl
         }
 
+        restoreDirectoryDates(for: items, at: urlsByItemID)
+
         return ArchiveExtractionResult(urlsByItemID: urlsByItemID)
+    }
+
+    /// Stamps extracted directories with the date the archive gave them.
+    ///
+    /// XADMaster restores dates for files but leaves directories carrying the
+    /// moment of extraction — every other tool on the platform (`ditto`, `unzip`,
+    /// `tar`, Keka, The Unarchiver) puts the original back, so the gap is ours to
+    /// close rather than something to match.
+    ///
+    /// It runs after every entry has landed, and it has to: writing a file into a
+    /// directory sets that directory's modification time again, so a date applied
+    /// while the extraction was still going would not have survived its own
+    /// contents.
+    private func restoreDirectoryDates(for items: [ArchiveItem], at urls: [UUID: URL]) {
+        for item in items where item.type == .directory {
+            guard let date = item.modificationDate, let url = urls[item.id] else { continue }
+            try? FileManager.default.setAttributes([.modificationDate: date],
+                                                   ofItemAtPath: url.path)
+        }
     }
     
     func extract(
