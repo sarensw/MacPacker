@@ -264,10 +264,7 @@ class FinderSync: FIFinderSync {
     // MARK: - Actions
     
     private func communicateWithMainApp(item: FinderMenuItem) {
-        communicateWithMainApp(action: item.action, format: item.archiveExtension, datedAt: item.isDated ? Self.menuShownAt : nil)
-    }
-
-    private func communicateWithMainApp(action: String, format: String? = nil, datedAt: Date? = nil) {
+        let action = item.action.rawValue
         log.notice("Finder action '\(action)' requested", context: ["scheme": appScheme])
         if appScheme.isEmpty {
             log.error("MacPackerURLScheme missing from the extension's Info.plist — cannot reach the main app")
@@ -277,33 +274,21 @@ class FinderSync: FIFinderSync {
             log.error("No items selected for action '\(action)'")
             return
         }
+        guard let target = FIFinderSyncController.default().targetedURL() else {
+            log.error("No targeted folder for action '\(action)'")
+            return
+        }
 
         log.notice("Encoding \(items.count) item(s) for '\(action)'",
                    context: ["first": items.first?.lastPathComponent ?? "-"])
-        let paths = items.map { $0.path }.joined(separator: ",")
-        guard let encodedPaths = paths.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            log.error("Failed to percent-encode the file paths")
-            return
-        }
-        guard let encodedTarget = FIFinderSyncController.default().targetedURL()?.path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            log.error("Failed to encode the target url (no targetedURL?)")
-            return
-        }
-
-        var urlComponents = URLComponents(string: "\(appScheme)://\(action)")
-        var queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "files", value: encodedPaths),
-            URLQueryItem(name: "target", value: encodedTarget)
-        ]
-        if let format {
-            queryItems.append(URLQueryItem(name: "format", value: format))
-        }
-        if let datedAt {
-            queryItems.append(URLQueryItem(name: "dated", value: String(Int(datedAt.timeIntervalSince1970))))
-        }
-        urlComponents?.queryItems = queryItems
-
-        guard let url = urlComponents?.url else {
+        let request = AppUrl(
+            action: item.action,
+            files: items,
+            target: target,
+            format: item.archiveExtension,
+            datedAt: item.isDated ? Self.menuShownAt : nil
+        )
+        guard let url = request.url(scheme: appScheme) else {
             log.error("Failed to build the app URL for action '\(action)'")
             return
         }

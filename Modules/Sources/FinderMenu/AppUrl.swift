@@ -37,6 +37,14 @@ public struct AppUrl: Equatable, Sendable {
     /// archive gets written, so it matches what the menu displayed.
     public var datedAt: Date?
 
+    public init(action: AppUrlAction, files: [URL], target: URL, format: String? = nil, datedAt: Date? = nil) {
+        self.action = action
+        self.files = files
+        self.target = target
+        self.format = format
+        self.datedAt = datedAt
+    }
+
     public enum ParseError: Error, Equatable {
         case wrongScheme(String?)
         case unknownAction(String?)
@@ -97,5 +105,32 @@ public struct AppUrl: Equatable, Sendable {
     public func archiveName(_ base: String, extension ext: String) -> String {
         guard let datedAt else { return base }
         return FinderMenuItem.datedName(base, extension: ext, at: datedAt)
+    }
+
+    /// The url the Finder extension sends for this request — the other half of
+    /// `init(url:scheme:)`. Each path is percent-encoded on its own, commas
+    /// included, before the paths are joined with commas, so a comma in a file
+    /// name can't split it.
+    public func url(scheme: String) -> URL? {
+        let pathAllowed = CharacterSet.urlQueryAllowed.subtracting(CharacterSet(charactersIn: ","))
+        func encode(_ url: URL) -> String? {
+            url.path.addingPercentEncoding(withAllowedCharacters: pathAllowed)
+        }
+        let paths = files.map(encode)
+        guard let encodedTarget = encode(target), !paths.contains(nil) else { return nil }
+
+        var items = [
+            URLQueryItem(name: "files", value: paths.compactMap { $0 }.joined(separator: ",")),
+            URLQueryItem(name: "target", value: encodedTarget),
+        ]
+        if let format {
+            items.append(URLQueryItem(name: "format", value: format))
+        }
+        if let datedAt {
+            items.append(URLQueryItem(name: "dated", value: String(Int(datedAt.timeIntervalSince1970))))
+        }
+        var components = URLComponents(string: "\(scheme)://\(action.rawValue)")
+        components?.queryItems = items
+        return components?.url
     }
 }

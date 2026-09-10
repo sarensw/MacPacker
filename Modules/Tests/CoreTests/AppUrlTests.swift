@@ -17,8 +17,8 @@ extension AllCoreTests {
 
         private let scheme = "app.macpacker"
 
-        /// Builds a url the way the Finder extension does: the paths are
-        /// percent-encoded once, then the query encodes them again.
+        /// Builds a url by hand, the way any other app could send one. What the
+        /// Finder extension really sends goes through `AppUrl.url(scheme:)`.
         private func url(
             _ action: String,
             files: [String] = ["/Users/me/Photos"],
@@ -39,18 +39,17 @@ extension AllCoreTests {
             return components.url!
         }
 
-        @Test("A compress url from the Finder extension parses completely")
-        func parsesFinderUrl() throws {
-            let parsed = try AppUrl(url: url("compress", files: ["/Users/me/My Photos", "/Users/me/notes.txt"], extra: [
-                URLQueryItem(name: "format", value: "7z"),
-                URLQueryItem(name: "dated", value: "1789050600"),
-            ]), scheme: scheme)
-
-            #expect(parsed.action == .compress)
-            #expect(parsed.files == [URL(fileURLWithPath: "/Users/me/My Photos"), URL(fileURLWithPath: "/Users/me/notes.txt")])
-            #expect(parsed.target == URL(fileURLWithPath: "/Users/me"))
-            #expect(parsed.format == "7z")
-            #expect(parsed.datedAt == Date(timeIntervalSince1970: 1_789_050_600))
+        @Test("A request from the Finder extension survives the trip through its url")
+        func roundTrip() throws {
+            let request = AppUrl(
+                action: .compress,
+                files: [URL(fileURLWithPath: "/Users/me/My Photos"), URL(fileURLWithPath: "/Users/me/notes.txt")],
+                target: URL(fileURLWithPath: "/Users/me"),
+                format: "7z",
+                datedAt: Date(timeIntervalSince1970: 1_789_050_600)
+            )
+            let url = try #require(request.url(scheme: scheme))
+            #expect(try AppUrl(url: url, scheme: scheme) == request)
         }
 
         @Test("The dated archive gets the name the menu showed, even after a minute boundary")
@@ -130,9 +129,24 @@ extension AllCoreTests {
 
         @Test("Paths with spaces, percent signs and accents come through unchanged")
         func unusualValidPathsSurvive() throws {
-            let parsed = try AppUrl(url: url("compress", files: ["/Users/me/100% done/Füße.zip"], target: "/Users/me/100% done"), scheme: scheme)
-            #expect(parsed.files == [URL(fileURLWithPath: "/Users/me/100% done/Füße.zip")])
-            #expect(parsed.target == URL(fileURLWithPath: "/Users/me/100% done"))
+            let request = AppUrl(
+                action: .compress,
+                files: [URL(fileURLWithPath: "/Users/me/100% done/Füße.zip")],
+                target: URL(fileURLWithPath: "/Users/me/100% done")
+            )
+            let url = try #require(request.url(scheme: scheme))
+            #expect(try AppUrl(url: url, scheme: scheme) == request)
+        }
+
+        @Test("A comma in a file name doesn't split the path")
+        func commaInFileName() throws {
+            let request = AppUrl(
+                action: .compress,
+                files: [URL(fileURLWithPath: "/Users/me/a,b.zip"), URL(fileURLWithPath: "/Users/me/c.zip")],
+                target: URL(fileURLWithPath: "/Users/me")
+            )
+            let url = try #require(request.url(scheme: scheme))
+            #expect(try AppUrl(url: url, scheme: scheme) == request)
         }
     }
 }

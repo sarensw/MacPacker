@@ -73,17 +73,17 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         }
     }
 
-    /// Host of the `app.macpacker://` url this item sends to the main app.
-    public var action: String {
+    /// What this item asks the main app to do.
+    public var action: AppUrlAction {
         switch self {
-        case .open: "open"
-        case .extractHere: "extractHere"
-        case .extractToFolder: "extractToFolder"
-        case .extractToChosenFolder: "extractTo"
-        case .addToArchive: "addToArchive"
-        case .compressToZip, .compressToDatedZip, .compressTo7z: "compress"
-        case .compressEachSeparately: "compressEach"
-        case .compressFolderContents: "compressContents"
+        case .open: .open
+        case .extractHere: .extractHere
+        case .extractToFolder: .extractToFolder
+        case .extractToChosenFolder: .extractTo
+        case .addToArchive: .addToArchive
+        case .compressToZip, .compressToDatedZip, .compressTo7z: .compress
+        case .compressEachSeparately: .compressEach
+        case .compressFolderContents: .compressContents
         }
     }
 
