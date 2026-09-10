@@ -757,6 +757,73 @@ extension AllCoreTests {
             )
         }
 
+        // A directory's own date changes when something is created directly in it,
+        // and not when something is created further down: adding a file to `a/b`
+        // moves `b` and leaves `a` exactly as it was. So "this extraction wrote
+        // somewhere below here" is the wrong question to ask about `a` — it has to
+        // be "did this extraction create anything directly in it".
+        //
+        // Both folders are planted, so neither is ours, and only the deeper one
+        // receives a file.
+        @Test(arguments: ZipReader.allCases)
+        func extractionLeavesAnUntouchedParentFolderAlone(reader: ZipReader) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let fm = FileManager.default
+
+            let source = dir.appendingPathComponent("src/Outer/Inner")
+            try fm.createDirectory(at: source, withIntermediateDirectories: true)
+            try "arrived".write(to: source.appendingPathComponent("note.txt"),
+                                atomically: true, encoding: .utf8)
+
+            let archive = dir.appendingPathComponent("nested.zip")
+            try SevenZipArchive.writeArchive(
+                destination: archive,
+                items: [
+                    .addDirectory(archivePath: "Outer",
+                                  diskPath: source.deletingLastPathComponent()),
+                    .addDirectory(archivePath: "Outer/Inner", diskPath: source),
+                    .addFile(archivePath: "Outer/Inner/note.txt",
+                             diskPath: source.appendingPathComponent("note.txt")),
+                ],
+                options: .init(format: .zip)
+            )
+
+            // Both already the user's, and of an age nothing in the archive shares.
+            let destination = dir.appendingPathComponent("out")
+            let outer = destination.appendingPathComponent("Outer")
+            let inner = outer.appendingPathComponent("Inner")
+            try fm.createDirectory(at: inner, withIntermediateDirectories: true)
+            let planted = Date(timeIntervalSince1970: 1_577_836_800)  // 2020-01-01
+            for folder in [inner, outer] {
+                try fm.setAttributes([.modificationDate: planted], ofItemAtPath: folder.path)
+            }
+
+            let engine = reader.engine
+            let loaded = try await engine.loadArchive(url: archive, passwordResolver: { _ in nil })
+            _ = try await engine.extract(
+                items: Array(loaded.items.values), from: archive,
+                to: destination, passwordResolver: { _ in nil })
+
+            try #require(fm.fileExists(atPath: inner.appendingPathComponent("note.txt").path))
+
+            let outerDate = try #require(
+                outer.resourceValues(forKeys: [.contentModificationDateKey])
+                    .contentModificationDate)
+            let innerDate = try #require(
+                inner.resourceValues(forKeys: [.contentModificationDateKey])
+                    .contentModificationDate)
+
+            #expect(
+                abs(outerDate.timeIntervalSince(planted)) < 2,
+                "nothing was created directly in Outer, so its date must not move — got \(outerDate)"
+            )
+            #expect(
+                innerDate.timeIntervalSince(planted) > 60,
+                "note.txt was created in Inner, so its date must move — got \(innerDate)"
+            )
+        }
+
         // Metadata that cannot be read is not metadata that is not there, and the
         // difference matters: silently writing the archive without it is exactly
         // the bug this whole change fixes, arrived at from another direction. The

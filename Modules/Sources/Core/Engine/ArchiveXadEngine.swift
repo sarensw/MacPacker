@@ -466,13 +466,20 @@ final actor ArchiveXadEngine: ArchiveEngine {
         // earlier file would otherwise look pre-existing by the time its own entry
         // came round, and lose the date it should have had.
         var preexistingDirectoryDates: [UUID: Date] = [:]
-        for item in items where item.type == .directory {
+        var entriesToCreate: Set<UUID> = []
+        for item in items {
             guard let virtualPath = item.virtualPath else { continue }
             let url = destination.appendingPathComponent(virtualPath)
-            guard let date = try? url.resourceValues(forKeys: [.contentModificationDateKey])
+            let existing = try? url.resourceValues(forKeys: [.contentModificationDateKey])
                 .contentModificationDate
-            else { continue }
-            preexistingDirectoryDates[item.id] = date
+
+            if existing == nil {
+                // Nothing there yet, so this extraction brings it into being — and
+                // that is what moves the date of the directory holding it.
+                entriesToCreate.insert(item.id)
+            } else if item.type == .directory, let existing {
+                preexistingDirectoryDates[item.id] = existing
+            }
         }
 
         // Parents before their contents. Entry order otherwise comes out of a
@@ -519,7 +526,9 @@ final actor ArchiveXadEngine: ArchiveEngine {
             urlsByItemID[item.id] = resultUrl
         }
 
-        restoreDirectoryDates(for: items, at: urlsByItemID, preexisting: preexistingDirectoryDates)
+        restoreDirectoryDates(for: items, at: urlsByItemID,
+                              preexisting: preexistingDirectoryDates,
+                              creating: entriesToCreate)
 
         return ArchiveExtractionResult(urlsByItemID: urlsByItemID)
     }
@@ -535,19 +544,33 @@ final actor ArchiveXadEngine: ArchiveEngine {
     /// directory sets that directory's modification time again, so a date applied
     /// while the extraction was still going would not have survived its own
     /// contents.
-    /// Whether any other entry in this extraction lands inside `directory`.
-    private func extractionWrote(into directory: ArchiveItem, among items: [ArchiveItem]) -> Bool {
+    /// Whether this extraction creates an entry *directly* inside `directory`,
+    /// which is the only thing that moves that directory's own date.
+    ///
+    /// Not "somewhere below": adding a file to `a/b` moves `b` and leaves `a`
+    /// exactly as it was. And not merely "an entry names this directory": an entry
+    /// that was already on disk is rewritten in place, which the directory holding
+    /// it never notices.
+    private func extractionCreatesEntry(
+        directlyIn directory: ArchiveItem,
+        among items: [ArchiveItem],
+        creating: Set<UUID>
+    ) -> Bool {
         guard let path = directory.virtualPath else { return false }
         let prefix = path.hasSuffix("/") ? path : path + "/"
         return items.contains { other in
-            other.id != directory.id && (other.virtualPath ?? "").hasPrefix(prefix)
+            guard other.id != directory.id, creating.contains(other.id),
+                  let otherPath = other.virtualPath, otherPath.hasPrefix(prefix)
+            else { return false }
+            return !otherPath.dropFirst(prefix.count).contains("/")
         }
     }
 
     private func restoreDirectoryDates(
         for items: [ArchiveItem],
         at urls: [UUID: URL],
-        preexisting: [UUID: Date]
+        preexisting: [UUID: Date],
+        creating: Set<UUID>
     ) {
         for item in items where item.type == .directory {
             guard let date = item.modificationDate, let url = urls[item.id] else { continue }
@@ -570,7 +593,8 @@ final actor ArchiveXadEngine: ArchiveEngine {
             // exactly as it did before. Proximity cannot tell those apart — an
             // archive made moments ago carries dates a legitimate write is
             // indistinguishable from.
-            guard !extractionWrote(into: item, among: items) else { continue }
+            guard !extractionCreatesEntry(directlyIn: item, among: items, creating: creating)
+            else { continue }
             try? FileManager.default.setAttributes([.modificationDate: existingDate],
                                                    ofItemAtPath: url.path)
         }
