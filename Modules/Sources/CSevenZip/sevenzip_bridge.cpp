@@ -509,9 +509,16 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
 
     if (isDir) {
         createDirsRecordingNew(fullPath);
-        directoryTimes.emplace_back(
-            std::string(fullPath.Ptr(), (size_t)fullPath.Len()),
-            readEntryTime(_archive, index));
+
+        // Only a directory this extraction actually created gets the archive's
+        // date. The destination is not always empty -- "Extract here" writes into
+        // a folder of the user's own files -- and createDirsRecordingNew records
+        // exactly the levels that did not exist beforehand, so membership is the
+        // answer to "was this ours to stamp".
+        const std::string created(fullPath.Ptr(), (size_t)fullPath.Len());
+        if (extractedPaths.count(created) != 0)
+            directoryTimes.emplace_back(created, readEntryTime(_archive, index));
+
         return S_OK;
     }
 

@@ -490,6 +490,51 @@ extension AllCoreTests {
             )
         }
 
+        // The same rule, for the dates an extraction now applies. "Extract here"
+        // writes into a folder of the user's own files, and "Extract to folder"
+        // reuses an existing folder on a second run, so a directory named by the
+        // archive is not always one this extraction made. Restamping it would
+        // rewrite the date on a folder that was never ours — visible to anyone
+        // who sorts by date, and impossible to undo.
+        //
+        // The folder does not come out untouched, and cannot: writing a file into
+        // a directory bumps its modification time, and the extraction does write
+        // `folder/README.md`. What it must not do is hand it the *archive's* date.
+        @Test(arguments: ZipReader.allCases)
+        func extractionLeavesTheDatesOfFoldersItDidNotCreateAlone(reader: ZipReader) async throws {
+            let engine = reader.engine
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let fm = FileManager.default
+            let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: tempDir) }
+
+            // The archive names `folder`. Plant one first, as a user's own.
+            let planted = tempDir.appendingPathComponent("folder")
+            try fm.createDirectory(at: planted, withIntermediateDirectories: true)
+
+            let archiveDate = try #require(
+                items.first { $0.name == "folder" }?.modificationDate,
+                "the fixture's directory entry should carry a date to be tempted by")
+
+            _ = try await engine.extract(
+                items: items, from: url, to: tempDir, passwordResolver: { _ in nil })
+
+            let onDisk = try #require(
+                planted.resourceValues(forKeys: [.contentModificationDateKey])
+                    .contentModificationDate)
+
+            #expect(
+                abs(onDisk.timeIntervalSince(archiveDate)) >= 2,
+                "a folder the extraction did not create was restamped with the archive's date \(archiveDate)"
+            )
+        }
+
         // Gatekeeper's verdict on a downloaded file lives in com.apple.quarantine,
         // and copyfile's COPYFILE_UNPACK replaces a target's extended attributes
         // rather than merging into them. So an archive shipping `Evil.app` beside a

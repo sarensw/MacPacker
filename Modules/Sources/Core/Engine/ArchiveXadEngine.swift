@@ -455,6 +455,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
         }
 
         var urlsByItemID: [UUID: URL] = [:]
+        var preexistingDirectories: Set<UUID> = []
 
         for item in items {
             try Task.checkCancellation()
@@ -466,6 +467,15 @@ final actor ArchiveXadEngine: ArchiveEngine {
             }
 
             let resultUrl = destination.appendingPathComponent(virtualPath, isDirectory: item.type == .directory)
+
+            // A directory already sitting there belongs to whoever put it there:
+            // the destination is not always empty, and its date is not ours to
+            // rewrite. Noted before extracting, which is the only moment the two
+            // are still distinguishable.
+            if item.type == .directory,
+               FileManager.default.fileExists(atPath: resultUrl.path) {
+                preexistingDirectories.insert(item.id)
+            }
 
             do {
                 try await archive.extractEntry(Int32(itemIndex), to: destination.path)
@@ -495,7 +505,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
             urlsByItemID[item.id] = resultUrl
         }
 
-        restoreDirectoryDates(for: items, at: urlsByItemID)
+        restoreDirectoryDates(for: items, at: urlsByItemID, skipping: preexistingDirectories)
 
         return ArchiveExtractionResult(urlsByItemID: urlsByItemID)
     }
@@ -511,8 +521,13 @@ final actor ArchiveXadEngine: ArchiveEngine {
     /// directory sets that directory's modification time again, so a date applied
     /// while the extraction was still going would not have survived its own
     /// contents.
-    private func restoreDirectoryDates(for items: [ArchiveItem], at urls: [UUID: URL]) {
+    private func restoreDirectoryDates(
+        for items: [ArchiveItem],
+        at urls: [UUID: URL],
+        skipping preexisting: Set<UUID>
+    ) {
         for item in items where item.type == .directory {
+            guard !preexisting.contains(item.id) else { continue }
             guard let date = item.modificationDate, let url = urls[item.id] else { continue }
             try? FileManager.default.setAttributes([.modificationDate: date],
                                                    ofItemAtPath: url.path)
