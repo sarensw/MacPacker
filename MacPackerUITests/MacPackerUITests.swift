@@ -587,9 +587,6 @@ final class MacPackerUITests: XCTestCase {
         done.click()
         XCTAssertTrue(done.waitForNonExistence(timeout: 5), "the options sheet did not close")
 
-        let summary = app.staticTexts["saveOptionsSummary"].firstMatch
-        XCTAssertTrue(((summary.value as? String) ?? summary.label).contains("Encrypted"),
-                      "the panel does not show that the archive will be encrypted")
         app.typeKey(.escape, modifierFlags: [])
         app.terminate()
     }

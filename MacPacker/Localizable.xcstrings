@@ -4138,15 +4138,6 @@
     "Encrypt file names" : {
       "comment" : "Toggle that hides a 7z archive's file list behind the password"
     },
-    "Encrypted" : {
-      "comment" : "Save panel summary: the archive gets a password"
-    },
-    "Encrypted with ZipCrypto" : {
-      "comment" : "Save panel summary: zip password using the old, weak ZipCrypto"
-    },
-    "Encrypted, names too" : {
-      "comment" : "Save panel summary: 7z password that also hides the file names"
-    },
     "Encryption" : {
       "comment" : "Section header of the password settings in the archive options"
     },
@@ -6944,9 +6935,6 @@
         }
       }
     },
-    "No password" : {
-      "comment" : "Save panel summary: the archive is not encrypted"
-    },
     "No recent archives." : {
       "comment" : "Shown in place of the recents list on the start page when nothing has been opened yet",
       "localizations" : {
@@ -9590,9 +9578,6 @@
     "Solid block size" : {
       "comment" : "Label of the 7z solid block size picker in the archive options"
     },
-    "Split into %@ volumes" : {
-      "comment" : "Save panel summary: the archive is written as several files of this size"
-    },
     "Split into volumes" : {
       "comment" : "Label of the picker that writes the archive as several files of a given size"
     },
@@ -10848,9 +10833,6 @@
     },
     "With AES-256, a zip password can be at most %lld characters long." : {
       "comment" : "Save options: the zip password is too long; the number is the limit"
-    },
-    "Without .DS_Store files" : {
-      "comment" : "Save panel summary: Finder's .DS_Store files are left out"
     },
     "Word size" : {
       "comment" : "Label of the compression word size picker in the archive options (7-Zip's term)"
