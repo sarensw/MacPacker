@@ -1529,6 +1529,9 @@
         }
       }
     },
+    "All Options…" : {
+      "comment" : "Button in the Quick Compress options that opens every compression setting: password, split volumes, method and more."
+    },
     "An extraction is still in progress" : {
       "comment" : "Title of the alert shown when the user quits while an extraction is running.",
       "localizations" : {

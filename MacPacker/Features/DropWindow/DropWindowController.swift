@@ -52,11 +52,21 @@ final class DropWindowController {
     /// write) drivable from a script without a real drag.
     @discardableResult
     func compress(files: [URL]) -> DropJob? {
-        compressor.compress(files: files, options: CompressSettings.current)
+        let settings = CompressSettings.current
+        return compressor.compress(files: files, options: settings.options, excludeDSStore: settings.excludeDSStore)
+    }
+
+    /// Every setting, as a sheet on the panel: the sheet the save panel shows,
+    /// bound to Quick Compress's own settings.
+    private func showAllOptions() {
+        guard let panel, panel.attachedSheet == nil else { return }
+        ArchiveSavePanel.presentOptions(on: panel, options: CompressSettings.shared)
     }
 
     private func makePanel() -> NSPanel {
-        let hostingView = NSHostingView(rootView: DropWindowView(compressor: compressor))
+        let hostingView = NSHostingView(rootView: DropWindowView(
+            compressor: compressor,
+            showAllOptions: { [weak self] in self?.showAllOptions() }))
         hostingView.frame.size = hostingView.fittingSize
 
         let panel = DropPanel(

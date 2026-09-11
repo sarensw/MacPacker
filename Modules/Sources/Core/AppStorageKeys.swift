@@ -41,14 +41,14 @@ public enum Keys {
     /// default: the window exists to be dropped on, not configured.
     public static let dropWindowOptionsExpanded = "dropWindowOptionsExpanded"
     public static let dropWindowFormat = "dropWindowFormat"
-    /// Not exposed anywhere yet — every drop uses the default. The writer reads
-    /// it, so it is ready for whenever the window grows its options back.
+    /// The one level Quick Compress kept for every format before it remembered
+    /// its settings per format. Read to carry that choice over.
     public static let dropWindowLevel = "dropWindowLevel"
-    // Default *values*, not key names: `@AppStorage` needs a compile-time default
-    // and `CompressSettings.current` needs the same fallback when it reads
-    // UserDefaults directly, so both read these and cannot disagree.
-    public static let defaultDropWindowFormat = "zip"
-    public static let defaultDropWindowLevel = 5
+    /// Quick Compress's remembered settings for one format, JSON — kept apart
+    /// from the save panel's.
+    public static func dropWindowSettings(_ format: String) -> String { "dropWindowSettings.\(format)" }
+    /// Leave `.DS_Store` files out of what Quick Compress writes.
+    public static let dropWindowExcludeDSStore = "dropWindowExcludeDSStore"
 
     // save panel
     /// The format the save panel opened on last. 7-Zip opens on the last one too.

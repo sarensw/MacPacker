@@ -231,30 +231,32 @@ private struct FormatPicker<Label: View>: View {
     }
 }
 
-/// Compression level picker, with 7-Zip's names for the levels.
-private struct LevelPicker<Label: View>: View {
+/// Compression level picker, with 7-Zip's names for the levels. The save panel,
+/// its options sheet and the Quick Compress window all use this one.
+struct LevelPicker<Label: View>: View {
     @ObservedObject var options: ArchiveSaveOptions
     @ViewBuilder var label: Label
 
     var body: some View {
         Picker(selection: $options.level) {
             ForEach(options.levels, id: \.self) { level in
-                name(of: level).tag(level)
+                Text(verbatim: compressionLevelName(level)).tag(level)
             }
         } label: {
             label
         }
     }
+}
 
-    private func name(of level: UInt32) -> Text {
-        switch level {
-        case 0: Text("Store", comment: "Compression level: no compression")
-        case 1: Text("Fastest", comment: "Compression level: fastest")
-        case 3: Text("Fast", comment: "Compression level: fast")
-        case 7: Text("Maximum", comment: "Compression level: maximum")
-        case 9: Text("Ultra", comment: "Compression level: ultra, the strongest")
-        default: Text("Normal", comment: "Compression level: normal")
-        }
+/// 7-Zip's name for a compression level.
+func compressionLevelName(_ level: UInt32) -> String {
+    switch level {
+    case 0: String(localized: "Store", comment: "Compression level: no compression")
+    case 1: String(localized: "Fastest", comment: "Compression level: fastest")
+    case 3: String(localized: "Fast", comment: "Compression level: fast")
+    case 7: String(localized: "Maximum", comment: "Compression level: maximum")
+    case 9: String(localized: "Ultra", comment: "Compression level: ultra, the strongest")
+    default: String(localized: "Normal", comment: "Compression level: normal")
     }
 }
 
@@ -388,21 +390,22 @@ enum ArchiveSavePanel {
         }
     }
 
-    /// Sheet on the save panel. Under the App Sandbox the panel is a Powerbox
-    /// window hosted out of process — this is the call that has to hold up.
+    /// Sheet on the save panel, or on the Quick Compress window. Under the App
+    /// Sandbox the save panel is a Powerbox window hosted out of process — this
+    /// is the call that has to hold up.
     ///
     /// The sheet goes on screen first and gets its content after. Built before
     /// the sheet was on screen, its switches showed no knob until first clicked.
-    static func presentOptions(on panel: NSSavePanel, options: ArchiveSaveOptions) {
+    static func presentOptions(on window: NSWindow, options: ArchiveSaveOptions) {
         let sheet = NSWindow(
             contentRect: NSRect(origin: .zero, size: ArchiveSaveOptionsView.size),
             styleMask: [.titled], backing: .buffered, defer: false)
-        panel.beginSheet(sheet) { _ in
+        window.beginSheet(sheet) { _ in
             _ = sheet   // keep the sheet alive until it is dismissed
         }
-        sheet.contentView = NSHostingView(rootView: ArchiveSaveOptionsView(options: options) { [weak panel, weak sheet] in
-            guard let panel, let sheet else { return }
-            panel.endSheet(sheet)
+        sheet.contentView = NSHostingView(rootView: ArchiveSaveOptionsView(options: options) { [weak window, weak sheet] in
+            guard let window, let sheet else { return }
+            window.endSheet(sheet)
         })
     }
 }
