@@ -17,12 +17,14 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "dropwindow")
 
 struct DropWindowView: View {
     @AppStorage(Keys.dropWindowOptionsExpanded) private var optionsExpanded = false
-    @AppStorage(Keys.dropWindowLevel) private var level = Keys.defaultDropWindowLevel
+    @ObservedObject private var options = CompressSettings.shared
 
     @State private var isTargeted = false
 
     /// Owns both the writing and the list of rows shown below the drop area.
     @ObservedObject var compressor: DropCompressor
+    /// Every setting, as a sheet on the window — which only the controller has.
+    var showAllOptions: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -114,9 +116,16 @@ struct DropWindowView: View {
             Spacer(minLength: 8)
 
             if !optionsExpanded {
-                Text(verbatim: CompressSettings.levelName(level))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    // a password applies to every drop until it is cleared: say so
+                    if !options.password.isEmpty {
+                        Image(systemName: "lock.fill")
+                            .imageScale(.small)
+                    }
+                    Text(verbatim: compressionLevelName(options.level))
+                        .lineLimit(1)
+                }
+                .foregroundStyle(.secondary)
             }
         }
         .font(.callout)
@@ -126,20 +135,28 @@ struct DropWindowView: View {
 
     /// A menu, not a segmented control: segmented needs room for every label at
     /// once, and translated level names blow past this card's width (Italian wants
-    /// 643pt against 248pt). A menu is bounded by the longest single name.
+    /// 643pt against 248pt). A menu is bounded by the longest single name. The
+    /// rest opens as a sheet: the one the save panel shows.
     private var optionsPanel: some View {
-        HStack(spacing: 12) {
-            Text("Compression Level", comment: "Row label in the Quick Compress options: how hard to compress.")
-            Spacer(minLength: 0)
-            Picker(selection: $level) {
-                ForEach(CompressSettings.levels, id: \.self) { value in
-                    Text(verbatim: CompressSettings.levelName(value)).tag(value)
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Text("Compression Level", comment: "Row label in the Quick Compress options: how hard to compress.")
+                Spacer(minLength: 0)
+                LevelPicker(options: options) {
+                    EmptyView()   // the row already carries the label
                 }
-            } label: {
-                EmptyView()   // the row already carries the label
+                .labelsHidden()
+                .fixedSize()
             }
-            .labelsHidden()
-            .fixedSize()
+            Divider()
+                .padding(.vertical, 8)
+            HStack {
+                Spacer(minLength: 0)
+                Button(action: showAllOptions) {
+                    Text("All Options…", comment: "Button in the Quick Compress options that opens every compression setting: password, split volumes, method and more.")
+                }
+                .accessibilityIdentifier("quickCompress.allOptions")
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
@@ -152,10 +169,10 @@ struct DropWindowView: View {
     // MARK: - Drop
 
     private func handleDrop(_ providers: [NSItemProvider]) {
-        let options = CompressSettings.current
+        let settings = CompressSettings.current
         loadDroppedFileURLs(from: providers) { urls in
             log.notice("Drop window received \(urls.count) url(s)")
-            compressor.compress(files: urls, options: options)
+            compressor.compress(files: urls, options: settings.options, excludeDSStore: settings.excludeDSStore)
         }
     }
 }

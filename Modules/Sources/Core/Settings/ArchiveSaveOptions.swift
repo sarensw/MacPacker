@@ -18,6 +18,8 @@ import Swift7zip
 /// not between formats, not on disk — and neither is the volume size: both are
 /// one-off choices that would otherwise follow the user into archives they
 /// never meant to lock or split.
+///
+/// The save panel and Quick Compress each keep their own, in their own keys.
 @MainActor
 public final class ArchiveSaveOptions: ObservableObject {
     public typealias Format = SevenZipCompressionOptions.Format
@@ -34,50 +36,78 @@ public final class ArchiveSaveOptions: ObservableObject {
         case tooLong
     }
 
+    /// Where a set of options is kept, and when.
+    public enum Storage: Sendable {
+        /// Remembered when a save goes ahead.
+        case savePanel
+        /// Remembered as it changes: Quick Compress has no Save button to wait for.
+        case quickCompress
+
+        var formatKey: String { self == .savePanel ? Keys.saveOptionsFormat : Keys.dropWindowFormat }
+        func settingsKey(_ format: Format) -> String {
+            self == .savePanel ? Keys.saveOptionsSettings(format.rawValue) : Keys.dropWindowSettings(format.rawValue)
+        }
+        var excludeDSStoreKey: String { self == .savePanel ? Keys.saveOptionsExcludeDSStore : Keys.dropWindowExcludeDSStore }
+        /// Quick Compress kept one level for every format before this.
+        var legacyLevelKey: String? { self == .savePanel ? nil : Keys.dropWindowLevel }
+    }
+
     @Published public var format: Format {
         didSet {
             guard oldValue != format else { return }
             remembered[oldValue] = snapshot()
             apply(remembered[format] ?? Remembered())
+            autosave()
         }
     }
-    @Published public var level: UInt32 = 5
+    @Published public var level: UInt32 = 5 { didSet { autosave() } }
     /// `nil` is the format's own choice: Deflate for zip, LZMA2 for 7z.
     @Published public var method: Method? = nil {
-        didSet { if oldValue != method { dropWhatTheMethodLacks() } }
+        didSet {
+            if oldValue != method { dropWhatTheMethodLacks() }
+            autosave()
+        }
     }
-    @Published public var dictionarySize: UInt64? = nil
-    @Published public var wordSize: UInt32? = nil
+    @Published public var dictionarySize: UInt64? = nil { didSet { autosave() } }
+    @Published public var wordSize: UInt32? = nil { didSet { autosave() } }
     /// 7z only. `nil` leaves it to the level, 0 writes no solid blocks, `.max`
     /// one block for everything.
-    @Published public var solidBlockSize: UInt64? = nil
+    @Published public var solidBlockSize: UInt64? = nil { didSet { autosave() } }
     @Published public var password = ""
     @Published public var passwordConfirmation = ""
     /// Zip only; 7z always uses AES-256.
-    @Published public var encryption: Encryption = .aes256
+    @Published public var encryption: Encryption = .aes256 { didSet { autosave() } }
     /// 7z only; a zip always lists its names.
-    @Published public var encryptFileNames = false
+    @Published public var encryptFileNames = false { didSet { autosave() } }
     /// `nil` writes one file.
     @Published public var volumeSize: UInt64? = nil
     /// Leave `.DS_Store` files out. Not per format: it is about the files, not
     /// the archive.
-    @Published public var excludeDSStore: Bool
+    @Published public var excludeDSStore: Bool { didSet { autosave() } }
 
     private let defaults: UserDefaults
+    private let storage: Storage
     private var remembered: [Format: Remembered] = [:]
+    /// Set while a format's settings are taken over, which changes one property
+    /// after the other: storing each step would store half of one format.
+    private var applying = false
 
-    public init(defaults: UserDefaults = .standard) {
+    public init(defaults: UserDefaults = .standard, storage: Storage = .savePanel) {
         self.defaults = defaults
+        self.storage = storage
         let decoder = JSONDecoder()
+        let legacyLevel = storage.legacyLevelKey.flatMap { defaults.object(forKey: $0) as? Int }
         for format in Format.allCases {
-            if let data = defaults.data(forKey: Keys.saveOptionsSettings(format.rawValue)),
+            if let data = defaults.data(forKey: storage.settingsKey(format)),
                let stored = try? decoder.decode(Remembered.self, from: data) {
                 remembered[format] = stored
+            } else if let legacyLevel {
+                remembered[format] = Remembered(level: UInt32(clamping: legacyLevel))
             }
         }
-        let format = defaults.string(forKey: Keys.saveOptionsFormat).flatMap(Format.init(rawValue:)) ?? .zip
+        let format = defaults.string(forKey: storage.formatKey).flatMap(Format.init(rawValue:)) ?? .zip
         self.format = format
-        self.excludeDSStore = defaults.bool(forKey: Keys.saveOptionsExcludeDSStore)
+        self.excludeDSStore = defaults.bool(forKey: storage.excludeDSStoreKey)
         apply(remembered[format] ?? Remembered())
     }
 
@@ -136,11 +166,16 @@ public final class ArchiveSaveOptions: ObservableObject {
         let encoder = JSONEncoder()
         for (format, settings) in remembered {
             if let data = try? encoder.encode(settings) {
-                defaults.set(data, forKey: Keys.saveOptionsSettings(format.rawValue))
+                defaults.set(data, forKey: storage.settingsKey(format))
             }
         }
-        defaults.set(format.rawValue, forKey: Keys.saveOptionsFormat)
-        defaults.set(excludeDSStore, forKey: Keys.saveOptionsExcludeDSStore)
+        defaults.set(format.rawValue, forKey: storage.formatKey)
+        defaults.set(excludeDSStore, forKey: storage.excludeDSStoreKey)
+    }
+
+    private func autosave() {
+        guard storage == .quickCompress, !applying else { return }
+        remember()
     }
 
     /// The settings 7-Zip keeps per format. Methods and ciphers are stored by
@@ -164,6 +199,8 @@ public final class ArchiveSaveOptions: ObservableObject {
 
     /// Takes over `settings`, dropping whatever the current format does not offer.
     private func apply(_ settings: Remembered) {
+        applying = true
+        defer { applying = false }
         level = levels.contains(settings.level) ? settings.level : 5
         method = settings.method.flatMap(Method.init(rawValue:)).flatMap { methods.contains($0) ? $0 : nil }
         dictionarySize = settings.dictionarySize.flatMap { dictionarySizes.contains($0) ? $0 : nil }

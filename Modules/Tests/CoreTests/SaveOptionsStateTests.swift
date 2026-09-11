@@ -168,6 +168,62 @@ extension AllCoreTests {
             #expect(!stored.contains("correct horse"), "the password is not")
         }
 
+        /// Quick Compress keeps its own settings, and keeps them at once: it has
+        /// no Save button to wait for. Never the password or the volume size.
+        @Test func quickCompressRemembersApartAndAtOnce() {
+            let defaults = isolatedDefaults()
+            let quick = ArchiveSaveOptions(defaults: defaults, storage: .quickCompress)
+            quick.format = .sevenZ
+            quick.level = 9
+            quick.method = .ppmd
+            quick.wordSize = 16
+            quick.solidBlockSize = 0
+            quick.encryptFileNames = true
+            quick.excludeDSStore = true
+            quick.password = "correct horse"
+            quick.passwordConfirmation = "correct horse"
+            quick.volumeSize = 25 << 20
+
+            let again = ArchiveSaveOptions(defaults: defaults, storage: .quickCompress)
+            #expect(again.format == .sevenZ && again.level == 9 && again.method == .ppmd)
+            #expect(again.wordSize == 16 && again.solidBlockSize == 0 && again.encryptFileNames && again.excludeDSStore)
+            #expect(again.password.isEmpty && again.volumeSize == nil, "never the password or the volume size")
+
+            let panel = ArchiveSaveOptions(defaults: defaults)
+            #expect(panel.format == .zip && panel.level == 5 && panel.method == nil && !panel.excludeDSStore,
+                    "the save panel's settings are its own")
+            var stored = ""
+            for (_, value) in defaults.dictionaryRepresentation() {
+                stored += (value as? Data).map { String(decoding: $0, as: UTF8.self) } ?? String(describing: value)
+            }
+            #expect(!stored.contains("correct horse"))
+        }
+
+        /// The save panel stores nothing until a save goes ahead.
+        @Test func thePanelRemembersOnlyOnSave() {
+            let defaults = isolatedDefaults()
+            let panel = ArchiveSaveOptions(defaults: defaults)
+            panel.format = .sevenZ
+            panel.level = 9
+            #expect(ArchiveSaveOptions(defaults: defaults).format == .zip)
+            panel.remember()
+            #expect(ArchiveSaveOptions(defaults: defaults).level == 9)
+        }
+
+        /// Before it had more options, Quick Compress kept one level for every
+        /// format. That choice carries over, for every format.
+        @Test func quickCompressKeepsTheLevelItHadBefore() {
+            let defaults = isolatedDefaults()
+            defaults.set(9, forKey: Keys.dropWindowLevel)
+            defaults.set("7z", forKey: Keys.dropWindowFormat)
+            let quick = ArchiveSaveOptions(defaults: defaults, storage: .quickCompress)
+            #expect(quick.format == .sevenZ && quick.level == 9)
+            quick.format = .zip
+            #expect(quick.level == 9)
+            quick.level = 1
+            #expect(ArchiveSaveOptions(defaults: defaults, storage: .quickCompress).level == 1, "a new choice wins")
+        }
+
         @Test func unreadableSettingsFallBackToTheDefaults() throws {
             let defaults = isolatedDefaults()
             defaults.set("rar", forKey: Keys.saveOptionsFormat)

@@ -396,6 +396,24 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// Quick Compress offers every option the save panel does: All Options… opens
+    /// the same sheet over the Quick Compress window.
+    func testQuickCompressOffersEveryOption() throws {
+        let app = launchApp(arguments: ["-DropWindow", "1", "-dropWindowOptionsExpanded", "YES"])
+        let allOptions = app.buttons["quickCompress.allOptions"].firstMatch
+        XCTAssertTrue(allOptions.waitForExistence(timeout: 15), "no All Options… in the Quick Compress window")
+        allOptions.click()
+
+        XCTAssertTrue(app.secureTextFields["savePasswordField"].firstMatch.waitForExistence(timeout: 10),
+                      "no options sheet over the Quick Compress window")
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveVolumePicker").firstMatch.exists)
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveExcludeDSStoreToggle").firstMatch.exists)
+        let done = app.buttons["saveOptionsDoneButton"].firstMatch
+        done.click()
+        XCTAssertTrue(done.waitForNonExistence(timeout: 5), "the options sheet did not close")
+        app.terminate()
+    }
+
     /// Issue #141: the toolbar display mode picked from the toolbar's context menu
     /// survives a relaunch. Drives the reported repro in both directions, so the
     /// result can't come from state a previous run left behind.
