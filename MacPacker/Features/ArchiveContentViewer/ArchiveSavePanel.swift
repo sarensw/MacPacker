@@ -213,7 +213,7 @@ struct ArchiveSaveOptionsView: View {
                     }
                     .accessibilityIdentifier("saveExcludeDSStoreToggle")
                 } header: {
-                    Text("Advanced", comment: "Section header of the rarely used archive options")
+                    Text("Advanced", comment: "Advanced settings")
                 }
             }
             .formStyle(.grouped)
