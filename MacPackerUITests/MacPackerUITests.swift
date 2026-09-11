@@ -519,4 +519,224 @@ final class MacPackerUITests: XCTestCase {
                        "the extension cannot launch the app, so it must not offer to")
         app.terminate()
     }
+    /// The save panel's "Options…" opens a sheet **on the panel itself**.
+    ///
+    /// This is the load-bearing assertion for the whole save-options design:
+    /// under the App Sandbox the save panel is a Powerbox window hosted out of
+    /// process, and our accessory view is a remote view inside it. If AppKit
+    /// refuses the sheet there, the options have to move into a dialog shown
+    /// before the panel instead.
+    func testSaveOptionsSheetOpensOverSavePanel() throws {
+        let dir = try makeWorkDir("saveoptions")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        let zip = dir.appendingPathComponent("fixture.zip")
+        try run("/usr/bin/zip", [zip.path, "one.txt"], cwd: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", zip.path])
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
+
+        // ⌘⇧S — Save As, which is what shows the panel with the accessory
+        app.typeKey("s", modifierFlags: [.command, .shift])
+
+        // the accessory is ours, hosted inside the panel — finding it at all is
+        // half the question this test answers
+        let optionsButton = app.buttons["saveOptionsButton"].firstMatch
+        XCTAssertTrue(optionsButton.waitForExistence(timeout: 15),
+                      "the save panel accessory never showed up")
+
+        optionsButton.click()
+
+        let done = app.buttons["saveOptionsDoneButton"].firstMatch
+        let sheetAppeared = done.waitForExistence(timeout: 10)
+        add(screenshot(app, name: "save-options-sheet"))
+        XCTAssertTrue(sheetAppeared, "no options sheet over the save panel")
+
+        // and it has to be interactive, not just present
+        done.click()
+        XCTAssertTrue(done.waitForNonExistence(timeout: 5), "the options sheet did not close")
+
+        app.typeKey(.escape, modifierFlags: [])
+        app.terminate()
+    }
+
+    /// A password typed twice differently never reaches the archive: the sheet
+    /// says so and does not close until the two match.
+    func testMismatchedPasswordsKeepTheOptionsOpen() throws {
+        let (app, dir) = try openSaveAs("mismatch")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        app.buttons["saveOptionsButton"].firstMatch.click()
+
+        let password = app.secureTextFields["savePasswordField"].firstMatch
+        let verify = app.secureTextFields["savePasswordVerifyField"].firstMatch
+        XCTAssertTrue(password.waitForExistence(timeout: 10), "no options sheet")
+        password.click()
+        password.typeText("secret")
+        verify.click()
+        verify.typeText("secreT")
+
+        let done = app.buttons["saveOptionsDoneButton"].firstMatch
+        XCTAssertTrue(app.staticTexts["savePasswordProblem"].firstMatch.waitForExistence(timeout: 5),
+                      "no message for the mismatch")
+        XCTAssertFalse(done.isEnabled, "Done must not close the sheet on a mismatch")
+
+        verify.click()
+        verify.typeKey("a", modifierFlags: .command)
+        verify.typeText("secret")
+        wait(for: [expectation(for: NSPredicate(format: "isEnabled == true"), evaluatedWith: done)], timeout: 5)
+        done.click()
+        XCTAssertTrue(done.waitForNonExistence(timeout: 5), "the options sheet did not close")
+
+        let summary = app.staticTexts["saveOptionsSummary"].firstMatch
+        XCTAssertTrue(((summary.value as? String) ?? summary.label).contains("Encrypted"),
+                      "the panel does not show that the archive will be encrypted")
+        app.typeKey(.escape, modifierFlags: [])
+        app.terminate()
+    }
+
+    /// The whole way: 7z picked in the panel, a password with hidden names set in
+    /// the sheet, Save. On disk is a 7z that 7-Zip cannot list without the
+    /// password, and the window reopens it without asking for it again.
+    func testSevenZWithPasswordWritesAnEncryptedArchive() throws {
+        let (app, dir) = try openSaveAs("sevenz-password")
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        choose("7z", in: "saveFormatPicker", app)
+        app.buttons["saveOptionsButton"].firstMatch.click()
+        let password = app.secureTextFields["savePasswordField"].firstMatch
+        XCTAssertTrue(password.waitForExistence(timeout: 10), "no options sheet")
+        password.click()
+        password.typeText("secret")
+        let verify = app.secureTextFields["savePasswordVerifyField"].firstMatch
+        verify.click()
+        verify.typeText("secret")
+        let names = app.descendants(matching: .any).matching(identifier: "saveEncryptNamesToggle").firstMatch
+        XCTAssertTrue(names.exists, "7z offers to encrypt the names")
+        if !isOn(names) { names.click() }
+        app.buttons["saveOptionsDoneButton"].firstMatch.click()
+
+        confirmSave(app)
+        confirmAccessPanel(app, button: "Grant Access", timeout: 3)
+        let saved = dir.appendingPathComponent("fixture.7z")
+        XCTAssertTrue(waitForFile(saved), "fixture.7z was not written")
+
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "the saved archive did not reopen")
+        XCTAssertEqual(app.secureTextFields.count, 0, "the window asked for the password it was just given")
+
+        let bytes = try Data(contentsOf: saved)
+        XCTAssertEqual(Array(bytes.prefix(6)), [0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C], "not a 7z")
+        let sevenZip = "/opt/homebrew/bin/7zz"
+        if FileManager.default.isExecutableFile(atPath: sevenZip) {
+            XCTAssertNotEqual(status(sevenZip, ["l", "-pwrong", saved.path]), 0, "7-Zip listed the names without the password")
+            XCTAssertEqual(status(sevenZip, ["t", "-psecret", saved.path]), 0, "7-Zip could not test it with the password")
+        }
+        app.terminate()
+    }
+
+    /// The panel remembers per format and across launches, as 7-Zip does: 7z at
+    /// Fastest with .DS_Store left out, saved, app quit — the next Save As has
+    /// them again once 7z is picked, and no password. Writes the debug app's
+    /// own defaults, which is the point.
+    func testSaveSettingsComeBackAfterRelaunch() throws {
+        let (app, dir) = try openSaveAs("remember")
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        choose("7z", in: "saveFormatPicker", app)
+        choose("Fastest", in: "saveLevelPicker", app)
+        app.buttons["saveOptionsButton"].firstMatch.click()
+        let exclude = app.descendants(matching: .any).matching(identifier: "saveExcludeDSStoreToggle").firstMatch
+        XCTAssertTrue(exclude.waitForExistence(timeout: 10), "no options sheet")
+        if !isOn(exclude) { exclude.click() }
+        app.buttons["saveOptionsDoneButton"].firstMatch.click()
+        confirmSave(app)
+        confirmAccessPanel(app, button: "Grant Access", timeout: 3)
+        XCTAssertTrue(waitForFile(dir.appendingPathComponent("fixture.7z")), "fixture.7z was not written")
+        app.terminate()
+
+        let again = launchApp(arguments: ["-ArchivePath", dir.appendingPathComponent("fixture.zip").path])
+        XCTAssertTrue(again.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
+        again.typeKey("s", modifierFlags: [.command, .shift])
+        let format = again.popUpButtons["saveFormatPicker"].firstMatch
+        XCTAssertTrue(format.waitForExistence(timeout: 15), "the save panel accessory never showed up")
+        XCTAssertEqual(format.value as? String, "zip", "Save As starts from the archive's own format")
+        choose("7z", in: "saveFormatPicker", again)
+        XCTAssertEqual(again.popUpButtons["saveLevelPicker"].firstMatch.value as? String, "Fastest",
+                       "7z's level was not remembered")
+        again.buttons["saveOptionsButton"].firstMatch.click()
+        let excludeAgain = again.descendants(matching: .any).matching(identifier: "saveExcludeDSStoreToggle").firstMatch
+        XCTAssertTrue(excludeAgain.waitForExistence(timeout: 10), "no options sheet")
+        XCTAssertTrue(isOn(excludeAgain), "the .DS_Store choice was not remembered")
+        XCTAssertEqual((again.secureTextFields["savePasswordField"].firstMatch.value as? String) ?? "", "",
+                       "a password must never be remembered")
+        again.buttons["saveOptionsDoneButton"].firstMatch.click()
+        again.typeKey(.escape, modifierFlags: [])
+        again.terminate()
+    }
+
+    /// A fresh fixture zip, opened, with the Save As panel up.
+    private func openSaveAs(_ name: String) throws -> (XCUIApplication, URL) {
+        let dir = try makeWorkDir(name)
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        let zip = dir.appendingPathComponent("fixture.zip")
+        try run("/usr/bin/zip", [zip.path, "one.txt"], cwd: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", zip.path])
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
+        app.typeKey("s", modifierFlags: [.command, .shift])
+        XCTAssertTrue(app.buttons["saveOptionsButton"].firstMatch.waitForExistence(timeout: 15),
+                      "the save panel accessory never showed up")
+        return (app, dir)
+    }
+
+    /// Picks `item` from the popup with accessibility identifier `id`.
+    private func choose(_ item: String, in id: String, _ app: XCUIApplication) {
+        let popup = app.popUpButtons[id].firstMatch
+        XCTAssertTrue(popup.waitForExistence(timeout: 5), "no \(id)")
+        popup.click()
+        app.menuItems[item].firstMatch.click()
+    }
+
+    private func isOn(_ toggle: XCUIElement) -> Bool {
+        switch toggle.value {
+        case let number as NSNumber: return number.boolValue
+        case let text as String: return text == "1"
+        default: return false
+        }
+    }
+
+    /// The panel's Save button; Return when AppKit does not expose it by name.
+    private func confirmSave(_ app: XCUIApplication) {
+        let save = app.buttons["OKButton"].firstMatch
+        if save.exists { save.click() } else { app.typeKey(.return, modifierFlags: []) }
+    }
+
+    private func waitForFile(_ url: URL, timeout: TimeInterval = 20) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !FileManager.default.fileExists(atPath: url.path) && Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        }
+        return FileManager.default.fileExists(atPath: url.path)
+    }
+
+    /// Exit status of a tool whose verdict is the status alone.
+    private func status(_ tool: String, _ args: [String]) -> Int32 {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: tool)
+        process.arguments = args
+        process.standardInput = FileHandle.nullDevice
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        do { try process.run() } catch { return -1 }
+        process.waitUntilExit()
+        return process.terminationStatus
+    }
+
+    /// Screenshot attached to the report — the sandboxed panel is the one place
+    /// where "the query found nothing" and "nothing was drawn" differ.
+    private func screenshot(_ app: XCUIApplication, name: String) -> XCTAttachment {
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = name
+        shot.lifetime = .keepAlways
+        return shot
+    }
 }
