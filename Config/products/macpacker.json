@@ -39,6 +39,98 @@
           {
             "type": "feat",
             "title": {
+                "en": "Encrypt archives with a password",
+                "zh-Hans": "用密码加密压缩包",
+                "fr": "Chiffrer les archives avec un mot de passe",
+                "de": "Archive mit Passwort verschlüsseln",
+                "it": "Cifrare gli archivi con una password",
+                "ja": "パスワードでアーカイブを暗号化",
+                "fa": "رمزگذاری آرشیوها با گذرواژه",
+                "pl": "Szyfrowanie archiwów hasłem",
+                "pt-BR": "Criptografar arquivos com senha",
+                "ru": "Шифрование архивов паролем",
+                "uk": "Шифрування архівів паролем",
+                "es-MX": "Cifrar archivos con contraseña",
+                "ko": "비밀번호로 압축 파일 암호화",
+                "nl": "Archieven versleutelen met een wachtwoord",
+                "tr": "Arşivleri parolayla şifreleme"
+            },
+            "issues": [
+                "231"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Split archives into volumes",
+                "zh-Hans": "将压缩包拆分为分卷",
+                "fr": "Diviser les archives en volumes",
+                "de": "Archive in Teilarchive aufteilen",
+                "it": "Dividere gli archivi in volumi",
+                "ja": "アーカイブをボリュームに分割",
+                "fa": "تقسیم آرشیوها به چند بخش",
+                "pl": "Dzielenie archiwów na woluminy",
+                "pt-BR": "Dividir arquivos em volumes",
+                "ru": "Разбиение архивов на тома",
+                "uk": "Розбиття архівів на томи",
+                "es-MX": "Dividir archivos en volúmenes",
+                "ko": "압축 파일을 여러 볼륨으로 분할",
+                "nl": "Archieven splitsen in delen",
+                "tr": "Arşivleri birimlere bölme"
+            },
+            "issues": [
+                "230"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "More compression settings when saving",
+                "zh-Hans": "保存时可用更多压缩设置",
+                "fr": "Plus de réglages de compression à l’enregistrement",
+                "de": "Mehr Komprimierungseinstellungen beim Speichern",
+                "it": "Più impostazioni di compressione al salvataggio",
+                "ja": "保存時の圧縮設定を拡充",
+                "fa": "تنظیمات فشرده‌سازی بیشتر هنگام ذخیره",
+                "pl": "Więcej ustawień kompresji przy zapisie",
+                "pt-BR": "Mais configurações de compressão ao salvar",
+                "ru": "Больше настроек сжатия при сохранении",
+                "uk": "Більше налаштувань стиснення під час збереження",
+                "es-MX": "Más opciones de compresión al guardar",
+                "ko": "저장 시 더 많은 압축 설정",
+                "nl": "Meer compressie-instellingen bij opslaan",
+                "tr": "Kaydederken daha fazla sıkıştırma ayarı"
+            },
+            "issues": [
+                "245"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Leave .DS_Store files out of archives",
+                "zh-Hans": "从压缩包中排除 .DS_Store 文件",
+                "fr": "Exclure les fichiers .DS_Store des archives",
+                "de": ".DS_Store-Dateien aus Archiven heraushalten",
+                "it": "Escludere i file .DS_Store dagli archivi",
+                "ja": "アーカイブから .DS_Store ファイルを除外",
+                "fa": "کنار گذاشتن فایل‌های .DS_Store از آرشیوها",
+                "pl": "Pomijanie plików .DS_Store w archiwach",
+                "pt-BR": "Excluir arquivos .DS_Store ao compactar",
+                "ru": "Исключение файлов .DS_Store из архивов",
+                "uk": "Виключення файлів .DS_Store з архівів",
+                "es-MX": "Excluir archivos .DS_Store al comprimir",
+                "ko": "압축 파일에서 .DS_Store 파일 제외",
+                "nl": ".DS_Store-bestanden weglaten uit archieven",
+                "tr": ".DS_Store dosyalarını arşivlerden hariç tutma"
+            },
+            "issues": [
+                "236"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
                 "en": "New options in Finder integration",
                 "zh-Hans": "Finder 集成新增选项",
                 "fr": "Nouvelles options dans l’intégration Finder",
