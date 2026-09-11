@@ -50,6 +50,15 @@ public enum Keys {
     public static let defaultDropWindowFormat = "zip"
     public static let defaultDropWindowLevel = 5
 
+    // save panel
+    /// The format the save panel opened on last. 7-Zip opens on the last one too.
+    public static let saveOptionsFormat = "saveOptionsFormat"
+    /// One format's remembered save settings, JSON.
+    public static func saveOptionsSettings(_ format: String) -> String { "saveOptionsSettings.\(format)" }
+    /// Leave `.DS_Store` files out of archives. Off by default, as in Finder's
+    /// own Compress.
+    public static let saveOptionsExcludeDSStore = "saveOptionsExcludeDSStore"
+
     // register defaults upon app start so that the archive table has a default it
     // can use when showing the table for the first time
     public static func registerDefaults() {
