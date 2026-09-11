@@ -641,7 +641,7 @@ extension SevenZipArchive {
                     let methodC = cString(options.level == 0 ? nil : options.method?.rawValue)
                     let passwordC = cString(options.encrypts ? options.password : nil)
                     let encryptionC = cString(options.encryption?.rawValue)
-                    defer { [formatC, methodC, passwordC, encryptionC].forEach { free($0) } }
+                    defer { for pointer in [formatC, methodC, passwordC, encryptionC] { free(pointer) } }
 
                     var cOptions = SZCompressionOptions()
                     cOptions.format = UnsafePointer(formatC)
