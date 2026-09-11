@@ -45,6 +45,12 @@ extension SevenZipArchive {
         if inPlace && (options.volumeSize ?? 0) > 0 {
             throw SevenZipError.writeFailed("An archive can't be split into volumes in place")
         }
+        // The save panel asks before replacing x.zip, never about x.zip.001: an
+        // older set of volumes by that name is refused, not partly overwritten.
+        if (options.volumeSize ?? 0) > 0, FileManager.default.fileExists(atPath: destination.path + ".001") {
+            throw SevenZipError.writeFailed(
+                "\(destination.lastPathComponent).001 already exists. Pick another name, or move the old volumes away first.")
+        }
         // 7-Zip would refuse it too, with nothing to say why.
         if options.encrypts, options.format == .zip,
            !SevenZipCompressionOptions.isValidZipPassword(options.password ?? "", encryption: options.encryption) {

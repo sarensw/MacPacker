@@ -717,6 +717,37 @@ extension AllCoreTests {
             #expect(try Data(contentsOf: out.appendingPathComponent("noise.bin")) == payload)
         }
 
+        /// The save panel asked about set.zip, never about set.zip.001: an older set
+        /// by that name is refused and left as it was.
+        @Test func anExistingSetOfVolumesIsLeftAlone() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let base = dir.appendingPathComponent("set.zip")
+            let options = SevenZipCompressionOptions(format: .zip, volumeSize: 64 << 10)
+            try SevenZipArchive.writeArchive(
+                destination: base, items: [.addData(archivePath: "first.bin", data: noise(bytes: 150_000))],
+                options: options)
+            let before = try volumes(of: base).map { try Data(contentsOf: $0) }
+            do {
+                try SevenZipArchive.writeArchive(
+                    destination: base, items: [.addData(archivePath: "second.bin", data: noise(bytes: 10_000))],
+                    options: options)
+                Issue.record("wrote over an existing set of volumes")
+            } catch SevenZipError.writeFailed(let message) {
+                #expect(message.contains("set.zip.001 already exists"), "\(message)")
+            }
+            #expect(try volumes(of: base).map { try Data(contentsOf: $0) } == before, "the old set is untouched")
+        }
+
+        /// Quick Compress names its archive itself, so it steps around a set too.
+        @Test func quickCompressNamesAroundAnExistingSet() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            try Data().write(to: dir.appendingPathComponent("photos.zip.001"))
+            #expect(CompressDestination.unique(named: "photos.zip", in: dir).lastPathComponent == "photos 2.zip")
+            #expect(CompressDestination.unique(named: "notes.zip", in: dir).lastPathComponent == "notes.zip")
+        }
+
         @Test func volumesAreNeverWrittenInPlace() throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
