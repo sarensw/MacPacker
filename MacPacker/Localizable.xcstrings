@@ -1435,7 +1435,7 @@
       "comment" : "Context menu entry in the settings list: opens a new-archive window for the selection"
     },
     "Advanced" : {
-      "comment" : "Advanced settings\nSection header of the rarely used archive options",
+      "comment" : "Advanced settings",
       "localizations" : {
         "de" : {
           "stringUnit" : {
