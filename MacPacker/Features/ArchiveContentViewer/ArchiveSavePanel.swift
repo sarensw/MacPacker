@@ -20,64 +20,28 @@ struct ArchiveSavePanelAccessoryView: View {
     var onOptions: () -> Void = {}
 
     var body: some View {
-        VStack(alignment: .trailing, spacing: 4) {
-            HStack(spacing: 16) {
-                FormatPicker(options: options) {
-                    Text("Format:", comment: "Label of the archive format picker in the save panel")
-                }
-                .fixedSize()
-                .accessibilityIdentifier("saveFormatPicker")
-
-                LevelPicker(options: options) {
-                    Text("Compression:", comment: "Label of the compression level picker in the save panel")
-                }
-                .fixedSize()
-                .accessibilityIdentifier("saveLevelPicker")
-
-                Button(action: onOptions) {
-                    Text("Options…", comment: "Button in the save panel that opens the advanced archive options")
-                }
-                .accessibilityIdentifier("saveOptionsButton")
+        HStack(spacing: 16) {
+            FormatPicker(options: options) {
+                Text("Format:", comment: "Label of the archive format picker in the save panel")
             }
-            // Always there, so what the sheet set shows where Save is clicked. The
-            // panel sizes the accessory once, so this line never comes and goes.
-            summary
-                .font(.caption)
-                .lineLimit(1)
-                .accessibilityIdentifier("saveOptionsSummary")
+            .fixedSize()
+            .accessibilityIdentifier("saveFormatPicker")
+
+            LevelPicker(options: options) {
+                Text("Compression:", comment: "Label of the compression level picker in the save panel")
+            }
+            .fixedSize()
+            .accessibilityIdentifier("saveLevelPicker")
+
+            Button(action: onOptions) {
+                Text("Options…", comment: "Button in the save panel that opens the advanced archive options")
+            }
+            .accessibilityIdentifier("saveOptionsButton")
         }
         .padding(10)
         .onChange(of: options.format) { _, newFormat in
             onFormatChange(newFormat)
         }
-    }
-
-    @ViewBuilder private var summary: some View {
-        if let problem = options.passwordProblem {
-            Text(verbatim: problem.message).foregroundStyle(.red)
-        } else {
-            Text(verbatim: summaryParts.joined(separator: " · ")).foregroundStyle(.secondary)
-        }
-    }
-
-    private var summaryParts: [String] {
-        var parts: [String] = []
-        if options.password.isEmpty {
-            parts.append(String(localized: "No password", comment: "Save panel summary: the archive is not encrypted"))
-        } else if options.format == .zip && options.encryption == .zipCrypto {
-            parts.append(String(localized: "Encrypted with ZipCrypto", comment: "Save panel summary: zip password using the old, weak ZipCrypto"))
-        } else if options.canEncryptFileNames && options.encryptFileNames {
-            parts.append(String(localized: "Encrypted, names too", comment: "Save panel summary: 7z password that also hides the file names"))
-        } else {
-            parts.append(String(localized: "Encrypted", comment: "Save panel summary: the archive gets a password"))
-        }
-        if let size = options.volumeSize {
-            parts.append(String(localized: "Split into \(sizeName(size)) volumes", comment: "Save panel summary: the archive is written as several files of this size"))
-        }
-        if options.excludeDSStore {
-            parts.append(String(localized: "Without .DS_Store files", comment: "Save panel summary: Finder's .DS_Store files are left out"))
-        }
-        return parts
     }
 }
 
@@ -88,6 +52,9 @@ struct ArchiveSavePanelAccessoryView: View {
 struct ArchiveSaveOptionsView: View {
     @ObservedObject var options: ArchiveSaveOptions
     var onDone: () -> Void
+
+    /// Fixed, so the sheet can be sized before its content exists.
+    static let size = CGSize(width: 460, height: 540)
 
     private let automatic = Text("Automatic", comment: "Picker entry that leaves a compression setting to the archive format and level")
 
@@ -230,7 +197,7 @@ struct ArchiveSaveOptionsView: View {
             }
             .padding(12)
         }
-        .frame(width: 460, height: 540)
+        .frame(width: Self.size.width, height: Self.size.height)
     }
 
     @ViewBuilder private var encryptionFooter: some View {
@@ -423,16 +390,19 @@ enum ArchiveSavePanel {
 
     /// Sheet on the save panel. Under the App Sandbox the panel is a Powerbox
     /// window hosted out of process — this is the call that has to hold up.
+    ///
+    /// The sheet goes on screen first and gets its content after. Built before
+    /// the sheet was on screen, its switches showed no knob until first clicked.
     static func presentOptions(on panel: NSSavePanel, options: ArchiveSaveOptions) {
-        var sheet: NSWindow!
-        let controller = NSHostingController(rootView: ArchiveSaveOptionsView(options: options) {
-            panel.endSheet(sheet)
-        })
-        sheet = NSWindow(contentViewController: controller)
-        sheet.styleMask = [.titled]
-        sheet.setContentSize(controller.view.fittingSize)
+        let sheet = NSWindow(
+            contentRect: NSRect(origin: .zero, size: ArchiveSaveOptionsView.size),
+            styleMask: [.titled], backing: .buffered, defer: false)
         panel.beginSheet(sheet) { _ in
             _ = sheet   // keep the sheet alive until it is dismissed
         }
+        sheet.contentView = NSHostingView(rootView: ArchiveSaveOptionsView(options: options) { [weak panel, weak sheet] in
+            guard let panel, let sheet else { return }
+            panel.endSheet(sheet)
+        })
     }
 }
