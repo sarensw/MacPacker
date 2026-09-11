@@ -404,7 +404,7 @@ extension AllCoreTests {
             SevenZipCompressionOptions(format: .zip, password: "fresh"),
             SevenZipCompressionOptions(format: .zip, password: "fresh", encryption: .zipCrypto),
         ])
-        func saveAsReencryptsUnderTheNewPassword(_ options: SevenZipCompressionOptions) throws {
+        func saveAsReencryptsUnderTheNewPassword(_ options: SevenZipCompressionOptions) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let source = try encryptedSource(in: dir)
@@ -419,15 +419,24 @@ extension AllCoreTests {
             #expect(try archiveFormat(of: saved) == options.format.rawValue)
             let reader = try SevenZipArchive(url: saved, password: "fresh")
             #expect(try reader.entries.filter { !$0.isDirectory && $0.size > 0 }.allSatisfy(\.isEncrypted))
-            let out = dir.appendingPathComponent("out")
-            try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
-            try reader.extractAll(to: out)
-            for file in FileManager.default.subpaths(atPath: original.path) ?? [] {
-                var isDirectory: ObjCBool = false
-                guard FileManager.default.fileExists(atPath: original.appendingPathComponent(file).path, isDirectory: &isDirectory),
-                      !isDirectory.boolValue else { continue }
-                #expect(try Data(contentsOf: out.appendingPathComponent(file)) == Data(contentsOf: original.appendingPathComponent(file)),
-                        "\(file) changed on the way")
+            // both engines read it back with the new password — except XAD, which
+            // cannot open a 7z whose names are encrypted
+            for engine in ZipReader.allCases {
+                let out = dir.appendingPathComponent("out-\(engine.rawValue)")
+                if engine == .xad && options.encryptFileNames {
+                    await #expect(throws: (any Error).self, "XAD opened a 7z with encrypted names") {
+                        try await extractEverything(saved, with: engine, to: out, password: "fresh")
+                    }
+                    continue
+                }
+                try await extractEverything(saved, with: engine, to: out, password: "fresh")
+                for file in FileManager.default.subpaths(atPath: original.path) ?? [] {
+                    var isDirectory: ObjCBool = false
+                    guard FileManager.default.fileExists(atPath: original.appendingPathComponent(file).path, isDirectory: &isDirectory),
+                          !isDirectory.boolValue else { continue }
+                    #expect(try Data(contentsOf: out.appendingPathComponent(file)) == Data(contentsOf: original.appendingPathComponent(file)),
+                            "\(file) changed on the way, read back through \(engine)")
+                }
             }
             // the old password no longer opens it
             let wrong = dir.appendingPathComponent("wrong")
@@ -477,22 +486,28 @@ extension AllCoreTests {
             return (url, data)
         }
 
-        private func readBack(_ archive: URL, in dir: URL) throws -> Data {
-            let out = dir.appendingPathComponent(UUID().uuidString)
-            try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
-            try SevenZipArchive(url: archive).extractAll(to: out)
-            return try Data(contentsOf: out.appendingPathComponent("input.txt"))
+        /// What each engine the app reads with gets back out of `archive`.
+        private func readBack(_ archive: URL, in dir: URL) async throws -> [(ZipReader, Data)] {
+            var contents: [(ZipReader, Data)] = []
+            for engine in ZipReader.allCases {
+                let out = dir.appendingPathComponent(UUID().uuidString)
+                try await extractEverything(archive, with: engine, to: out)
+                contents.append((engine, try Data(contentsOf: out.appendingPathComponent("input.txt"))))
+            }
+            return contents
         }
 
         @Test(arguments: MethodCase.withDictionary)
-        func everyOfferedDictionaryWorks(_ c: MethodCase) throws {
+        func everyOfferedDictionaryWorks(_ c: MethodCase) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let (input, data) = try input(for: c, in: dir)
             var packed: [UInt64: UInt64] = [:]
             for size in c.dictionarySizes {
                 let archive = try write(c, dictionary: size, input: input, into: dir)
-                #expect(try readBack(archive, in: dir) == data, "\(size) bytes")
+                for (engine, read) in try await readBack(archive, in: dir) {
+                    #expect(read == data, "\(size) bytes, read back through \(engine)")
+                }
                 packed[size] = try recordedMethod(of: archive).entry.packedSize
             }
             // the setting reaches the encoder: the smallest and the largest write
@@ -503,14 +518,16 @@ extension AllCoreTests {
         }
 
         @Test(arguments: MethodCase.withWordSize)
-        func everyOfferedWordSizeWorks(_ c: MethodCase) throws {
+        func everyOfferedWordSizeWorks(_ c: MethodCase) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let (input, data) = try input(for: c, in: dir)
             var packed: [UInt32: UInt64] = [:]
             for word in c.wordSizes {
                 let archive = try write(c, word: word, input: input, into: dir)
-                #expect(try readBack(archive, in: dir) == data, "word size \(word)")
+                for (engine, read) in try await readBack(archive, in: dir) {
+                    #expect(read == data, "word size \(word), read back through \(engine)")
+                }
                 packed[word] = try recordedMethod(of: archive).entry.packedSize
             }
             #expect(packed[c.wordSizes.first!]! != packed[c.wordSizes.last!]!,
@@ -561,25 +578,36 @@ extension AllCoreTests {
 
         /// A block is as many files as fit under the size; each block's first file
         /// carries the packed size of the whole block, the others none.
-        @Test func solidBlocksFollowTheSetting() throws {
+        @Test func solidBlocksFollowTheSetting() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             var items: [ArchiveUpdateItem] = []
+            var files: [String: Data] = [:]
             for (index, name) in ["a.txt", "b.txt", "c.txt"].enumerated() {
                 let url = dir.appendingPathComponent(name)
-                try sampleText(bytes: 400_000, seed: UInt64(index + 1)).write(to: url)
+                let data = sampleText(bytes: 400_000, seed: UInt64(index + 1))
+                try data.write(to: url)
+                files[name] = data
                 items.append(.addFile(archivePath: name, diskPath: url))
             }
-            func blocks(_ options: SevenZipCompressionOptions) throws -> Int {
+            func blocks(_ options: SevenZipCompressionOptions) async throws -> Int {
                 let url = dir.appendingPathComponent("\(UUID().uuidString).7z")
                 try SevenZipArchive.writeArchive(destination: url, items: items, options: options)
+                // however the blocks fell, both engines read every file back
+                for engine in ZipReader.allCases {
+                    let out = dir.appendingPathComponent(UUID().uuidString)
+                    try await extractEverything(url, with: engine, to: out)
+                    for (name, data) in files {
+                        #expect(try Data(contentsOf: out.appendingPathComponent(name)) == data, "\(name) through \(engine)")
+                    }
+                }
                 return try SevenZipArchive(url: url).entries.filter { $0.packedSize > 0 }.count
             }
-            #expect(try blocks(.init(format: .sevenZ)) == 1, "7z is solid by default")
-            #expect(try blocks(.init(format: .sevenZ, solidMode: false)) == 3, "non-solid: a block per file")
-            #expect(try blocks(.init(format: .sevenZ, solidBlockSize: 1 << 20)) == 2, "1 MB holds two 400 KB files")
+            #expect(try await blocks(.init(format: .sevenZ)) == 1, "7z is solid by default")
+            #expect(try await blocks(.init(format: .sevenZ, solidMode: false)) == 3, "non-solid: a block per file")
+            #expect(try await blocks(.init(format: .sevenZ, solidBlockSize: 1 << 20)) == 2, "1 MB holds two 400 KB files")
             for size in SevenZipCompressionOptions.solidBlockSizes.dropFirst() {
-                #expect(try blocks(.init(format: .sevenZ, solidBlockSize: size)) == 1, "\(size) bytes holds all three")
+                #expect(try await blocks(.init(format: .sevenZ, solidBlockSize: size)) == 1, "\(size) bytes holds all three")
             }
         }
     }
@@ -628,6 +656,18 @@ extension AllCoreTests {
 
             if let tool = sevenZipTool {
                 try sevenZip(tool, ["t", parts[0].path])
+            }
+
+            // The volumes are the archive cut into pieces. Joined again, XAD reads
+            // it, and a zip Info-ZIP too: neither shares code with 7-Zip. (The app
+            // itself opens a set only with 7-Zip.)
+            let joined = dir.appendingPathComponent("joined.\(format.rawValue)")
+            try Data(try parts.map { try Data(contentsOf: $0) }.joined()).write(to: joined)
+            let xadOut = dir.appendingPathComponent("out-xad")
+            try await extractEverything(joined, with: .xad, to: xadOut)
+            #expect(try Data(contentsOf: xadOut.appendingPathComponent("noise.bin")) == payload, "the joined volumes through XAD")
+            if format == .zip {
+                try run("/usr/bin/unzip", ["-tq", joined.path])
             }
         }
 
