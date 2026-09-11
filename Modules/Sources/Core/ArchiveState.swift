@@ -693,6 +693,21 @@ extension ArchiveState {
     /// Whether there are unsaved changes (pending additions/removals).
     public var hasPendingChanges: Bool { !diff.isEmpty }
 
+    /// The diff without the `.DS_Store` files it would add. Finder writes one into
+    /// every folder it shows, and nobody means to archive it. Only additions go —
+    /// entries the archive already holds stay — and only files named exactly
+    /// `.DS_Store`: a folder of that name is not Finder's.
+    nonisolated static func excludingDSStore(_ items: [ArchiveUpdateItem]) -> [ArchiveUpdateItem] {
+        items.filter { item in
+            switch item {
+            case .addFile(let path, _, _, _), .addData(let path, _, _, _):
+                return (path as NSString).lastPathComponent != ".DS_Store"
+            default:
+                return true
+            }
+        }
+    }
+
     /// Saves the pending changes.
     ///
     /// - For an archive loaded from disk, the changes are applied in place
@@ -705,7 +720,8 @@ extension ArchiveState {
     @discardableResult
     public func save(
         to destination: URL? = nil,
-        options: SevenZipCompressionOptions? = nil
+        options: SevenZipCompressionOptions? = nil,
+        excludeDSStore: Bool = false
     ) -> Task<Void, Never>? {
         guard !isSaving else {
             log.notice("Ignoring save — a save is already in progress")
@@ -717,7 +733,7 @@ extension ArchiveState {
         guard !diff.isEmpty || target != url else { return nil }
 
         let source = url
-        let items = diff
+        let items = excludeDSStore ? Self.excludingDSStore(diff) : diff
         // format follows the target extension; zip is the default
         let format: SevenZipCompressionOptions.Format =
             target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
@@ -771,12 +787,16 @@ extension ArchiveState {
             }
             defer { for f in accessedFiles { f.stopAccessingSecurityScopedResource() } }
 
+            // A Save As reads every entry again, so an encrypted source needs its
+            // password: the one given when it was opened, or the one asked for below.
+            let sourcePassword = source.flatMap { self.passwords[$0] }
             let work: @Sendable () throws -> Void = {
                 try SevenZipArchive.writeArchive(
                     source: source,
                     destination: target,
                     items: items,
                     options: effectiveOptions,
+                    sourcePassword: sourcePassword,
                     progress: onWriteProgress
                 )
             }
@@ -801,24 +821,60 @@ extension ArchiveState {
             return false
         }
 
+        /// The source's password was missing or wrong: asked for the way extraction
+        /// asks. A wrong one counts as a repeat request, which drops it from the
+        /// cache so the same answer is not tried again.
+        let passwordFailure: (Error) -> SevenZipError? = { error in
+            guard let error = error as? SevenZipError else { return nil }
+            switch error {
+            case .passwordMissing, .passwordWrong: return error
+            default: return nil
+            }
+        }
+
         return Task {
             do {
-                do {
-                    try await performWrite()
-                } catch where isPermissionError(error) {
-                    log.notice("Save hit a permission error — asking for folder access", context: ["target": target.lastPathComponent])
-                    guard let provider = folderAccessProvider, await provider(target) else {
-                        throw error
+                var attempt = 0
+                while true {
+                    do {
+                        do {
+                            try await performWrite()
+                        } catch where isPermissionError(error) {
+                            log.notice("Save hit a permission error — asking for folder access", context: ["target": target.lastPathComponent])
+                            guard let provider = folderAccessProvider, await provider(target) else {
+                                throw error
+                            }
+                            try await performWrite()
+                        }
+                        break
+                    } catch let failure where source != nil && attempt < 5 && passwordFailure(failure) != nil {
+                        attempt += 1
+                        var wrong = false
+                        if case .passwordWrong? = passwordFailure(failure) { wrong = true }
+                        log.notice("Save As needs the source archive's password", context: [
+                            "attempt": "\(attempt)", "wrong": "\(wrong)"
+                        ])
+                        let request = ArchivePasswordRequest(url: source!, attempt: wrong ? max(attempt, 2) : attempt)
+                        guard await makePasswordResolver()(request) != nil else { throw failure }
                     }
-                    try await performWrite()
                 }
 
                 diff.removeAll()
                 self.progress = nil
                 log.notice("Archive saved", context: ["target": target.lastPathComponent])
 
-                // reload from disk so entries and indices reflect the file
-                open(url: target)
+                // reload from disk so entries and indices reflect the file — from its
+                // first volume, when it was split
+                let written = (effectiveOptions.volumeSize ?? 0) > 0
+                    ? target.deletingLastPathComponent().appendingPathComponent(target.lastPathComponent + ".001")
+                    : target
+                open(url: written)
+                // The password was just typed for it — reopening must not ask again.
+                // Set after open(), which starts by forgetting every password, and
+                // before the first await, so the load has not asked yet.
+                if let password = effectiveOptions.password {
+                    passwords[written] = password
+                }
                 _ = try? await openTask?.value
                 self.isSaving = false
             } catch {
@@ -851,7 +907,9 @@ extension ArchiveState {
         let file = url.lastPathComponent
         for split in catalog.allSplits()
         where file.range(of: split.pattern, options: [.regularExpression, .caseInsensitive]) != nil {
-            return file.replacingOccurrences(of: split.pattern, with: ".\(split.format)",
+            // the format's extension, not its catalog id: a 7z set is "x.7z", not "x.7zip"
+            let ext = catalog.getType(for: split.format)?.extensions.first ?? split.format
+            return file.replacingOccurrences(of: split.pattern, with: ".\(ext)",
                                              options: [.regularExpression, .caseInsensitive])
         }
         return file
