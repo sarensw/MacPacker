@@ -4043,9 +4043,6 @@
     "Encrypt file names" : {
       "comment" : "Toggle that hides a 7z archive's file list behind the password"
     },
-    "Encryption" : {
-      "comment" : "Section header of the password settings in the archive options"
-    },
     "Encryption method" : {
       "comment" : "Label of the picker between AES-256 and ZipCrypto"
     },

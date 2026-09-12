@@ -406,10 +406,10 @@ final class MacPackerUITests: XCTestCase {
 
         app.buttons.matching(NSPredicate(format: "label == %@", "Options")).firstMatch.click()
 
-        let password = app.secureTextFields["quickCompress.password"].firstMatch
+        let password = app.secureTextFields["saveOptions.password"].firstMatch
         XCTAssertTrue(password.waitForExistence(timeout: 10), "the options do not show the password field")
-        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "quickCompress.volumePicker").firstMatch.exists)
-        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "quickCompress.excludeDSStore").firstMatch.exists)
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveOptions.volume").firstMatch.exists)
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveOptions.excludeDSStore").firstMatch.exists)
         XCTAssertGreaterThan(app.windows.firstMatch.frame.width, narrow, "the window did not widen for the options")
         app.terminate()
     }
@@ -585,8 +585,8 @@ final class MacPackerUITests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: dir) }
         app.buttons["saveOptionsButton"].firstMatch.click()
 
-        let password = app.secureTextFields["savePasswordField"].firstMatch
-        let verify = app.secureTextFields["savePasswordVerifyField"].firstMatch
+        let password = app.secureTextFields["saveOptions.password"].firstMatch
+        let verify = app.secureTextFields["saveOptions.passwordVerify"].firstMatch
         XCTAssertTrue(password.waitForExistence(timeout: 10), "no options sheet")
         password.click()
         password.typeText("secret")
@@ -594,7 +594,7 @@ final class MacPackerUITests: XCTestCase {
         verify.typeText("secreT")
 
         let done = app.buttons["saveOptionsDoneButton"].firstMatch
-        XCTAssertTrue(app.staticTexts["savePasswordProblem"].firstMatch.waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["saveOptions.problem"].firstMatch.waitForExistence(timeout: 5),
                       "no message for the mismatch")
         XCTAssertFalse(done.isEnabled, "Done must not close the sheet on a mismatch")
 
@@ -618,14 +618,14 @@ final class MacPackerUITests: XCTestCase {
 
         choose("7z", in: "saveFormatPicker", app)
         app.buttons["saveOptionsButton"].firstMatch.click()
-        let password = app.secureTextFields["savePasswordField"].firstMatch
+        let password = app.secureTextFields["saveOptions.password"].firstMatch
         XCTAssertTrue(password.waitForExistence(timeout: 10), "no options sheet")
         password.click()
         password.typeText("secret")
-        let verify = app.secureTextFields["savePasswordVerifyField"].firstMatch
+        let verify = app.secureTextFields["saveOptions.passwordVerify"].firstMatch
         verify.click()
         verify.typeText("secret")
-        let names = app.descendants(matching: .any).matching(identifier: "saveEncryptNamesToggle").firstMatch
+        let names = app.descendants(matching: .any).matching(identifier: "saveOptions.encryptNames").firstMatch
         XCTAssertTrue(names.exists, "7z offers to encrypt the names")
         if !isOn(names) { names.click() }
         app.buttons["saveOptionsDoneButton"].firstMatch.click()
@@ -659,7 +659,7 @@ final class MacPackerUITests: XCTestCase {
         choose("7z", in: "saveFormatPicker", app)
         choose("Fastest", in: "saveLevelPicker", app)
         app.buttons["saveOptionsButton"].firstMatch.click()
-        let exclude = app.descendants(matching: .any).matching(identifier: "saveExcludeDSStoreToggle").firstMatch
+        let exclude = app.descendants(matching: .any).matching(identifier: "saveOptions.excludeDSStore").firstMatch
         XCTAssertTrue(exclude.waitForExistence(timeout: 10), "no options sheet")
         if !isOn(exclude) { exclude.click() }
         app.buttons["saveOptionsDoneButton"].firstMatch.click()
@@ -678,10 +678,10 @@ final class MacPackerUITests: XCTestCase {
         XCTAssertEqual(again.popUpButtons["saveLevelPicker"].firstMatch.value as? String, "Fastest",
                        "7z's level was not remembered")
         again.buttons["saveOptionsButton"].firstMatch.click()
-        let excludeAgain = again.descendants(matching: .any).matching(identifier: "saveExcludeDSStoreToggle").firstMatch
+        let excludeAgain = again.descendants(matching: .any).matching(identifier: "saveOptions.excludeDSStore").firstMatch
         XCTAssertTrue(excludeAgain.waitForExistence(timeout: 10), "no options sheet")
         XCTAssertTrue(isOn(excludeAgain), "the .DS_Store choice was not remembered")
-        XCTAssertEqual((again.secureTextFields["savePasswordField"].firstMatch.value as? String) ?? "", "",
+        XCTAssertEqual((again.secureTextFields["saveOptions.password"].firstMatch.value as? String) ?? "", "",
                        "a password must never be remembered")
         again.buttons["saveOptionsDoneButton"].firstMatch.click()
         again.typeKey(.escape, modifierFlags: [])
