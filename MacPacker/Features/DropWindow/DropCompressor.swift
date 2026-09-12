@@ -70,7 +70,7 @@ final class DropCompressor: ObservableObject {
     /// reuses a bookmark on any ancestor and Downloads is entitled. Mixed
     /// selections land next to the first item, and the grant follows it.
     @discardableResult
-    func compress(files: [URL], options: SevenZipCompressionOptions) -> DropJob? {
+    func compress(files: [URL], options: SevenZipCompressionOptions, excludeDSStore: Bool = false) -> DropJob? {
         guard let first = files.first else { return nil }
         let folder = first.deletingLastPathComponent()
         let name = CompressDestination.name(files: files, target: folder, ext: options.format.rawValue)
@@ -102,7 +102,7 @@ final class DropCompressor: ObservableObject {
             for file in files {
                 state.add(url: file)
             }
-            await state.save(to: destination, options: options)?.value
+            await state.save(to: destination, options: options, excludeDSStore: excludeDSStore)?.value
 
             if let error = state.error {
                 log.error("Drop compress failed", context: ["error": error])

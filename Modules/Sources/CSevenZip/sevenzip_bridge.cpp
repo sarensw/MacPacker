@@ -262,6 +262,43 @@ public:
 
 // --- Format probing helper ---
 
+/// The callback for an archive nested inside another -- a 7z inside the "Split"
+/// level of a volume set, a file system inside a disk image. It supplies the
+/// password and nothing else: handed the volume callback as well, the zip
+/// handler inside a volume set takes itself for a multi-volume zip and stops
+/// finding its own entries. Its own flag, too: the outer open may already have
+/// asked for a password while probing the raw first volume.
+class CNestedOpenCallback final :
+    public IArchiveOpenCallback,
+    public ICryptoGetTextPassword,
+    public CMyUnknownImp
+{
+    Z7_COM_UNKNOWN_IMP_2(IArchiveOpenCallback, ICryptoGetTextPassword)
+
+    std::string _password;
+    bool _hasPassword;
+
+public:
+    bool passwordRequested = false;
+
+    explicit CNestedOpenCallback(const char *password)
+        : _password(password ? password : ""), _hasPassword(password != nullptr) {}
+
+    Z7_COM7F_IMF(SetTotal(const UInt64 *, const UInt64 *)) { return S_OK; }
+    Z7_COM7F_IMF(SetCompleted(const UInt64 *, const UInt64 *)) { return S_OK; }
+
+    Z7_COM7F_IMF(CryptoGetTextPassword(BSTR *password)) {
+        passwordRequested = true;
+        if (!_hasPassword)
+            return E_ABORT;
+        AString aPassword(_password.c_str());
+        UString uPassword;
+        ConvertUTF8ToUnicode(aPassword, uPassword);
+        *password = ::SysAllocString((const OLECHAR *)(const wchar_t *)uPassword);
+        return S_OK;
+    }
+};
+
 /// Try all registered formats against the given seekable stream.
 /// Returns S_OK on success with archiveOut set, S_FALSE if no format matched.
 static HRESULT tryOpenStream(
@@ -1133,10 +1170,22 @@ SZArchiveRef sz_open(const char *path, const char *password,
                     (void **)&subStream) != S_OK || !subStream)
                 break;
 
-            // Try to open the sub-stream as a new archive
+            // Try to open the sub-stream as a new archive, with the password: a 7z
+            // split into volumes sits inside the "Split" level, and with its names
+            // encrypted it cannot open without one. Stopping short would show the
+            // joined volumes as a single file.
             CMyComPtr<IInArchive> innerArchive;
-            if (tryOpenStream(subStream, innerArchive) != S_OK)
+            CNestedOpenCallback *nestedSpec = new CNestedOpenCallback(password);
+            CMyComPtr<IArchiveOpenCallback> nestedCallback = nestedSpec;
+            if (tryOpenStream(subStream, innerArchive, nestedCallback) != S_OK) {
+                if (nestedSpec->passwordRequested) {
+                    if (needs_password_out) *needs_password_out = true;
+                    if (error_out) *error_out = strdup("The archive header is encrypted");
+                    delete handle;
+                    return nullptr;
+                }
                 break;
+            }
 
             // Push the new level
             SZArchiveLevel level;
@@ -1220,19 +1269,28 @@ int32_t sz_sidecar_target(SZArchiveRef archive, uint32_t index) {
     return -1;
 }
 
-const char *sz_entry_path(SZArchiveRef archive, uint32_t index) {
+/// A string property of one entry, kept alive by the handle; NULL when absent.
+static const char *entryString(SZArchiveRef archive, uint32_t index, PROPID propID) {
     if (!archive) return nullptr;
     try {
         auto *handle = static_cast<SZArchiveHandle *>(archive);
         if (index >= handle->numItems) return nullptr;
         NWindows::NCOM::CPropVariant prop;
-        if (handle->activeArchive()->GetProperty(index, kpidPath, &prop) != S_OK
+        if (handle->activeArchive()->GetProperty(index, propID, &prop) != S_OK
             || prop.vt != VT_BSTR || !prop.bstrVal)
             return nullptr;
         return handle->storeString(UStringToUTF8(UString(prop.bstrVal)));
     } catch (...) {
         return nullptr;
     }
+}
+
+const char *sz_entry_path(SZArchiveRef archive, uint32_t index) {
+    return entryString(archive, index, kpidPath);
+}
+
+const char *sz_entry_method(SZArchiveRef archive, uint32_t index) {
+    return entryString(archive, index, kpidMethod);
 }
 
 bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {

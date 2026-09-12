@@ -187,12 +187,28 @@ extension AllCoreTests {
             #expect(detector.getNameWithoutExtension(for: url) == "split_pk")
         }
 
+        // MARK: - 7z volumes
+
+        /// 7-Zip names 7z volumes like split zips: `.7z.001` onwards, three digits
+        /// at least. MacPacker writes them that way too.
+        @Test func sevenZipVolumeSuffixStripped() {
+            for file in ["MyArchive.7z.001", "MyArchive.7z.002", "MyArchive.7z.0001", "MyArchive.7Z.013"] {
+                #expect(folderName(file) == "MyArchive", "\(file)")
+            }
+            for part in ["set.7z.001", "set.7z.002", "set.7z.003"] {
+                #expect(folderName(part) == "set", "\(part)")
+            }
+            // two digits are not a volume, and neither is a bare `.7z`
+            #expect(folderName("photo.7z.99") == "photo.7z.99")
+            #expect(folderName("photo.7z") == "photo")
+        }
+
         // MARK: - Tripwire
 
         /// Naming samples above are hand-written per scheme (a regex gives no
         /// sample name). A new split entry must arrive with its own cases.
         @Test func everySplitSchemeHasNamingSamples() {
-            #expect(Set(catalog.allSplits().map(\.id)) == ["zip-spanned", "zip-numeric"])
+            #expect(Set(catalog.allSplits().map(\.id)) == ["zip-spanned", "zip-numeric", "7z-numeric"])
         }
     }
 }

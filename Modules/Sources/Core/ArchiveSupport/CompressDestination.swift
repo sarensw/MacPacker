@@ -23,15 +23,21 @@ public enum CompressDestination {
 
     /// First non-existing variant of `name` in `dir`: "x.zip", "x 2.zip", "x 3.zip", …
     /// Never overwrites — a repeated drop of the same selection makes a new file.
+    /// A split archive's first volume ("x.zip.001") holds the name as well.
     public static func unique(named name: String, in dir: URL) -> URL {
         let stem = (name as NSString).deletingPathExtension
         let ext = (name as NSString).pathExtension
         var candidate = dir.appendingPathComponent(name)
         var counter = 2
-        while FileManager.default.fileExists(atPath: candidate.path) {
+        while taken(candidate) {
             candidate = dir.appendingPathComponent("\(stem) \(counter).\(ext)")
             counter += 1
         }
         return candidate
+    }
+
+    private static func taken(_ url: URL) -> Bool {
+        FileManager.default.fileExists(atPath: url.path)
+            || FileManager.default.fileExists(atPath: url.path + ".001")
     }
 }
