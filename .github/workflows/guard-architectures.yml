@@ -1,0 +1,49 @@
+# ── Architecture guard ────────────────────────────────────────────────────────
+# macOS 27 is the last release that runs Intel-only apps under Rosetta on Apple
+# silicon, so everything shipped inside MacPacker.app needs an arm64 slice.
+#
+# Linked code cannot regress unnoticed — a dependency without arm64 fails the
+# link. This job covers what is only copied into the bundle: helper tools, XPC
+# services and nested apps inside a binary dependency, whose slices nothing
+# looks at today.
+#
+# Only triggers when a pull request touches the dependency pins or the project
+# file, since nothing else changes which binaries get bundled. Because of that
+# paths filter this workflow does not report on most pull requests, so it must
+# NOT be configured as a required status check — required checks that never
+# report block merging.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Guard Architectures
+
+on:
+  pull_request:
+    paths:
+      - 'Modules/Package.swift'
+      - 'Modules/Package.resolved'
+      - 'MacPacker.xcodeproj/project.pbxproj'
+      - 'MacPacker.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved'
+      - 'scripts/check-architectures.sh'
+      - '.github/workflows/guard-architectures.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      # Unsigned, so a pull request from a fork needs no secrets.
+      - name: Build the app
+        run: |
+          xcodebuild -scheme MacPacker -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" \
+            -quiet build
+
+      - name: Check every bundled binary for an arm64 slice
+        run: scripts/check-architectures.sh build/Build/Products/Release/MacPacker.app
