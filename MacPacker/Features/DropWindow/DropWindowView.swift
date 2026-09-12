@@ -23,8 +23,6 @@ struct DropWindowView: View {
 
     /// Owns both the writing and the list of rows shown below the drop area.
     @ObservedObject var compressor: DropCompressor
-    /// Every setting, as a sheet on the window — which only the controller has.
-    var showAllOptions: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -44,7 +42,8 @@ struct DropWindowView: View {
         }
         // clears the titlebar, which `.fullSizeContentView` runs the content under
         .padding(.top, 28)
-        .frame(width: 300)
+        // wide enough for the options while they are open, narrow again after
+        .frame(width: optionsExpanded ? 420 : 300)
         .background(WindowDragArea(canMove: true))
         // The drag lights the whole window — the window *is* the target. One fill
         // whose opacity animates, never two fills swapped: swapping the shape
@@ -133,38 +132,109 @@ struct DropWindowView: View {
         .padding(.vertical, 9)
     }
 
-    /// A menu, not a segmented control: segmented needs room for every label at
-    /// once, and translated level names blow past this card's width (Italian wants
-    /// 643pt against 248pt). A menu is bounded by the longest single name. The
-    /// rest opens as a sheet: the one the save panel shows.
+    /// Every setting the save panel offers, in the window itself: a drop happens
+    /// in one gesture, so the settings behind it should not need a second one.
+    ///
+    /// Menus, not segmented controls: segmented needs room for every label at
+    /// once, and translated names blow past this card's width (Italian wants
+    /// 643pt against 248pt). A menu is bounded by the longest single name.
     private var optionsPanel: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                Text("Compression Level", comment: "Row label in the Quick Compress options: how hard to compress.")
-                Spacer(minLength: 0)
+        VStack(alignment: .leading, spacing: 8) {
+            row(Text("Compression", comment: "Label of the compression level picker in the archive options")) {
                 LevelPicker(options: options) {
                     EmptyView()   // the row already carries the label
                 }
                 .labelsHidden()
                 .fixedSize()
             }
+            row(Text("Split into volumes", comment: "Label of the picker that writes the archive as several files of a given size")) {
+                VolumeControl(options: options)
+                    .fixedSize()
+                    .accessibilityIdentifier("quickCompress.volumePicker")
+            }
+
             Divider()
-                .padding(.vertical, 8)
-            HStack {
-                Spacer(minLength: 0)
-                Button(action: showAllOptions) {
-                    Text("All Options…", comment: "Button in the Quick Compress options that opens every compression setting: password, split volumes, method and more.")
+
+            row(Text("Password", comment: "Label of the password field in the archive options")) {
+                SecureField(text: $options.password) { EmptyView() }
+                    .labelsHidden()
+                    .frame(width: fieldWidth)
+                    .accessibilityIdentifier("quickCompress.password")
+            }
+            row(Text("Verify", comment: "Label of the field that repeats the archive password")) {
+                SecureField(text: $options.passwordConfirmation) { EmptyView() }
+                    .labelsHidden()
+                    .frame(width: fieldWidth)
+                    .accessibilityIdentifier("quickCompress.passwordVerify")
+            }
+            if options.encryptions.count > 1 {
+                row(Text("Encryption method", comment: "Label of the picker between AES-256 and ZipCrypto")) {
+                    EncryptionControl(options: options).fixedSize()
                 }
-                .accessibilityIdentifier("quickCompress.allOptions")
+            }
+            if options.canEncryptFileNames {
+                row(Text("Encrypt file names", comment: "Toggle that hides a 7z archive's file list behind the password")) {
+                    Toggle(isOn: $options.encryptFileNames) { EmptyView() }
+                        .labelsHidden()
+                }
+            }
+            if let problem = options.passwordProblem {
+                Text(verbatim: problem.message)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("quickCompress.passwordProblem")
+            }
+
+            Divider()
+
+            Group {
+                row(Text("Method", comment: "Label of the compression method picker in the archive options")) {
+                    MethodControl(options: options).fixedSize()
+                }
+                if !options.dictionarySizes.isEmpty {
+                    row(Text("Dictionary size", comment: "Label of the compression dictionary size picker in the archive options")) {
+                        DictionaryControl(options: options).fixedSize()
+                    }
+                }
+                if !options.wordSizes.isEmpty {
+                    row(Text("Word size", comment: "Label of the compression word size picker in the archive options (7-Zip's term)")) {
+                        WordSizeControl(options: options).fixedSize()
+                    }
+                }
+                if options.hasSolidBlocks {
+                    row(Text("Solid block size", comment: "Label of the 7z solid block size picker in the archive options")) {
+                        SolidControl(options: options).fixedSize()
+                    }
+                }
+            }
+            // at Store nothing is compressed, so these do nothing
+            .disabled(!options.compresses)
+
+            row(Text("Exclude .DS_Store files", comment: "Toggle that leaves Finder's hidden .DS_Store files out of the archive")) {
+                Toggle(isOn: $options.excludeDSStore) { EmptyView() }
+                    .labelsHidden()
+                    .accessibilityIdentifier("quickCompress.excludeDSStore")
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
+        .padding(12)
         .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.05)))
         .background(WindowDragArea(canMove: false))
         .padding(.horizontal, 14)
         .padding(.bottom, 14)
     }
+
+    /// Label left, control right, as every row in this card.
+    @ViewBuilder
+    private func row<Control: View>(_ label: Text, @ViewBuilder _ control: () -> Control) -> some View {
+        HStack(spacing: 12) {
+            label
+            Spacer(minLength: 8)
+            control()
+        }
+    }
+
+    private var fieldWidth: CGFloat { 170 }
 
     // MARK: - Drop
 

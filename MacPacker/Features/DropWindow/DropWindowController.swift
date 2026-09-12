@@ -56,17 +56,8 @@ final class DropWindowController {
         return compressor.compress(files: files, options: settings.options, excludeDSStore: settings.excludeDSStore)
     }
 
-    /// Every setting, as a sheet on the panel: the sheet the save panel shows,
-    /// bound to Quick Compress's own settings.
-    private func showAllOptions() {
-        guard let panel, panel.attachedSheet == nil else { return }
-        ArchiveSavePanel.presentOptions(on: panel, options: CompressSettings.shared)
-    }
-
     private func makePanel() -> NSPanel {
-        let hostingView = NSHostingView(rootView: DropWindowView(
-            compressor: compressor,
-            showAllOptions: { [weak self] in self?.showAllOptions() }))
+        let hostingView = NSHostingView(rootView: DropWindowView(compressor: compressor))
         hostingView.frame.size = hostingView.fittingSize
 
         let panel = DropPanel(
@@ -153,8 +144,12 @@ final class DropPanel: NSPanel {
     override func setFrame(_ frameRect: NSRect, display flag: Bool) {
         var rect = frameRect
         // only content-driven resizes; a user drag moves the origin too
-        if rect.height != frame.height, rect.origin == frame.origin {
+        if rect.size != frame.size, rect.origin == frame.origin {
             rect.origin.y = frame.maxY - rect.height
+            // the options also make the window wider: keep it on its screen
+            if let visible = (screen ?? NSScreen.main)?.visibleFrame, rect.maxX > visible.maxX {
+                rect.origin.x = max(visible.minX, visible.maxX - rect.width)
+            }
         }
         super.setFrame(rect, display: flag)
     }

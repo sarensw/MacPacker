@@ -396,21 +396,21 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
-    /// Quick Compress offers every option the save panel does: All Options… opens
-    /// the same sheet over the Quick Compress window.
+    /// Quick Compress offers every option the save panel does, in the window
+    /// itself: opening the options shows them and widens the window.
     func testQuickCompressOffersEveryOption() throws {
-        let app = launchApp(arguments: ["-DropWindow", "1", "-dropWindowOptionsExpanded", "YES"])
-        let allOptions = app.buttons["quickCompress.allOptions"].firstMatch
-        XCTAssertTrue(allOptions.waitForExistence(timeout: 15), "no All Options… in the Quick Compress window")
-        allOptions.click()
+        let app = launchApp(arguments: ["-DropWindow", "1", "-dropWindowOptionsExpanded", "NO"])
+        let dropArea = app.descendants(matching: .any)["quickCompress.dropArea"].firstMatch
+        XCTAssertTrue(dropArea.waitForExistence(timeout: 15), "the drop window did not open")
+        let narrow = app.windows.firstMatch.frame.width
 
-        XCTAssertTrue(app.secureTextFields["savePasswordField"].firstMatch.waitForExistence(timeout: 10),
-                      "no options sheet over the Quick Compress window")
-        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveVolumePicker").firstMatch.exists)
-        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveExcludeDSStoreToggle").firstMatch.exists)
-        let done = app.buttons["saveOptionsDoneButton"].firstMatch
-        done.click()
-        XCTAssertTrue(done.waitForNonExistence(timeout: 5), "the options sheet did not close")
+        app.buttons.matching(NSPredicate(format: "label == %@", "Options")).firstMatch.click()
+
+        let password = app.secureTextFields["quickCompress.password"].firstMatch
+        XCTAssertTrue(password.waitForExistence(timeout: 10), "the options do not show the password field")
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "quickCompress.volumePicker").firstMatch.exists)
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "quickCompress.excludeDSStore").firstMatch.exists)
+        XCTAssertGreaterThan(app.windows.firstMatch.frame.width, narrow, "the window did not widen for the options")
         app.terminate()
     }
 
