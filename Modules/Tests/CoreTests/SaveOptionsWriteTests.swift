@@ -15,11 +15,32 @@ import Swift7zip
 
 // MARK: - Helpers
 
-/// Homebrew's 7-Zip, when installed: the one reader outside this code base that
-/// understands every format and cipher written here. Tests use it when it is
-/// there and are complete without it.
-private let sevenZipTool = ["/opt/homebrew/bin/7zz", "/usr/local/bin/7zz"]
-    .first { FileManager.default.isExecutableFile(atPath: $0) }
+/// A 7-Zip command line: the one reader outside this code base that understands
+/// every format and cipher written here. Homebrew installs it as `7zz`, the
+/// macOS runners carry p7zip's `7z`, so the name is searched for, not assumed.
+private let sevenZipToolPath: String? = {
+    let names = ["7zz", "7z", "7za"]
+    let path = ProcessInfo.processInfo.environment["PATH"] ?? ""
+    let directories = ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"]
+        + path.split(separator: ":").map(String.init)
+    for directory in directories {
+        for name in names where FileManager.default.isExecutableFile(atPath: "\(directory)/\(name)") {
+            return "\(directory)/\(name)"
+        }
+    }
+    return nil
+}()
+
+/// The 7-Zip to check against, or a failed test.
+///
+/// It used to be optional — "used when it is there" — and only ever looked for
+/// `7zz`, which no hosted runner has: every check against 7-Zip itself quietly
+/// did nothing on CI, which is worse than not having one.
+private func sevenZipTool(sourceLocation: SourceLocation = #_sourceLocation) throws -> String {
+    try #require(sevenZipToolPath,
+                 "No 7-Zip command line found. Install one with `brew install sevenzip`.",
+                 sourceLocation: sourceLocation)
+}
 
 /// Runs `7zz`. It decodes its arguments by the locale, which a test process need
 /// not have; without UTF-8 a Unicode password reaches it mangled.
@@ -310,8 +331,8 @@ extension AllCoreTests {
             // "ä" would reach 7zz as "a" plus a combining umlaut — a different
             // password. Both engines above already read those archives.
             let decomposes = Array(c.password.utf8) != Array(c.password.decomposedStringWithCanonicalMapping.utf8)
-            if let tool = sevenZipTool, !decomposes {
-                try sevenZip(tool, ["t", "-p\(c.password)", archive.path])
+            if !decomposes {
+                try sevenZip(sevenZipTool(), ["t", "-p\(c.password)", archive.path])
             }
         }
 
@@ -654,9 +675,7 @@ extension AllCoreTests {
             let names = state.entries.values.compactMap(\.virtualPath)
             #expect(names.contains("noise.bin"), "\(names)")
 
-            if let tool = sevenZipTool {
-                try sevenZip(tool, ["t", parts[0].path])
-            }
+            try sevenZip(sevenZipTool(), ["t", parts[0].path])
 
             // The volumes are the archive cut into pieces. Joined again, XAD reads
             // it, and a zip Info-ZIP too: neither shares code with 7-Zip. (The app

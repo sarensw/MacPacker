@@ -61,3 +61,7 @@ jobs:
       run-tests: true
       test-runner: swift
       swift-package-path: Modules
+      # The Swift tests check their archives against the current 7-Zip (`7zz`);
+      # the runner image ships only p7zip 17.05 as `7z`. Installed through the
+      # shared pre-build hook, so nothing app-specific lives in workflows-macos.
+      pre-build-script: .ci/install-sevenzip.sh
