@@ -56,8 +56,6 @@ struct ArchiveSaveOptionsView: View {
     /// Fixed, so the sheet can be sized before its content exists.
     static let size = CGSize(width: 460, height: 540)
 
-    private let automatic = Text("Automatic", comment: "Picker entry that leaves a compression setting to the archive format and level")
-
     var body: some View {
         VStack(spacing: 0) {
             Form {
@@ -72,16 +70,12 @@ struct ArchiveSaveOptionsView: View {
                     }
                     .accessibilityIdentifier("saveOptionsLevelPicker")
 
-                    Picker(selection: $options.volumeSize) {
-                        Text("Don't split", comment: "Split choice: write the archive as a single file")
-                            .tag(UInt64?.none)
-                        ForEach(options.volumeSizes, id: \.self) { size in
-                            Text(verbatim: sizeName(size)).tag(UInt64?.some(size))
-                        }
+                    LabeledContent {
+                        VolumeControl(options: options)
+                            .accessibilityIdentifier("saveVolumePicker")
                     } label: {
                         Text("Split into volumes", comment: "Label of the picker that writes the archive as several files of a given size")
                     }
-                    .accessibilityIdentifier("saveVolumePicker")
                 }
 
                 Section {
@@ -97,14 +91,12 @@ struct ArchiveSaveOptionsView: View {
 
                     // zip can still use ZipCrypto for old tools; 7z is AES-256 only
                     if options.encryptions.count > 1 {
-                        Picker(selection: $options.encryption) {
-                            ForEach(options.encryptions, id: \.self) { encryption in
-                                Text(verbatim: encryption.displayName).tag(encryption)
-                            }
+                        LabeledContent {
+                            EncryptionControl(options: options)
+                                .accessibilityIdentifier("saveEncryptionPicker")
                         } label: {
                             Text("Encryption method", comment: "Label of the picker between AES-256 and ZipCrypto")
                         }
-                        .accessibilityIdentifier("saveEncryptionPicker")
                     }
 
                     // a zip always lists its file names in the clear
@@ -123,54 +115,38 @@ struct ArchiveSaveOptionsView: View {
                 Section {
                     // At Store nothing is compressed, so these do nothing.
                     Group {
-                        Picker(selection: $options.method) {
-                            automatic.tag(SevenZipCompressionOptions.Method?.none)
-                            ForEach(options.methods, id: \.self) { method in
-                                Text(verbatim: method.displayName).tag(SevenZipCompressionOptions.Method?.some(method))
-                            }
+                        LabeledContent {
+                            MethodControl(options: options)
+                                .accessibilityIdentifier("saveMethodPicker")
                         } label: {
                             Text("Method", comment: "Label of the compression method picker in the archive options")
                         }
-                        .accessibilityIdentifier("saveMethodPicker")
 
                         if !options.dictionarySizes.isEmpty {
-                            Picker(selection: $options.dictionarySize) {
-                                automatic.tag(UInt64?.none)
-                                ForEach(options.dictionarySizes, id: \.self) { size in
-                                    Text(verbatim: sizeName(size)).tag(UInt64?.some(size))
-                                }
+                            LabeledContent {
+                                DictionaryControl(options: options)
+                                    .accessibilityIdentifier("saveDictionaryPicker")
                             } label: {
                                 Text("Dictionary size", comment: "Label of the compression dictionary size picker in the archive options")
                             }
-                            .accessibilityIdentifier("saveDictionaryPicker")
                         }
 
                         if !options.wordSizes.isEmpty {
-                            Picker(selection: $options.wordSize) {
-                                automatic.tag(UInt32?.none)
-                                ForEach(options.wordSizes, id: \.self) { size in
-                                    Text(verbatim: "\(size)").tag(UInt32?.some(size))
-                                }
+                            LabeledContent {
+                                WordSizeControl(options: options)
+                                    .accessibilityIdentifier("saveWordSizePicker")
                             } label: {
                                 Text("Word size", comment: "Label of the compression word size picker in the archive options (7-Zip's term)")
                             }
-                            .accessibilityIdentifier("saveWordSizePicker")
                         }
 
                         if options.hasSolidBlocks {
-                            Picker(selection: $options.solidBlockSize) {
-                                automatic.tag(UInt64?.none)
-                                Text("Non-solid", comment: "Solid block choice: every file compressed on its own")
-                                    .tag(UInt64?.some(0))
-                                ForEach(options.solidBlockSizes.filter { $0 != .max }, id: \.self) { size in
-                                    Text(verbatim: sizeName(size)).tag(UInt64?.some(size))
-                                }
-                                Text("Solid", comment: "Solid block choice: all files compressed as one block")
-                                    .tag(UInt64?.some(.max))
+                            LabeledContent {
+                                SolidControl(options: options)
+                                    .accessibilityIdentifier("saveSolidPicker")
                             } label: {
                                 Text("Solid block size", comment: "Label of the 7z solid block size picker in the archive options")
                             }
-                            .accessibilityIdentifier("saveSolidPicker")
                         }
                     }
                     .disabled(!options.compresses)
@@ -213,6 +189,114 @@ struct ArchiveSaveOptionsView: View {
             }
         }
     }
+}
+
+/// The option controls themselves, without labels. The save panel's sheet and
+/// the Quick Compress window lay them out differently, but the choices in each
+/// menu are written once.
+struct VolumeControl: View {
+    @ObservedObject var options: ArchiveSaveOptions
+
+    var body: some View {
+        Picker(selection: $options.volumeSize) {
+            Text("Don't split", comment: "Split choice: write the archive as a single file")
+                .tag(UInt64?.none)
+            ForEach(options.volumeSizes, id: \.self) { size in
+                Text(verbatim: sizeName(size)).tag(UInt64?.some(size))
+            }
+        } label: {
+            EmptyView()
+        }
+        .labelsHidden()
+    }
+}
+
+struct EncryptionControl: View {
+    @ObservedObject var options: ArchiveSaveOptions
+
+    var body: some View {
+        Picker(selection: $options.encryption) {
+            ForEach(options.encryptions, id: \.self) { encryption in
+                Text(verbatim: encryption.displayName).tag(encryption)
+            }
+        } label: {
+            EmptyView()
+        }
+        .labelsHidden()
+    }
+}
+
+struct MethodControl: View {
+    @ObservedObject var options: ArchiveSaveOptions
+
+    var body: some View {
+        Picker(selection: $options.method) {
+            automaticEntry().tag(SevenZipCompressionOptions.Method?.none)
+            ForEach(options.methods, id: \.self) { method in
+                Text(verbatim: method.displayName).tag(SevenZipCompressionOptions.Method?.some(method))
+            }
+        } label: {
+            EmptyView()
+        }
+        .labelsHidden()
+    }
+}
+
+struct DictionaryControl: View {
+    @ObservedObject var options: ArchiveSaveOptions
+
+    var body: some View {
+        Picker(selection: $options.dictionarySize) {
+            automaticEntry().tag(UInt64?.none)
+            ForEach(options.dictionarySizes, id: \.self) { size in
+                Text(verbatim: sizeName(size)).tag(UInt64?.some(size))
+            }
+        } label: {
+            EmptyView()
+        }
+        .labelsHidden()
+    }
+}
+
+struct WordSizeControl: View {
+    @ObservedObject var options: ArchiveSaveOptions
+
+    var body: some View {
+        Picker(selection: $options.wordSize) {
+            automaticEntry().tag(UInt32?.none)
+            ForEach(options.wordSizes, id: \.self) { size in
+                Text(verbatim: "\(size)").tag(UInt32?.some(size))
+            }
+        } label: {
+            EmptyView()
+        }
+        .labelsHidden()
+    }
+}
+
+struct SolidControl: View {
+    @ObservedObject var options: ArchiveSaveOptions
+
+    var body: some View {
+        Picker(selection: $options.solidBlockSize) {
+            automaticEntry().tag(UInt64?.none)
+            Text("Non-solid", comment: "Solid block choice: every file compressed on its own")
+                .tag(UInt64?.some(0))
+            ForEach(options.solidBlockSizes.filter { $0 != .max }, id: \.self) { size in
+                Text(verbatim: sizeName(size)).tag(UInt64?.some(size))
+            }
+            Text("Solid", comment: "Solid block choice: all files compressed as one block")
+                .tag(UInt64?.some(.max))
+        } label: {
+            EmptyView()
+        }
+        .labelsHidden()
+    }
+}
+
+/// The entry that leaves a setting to the format and the level.
+func automaticEntry() -> Text {
+    Text("Automatic", comment: "Picker entry that leaves a compression setting to the archive format and level")
 }
 
 /// Format picker, the same in the panel and in the sheet.

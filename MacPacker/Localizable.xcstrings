@@ -1529,9 +1529,6 @@
         }
       }
     },
-    "All Options…" : {
-      "comment" : "Button in the Quick Compress options that opens every compression setting: password, split volumes, method and more."
-    },
     "An extraction is still in progress" : {
       "comment" : "Title of the alert shown when the user quits while an extraction is running.",
       "localizations" : {
@@ -2892,101 +2889,6 @@
     },
     "Compression" : {
       "comment" : "Label of the compression level picker in the archive options"
-    },
-    "Compression Level" : {
-      "comment" : "Row label in the Quick Compress options: how hard to compress.",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kompressionsgrad"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compression level"
-          }
-        },
-        "es-MX" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nivel de compresión"
-          }
-        },
-        "fa" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "سطح فشردگی"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Taux de compression"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Livello di compressione"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "圧縮レベル"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "압축 단계"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compressieniveau"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Poziom kompresji"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nível de compressão"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Степень сжатия"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sıkıştırma oranı"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Рівень стиснення"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "压缩率"
-          }
-        }
-      }
     },
     "Compression:" : {
       "comment" : "Label of the compression level picker in the save panel"
