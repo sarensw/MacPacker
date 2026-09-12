@@ -228,6 +228,41 @@ struct MethodCase: Sendable, CustomTestStringConvertible {
 
 extension AllCoreTests {
 
+    // MARK: - The outside reader
+
+    /// Every check in this file leans on a 7-Zip outside this code base. It used
+    /// to be skipped when missing, which on a hosted runner meant always, so the
+    /// run now says which 7-Zip did the work and proves it can do it.
+    struct SevenZipOracleTests {
+
+        @Test func theOracleSaysWhatItIs() throws {
+            let tool = try sevenZipTool()
+            let banner = try sevenZip(tool, ["i"])
+                .split(separator: "\n")
+                .prefix(4)
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty }
+                .joined(separator: " · ")
+            print("7-Zip oracle: \(tool) — \(banner)")
+            #expect(banner.contains("7-Zip"), "\(tool) does not look like a 7-Zip: \(banner)")
+        }
+
+        /// And it has to read what the writer writes, cipher included. A build too
+        /// old for AES would pass every archive back as unreadable, which would
+        /// make each check against it worthless.
+        @Test(arguments: SevenZipCompressionOptions.Format.allCases)
+        func theOracleReadsWhatTheWriterWrites(_ format: SevenZipCompressionOptions.Format) throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = dir.appendingPathComponent("oracle.\(format.rawValue)")
+            try SevenZipArchive.writeArchive(
+                destination: archive,
+                items: [.addData(archivePath: "a.txt", data: sampleText(bytes: 20_000, seed: 9))],
+                options: .init(format: format, password: "password", encryptFileNames: format == .sevenZ))
+            try sevenZip(sevenZipTool(), ["t", "-ppassword", archive.path])
+        }
+    }
+
     // MARK: - Encryption
 
     /// Every way to encrypt: the archive must need its password, name its cipher,
