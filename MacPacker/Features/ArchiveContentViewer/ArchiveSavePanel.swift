@@ -45,122 +45,20 @@ struct ArchiveSavePanelAccessoryView: View {
     }
 }
 
-/// Everything else, as a sheet over the save panel: a grouped form, the System
-/// Settings arrangement, instead of 7-Zip's everything-at-once grid. Only what
-/// works on macOS is here — no self-extracting archives, update modes, thread
-/// counts or raw 7-Zip parameters.
+/// The save panel's options, as a sheet: the same rows the Quick Compress
+/// window shows, with a Done button under them.
 struct ArchiveSaveOptionsView: View {
     @ObservedObject var options: ArchiveSaveOptions
     var onDone: () -> Void
 
-    /// Fixed, so the sheet can be sized before its content exists.
-    static let size = CGSize(width: 460, height: 540)
+    /// As wide as the Quick Compress window's options. The height follows the
+    /// rows, which come and go with the format.
+    static let width: CGFloat = 420
 
     var body: some View {
         VStack(spacing: 0) {
-            Form {
-                Section {
-                    FormatPicker(options: options) {
-                        Text("Format", comment: "Label of the archive format picker in the archive options")
-                    }
-                    .accessibilityIdentifier("saveOptionsFormatPicker")
-
-                    LevelPicker(options: options) {
-                        Text("Compression", comment: "Label of the compression level picker in the archive options")
-                    }
-                    .accessibilityIdentifier("saveOptionsLevelPicker")
-
-                    LabeledContent {
-                        VolumeControl(options: options)
-                            .accessibilityIdentifier("saveVolumePicker")
-                    } label: {
-                        Text("Split into volumes", comment: "Label of the picker that writes the archive as several files of a given size")
-                    }
-                }
-
-                Section {
-                    SecureField(text: $options.password) {
-                        Text("Password", comment: "Label of the password field in the archive options")
-                    }
-                    .accessibilityIdentifier("savePasswordField")
-
-                    SecureField(text: $options.passwordConfirmation) {
-                        Text("Verify", comment: "Label of the field that repeats the archive password")
-                    }
-                    .accessibilityIdentifier("savePasswordVerifyField")
-
-                    // zip can still use ZipCrypto for old tools; 7z is AES-256 only
-                    if options.encryptions.count > 1 {
-                        LabeledContent {
-                            EncryptionControl(options: options)
-                                .accessibilityIdentifier("saveEncryptionPicker")
-                        } label: {
-                            Text("Encryption method", comment: "Label of the picker between AES-256 and ZipCrypto")
-                        }
-                    }
-
-                    // a zip always lists its file names in the clear
-                    if options.canEncryptFileNames {
-                        Toggle(isOn: $options.encryptFileNames) {
-                            Text("Encrypt file names", comment: "Toggle that hides a 7z archive's file list behind the password")
-                        }
-                        .accessibilityIdentifier("saveEncryptNamesToggle")
-                    }
-                } header: {
-                    Text("Encryption", comment: "Section header of the password settings in the archive options")
-                } footer: {
-                    encryptionFooter
-                }
-
-                Section {
-                    // At Store nothing is compressed, so these do nothing.
-                    Group {
-                        LabeledContent {
-                            MethodControl(options: options)
-                                .accessibilityIdentifier("saveMethodPicker")
-                        } label: {
-                            Text("Method", comment: "Label of the compression method picker in the archive options")
-                        }
-
-                        if !options.dictionarySizes.isEmpty {
-                            LabeledContent {
-                                DictionaryControl(options: options)
-                                    .accessibilityIdentifier("saveDictionaryPicker")
-                            } label: {
-                                Text("Dictionary size", comment: "Label of the compression dictionary size picker in the archive options")
-                            }
-                        }
-
-                        if !options.wordSizes.isEmpty {
-                            LabeledContent {
-                                WordSizeControl(options: options)
-                                    .accessibilityIdentifier("saveWordSizePicker")
-                            } label: {
-                                Text("Word size", comment: "Label of the compression word size picker in the archive options (7-Zip's term)")
-                            }
-                        }
-
-                        if options.hasSolidBlocks {
-                            LabeledContent {
-                                SolidControl(options: options)
-                                    .accessibilityIdentifier("saveSolidPicker")
-                            } label: {
-                                Text("Solid block size", comment: "Label of the 7z solid block size picker in the archive options")
-                            }
-                        }
-                    }
-                    .disabled(!options.compresses)
-
-                    Toggle(isOn: $options.excludeDSStore) {
-                        Text("Exclude .DS_Store files", comment: "Toggle that leaves Finder's hidden .DS_Store files out of the archive")
-                    }
-                    .accessibilityIdentifier("saveExcludeDSStoreToggle")
-                } header: {
-                    Text("Advanced", comment: "Advanced settings")
-                }
-            }
-            .formStyle(.grouped)
-
+            SaveOptionsRows(options: options)
+                .padding(16)
             Divider()
             HStack {
                 Spacer()
@@ -173,21 +71,145 @@ struct ArchiveSaveOptionsView: View {
             }
             .padding(12)
         }
-        .frame(width: Self.size.width, height: Self.size.height)
+        .frame(width: Self.width)
     }
+}
 
-    @ViewBuilder private var encryptionFooter: some View {
-        if let problem = options.passwordProblem {
-            Text(verbatim: problem.message)
-                .foregroundStyle(.red)
-                .accessibilityIdentifier("savePasswordProblem")
-        } else if !options.password.isEmpty && options.format == .zip {
-            if options.encryption == .zipCrypto {
-                Text("ZipCrypto is easily broken. Pick it only for tools that cannot open AES-256.", comment: "Footer under the archive password when the weak ZipCrypto is picked")
-            } else {
-                Text("File names stay readable in a zip archive. 7z can encrypt them too.", comment: "Footer under the archive password for zip archives")
+/// Every save option, as label-and-control rows. Rows rather than a grouped
+/// form: the values line up in one column, a password field looks like a field,
+/// and the whole set fits without scrolling. Only what works on macOS is here —
+/// no self-extracting archives, update modes, thread counts or raw 7-Zip
+/// parameters.
+struct SaveOptionsRows: View {
+    @ObservedObject var options: ArchiveSaveOptions
+    /// Quick Compress keeps its format menu in the titlebar, so it hides the row.
+    var showsFormat = true
+
+    private let fieldWidth: CGFloat = 170
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if showsFormat {
+                row(Text("Format", comment: "Label of the archive format picker in the archive options")) {
+                    FormatPicker(options: options) { EmptyView() }
+                        .labelsHidden()
+                        .fixedSize()
+                        .accessibilityIdentifier("saveOptions.format")
+                }
+            }
+            row(Text("Compression", comment: "Label of the compression level picker in the archive options")) {
+                LevelPicker(options: options) { EmptyView() }
+                    .labelsHidden()
+                    .fixedSize()
+                    .accessibilityIdentifier("saveOptions.level")
+            }
+            row(Text("Split into volumes", comment: "Label of the picker that writes the archive as several files of a given size")) {
+                VolumeControl(options: options)
+                    .fixedSize()
+                    .accessibilityIdentifier("saveOptions.volume")
+            }
+
+            Divider()
+
+            row(Text("Password", comment: "Label of the password field in the archive options")) {
+                SecureField(text: $options.password) { EmptyView() }
+                    .labelsHidden()
+                    .frame(width: fieldWidth)
+                    .accessibilityIdentifier("saveOptions.password")
+            }
+            row(Text("Verify", comment: "Label of the field that repeats the archive password")) {
+                SecureField(text: $options.passwordConfirmation) { EmptyView() }
+                    .labelsHidden()
+                    .frame(width: fieldWidth)
+                    .accessibilityIdentifier("saveOptions.passwordVerify")
+            }
+            // zip can still use ZipCrypto for old tools; 7z is AES-256 only
+            if options.encryptions.count > 1 {
+                row(Text("Encryption method", comment: "Label of the picker between AES-256 and ZipCrypto")) {
+                    EncryptionControl(options: options)
+                        .fixedSize()
+                        .accessibilityIdentifier("saveOptions.encryptionMethod")
+                }
+            }
+            // a zip always lists its file names in the clear
+            if options.canEncryptFileNames {
+                row(Text("Encrypt file names", comment: "Toggle that hides a 7z archive's file list behind the password")) {
+                    Toggle(isOn: $options.encryptFileNames) { EmptyView() }
+                        .labelsHidden()
+                        .accessibilityIdentifier("saveOptions.encryptNames")
+                }
+            }
+            encryptionNote
+
+            Divider()
+
+            Group {
+                row(Text("Method", comment: "Label of the compression method picker in the archive options")) {
+                    MethodControl(options: options)
+                        .fixedSize()
+                        .accessibilityIdentifier("saveOptions.method")
+                }
+                if !options.dictionarySizes.isEmpty {
+                    row(Text("Dictionary size", comment: "Label of the compression dictionary size picker in the archive options")) {
+                        DictionaryControl(options: options)
+                            .fixedSize()
+                            .accessibilityIdentifier("saveOptions.dictionary")
+                    }
+                }
+                if !options.wordSizes.isEmpty {
+                    row(Text("Word size", comment: "Label of the compression word size picker in the archive options (7-Zip's term)")) {
+                        WordSizeControl(options: options)
+                            .fixedSize()
+                            .accessibilityIdentifier("saveOptions.wordSize")
+                    }
+                }
+                if options.hasSolidBlocks {
+                    row(Text("Solid block size", comment: "Label of the 7z solid block size picker in the archive options")) {
+                        SolidControl(options: options)
+                            .fixedSize()
+                            .accessibilityIdentifier("saveOptions.solid")
+                    }
+                }
+            }
+            // at Store nothing is compressed, so these do nothing
+            .disabled(!options.compresses)
+
+            row(Text("Exclude .DS_Store files", comment: "Toggle that leaves Finder's hidden .DS_Store files out of the archive")) {
+                Toggle(isOn: $options.excludeDSStore) { EmptyView() }
+                    .labelsHidden()
+                    .accessibilityIdentifier("saveOptions.excludeDSStore")
             }
         }
+    }
+
+    /// Label left, control right, so every value sits in the same column.
+    @ViewBuilder
+    private func row<Control: View>(_ label: Text, @ViewBuilder _ control: () -> Control) -> some View {
+        HStack(spacing: 12) {
+            label
+            Spacer(minLength: 8)
+            control()
+        }
+    }
+
+    @ViewBuilder private var encryptionNote: some View {
+        if let problem = options.passwordProblem {
+            note(Text(verbatim: problem.message), red: true)
+                .accessibilityIdentifier("saveOptions.problem")
+        } else if !options.password.isEmpty && options.format == .zip {
+            if options.encryption == .zipCrypto {
+                note(Text("ZipCrypto is easily broken. Pick it only for tools that cannot open AES-256.", comment: "Footer under the archive password when the weak ZipCrypto is picked"))
+            } else {
+                note(Text("File names stay readable in a zip archive. 7z can encrypt them too.", comment: "Footer under the archive password for zip archives"))
+            }
+        }
+    }
+
+    private func note(_ text: Text, red: Bool = false) -> some View {
+        text
+            .font(.caption)
+            .foregroundStyle(red ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -482,14 +504,27 @@ enum ArchiveSavePanel {
     /// the sheet was on screen, its switches showed no knob until first clicked.
     static func presentOptions(on window: NSWindow, options: ArchiveSaveOptions) {
         let sheet = NSWindow(
-            contentRect: NSRect(origin: .zero, size: ArchiveSaveOptionsView.size),
+            contentRect: NSRect(x: 0, y: 0, width: ArchiveSaveOptionsView.width, height: 420),
             styleMask: [.titled], backing: .buffered, defer: false)
         window.beginSheet(sheet) { _ in
             _ = sheet   // keep the sheet alive until it is dismissed
         }
-        sheet.contentView = NSHostingView(rootView: ArchiveSaveOptionsView(options: options) { [weak window, weak sheet] in
+        let content = NSHostingView(rootView: ArchiveSaveOptionsView(options: options) { [weak window, weak sheet] in
             guard let window, let sheet else { return }
             window.endSheet(sheet)
         })
+        // Constraints, not a frame: 7z shows rows zip does not, and the sheet has
+        // to follow when the format changes under it.
+        content.translatesAutoresizingMaskIntoConstraints = false
+        let container = NSView()
+        container.addSubview(content)
+        NSLayoutConstraint.activate([
+            content.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            content.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            content.topAnchor.constraint(equalTo: container.topAnchor),
+            content.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+        ])
+        sheet.contentView = container
+        sheet.setContentSize(content.fittingSize)
     }
 }
