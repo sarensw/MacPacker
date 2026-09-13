@@ -500,15 +500,17 @@ enum ArchiveSavePanel {
     /// Sandbox the save panel is a Powerbox window hosted out of process — this
     /// is the call that has to hold up.
     ///
-    /// The sheet goes on screen first and gets its content after. Built before
-    /// the sheet was on screen, its switches showed no knob until first clicked.
+    /// Filled and sized before it is shown: a sheet presented first came down
+    /// blank and then jumped to its real height once the content arrived.
+    ///
+    /// The window is built with the style mask it keeps. The old code created it
+    /// from a controller and changed `styleMask` afterwards, which rebuilt the
+    /// window's frame view around content that was already there — that is what
+    /// left the switches without their knob until the first click.
     static func presentOptions(on window: NSWindow, options: ArchiveSaveOptions) {
         let sheet = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: ArchiveSaveOptionsView.width, height: 420),
+            contentRect: NSRect(x: 0, y: 0, width: ArchiveSaveOptionsView.width, height: 100),
             styleMask: [.titled], backing: .buffered, defer: false)
-        window.beginSheet(sheet) { _ in
-            _ = sheet   // keep the sheet alive until it is dismissed
-        }
         let content = NSHostingView(rootView: ArchiveSaveOptionsView(options: options) { [weak window, weak sheet] in
             guard let window, let sheet else { return }
             window.endSheet(sheet)
@@ -526,5 +528,8 @@ enum ArchiveSavePanel {
         ])
         sheet.contentView = container
         sheet.setContentSize(content.fittingSize)
+        window.beginSheet(sheet) { _ in
+            _ = sheet   // keep the sheet alive until it is dismissed
+        }
     }
 }
