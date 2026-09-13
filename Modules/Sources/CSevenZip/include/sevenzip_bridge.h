@@ -42,6 +42,12 @@ int32_t sz_entry_count(SZArchiveRef archive);
 /// metadata for something it no longer holds.
 int32_t sz_sidecar_target(SZArchiveRef archive, uint32_t index);
 
+/// The path `index` is stored under, UTF-8, for every entry -- including the
+/// AppleDouble sidecars and `__MACOSX/` mirror entries that `sz_get_entry`
+/// leaves out of the listing. NULL when there is none. Lives as long as the
+/// archive handle.
+const char *sz_entry_path(SZArchiveRef archive, uint32_t index);
+
 typedef struct {
     uint32_t index;
     const char *path;        // UTF-8; pointer valid until sz_close()

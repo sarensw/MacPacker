@@ -1220,6 +1220,21 @@ int32_t sz_sidecar_target(SZArchiveRef archive, uint32_t index) {
     return -1;
 }
 
+const char *sz_entry_path(SZArchiveRef archive, uint32_t index) {
+    if (!archive) return nullptr;
+    try {
+        auto *handle = static_cast<SZArchiveHandle *>(archive);
+        if (index >= handle->numItems) return nullptr;
+        NWindows::NCOM::CPropVariant prop;
+        if (handle->activeArchive()->GetProperty(index, kpidPath, &prop) != S_OK
+            || prop.vt != VT_BSTR || !prop.bstrVal)
+            return nullptr;
+        return handle->storeString(UStringToUTF8(UString(prop.bstrVal)));
+    } catch (...) {
+        return nullptr;
+    }
+}
+
 bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
     if (!archive || !entry_out) return false;
     try {

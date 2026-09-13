@@ -14,7 +14,11 @@ extension SevenZipArchive {
     /// variants are valid (there are no source entries to remove or move).
     ///
     /// If `source` and `destination` are the same URL, the archive
-    /// is written to a temporary file and atomically replaced.
+    /// is written to a temporary file and atomically replaced. If they
+    /// differ (Save As), the archive is written again from its contents,
+    /// so every entry takes `options` and the result is in their format —
+    /// except for an encrypted source, which is copied as it is and cannot
+    /// change format until a password can be given.
     ///
     /// - Parameters:
     ///   - source: URL of the source archive, or `nil` to create new.
@@ -47,26 +51,56 @@ extension SevenZipArchive {
             actualDest = destination
         }
 
-        // Resolve the diff into a full item list for the C bridge.
-        var resolved = try resolveDiff(source: source, items: items)
-
         // Everything macOS keeps outside a file's contents travels as an extra
         // entry per file, packed into a scratch directory that lives exactly as
-        // long as this write does.
+        // long as this write does. A Save As extracts the source into it too.
         let scratch = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
         // Not `try?`: one failed directory would silently turn the whole of the
         // above into a no-op, and the archive would come out stripped.
         try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: scratch) }
+
+        // A Save As writes the archive again from its contents: an update copies
+        // what it keeps byte for byte, in the source's format and with its old
+        // method, whatever `options` say. Not for an encrypted source yet — with
+        // no password to give the copy, a rebuild would write it out in plain.
+        var resolved: [ResolvedItem]
+        let rebuild: Bool
+        do {
+            // scoped, so the handle is closed again before anything is written
+            let sourceArchive = try source.map { try SevenZipArchive(url: $0) }
+            let encrypted = try sourceArchive?.entries.contains(where: \.isEncrypted) ?? false
+            if let source, !inPlace, encrypted, writableFormat(of: source) != options.format {
+                throw SevenZipError.writeFailed(
+                    "An encrypted archive can't be saved as \(options.format.rawValue) yet: it would lose its encryption")
+            }
+            rebuild = sourceArchive != nil && !inPlace && !encrypted
+
+            // Resolve the diff into a full item list for the C bridge.
+            resolved = try resolveDiff(sourceArchive: sourceArchive, items: items)
+            if rebuild, let sourceArchive {
+                // extracting is the first half of the work, writing the second
+                let firstHalf = progress.map { report in
+                    { (done: UInt64, total: UInt64) in report(done, total * 2) }
+                }
+                resolved = try materializeKeptEntries(
+                    resolved, from: sourceArchive, into: scratch, progress: firstHalf)
+            }
+        }
         resolved.append(contentsOf: try metadataSidecars(for: resolved, scratch: scratch))
 
+        let writeProgress = rebuild
+            ? progress.map { report in
+                { (done: UInt64, total: UInt64) in report(total + done, total * 2) }
+            }
+            : progress
         try performUpdate(
-            source: source,
+            source: rebuild ? nil : source,
             destination: actualDest,
             resolvedItems: resolved,
             options: options,
-            progress: progress
+            progress: writeProgress
         )
 
         if inPlace {
@@ -97,7 +131,7 @@ extension SevenZipArchive {
     /// Resolves a user-facing diff into the full list the C bridge expects.
     /// All source entries are kept unless explicitly removed or moved.
     private static func resolveDiff(
-        source: URL?,
+        sourceArchive: SevenZipArchive?,
         items: [ArchiveUpdateItem]
     ) throws -> [ResolvedItem] {
         // Collect removals and moves from the diff.
@@ -129,8 +163,7 @@ extension SevenZipArchive {
         var result: [ResolvedItem] = []
 
         // Build keeps/moves from source entries.
-        if let source {
-            let archive = try SevenZipArchive(url: source)
+        if let archive = sourceArchive {
             let entryCount = sz_entry_count(archive.handle.ref)
             guard entryCount >= 0 else {
                 throw SevenZipError.writeFailed(
@@ -155,6 +188,134 @@ extension SevenZipArchive {
 
         result.append(contentsOf: additions)
         return result
+    }
+
+    // MARK: - Save As
+
+    /// Turns every entry kept from the source into an addition read back from a
+    /// scratch extraction, for a Save As that writes the archive again.
+    ///
+    /// Extraction folds each file's AppleDouble sidecar back onto it, and the
+    /// additions then get fresh sidecars from what landed on disk — the same way
+    /// the metadata travels for files added from Finder.
+    private static func materializeKeptEntries(
+        _ items: [ResolvedItem],
+        from archive: SevenZipArchive,
+        into scratch: URL,
+        progress: SevenZipArchive.ProgressHandler?
+    ) throws -> [ResolvedItem] {
+        let fm = FileManager.default
+        var byIndex: [UInt32: SevenZipEntry] = [:]
+        for entry in try archive.entries { byIndex[entry.index] = entry }
+
+        // Kept and moved entries in source order, with the path each one gets.
+        // Hidden ones (AppleDouble sidecars, the `__MACOSX/` mirror) have no entry
+        // of their own: extracting what they describe brings them along.
+        var kept: [(entry: SevenZipEntry, path: String)] = []
+        var hidden: [UInt32] = []
+        var additions: [ResolvedItem] = []
+        for item in items {
+            switch item {
+            case .keep(let index):
+                if let entry = byIndex[index] { kept.append((entry, entry.path)) } else { hidden.append(index) }
+            case .move(let index, let path):
+                if let entry = byIndex[index] { kept.append((entry, path)) } else { hidden.append(index) }
+            default:
+                additions.append(item)
+            }
+        }
+
+        // The scratch disk ignores case and Unicode normalization; archive names
+        // don't, so "Readme.txt" and "README.txt" would land on one file. Entries
+        // that collide are extracted one by one, each into a folder of its own.
+        var firstWithName: [String: UInt32] = [:]
+        var loners: Set<UInt32> = []
+        for (entry, _) in kept where !entry.isDirectory {
+            let key = entry.path.precomposedStringWithCanonicalMapping.lowercased()
+            if let first = firstWithName[key] {
+                loners.formUnion([first, entry.index])
+            } else {
+                firstWithName[key] = entry.index
+            }
+        }
+
+        let shared = scratch.appendingPathComponent("rebuild")
+        try fm.createDirectory(at: shared, withIntermediateDirectories: true)
+        let together = kept.map(\.entry.index).filter { !loners.contains($0) }.sorted()
+        var onDisk = try archive.extract(indices: together, to: shared, progress: progress)
+        for index in loners.sorted() {
+            let own = scratch.appendingPathComponent("rebuild-\(index)")
+            try fm.createDirectory(at: own, withIntermediateDirectories: true)
+            onDisk.merge(try archive.extract(index: index, to: own)) { _, new in new }
+        }
+
+        var rebuilt: [ResolvedItem] = []
+        for (entry, path) in kept {
+            // A missing file is a lost entry, so the save fails rather than drop it.
+            guard let disk = onDisk[entry.index],
+                  (try? fm.attributesOfItem(atPath: disk.path)) != nil else {
+                throw SevenZipError.writeFailed("\(entry.path) could not be read back from the archive")
+            }
+            if entry.isDirectory {
+                rebuilt.append(.addDirectory(
+                    archivePath: path, diskPath: disk,
+                    modificationDate: entry.modificationDate,
+                    posixPermissions: entry.posixPermissions.map { 0o040000 | $0 }))
+            } else {
+                // No mode given: the bridge reads it off the extracted file. A
+                // symlink's mode alone would store the link as an ordinary file.
+                rebuilt.append(.addFile(
+                    archivePath: path, diskPath: disk,
+                    modificationDate: entry.modificationDate,
+                    posixPermissions: nil))
+            }
+        }
+
+        // A hidden entry still on disk afterwards was named like a sidecar without
+        // being one, so folding it failed and it came out as itself. Looked up by
+        // its stored path: the listing leaves it out, and so do Foundation's
+        // directory listings whenever a `._name` stands beside `name`.
+        for index in hidden {
+            guard let stored = sz_entry_path(archive.handle.ref, index) else { continue }
+            // sanitized the way the extraction does: no empty, "." or ".." parts
+            let relative = String(cString: stored).split(separator: "/")
+                .filter { $0 != "." && $0 != ".." }.joined(separator: "/")
+            let file = shared.appendingPathComponent(relative)
+            guard !relative.isEmpty,
+                  let attributes = try? fm.attributesOfItem(atPath: file.path),
+                  attributes[.type] as? FileAttributeType != .typeDirectory else { continue }
+            rebuilt.append(.addFile(
+                archivePath: relative, diskPath: file,
+                modificationDate: nil, posixPermissions: nil))
+        }
+
+        // A folder the archive only implies still gets its sidecar folded onto it,
+        // and with no entry of its own it would drop that metadata here.
+        let listedFolders = Set(kept.filter(\.entry.isDirectory).map {
+            $0.entry.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        })
+        for relative in fm.subpaths(atPath: shared.path) ?? [] where !listedFolders.contains(relative) {
+            let folder = shared.appendingPathComponent(relative)
+            var isDirectory: ObjCBool = false
+            guard fm.fileExists(atPath: folder.path, isDirectory: &isDirectory), isDirectory.boolValue,
+                  try attributeNames(of: folder).contains(where: { !systemOwnedAttributes.contains($0) })
+            else { continue }
+            rebuilt.append(.addDirectory(
+                archivePath: relative, diskPath: folder,
+                modificationDate: nil, posixPermissions: nil))
+        }
+
+        return rebuilt + additions
+    }
+
+    /// The writable format a file is in, by its signature.
+    private static func writableFormat(of url: URL) -> SevenZipCompressionOptions.Format? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        let head = (try? handle.read(upToCount: 6)) ?? Data()
+        if head.starts(with: [0x50, 0x4B]) { return .zip }
+        if head.starts(with: [0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C]) { return .sevenZ }
+        return nil
     }
 
     // MARK: - macOS Metadata
