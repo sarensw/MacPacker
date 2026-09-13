@@ -17,7 +17,7 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "dropwindow")
 
 struct DropWindowView: View {
     @AppStorage(Keys.dropWindowOptionsExpanded) private var optionsExpanded = false
-    @AppStorage(Keys.dropWindowLevel) private var level = Keys.defaultDropWindowLevel
+    @ObservedObject private var options = CompressSettings.shared
 
     @State private var isTargeted = false
 
@@ -42,7 +42,8 @@ struct DropWindowView: View {
         }
         // clears the titlebar, which `.fullSizeContentView` runs the content under
         .padding(.top, 28)
-        .frame(width: 300)
+        // wide enough for the options while they are open, narrow again after
+        .frame(width: optionsExpanded ? 420 : 300)
         .background(WindowDragArea(canMove: true))
         // The drag lights the whole window — the window *is* the target. One fill
         // whose opacity animates, never two fills swapped: swapping the shape
@@ -114,9 +115,16 @@ struct DropWindowView: View {
             Spacer(minLength: 8)
 
             if !optionsExpanded {
-                Text(verbatim: CompressSettings.levelName(level))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    // a password applies to every drop until it is cleared: say so
+                    if !options.password.isEmpty {
+                        Image(systemName: "lock.fill")
+                            .imageScale(.small)
+                    }
+                    Text(verbatim: compressionLevelName(options.level))
+                        .lineLimit(1)
+                }
+                .foregroundStyle(.secondary)
             }
         }
         .font(.callout)
@@ -124,38 +132,24 @@ struct DropWindowView: View {
         .padding(.vertical, 9)
     }
 
-    /// A menu, not a segmented control: segmented needs room for every label at
-    /// once, and translated level names blow past this card's width (Italian wants
-    /// 643pt against 248pt). A menu is bounded by the longest single name.
+    /// Every setting the save panel offers, in the window itself: a drop happens
+    /// in one gesture, so the settings behind it should not need a second one.
     private var optionsPanel: some View {
-        HStack(spacing: 12) {
-            Text("Compression Level", comment: "Row label in the Quick Compress options: how hard to compress.")
-            Spacer(minLength: 0)
-            Picker(selection: $level) {
-                ForEach(CompressSettings.levels, id: \.self) { value in
-                    Text(verbatim: CompressSettings.levelName(value)).tag(value)
-                }
-            } label: {
-                EmptyView()   // the row already carries the label
-            }
-            .labelsHidden()
-            .fixedSize()
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.05)))
-        .background(WindowDragArea(canMove: false))
-        .padding(.horizontal, 14)
-        .padding(.bottom, 14)
+        SaveOptionsRows(options: options, showsFormat: false)
+            .padding(12)
+            .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.05)))
+            .background(WindowDragArea(canMove: false))
+            .padding(.horizontal, 14)
+            .padding(.bottom, 14)
     }
 
     // MARK: - Drop
 
     private func handleDrop(_ providers: [NSItemProvider]) {
-        let options = CompressSettings.current
+        let settings = CompressSettings.current
         loadDroppedFileURLs(from: providers) { urls in
             log.notice("Drop window received \(urls.count) url(s)")
-            compressor.compress(files: urls, options: options)
+            compressor.compress(files: urls, options: settings.options, excludeDSStore: settings.excludeDSStore)
         }
     }
 }

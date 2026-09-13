@@ -52,7 +52,8 @@ final class DropWindowController {
     /// write) drivable from a script without a real drag.
     @discardableResult
     func compress(files: [URL]) -> DropJob? {
-        compressor.compress(files: files, options: CompressSettings.current)
+        let settings = CompressSettings.current
+        return compressor.compress(files: files, options: settings.options, excludeDSStore: settings.excludeDSStore)
     }
 
     private func makePanel() -> NSPanel {
@@ -143,8 +144,12 @@ final class DropPanel: NSPanel {
     override func setFrame(_ frameRect: NSRect, display flag: Bool) {
         var rect = frameRect
         // only content-driven resizes; a user drag moves the origin too
-        if rect.height != frame.height, rect.origin == frame.origin {
+        if rect.size != frame.size, rect.origin == frame.origin {
             rect.origin.y = frame.maxY - rect.height
+            // the options also make the window wider: keep it on its screen
+            if let visible = (screen ?? NSScreen.main)?.visibleFrame, rect.maxX > visible.maxX {
+                rect.origin.x = max(visible.minX, visible.maxX - rect.width)
+            }
         }
         super.setFrame(rect, display: flag)
     }

@@ -16,7 +16,7 @@ import Swift7zip
 // MARK: - Fixture helpers
 
 /// Creates a fresh temp directory for one test.
-private func makeTempDir() throws -> URL {
+func makeTempDir() throws -> URL {
     let url = FileManager.default.temporaryDirectory
         .appendingPathComponent("ZipWriteTests-\(UUID().uuidString)")
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
@@ -26,7 +26,7 @@ private func makeTempDir() throws -> URL {
 /// Runs a CLI tool and returns stdout. Used to build/verify fixtures with
 /// the system zip tools so our writer is verified independently.
 @discardableResult
-private func run(_ tool: String, _ args: [String], cwd: URL? = nil) throws -> String {
+func run(_ tool: String, _ args: [String], cwd: URL? = nil) throws -> String {
     let p = Process()
     p.executableURL = URL(fileURLWithPath: tool)
     p.arguments = args
@@ -44,7 +44,7 @@ private func run(_ tool: String, _ args: [String], cwd: URL? = nil) throws -> St
 
 /// Builds a zip fixture with the system `zip` CLI (independent of our writer):
 /// root.txt, folder/one.txt, folder/two.txt, other/keep.txt
-private func makeSystemZipFixture(in dir: URL) throws -> URL {
+func makeSystemZipFixture(in dir: URL) throws -> URL {
     let src = dir.appendingPathComponent("src")
     try FileManager.default.createDirectory(at: src.appendingPathComponent("folder"), withIntermediateDirectories: true)
     try FileManager.default.createDirectory(at: src.appendingPathComponent("other"), withIntermediateDirectories: true)
@@ -60,13 +60,13 @@ private func makeSystemZipFixture(in dir: URL) throws -> URL {
 /// Entry paths as listed by the independent system tool (`unzip -Z1`), in
 /// file order and with duplicates kept — a `Set` would hide exactly the
 /// duplicate that an add over an existing name used to leave behind.
-private func systemZipEntries(_ zip: URL) throws -> [String] {
+func systemZipEntries(_ zip: URL) throws -> [String] {
     let out = try run("/usr/bin/unzip", ["-Z1", zip.path])
     return out.split(separator: "\n").map(String.init)
 }
 
 /// Entry paths as listed by the independent system tool (`unzip -Z1`).
-private func systemZipList(_ zip: URL) throws -> Set<String> {
+func systemZipList(_ zip: URL) throws -> Set<String> {
     Set(try systemZipEntries(zip))
 }
 
@@ -100,7 +100,7 @@ private func infoZipListingName(_ name: String) -> String {
 /// The metadata tests need this rather than `unzip`, because putting the sidecars
 /// back onto the files they describe is half of what they are asserting — `unzip`
 /// leaves them lying around as literal `._` files instead.
-private func extractWithOurEngine(_ archive: URL, to destination: URL) async throws {
+func extractWithOurEngine(_ archive: URL, to destination: URL) async throws {
     let engine = Archive7ZipEngine()
     let loaded = try await engine.loadArchive(url: archive, passwordResolver: { _ in nil })
     try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
@@ -903,7 +903,7 @@ extension AllCoreTests {
 // MARK: - Save As rebuilds the archive
 
 /// What a file is by its first bytes: `zip`, `7z`, or the bytes in hex.
-private func archiveFormat(of url: URL) throws -> String {
+func archiveFormat(of url: URL) throws -> String {
     let handle = try FileHandle(forReadingFrom: url)
     defer { try? handle.close() }
     let head = try handle.read(upToCount: 6) ?? Data()
@@ -914,7 +914,7 @@ private func archiveFormat(of url: URL) throws -> String {
 
 /// Each entry's compression method as the independent `zipinfo` records it
 /// (`defN`, `lzma`, `stor`, …), by entry name.
-private func zipMethods(_ zip: URL) throws -> [String: String] {
+func zipMethods(_ zip: URL) throws -> [String: String] {
     var methods: [String: String] = [:]
     for line in try run("/usr/bin/zipinfo", [zip.path]).split(separator: "\n") {
         // entry lines: mode, version, host, size, flags, method, date, time, name
@@ -925,16 +925,17 @@ private func zipMethods(_ zip: URL) throws -> [String: String] {
     return methods
 }
 
-/// Extracts everything with the given engine.
-private func extractEverything(_ archive: URL, with reader: ZipReader, to out: URL) async throws {
+/// Extracts everything with the given engine, answering any password prompt
+/// with `password`.
+func extractEverything(_ archive: URL, with reader: ZipReader, to out: URL, password: String? = nil) async throws {
     let engine = reader.engine
-    let loaded = try await engine.loadArchive(url: archive, passwordResolver: { _ in nil })
+    let loaded = try await engine.loadArchive(url: archive, passwordResolver: { _ in password })
     try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
     _ = try await engine.extract(
-        items: Array(loaded.items.values), from: archive, to: out, passwordResolver: { _ in nil })
+        items: Array(loaded.items.values), from: archive, to: out, passwordResolver: { _ in password })
 }
 
-private func passwordFixture(_ name: String) -> URL {
+func passwordFixture(_ name: String) -> URL {
     Bundle.module.url(forResource: "password", withExtension: nil)!.appendingPathComponent(name)
 }
 
@@ -1072,7 +1073,7 @@ extension AllCoreTests {
             // handler does not report — the mode sits in kpidAttrib's high bits —
             // so any 7z extracts without execute bits or links, however it was
             // written. 7zz, below, shows the archive itself is right.
-            try withKnownIssue("7z extraction drops unix modes and symlinks") {
+            try withKnownIssue("7z extraction drops unix modes and symlinks (#243)") {
                 let mode = try fm.attributesOfItem(atPath: out.appendingPathComponent("run.sh").path)[.posixPermissions] as? Int
                 #expect(mode == 0o755, "the execute bit must survive, got \(String(mode ?? 0, radix: 8))")
                 #expect(try fm.destinationOfSymbolicLink(atPath: out.appendingPathComponent("link.txt").path)
@@ -1285,6 +1286,191 @@ extension AllCoreTests {
             #expect(format == "7z", "Save As .7z wrote a \(format)")
             #expect(state.url == saved)
             #expect(state.entries.values.contains { $0.virtualPath == "folder/one.txt" })
+        }
+    }
+}
+
+// MARK: - Every format, method and level the save panel offers
+
+/// Deterministic text every method can shrink, big enough (320 KB) for the
+/// levels to differ: level 1's LZMA dictionary (256 KB) and BZip2 block (100 KB)
+/// are both smaller than it.
+func sampleText(bytes: Int) -> Data {
+    let words = ["alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel",
+                 "india", "juliet", "kilo", "lima", "mike", "november", "oscar", "papa"]
+    var seed: UInt64 = 42
+    var text = ""
+    while text.utf8.count < bytes {
+        seed = seed &* 6364136223846793005 &+ 1442695040888963407
+        text += words[Int(seed >> 60)] + (seed & 7 == 0 ? "\n" : " ")
+    }
+    return Data(text.utf8)
+}
+
+/// One combination the save panel can produce.
+struct WriteCase: Sendable, CustomTestStringConvertible {
+    let format: SevenZipCompressionOptions.Format
+    let method: SevenZipCompressionOptions.Method?
+    let level: UInt32
+
+    var testDescription: String {
+        "\(format.rawValue) · \(method?.rawValue ?? "automatic") · level \(level)"
+    }
+
+    var options: SevenZipCompressionOptions { .init(format: format, level: level, method: method) }
+
+    /// What 7-Zip records for this combination: the part of `kpidMethod` before
+    /// its first colon.
+    var recordedName: String {
+        if level == 0 { return format == .zip ? "Store" : "Copy" }
+        switch method {
+        case nil: return format == .zip ? "Deflate" : "LZMA2"
+        case .lzma2?: return "LZMA2"
+        case .lzma?: return "LZMA"
+        case .deflate?: return "Deflate"
+        case .bzip2?: return "BZip2"
+        case .ppmd?: return format == .zip ? "PPMd" : "PPMD"
+        case .copy?: return format == .zip ? "Store" : "Copy"
+        }
+    }
+
+    var stores: Bool { recordedName == "Store" || recordedName == "Copy" }
+
+    /// Each format, Automatic plus each method it offers, each of 7-Zip's levels —
+    /// built from the same list the panel reads, so a method added there is under
+    /// test without anyone writing a case for it.
+    static let all: [WriteCase] = SevenZipCompressionOptions.Format.allCases.flatMap { format in
+        ([nil] + SevenZipCompressionOptions.methods(for: format)).flatMap { method in
+            [UInt32(0), 1, 3, 5, 7, 9].map { WriteCase(format: format, method: method, level: $0) }
+        }
+    }
+}
+
+/// The method 7-Zip recorded for the first entry of `archive`, before its first colon.
+func recordedMethod(of archive: URL) throws -> (name: String, full: String, entry: SevenZipEntry) {
+    let reader = try SevenZipArchive(url: archive)
+    let entry = try #require(try reader.entries.first)
+    let full = reader.method(ofEntryAt: entry.index) ?? "nothing"
+    return (full.split(separator: ":").first.map(String.init) ?? "", full, entry)
+}
+
+extension AllCoreTests {
+    /// Every option the save panel offers has to show up in the archive, not just
+    /// be accepted. A setting that silently does nothing is exactly the bug no
+    /// one should have to report: it is checked here on every build.
+    struct CompressionOptionsTests {
+
+        private func writeSample(into dir: URL) throws -> (url: URL, data: Data) {
+            let data = sampleText(bytes: 320_000)
+            let url = dir.appendingPathComponent("input.txt")
+            try data.write(to: url)
+            return (url, data)
+        }
+
+        @Test(arguments: WriteCase.all)
+        func everyCombinationWritesWhatItSays(_ c: WriteCase) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let sample = try writeSample(into: dir)
+            let archive = dir.appendingPathComponent("out.\(c.format.rawValue)")
+            try SevenZipArchive.writeArchive(
+                destination: archive,
+                items: [.addFile(archivePath: "input.txt", diskPath: sample.url)],
+                options: c.options)
+
+            #expect(try archiveFormat(of: archive) == c.format.rawValue)
+
+            let recorded = try recordedMethod(of: archive)
+            #expect(recorded.name == c.recordedName, "7-Zip recorded \(recorded.full)")
+            if c.stores {
+                #expect(recorded.entry.packedSize >= recorded.entry.size, "stored, not compressed")
+            } else {
+                #expect(recorded.entry.packedSize < recorded.entry.size / 2,
+                        "compressed to \(recorded.entry.packedSize) of \(recorded.entry.size) bytes")
+            }
+
+            // a tool that shares no code with 7-Zip reads the same method
+            if c.format == .zip {
+                let code = try zipMethods(archive)["input.txt"] ?? "none"
+                let expected = ["Store": "stor", "Deflate": "def", "BZip2": "bzp2",
+                                "LZMA": "lzma", "PPMd": "ppmd"][c.recordedName] ?? "?"
+                #expect(code.hasPrefix(expected), "zipinfo says \(code)")
+            }
+
+            for engine in ZipReader.allCases {
+                let out = dir.appendingPathComponent("out-\(engine.rawValue)")
+                try await extractEverything(archive, with: engine, to: out)
+                #expect(try Data(contentsOf: out.appendingPathComponent("input.txt")) == sample.data,
+                        "read back through \(engine)")
+            }
+        }
+
+        // zip, and BZip2 in either format, record no level anywhere, and a higher
+        // level does not always make a smaller file: PPMd came out smaller at
+        // level 1 than at 9. What must hold is that the level reaches the encoder,
+        // so level 1 and level 9 do not write the same bytes.
+        @Test(arguments: WriteCase.all.filter { $0.level == 1 && !$0.stores })
+        func theLevelReachesTheEncoder(_ c: WriteCase) throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let sample = try writeSample(into: dir)
+            func packedSize(atLevel level: UInt32) throws -> UInt64 {
+                let url = dir.appendingPathComponent("L\(level).\(c.format.rawValue)")
+                try SevenZipArchive.writeArchive(
+                    destination: url,
+                    items: [.addFile(archivePath: "input.txt", diskPath: sample.url)],
+                    options: .init(format: c.format, level: level, method: c.method))
+                return try recordedMethod(of: url).entry.packedSize
+            }
+            let fastest = try packedSize(atLevel: 1)
+            let ultra = try packedSize(atLevel: 9)
+            #expect(fastest != ultra, "levels 1 and 9 both wrote \(fastest) bytes")
+        }
+
+        // 7z writes down the encoder settings a level picked, so there the level
+        // itself is checked. LZMA's dictionary is capped at the input size, which
+        // leaves level 1's 256 KB (2^18) as the one that stands out.
+        @Test func sevenZipRecordsTheSettingsALevelPicks() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let sample = try writeSample(into: dir)
+            func recorded(_ method: SevenZipCompressionOptions.Method, _ level: UInt32) throws -> String {
+                let url = dir.appendingPathComponent("\(method.rawValue)-L\(level).7z")
+                try SevenZipArchive.writeArchive(
+                    destination: url,
+                    items: [.addFile(archivePath: "input.txt", diskPath: sample.url)],
+                    options: .init(format: .sevenZ, level: level, method: method))
+                return try recordedMethod(of: url).full
+            }
+            #expect(try recorded(.lzma2, 1) == "LZMA2:18")
+            #expect(try recorded(.lzma, 1) == "LZMA:18")
+            for (level, order) in [(UInt32(1), "o4"), (3, "o5"), (5, "o6"), (7, "o16"), (9, "o32")] {
+                let method = try recorded(.ppmd, level)
+                #expect(method.split(separator: ":").dropFirst().first.map(String.init) == order,
+                        "PPMd at level \(level) recorded \(method)")
+            }
+        }
+
+        // The source stores its file and is in the other format, so neither the
+        // old method nor the old format could pass for the new ones.
+        @Test(arguments: WriteCase.all.filter { $0.level == 9 && !$0.stores })
+        func saveAsCompressesCarriedOverEntriesWithEachMethod(_ c: WriteCase) throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let sample = try writeSample(into: dir)
+            let other: SevenZipCompressionOptions.Format = c.format == .zip ? .sevenZ : .zip
+            let source = dir.appendingPathComponent("source.\(other.rawValue)")
+            try SevenZipArchive.writeArchive(
+                destination: source,
+                items: [.addFile(archivePath: "input.txt", diskPath: sample.url)],
+                options: .init(format: other, level: 0))
+
+            let saved = dir.appendingPathComponent("saved.\(c.format.rawValue)")
+            try SevenZipArchive.writeArchive(source: source, destination: saved, items: [], options: c.options)
+
+            #expect(try archiveFormat(of: saved) == c.format.rawValue)
+            let recorded = try recordedMethod(of: saved)
+            #expect(recorded.name == c.recordedName, "the carried-over entry recorded \(recorded.full)")
         }
     }
 }

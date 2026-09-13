@@ -48,6 +48,11 @@ int32_t sz_sidecar_target(SZArchiveRef archive, uint32_t index);
 /// archive handle.
 const char *sz_entry_path(SZArchiveRef archive, uint32_t index);
 
+/// How `index` is compressed, as 7-Zip names it -- "Deflate", "LZMA2:22",
+/// "PPMD:o6:mem24", "Copy", "Store" -- with the cipher added for an encrypted
+/// entry. NULL when the archive does not say. Lives as long as the handle.
+const char *sz_entry_method(SZArchiveRef archive, uint32_t index);
+
 typedef struct {
     uint32_t index;
     const char *path;        // UTF-8; pointer valid until sz_close()
@@ -177,12 +182,32 @@ typedef struct {
     const char *method;
     /// Solid mode: 1=on, 0=off, -1=format default.
     int8_t solid_mode;
+    /// Password to encrypt with, UTF-8. NULL or empty writes no encryption.
+    const char *password;
+    /// Zip only: "AES256", "AES192", "AES128" or "ZipCrypto". NULL for AES-256.
+    const char *encryption_method;
+    /// 7z only: encrypt the file list too, so even the names need the password.
+    bool encrypt_names;
+    /// Dictionary in bytes -- the model's memory for PPMd, the block size for
+    /// BZip2. 0 leaves it to the level.
+    uint64_t dictionary_size;
+    /// Word size: fast bytes for LZMA and Deflate, the model order for PPMd.
+    /// 0 leaves it to the level.
+    uint32_t word_size;
+    /// 7z only: bytes per solid block, UINT64_MAX for a single block. 0 leaves
+    /// it to the level; solid_mode 0 still turns solid blocks off.
+    uint64_t solid_block_size;
+    /// Split the output into volumes of this many bytes, written as
+    /// `dest_path.001`, `dest_path.002`, ... instead of `dest_path`. 0 writes
+    /// one file.
+    uint64_t volume_size;
 } SZCompressionOptions;
 
 /// Create or update an archive from a list of update items.
 ///
 /// @param source_path  Path to the source archive (NULL to create a new archive).
-/// @param dest_path    Path for the output archive file.
+/// @param dest_path    Path for the output archive file -- the base name of the
+///                     volumes when `options->volume_size` is set.
 /// @param items        Array of update item descriptors.
 /// @param item_count   Number of items in the array.
 /// @param options      Compression options.

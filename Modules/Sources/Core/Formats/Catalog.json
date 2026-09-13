@@ -12,7 +12,7 @@
       ],
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "splitVolumes"], "default": true },
         { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
       ]
     },
@@ -596,6 +596,11 @@
     { "id": "zip-numeric", "name": "Split ZIP", "format": "zip", "scheme": "numeric",
       "pattern": "\\.zip\\.[0-9]{3,}$",
       "firstVolume": { "pattern": "\\.[0-9]{3,}$", "replacement": ".001" },
-      "label": ".zip.001" }
+      "label": ".zip.001" },
+
+    { "id": "7z-numeric", "name": "Split 7z", "format": "7zip", "scheme": "numeric",
+      "pattern": "\\.7z\\.[0-9]{3,}$",
+      "firstVolume": { "pattern": "\\.[0-9]{3,}$", "replacement": ".001" },
+      "label": ".7z.001" }
   ]
 }
