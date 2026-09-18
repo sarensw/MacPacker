@@ -632,6 +632,25 @@ extension AllCoreTests {
             }
         }
 
+        /// A setting the format does not have at all is refused the moment it is
+        /// handed over, before anything is written: solid blocks are 7z's alone,
+        /// and a zip handler cannot take them. (A setting the method lacks, as
+        /// above, passes that step and fails once the encoder is built.)
+        @Test func aSettingTheFormatDoesNotHaveIsRefusedUpFront() throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let url = dir.appendingPathComponent("solid.zip")
+            do {
+                try SevenZipArchive.writeArchive(
+                    destination: url, items: [.addData(archivePath: "a.txt", data: sampleText(bytes: 10_000, seed: 2))],
+                    options: .init(format: .zip, solidMode: true))
+                Issue.record("a zip took solid blocks")
+            } catch SevenZipError.writeFailed(let message) {
+                #expect(message.contains("does not accept these settings"), "\(message)")
+            }
+            #expect(!FileManager.default.fileExists(atPath: url.path), "nothing may be left behind")
+        }
+
         /// A block is as many files as fit under the size; each block's first file
         /// carries the packed size of the whole block, the others none.
         @Test func solidBlocksFollowTheSetting() async throws {
