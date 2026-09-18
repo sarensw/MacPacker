@@ -399,28 +399,37 @@ final class MacPackerUITests: XCTestCase {
     /// Quick Compress offers every option the save panel does, in the window
     /// itself: opening the options shows them and widens the window.
     func testQuickCompressOffersEveryOption() throws {
-        let app = launchApp(arguments: ["-DropWindow", "1", "-dropWindowOptionsExpanded", "NO"])
-        let dropArea = app.descendants(matching: .any)["quickCompress.dropArea"].firstMatch
-        XCTAssertTrue(dropArea.waitForExistence(timeout: 15), "the drop window did not open")
-        // the panel is no window to XCUITest; the drop area spans its width
-        let narrow = dropArea.frame.width
+        // No -dropWindowOptionsExpanded here: a launch argument pins the setting
+        // for the whole run, so the Options button could never change it.
+        let app = launchApp(arguments: ["-DropWindow", "1"])
+        // XCUITest lists the panel as a dialog, not as a window
+        let panel = app.dialogs.firstMatch
+        XCTAssertTrue(panel.waitForExistence(timeout: 15), "the drop window did not open")
+        let options = panel.buttons["Options"].firstMatch
 
-        app.buttons.matching(NSPredicate(format: "label == %@", "Options")).firstMatch.click()
+        // The app remembers whether the options were open. Two clicks see both
+        // states, whichever comes first; open is the wider one, and stays.
+        options.click()
+        let first = panel.frame.width
+        options.click()
+        let second = panel.frame.width
+        XCTAssertNotEqual(first, second, "Options did not change the window")
+        if second < first { options.click() }
 
         let password = app.secureTextFields["saveOptions.password"].firstMatch
-        XCTAssertTrue(password.waitForExistence(timeout: 10), "the options do not show the password field")
+        XCTAssertTrue(password.waitForExistence(timeout: 10) && password.isHittable,
+                      "the options do not show the password field")
         XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveOptions.volume").firstMatch.exists)
         XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveOptions.excludeDSStore").firstMatch.exists)
-        XCTAssertGreaterThan(dropArea.frame.width, narrow, "the window did not widen for the options")
+        XCTAssertEqual(panel.frame.width, max(first, second), "the window did not widen for the options")
         app.terminate()
     }
 
-    /// A password typed but not confirmed never locks a drop: the file bounces
-    /// and nothing is written. Confirmed, the same drop writes an archive that
-    /// only this password opens.
+    /// A confirmed password locks the drop's archive; one typed differently in
+    /// Verify never does: the file bounces and nothing is written.
     ///
-    /// Every accepted drop into a fresh folder asks for access to it first, so
-    /// the panel not showing is what says the drop was refused.
+    /// The confirmed drop goes first. It proves the drag lands at all, so the
+    /// archive missing afterwards means the drop was refused, not lost.
     func testQuickCompressRefusesAnUnconfirmedPassword() throws {
         let dir = try makeWorkDir("dropmismatch")
         defer { try? FileManager.default.removeItem(at: dir) }
@@ -430,9 +439,12 @@ final class MacPackerUITests: XCTestCase {
         let dropArea = app.descendants(matching: .any)["quickCompress.dropArea"].firstMatch
         XCTAssertTrue(dropArea.waitForExistence(timeout: 15), "the drop window did not open")
         let password = app.secureTextFields["saveOptions.password"].firstMatch
+        let verify = app.secureTextFields["saveOptions.passwordVerify"].firstMatch
         XCTAssertTrue(password.waitForExistence(timeout: 10), "the options do not show the password field")
         password.click()
         password.typeText("secret")
+        verify.click()
+        verify.typeText("secret")
 
         NSWorkspace.shared.open(dir)
         let finder = XCUIApplication(bundleIdentifier: "com.apple.finder")
@@ -442,26 +454,26 @@ final class MacPackerUITests: XCTestCase {
             source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
                 .press(forDuration: 1, thenDragTo: dropArea.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
         }
-        let zip = dir.appendingPathComponent("dropped.zip")
-        let grant = app.windows.buttons["Grant Access"].firstMatch
 
-        drop()
-        XCTAssertFalse(grant.waitForExistence(timeout: 5), "the drop went ahead with an unconfirmed password")
-        XCTAssertFalse(FileManager.default.fileExists(atPath: zip.path))
-        XCTAssertTrue(app.staticTexts["saveOptions.problem"].firstMatch.exists, "the reason is not shown")
-
-        let verify = app.secureTextFields["saveOptions.passwordVerify"].firstMatch
-        verify.click()
-        verify.typeText("secret")
-        sleep(1)   // a second drag out of the same Finder row needs a pause
         drop()
         confirmAccessPanel(app, button: "Grant Access")
+        let zip = dir.appendingPathComponent("dropped.zip")
         XCTAssertTrue(waitForFile(zip, timeout: 30), "the confirmed drop wrote nothing")
         let sevenZip = "/opt/homebrew/bin/7zz"
         if FileManager.default.isExecutableFile(atPath: sevenZip) {
             XCTAssertNotEqual(status(sevenZip, ["t", "-pwrong", zip.path]), 0, "the archive opens without its password")
             XCTAssertEqual(status(sevenZip, ["t", "-psecret", zip.path]), 0, "its password does not open it")
         }
+
+        verify.click()
+        verify.typeKey("a", modifierFlags: .command)
+        verify.typeText("secreT")
+        XCTAssertTrue(app.staticTexts["saveOptions.problem"].firstMatch.waitForExistence(timeout: 5), "the reason is not shown")
+        sleep(1)   // a second drag out of the same Finder row needs a pause
+        drop()
+        // the folder is granted now, so an accepted drop would write straight away
+        XCTAssertFalse(waitForFile(dir.appendingPathComponent("dropped 2.zip"), timeout: 10),
+                       "a password nobody confirmed locked an archive")
         app.terminate()
     }
 
