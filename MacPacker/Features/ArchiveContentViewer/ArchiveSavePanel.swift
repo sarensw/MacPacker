@@ -478,14 +478,15 @@ enum ArchiveSavePanel {
 
         let completion: (NSApplication.ModalResponse) -> Void = { response in
             withExtendedLifetime(validator) {}
-            guard response == .OK, let url = panel.url else {
+            // the validator has already kept Save from a password with a problem
+            guard response == .OK, let url = panel.url, let compression = options.compressionOptions else {
                 onSave?(nil)
                 return
             }
             options.remember()
             let task = state.save(
                 to: url,
-                options: options.compressionOptions,
+                options: compression,
                 excludeDSStore: options.excludeDSStore)
             onSave?(task)
         }

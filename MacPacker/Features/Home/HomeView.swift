@@ -162,12 +162,13 @@ struct HomeView: View {
     }
 
     /// One drop is one archive, so the urls are collected and handed over together.
+    /// The start page shows no options: the format picked here, defaults for the rest.
     private func handleCompressDrop(_ providers: [NSItemProvider]) {
-        let settings = CompressSettings.current
+        let options = CompressSettings.shared.startPageOptions
         let compressor = self.compressor
         loadDroppedFileURLs(from: providers) { urls in
             log.notice("Start page compress drop", context: ["files": "\(urls.count)"])
-            compressor.compress(files: urls, options: settings.options, excludeDSStore: settings.excludeDSStore)
+            compressor.compress(files: urls, options: options)
         }
     }
 

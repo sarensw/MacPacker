@@ -53,7 +53,6 @@ struct DropWindowView: View {
         .background(Color.primary.opacity(isTargeted ? 0.07 : 0))
         .onDrop(of: [.fileURL], isTargeted: $isTargeted) { providers in
             handleDrop(providers)
-            return true
         }
         // ~5 frames at 60Hz: a fade, not a switch
         .animation(.easeOut(duration: 0.08), value: isTargeted)
@@ -145,12 +144,19 @@ struct DropWindowView: View {
 
     // MARK: - Drop
 
-    private func handleDrop(_ providers: [NSItemProvider]) {
-        let settings = CompressSettings.current
+    /// A password that fails its check never locks a drop: the files bounce back,
+    /// and the options open on the reason.
+    private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
+        guard let settings = CompressSettings.current else {
+            log.notice("Drop refused — the password has a problem")
+            optionsExpanded = true
+            return false
+        }
         loadDroppedFileURLs(from: providers) { urls in
             log.notice("Drop window received \(urls.count) url(s)")
             compressor.compress(files: urls, options: settings.options, excludeDSStore: settings.excludeDSStore)
         }
+        return true
     }
 }
 

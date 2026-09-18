@@ -100,7 +100,7 @@ extension AllCoreTests {
             options.wordSize = 8
             options.solidBlockSize = 16 << 20
             options.level = 0
-            let written = options.compressionOptions
+            let written = try #require(options.compressionOptions)
             #expect(written.method == nil && written.dictionarySize == nil && written.wordSize == nil)
             #expect(written.solidBlockSize == nil && written.solidMode == nil)
 
@@ -266,7 +266,45 @@ extension AllCoreTests {
             #expect(options.passwordProblem == nil, "ZipCrypto has no length limit")
         }
 
-        @Test func theWriterGetsWhatWasSet() {
+        /// A password with a problem hands the writer nothing, so no archive is
+        /// ever locked behind a password nobody confirmed. Quick Compress has no
+        /// Save button to hold it back: this is what does.
+        @Test func noOptionsWhileThePasswordHasAProblem() {
+            let options = ArchiveSaveOptions(defaults: isolatedDefaults(), storage: .quickCompress)
+            #expect(options.compressionOptions != nil && options.compressionOptions?.password == nil)
+            options.password = "secret"
+            #expect(options.compressionOptions == nil, "typed once, not confirmed yet")
+            options.passwordConfirmation = "secreT"
+            #expect(options.compressionOptions == nil, "confirmed differently")
+            options.passwordConfirmation = "secret"
+            #expect(options.compressionOptions?.password == "secret")
+            options.password = "pässwörd"
+            options.passwordConfirmation = "pässwörd"
+            #expect(options.compressionOptions == nil, "a zip cannot take it")
+            options.format = .sevenZ
+            #expect(options.compressionOptions?.password == "pässwörd", "a 7z can")
+        }
+
+        /// The start page's drop area shows only the format menu, so nothing else
+        /// set for Quick Compress reaches it: no password, no volumes, the default
+        /// level and codec.
+        @Test func theStartPageTakesOnlyTheFormat() {
+            let quick = ArchiveSaveOptions(defaults: isolatedDefaults(), storage: .quickCompress)
+            quick.format = .sevenZ
+            quick.level = 9
+            quick.method = .ppmd
+            quick.wordSize = 16
+            quick.encryptFileNames = true
+            quick.password = "secret"
+            quick.passwordConfirmation = "secret"
+            quick.volumeSize = 10 << 20
+            let start = quick.startPageOptions
+            #expect(start.format == .sevenZ)
+            #expect(start.level == 5 && start.method == nil && start.wordSize == nil)
+            #expect(start.password == nil && !start.encryptFileNames && start.volumeSize == nil)
+        }
+
+        @Test func theWriterGetsWhatWasSet() throws {
             let options = ArchiveSaveOptions(defaults: isolatedDefaults())
             options.format = .sevenZ
             options.level = 7
@@ -278,7 +316,7 @@ extension AllCoreTests {
             options.password = "pw"
             options.passwordConfirmation = "pw"
             options.volumeSize = 100 << 20
-            let o = options.compressionOptions
+            let o = try #require(options.compressionOptions)
             #expect(o.format == .sevenZ && o.level == 7 && o.method == .lzma2)
             #expect(o.dictionarySize == 16 << 20 && o.wordSize == 64)
             #expect(o.solidMode == false && o.solidBlockSize == nil, "0 means no solid blocks")
@@ -286,10 +324,11 @@ extension AllCoreTests {
             #expect(o.volumeSize == 100 << 20)
 
             options.solidBlockSize = .max
-            #expect(options.compressionOptions.solidBlockSize == .max && options.compressionOptions.solidMode == nil)
+            let solid = try #require(options.compressionOptions)
+            #expect(solid.solidBlockSize == .max && solid.solidMode == nil)
 
             options.format = .zip
-            let z = options.compressionOptions
+            let z = try #require(options.compressionOptions)
             #expect(z.solidMode == nil && z.solidBlockSize == nil && !z.encryptFileNames, "7z-only settings stay behind")
             #expect(z.encryption == .aes256 && z.password == "pw")
         }
@@ -305,7 +344,7 @@ extension AllCoreTests {
 
             func write() throws {
                 let url = dir.appendingPathComponent("\(UUID().uuidString).\(options.format.rawValue)")
-                let o = options.compressionOptions
+                let o = try #require(options.compressionOptions)
                 try SevenZipArchive.writeArchive(
                     destination: url, items: [.addData(archivePath: "a.txt", data: data)], options: o)
                 let first = (o.volumeSize ?? 0) > 0 ? URL(fileURLWithPath: url.path + ".001") : url

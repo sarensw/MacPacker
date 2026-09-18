@@ -140,10 +140,13 @@ public final class ArchiveSaveOptions: ObservableObject {
 
     public var canSave: Bool { passwordProblem == nil }
 
-    /// What the writer is given. Settings the format or level has no use for are
-    /// left out rather than passed along to be refused.
-    public var compressionOptions: SevenZipCompressionOptions {
-        SevenZipCompressionOptions(
+    /// What the writer is given, or `nil` while the password has a problem: no
+    /// archive is locked behind a password nobody confirmed. Settings the format
+    /// or level has no use for are left out rather than passed along to be
+    /// refused.
+    public var compressionOptions: SevenZipCompressionOptions? {
+        guard canSave else { return nil }
+        return SevenZipCompressionOptions(
             format: format,
             level: level,
             method: compresses ? method : nil,
@@ -156,6 +159,11 @@ public final class ArchiveSaveOptions: ObservableObject {
             solidBlockSize: compresses && hasSolidBlocks && (solidBlockSize ?? 0) > 0 ? solidBlockSize : nil,
             volumeSize: volumeSize)
     }
+
+    /// What the start page's drop area writes: the format picked there, defaults
+    /// for the rest. It shows no other option, so no password or volume size set
+    /// for Quick Compress may reach it.
+    public var startPageOptions: SevenZipCompressionOptions { .init(format: format) }
 
     // MARK: Memory
 

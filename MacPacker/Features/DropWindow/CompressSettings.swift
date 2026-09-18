@@ -26,9 +26,10 @@ enum CompressSettings {
     @MainActor static let shared = ArchiveSaveOptions(storage: .quickCompress)
 
     /// What a drop should use, taken when it lands: changing the options while
-    /// an archive is written does not change that archive.
-    @MainActor static var current: (options: SevenZipCompressionOptions, excludeDSStore: Bool) {
-        (shared.compressionOptions, shared.excludeDSStore)
+    /// an archive is written does not change that archive. `nil` while the
+    /// password has a problem, which refuses the drop.
+    @MainActor static var current: (options: SevenZipCompressionOptions, excludeDSStore: Bool)? {
+        shared.compressionOptions.map { ($0, shared.excludeDSStore) }
     }
 }
 
