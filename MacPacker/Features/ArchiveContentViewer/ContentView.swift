@@ -96,6 +96,22 @@ struct ContentView: View {
         } message: { reason in
             Text(verbatim: reason)
         }
+        // A failed or refused save has no other surface either: the status bar
+        // just stops, and the window looks saved.
+        .alert(
+            Text("Could not save archive", comment: "Title of the alert shown when saving an archive failed or was refused; the reason follows below it"),
+            isPresented: Binding(
+                get: { archiveState.saveError != nil },
+                set: { presented in
+                    if !presented { archiveState.clearSaveError() }
+                }
+            ),
+            presenting: archiveState.saveError
+        ) { _ in
+            Button("OK", role: .cancel) { }
+        } message: { reason in
+            Text(verbatim: reason)
+        }
         .sheet(isPresented: $showPasswordSheet) {
             PasswordView(
                 request: passwordRequest,

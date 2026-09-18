@@ -591,6 +591,24 @@ extension AllCoreTests {
             #expect(prompts.count == 0, "nothing needed asking")
         }
 
+        /// A refused or failed save leaves its reason for the window to show until
+        /// it is dismissed; a save that goes through leaves none.
+        @Test func aFailedSaveKeepsItsReasonUntilDismissed() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = makeState(Prompts([]))
+            state.open(url: try encryptedZip(in: dir))
+            try await state.openTask?.value
+
+            await state.save(to: dir.appendingPathComponent("copy.7z"), options: .init(format: .sevenZ))?.value
+            #expect(state.saveError?.contains("without a password") == true, "\(state.saveError ?? "no reason")")
+            state.clearSaveError()
+            #expect(state.saveError == nil)
+
+            await state.save(to: dir.appendingPathComponent("copy.zip"), options: .init(format: .zip))?.value
+            #expect(state.saveError == nil, "\(state.saveError ?? "")")
+        }
+
         @Test(arguments: SevenZipCompressionOptions.Format.allCases)
         func aSplitSaveReopensItsFirstVolume(_ format: SevenZipCompressionOptions.Format) async throws {
             let dir = try makeTempDir()

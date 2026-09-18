@@ -91,6 +91,10 @@ public class ArchiveState: ObservableObject {
     /// twice. A failed open has no other surface at all: it ends in `reset()`,
     /// so the window goes back to its empty state and the user sees nothing.
     @Published private(set) public var openError: String? = nil
+    /// Why the last save failed or was refused, for the window to show. As with
+    /// `openError`, nothing else would: the status bar just stops, and the
+    /// window looks saved.
+    @Published private(set) public var saveError: String? = nil
     @Published public var isReloadNeeded: Bool = false
 
     // Listeners for non-ui
@@ -264,6 +268,11 @@ extension ArchiveState {
     /// Dismisses the failed-open message once the user has seen it.
     public func clearOpenError() {
         openError = nil
+    }
+
+    /// Dismisses the failed-save message once the user has seen it.
+    public func clearSaveError() {
+        saveError = nil
     }
     
     /// Cancels the current operation which can be either loading the archive or extracting
@@ -885,6 +894,7 @@ extension ArchiveState {
                     "error": String(describing: error)
                 ])
                 self.error = error.localizedDescription
+                self.saveError = error.localizedDescription
                 self.isBusy = false
                 self.isSaving = false
                 self.progress = nil

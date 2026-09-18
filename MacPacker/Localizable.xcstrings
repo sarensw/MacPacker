@@ -3112,6 +3112,9 @@
         }
       }
     },
+    "Could not save archive" : {
+      "comment" : "Title of the alert shown when saving an archive failed or was refused; the reason follows below it"
+    },
     "Create a new archive" : {
       "comment" : "Drop zone shown while dragging a file that isn't an archive: releasing here starts a new archive containing that file.",
       "localizations" : {
