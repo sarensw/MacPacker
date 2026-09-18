@@ -122,6 +122,7 @@ extension SevenZipArchive {
             : progress
         try performUpdate(
             source: rebuild ? nil : source,
+            sourcePassword: sourcePassword,
             destination: actualDest,
             resolvedItems: resolved,
             options: options,
@@ -561,6 +562,7 @@ extension SevenZipArchive {
 
     private static func performUpdate(
         source: URL?,
+        sourcePassword: String?,
         destination: URL,
         resolvedItems: [ResolvedItem],
         options: SevenZipCompressionOptions,
@@ -664,7 +666,9 @@ extension SevenZipArchive {
                     let methodC = cString(options.level == 0 ? nil : options.method?.rawValue)
                     let passwordC = cString(options.encrypts ? options.password : nil)
                     let encryptionC = cString(options.encryption?.rawValue)
-                    defer { for pointer in [formatC, methodC, passwordC, encryptionC] { free(pointer) } }
+                    // what reads the source for the update, not what the update writes
+                    let sourcePasswordC = cString(source == nil ? nil : sourcePassword)
+                    defer { for pointer in [formatC, methodC, passwordC, encryptionC, sourcePasswordC] { free(pointer) } }
 
                     var cOptions = SZCompressionOptions()
                     cOptions.format = UnsafePointer(formatC)
@@ -683,6 +687,7 @@ extension SevenZipArchive {
                     var errorPtr: UnsafeMutablePointer<CChar>?
                     let result = sz_update_archive(
                         source?.path,
+                        UnsafePointer(sourcePasswordC),
                         destination.path,
                         &cItems,
                         UInt32(cItems.count),

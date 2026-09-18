@@ -524,6 +524,13 @@ extension AllCoreTests {
             return source
         }
 
+        /// A 7z whose names take the password too: "password" opens it.
+        private func hiddenNames7z(in dir: URL) throws -> URL {
+            let source = dir.appendingPathComponent("hidden.7z")
+            try FileManager.default.copyItem(at: passwordFixture("7z_encrypted_header.7z"), to: source)
+            return source
+        }
+
         private func makeState(_ prompts: Prompts) -> ArchiveState {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             state.passwordProvider = { _ in prompts.next() }
@@ -628,6 +635,40 @@ extension AllCoreTests {
             #expect(state.error?.contains("password") == true, "\(state.error ?? "no error")")
             #expect(!FileManager.default.fileExists(atPath: other.path))
             #expect(prompts.count == 0, "nothing needed asking")
+        }
+
+        /// A 7z whose names are encrypted saves like any other: Save takes an added
+        /// file, and a Save As without a new password copies it. Either way it
+        /// stays locked as before, the added file too. The write opens the archive
+        /// again, which takes its password: the one given when the window opened
+        /// it, not asked for a second time.
+        @Test(arguments: [false, true])
+        func anArchiveWithHiddenNamesSaves(asACopy: Bool) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = try hiddenNames7z(in: dir)
+            let prompts = Prompts(["password"])
+            let state = makeState(prompts)
+            state.open(url: source)
+            try await state.openTask?.value
+            let added = dir.appendingPathComponent("added.txt")
+            try "added".write(to: added, atomically: true, encoding: .utf8)
+            state.add(url: added)
+
+            let saved = asACopy ? dir.appendingPathComponent("copy.7z") : source
+            await state.save(to: asACopy ? saved : nil, options: asACopy ? .init(format: .sevenZ) : nil)?.value
+            #expect(state.error == nil, "\(state.error ?? "")")
+            #expect(prompts.count == 1, "the password given when opening was asked for again")
+            #expect(throws: (any Error).self, "its names open without the password") {
+                _ = try SevenZipArchive(url: saved)
+            }
+            let files = try SevenZipArchive(url: saved, password: "password").entries
+                .filter { !$0.isDirectory && $0.size > 0 }
+            #expect(files.contains { $0.path == "hello world.txt" })
+            #expect(files.contains { $0.path == "added.txt" })
+            let plain = files.filter { !$0.isEncrypted }.map(\.path)
+            #expect(plain.isEmpty, "left in plain: \(plain)")
+            #expect(try opens(saved, with: "password"))
         }
 
         /// A refused or failed save leaves its reason for the window to show until
@@ -739,9 +780,7 @@ extension AllCoreTests {
             switch lock {
             case .none: archive = try makeSystemZipFixture(in: dir)
             case .contents: archive = try encryptedZip(in: dir)
-            case .everything:
-                archive = dir.appendingPathComponent("hidden.7z")
-                try FileManager.default.copyItem(at: passwordFixture("7z_encrypted_header.7z"), to: archive)
+            case .everything: archive = try hiddenNames7z(in: dir)
             }
             let format: SevenZipCompressionOptions.Format = lock == .everything ? .sevenZ : .zip
             let prompts = Prompts(["password"])

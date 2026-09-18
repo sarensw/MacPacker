@@ -533,11 +533,41 @@ Z7_COM7F_IMF(CUpdateCallback::CryptoGetTextPassword2(Int32 *passwordIsDefined, B
     return *password ? S_OK : E_OUTOFMEMORY;
 }
 
+/// Hands the source its password while it is opened for the update: a 7z whose
+/// names are encrypted cannot list its entries without one. Opened with it, the
+/// 7z handler also writes what is added, and the names, under that password.
+/// Without one the open fails, as it did with no callback at all.
+class CSourceOpenCallback final :
+    public IArchiveOpenCallback,
+    public ICryptoGetTextPassword,
+    public CMyUnknownImp
+{
+    Z7_COM_UNKNOWN_IMP_2(IArchiveOpenCallback, ICryptoGetTextPassword)
+
+    const char *_password;
+
+public:
+    explicit CSourceOpenCallback(const char *password) : _password(password) {}
+
+    Z7_COM7F_IMF(SetTotal(const UInt64 *, const UInt64 *)) { return S_OK; }
+    Z7_COM7F_IMF(SetCompleted(const UInt64 *, const UInt64 *)) { return S_OK; }
+
+    Z7_COM7F_IMF(CryptoGetTextPassword(BSTR *password)) {
+        *password = nullptr;
+        if (!_password)
+            return E_ABORT;
+        UString u = UTF8ToUString(_password);
+        *password = ::SysAllocString((const OLECHAR *)(const wchar_t *)u);
+        return *password ? S_OK : E_OUTOFMEMORY;
+    }
+};
+
 // --- Main entry point ---
 
 extern "C"
 int sz_update_archive(
     const char *source_path,
+    const char *source_password,
     const char *dest_path,
     const SZUpdateItem *items,
     uint32_t item_count,
@@ -578,6 +608,7 @@ int sz_update_archive(
                 return 1;
             }
 
+            CMyComPtr<IArchiveOpenCallback> openCallback(new CSourceOpenCallback(source_password));
             UInt32 numFormats = 0;
             GetNumberOfFormats(&numFormats);
             bool opened = false;
@@ -596,7 +627,7 @@ int sz_update_archive(
                 UInt64 newPos;
                 inFileStream->Seek(0, STREAM_SEEK_SET, &newPos);
                 UInt64 maxCheck = 1 << 22;
-                hr = candidate->Open(inFileStream, &maxCheck, nullptr);
+                hr = candidate->Open(inFileStream, &maxCheck, openCallback);
                 if (hr == S_OK) {
                     inArchive = candidate;
                     opened = true;

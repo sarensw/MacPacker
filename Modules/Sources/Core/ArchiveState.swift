@@ -879,11 +879,14 @@ extension ArchiveState {
                 let written = (effectiveOptions.volumeSize ?? 0) > 0
                     ? target.deletingLastPathComponent().appendingPathComponent(target.lastPathComponent + ".001")
                     : target
+                // What opens it now: the password just set for it, or else the
+                // source's, which a copy or an update keeps.
+                let password = effectiveOptions.password ?? source.flatMap { passwords[$0] }
                 open(url: written)
-                // The password was just typed for it — reopening must not ask again.
-                // Set after open(), which starts by forgetting every password, and
-                // before the first await, so the load has not asked yet.
-                if let password = effectiveOptions.password {
+                // Known already — reopening must not ask again. Set after open(),
+                // which starts by forgetting every password, and before the first
+                // await, so the load has not asked yet.
+                if let password {
                     passwords[written] = password
                 }
                 _ = try? await openTask?.value

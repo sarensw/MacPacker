@@ -206,6 +206,9 @@ typedef struct {
 /// Create or update an archive from a list of update items.
 ///
 /// @param source_path  Path to the source archive (NULL to create a new archive).
+/// @param source_password  The source's password, UTF-8, or NULL. A 7z whose
+///                     names are encrypted cannot be read without it; 7-Zip then
+///                     also encrypts what is added, and the names, with it.
 /// @param dest_path    Path for the output archive file -- the base name of the
 ///                     volumes when `options->volume_size` is set.
 /// @param items        Array of update item descriptors.
@@ -218,6 +221,7 @@ typedef struct {
 /// @return 0 on success, non-zero on failure.
 int sz_update_archive(
     const char *source_path,
+    const char *source_password,
     const char *dest_path,
     const SZUpdateItem *items,
     uint32_t item_count,
