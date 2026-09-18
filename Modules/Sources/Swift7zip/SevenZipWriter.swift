@@ -49,11 +49,13 @@ extension SevenZipArchive {
         if inPlace && (options.volumeSize ?? 0) > 0 {
             throw SevenZipError.writeFailed("An archive can't be split into volumes in place")
         }
-        // The save panel asks before replacing x.zip, never about x.zip.001: an
-        // older set of volumes by that name is refused, not partly overwritten.
-        if (options.volumeSize ?? 0) > 0, FileManager.default.fileExists(atPath: destination.path + ".001") {
+        // The save panel asks before replacing x.zip, never about its volumes: an
+        // older one by that name is refused, not written over. Any of them — what
+        // is left of an older set would be read as part of the new one. Where the
+        // folder cannot be listed, the bridge refuses at that volume instead.
+        if (options.volumeSize ?? 0) > 0, let existing = existingVolume(of: destination) {
             throw SevenZipError.writeFailed(
-                "\(destination.lastPathComponent).001 already exists. Pick another name, or move the old volumes away first.")
+                "\(existing.lastPathComponent) already exists. Pick another name, or move the old volumes away first.")
         }
         // 7-Zip would refuse it too, with nothing to say why.
         if options.encrypts, options.format == .zip,
@@ -135,6 +137,17 @@ extension SevenZipArchive {
                 throw error
             }
         }
+    }
+
+    /// A file next to `destination` named like one of its volumes — `x.zip.001`,
+    /// `x.zip.002`, … — or `nil`. The first by name, when there are several.
+    public static func existingVolume(of destination: URL) -> URL? {
+        let folder = destination.deletingLastPathComponent()
+        let volume = "^" + NSRegularExpression.escapedPattern(for: destination.lastPathComponent) + "\\.[0-9]{3,}$"
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
+        return names.sorted()
+            .first { $0.range(of: volume, options: [.regularExpression, .caseInsensitive]) != nil }
+            .map { folder.appendingPathComponent($0) }
     }
 
     // MARK: - Diff Resolution

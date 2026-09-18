@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <strings.h>
 #include <algorithm>
+#include <cerrno>
 #include <cstdio>
 
 #include "Common/MyWindows.h"
@@ -168,10 +169,18 @@ int COutVolumeStream::volume(size_t index) {
     if (_fd >= 0) { close(_fd); _fd = -1; }
     if (_created.size() <= index)
         _created.resize(index + 1, false);
-    // Truncated when first made, reopened as is after that: a seek back into a
+    // Made new, never opened over a file already there — 7-Zip refuses an
+    // existing volume too. Reopened as is after that: a seek back into a
     // finished volume must not throw away what it already holds.
-    const int flags = O_RDWR | O_CREAT | (_created[index] ? 0 : O_TRUNC);
+    const int flags = O_RDWR | (_created[index] ? 0 : O_CREAT | O_EXCL);
     _fd = open(path(index).c_str(), flags, 0644);
+    if (_fd < 0 && errno == EEXIST) {
+        // Not worded as a failure to create: the app would ask for folder access.
+        const std::string file = path(index);
+        errorMessage = file.substr(file.rfind('/') + 1)
+            + " already exists. Pick another name, or move the old volumes away first.";
+        return -1;
+    }
     if (_fd < 0) {
         // Worded like the single-file case, which the app answers by asking for
         // access to the folder: volumes are siblings of the file the save panel

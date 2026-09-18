@@ -793,12 +793,48 @@ extension AllCoreTests {
             #expect(try volumes(of: base).map { try Data(contentsOf: $0) } == before, "the old set is untouched")
         }
 
-        /// Quick Compress names its archive itself, so it steps around a set too.
+        /// A stray volume counts as much as a whole set: a `.002` without its `.001`
+        /// is refused and left as it was, never written over. Where the folder
+        /// cannot be listed, the writer only meets it at that volume — and still
+        /// refuses, as 7-Zip does, taking back the volume it had made.
+        @Test(arguments: [true, false])
+        func aStrayVolumeIsNeverWrittenOver(folderListable: Bool) throws {
+            let dir = try makeTempDir()
+            defer {
+                try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: dir.path)
+                try? FileManager.default.removeItem(at: dir)
+            }
+            let base = dir.appendingPathComponent("set.zip")
+            let stray = URL(fileURLWithPath: base.path + ".002")
+            try Data("older set".utf8).write(to: stray)
+            if !folderListable {
+                try FileManager.default.setAttributes([.posixPermissions: 0o333], ofItemAtPath: dir.path)
+            }
+            do {
+                try SevenZipArchive.writeArchive(
+                    destination: base, items: [.addData(archivePath: "noise.bin", data: noise(bytes: 200_000))],
+                    options: .init(format: .zip, volumeSize: 64 << 10))
+                Issue.record("wrote over set.zip.002")
+            } catch SevenZipError.writeFailed(let message) {
+                #expect(message.contains("set.zip.002 already exists"), "\(message)")
+            }
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: dir.path)
+            #expect(try Data(contentsOf: stray) == Data("older set".utf8), "the stray volume was written over")
+            #expect(!FileManager.default.fileExists(atPath: base.path + ".001"), "the new first volume stayed behind")
+        }
+
+        /// Quick Compress names its archive itself, so it steps around a set too —
+        /// around any volume of one, not only the first.
         @Test func quickCompressNamesAroundAnExistingSet() throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             try Data().write(to: dir.appendingPathComponent("photos.zip.001"))
+            try Data().write(to: dir.appendingPathComponent("music.zip.003"))
+            try Data().write(to: dir.appendingPathComponent("clips.zip.01"))
             #expect(CompressDestination.unique(named: "photos.zip", in: dir).lastPathComponent == "photos 2.zip")
+            #expect(CompressDestination.unique(named: "music.zip", in: dir).lastPathComponent == "music 2.zip")
+            #expect(CompressDestination.unique(named: "clips.zip", in: dir).lastPathComponent == "clips.zip",
+                    "two digits are no volume")
             #expect(CompressDestination.unique(named: "notes.zip", in: dir).lastPathComponent == "notes.zip")
         }
 

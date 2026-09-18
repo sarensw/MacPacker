@@ -9,6 +9,7 @@
 //
 
 import Foundation
+import Swift7zip
 
 public enum CompressDestination {
 
@@ -23,7 +24,7 @@ public enum CompressDestination {
 
     /// First non-existing variant of `name` in `dir`: "x.zip", "x 2.zip", "x 3.zip", …
     /// Never overwrites — a repeated drop of the same selection makes a new file.
-    /// A split archive's first volume ("x.zip.001") holds the name as well.
+    /// So does any volume of a split archive: "x.zip.001", "x.zip.002", …
     public static func unique(named name: String, in dir: URL) -> URL {
         let stem = (name as NSString).deletingPathExtension
         let ext = (name as NSString).pathExtension
@@ -38,6 +39,6 @@ public enum CompressDestination {
 
     private static func taken(_ url: URL) -> Bool {
         FileManager.default.fileExists(atPath: url.path)
-            || FileManager.default.fileExists(atPath: url.path + ".001")
+            || SevenZipArchive.existingVolume(of: url) != nil
     }
 }
