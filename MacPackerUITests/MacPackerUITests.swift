@@ -766,7 +766,8 @@ final class MacPackerUITests: XCTestCase {
         add(screenshot(app, name: "save-refused"))
         XCTAssertFalse(FileManager.default.fileExists(atPath: dir.appendingPathComponent("fixture.7z").path))
 
-        app.buttons["OK"].firstMatch.click()
+        // scoped to windows: a bare query finds the Touch Bar's copy of the button
+        app.windows.buttons["OK"].firstMatch.click()
         XCTAssertTrue(reason.waitForNonExistence(timeout: 5), "the message did not go away")
         app.terminate()
     }
