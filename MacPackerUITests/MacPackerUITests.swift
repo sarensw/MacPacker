@@ -402,7 +402,8 @@ final class MacPackerUITests: XCTestCase {
         let app = launchApp(arguments: ["-DropWindow", "1", "-dropWindowOptionsExpanded", "NO"])
         let dropArea = app.descendants(matching: .any)["quickCompress.dropArea"].firstMatch
         XCTAssertTrue(dropArea.waitForExistence(timeout: 15), "the drop window did not open")
-        let narrow = app.windows.firstMatch.frame.width
+        // the panel is no window to XCUITest; the drop area spans its width
+        let narrow = dropArea.frame.width
 
         app.buttons.matching(NSPredicate(format: "label == %@", "Options")).firstMatch.click()
 
@@ -410,7 +411,7 @@ final class MacPackerUITests: XCTestCase {
         XCTAssertTrue(password.waitForExistence(timeout: 10), "the options do not show the password field")
         XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveOptions.volume").firstMatch.exists)
         XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveOptions.excludeDSStore").firstMatch.exists)
-        XCTAssertGreaterThan(app.windows.firstMatch.frame.width, narrow, "the window did not widen for the options")
+        XCTAssertGreaterThan(dropArea.frame.width, narrow, "the window did not widen for the options")
         app.terminate()
     }
 
@@ -688,12 +689,33 @@ final class MacPackerUITests: XCTestCase {
         again.terminate()
     }
 
-    /// A fresh fixture zip, opened, with the Save As panel up.
-    private func openSaveAs(_ name: String) throws -> (XCUIApplication, URL) {
+    /// A save that cannot go ahead says why, instead of looking done: an
+    /// encrypted zip saved as 7z with no password of its own is refused, and the
+    /// window shows the reason until it is dismissed.
+    func testARefusedSaveSaysWhy() throws {
+        let (app, dir) = try openSaveAs("refused", zipArguments: ["-P", "secret"])
+        defer { try? FileManager.default.removeItem(at: dir) }
+        choose("7z", in: "saveFormatPicker", app)
+        confirmSave(app)
+
+        let reason = app.staticTexts.matching(NSPredicate(
+            format: "value CONTAINS %@ OR label CONTAINS %@", "without a password", "without a password")).firstMatch
+        XCTAssertTrue(reason.waitForExistence(timeout: 15), "the refused save said nothing")
+        add(screenshot(app, name: "save-refused"))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: dir.appendingPathComponent("fixture.7z").path))
+
+        app.buttons["OK"].firstMatch.click()
+        XCTAssertTrue(reason.waitForNonExistence(timeout: 5), "the message did not go away")
+        app.terminate()
+    }
+
+    /// A fresh fixture zip, opened, with the Save As panel up. `zipArguments`
+    /// go to `zip` ahead of the rest — `-P` encrypts it.
+    private func openSaveAs(_ name: String, zipArguments: [String] = []) throws -> (XCUIApplication, URL) {
         let dir = try makeWorkDir(name)
         try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
         let zip = dir.appendingPathComponent("fixture.zip")
-        try run("/usr/bin/zip", [zip.path, "one.txt"], cwd: dir)
+        try run("/usr/bin/zip", zipArguments + [zip.path, "one.txt"], cwd: dir)
 
         let app = launchApp(arguments: ["-ArchivePath", zip.path])
         XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
