@@ -629,17 +629,61 @@ extension AllCoreTests {
             #expect(state.entries.values.contains { $0.name == "note.txt" })
         }
 
-        @Test func saveAsCarriesTheChosenMethod() async throws {
+        /// A zip whose one file Deflate shrinks, so its method shows: 7-Zip stores
+        /// what a method would not shrink, and `zipinfo` then says `stor`.
+        private func compressibleZip(in dir: URL) throws -> URL {
+            let zip = dir.appendingPathComponent("text.zip")
+            try SevenZipArchive.writeArchive(
+                destination: zip,
+                items: [.addData(archivePath: "text.txt",
+                                 data: Data(String(repeating: "text text text\n", count: 200).utf8))],
+                options: .init(format: .zip))
+            return zip
+        }
+
+        /// Every entry is written again with the chosen method — onto another file,
+        /// and onto the archive's own, where the panel suggests saving.
+        @Test(arguments: [false, true])
+        func saveAsCarriesTheChosenMethod(ontoItsOwnFile: Bool) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try compressibleZip(in: dir)
+            #expect(try zipMethods(zip)["text.txt"] == "defN")
+            let state = makeState(Prompts([]))
+            state.open(url: zip)
+            try await state.openTask?.value
+
+            let saved = ontoItsOwnFile ? zip : dir.appendingPathComponent("lzma.zip")
+            await state.save(to: saved, options: .init(format: .zip, level: 9, method: .lzma))?.value
+            #expect(state.error == nil, "\(state.error ?? "")")
+            #expect(try zipMethods(saved)["text.txt"] == "lzma")
+        }
+
+        /// Save As onto the archive's own file — what the panel suggests, as it
+        /// opens in the archive's folder under its name — is a Save As all the
+        /// same: the new password locks every entry, not only the ones added.
+        @Test(arguments: [false, true])
+        func saveAsOntoItsOwnFileEncryptsEveryEntry(withAnAddition: Bool) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let zip = try makeSystemZipFixture(in: dir)
             let state = makeState(Prompts([]))
             state.open(url: zip)
             try await state.openTask?.value
-            let saved = dir.appendingPathComponent("lzma.zip")
-            await state.save(to: saved, options: .init(format: .zip, level: 9, method: .lzma))?.value
+            if withAnAddition {
+                let added = dir.appendingPathComponent("added.txt")
+                try "added".write(to: added, atomically: true, encoding: .utf8)
+                state.add(url: added)
+            }
+
+            await state.save(to: zip, options: .init(format: .zip, password: "fresh"))?.value
             #expect(state.error == nil, "\(state.error ?? "")")
-            #expect(try zipMethods(saved).values.filter { $0 != "stor" }.allSatisfy { $0 == "lzma" })
+            let files = try SevenZipArchive(url: zip).entries.filter { !$0.isDirectory && $0.size > 0 }
+            #expect(files.contains { $0.path == "root.txt" })
+            #expect(files.contains { $0.path == "added.txt" } == withAnAddition)
+            let plain = files.filter { !$0.isEncrypted }.map(\.path)
+            #expect(plain.isEmpty, "left in plain: \(plain)")
+            #expect(try opens(zip, with: "fresh"))
         }
     }
 }

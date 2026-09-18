@@ -710,8 +710,9 @@ extension ArchiveState {
 
     /// Saves the pending changes.
     ///
-    /// - For an archive loaded from disk, the changes are applied in place
-    ///   (`destination` may override, "save as").
+    /// - For an archive loaded from disk, the changes are applied in place.
+    ///   A `destination` makes it a Save As: the archive is written again with
+    ///   `options`, onto its own file too.
     /// - For a new archive (never saved), `destination` is required — that's
     ///   where the archive is created.
     ///
@@ -728,9 +729,9 @@ extension ArchiveState {
             return nil
         }
         guard let target = destination ?? url else { return nil }
-        // An empty diff is a no-op in place, but writing to a *different* target
-        // is a "save a copy" (Save As of a clean archive) — allow that.
-        guard !diff.isEmpty || target != url else { return nil }
+        // Save with nothing pending is a no-op. A Save As is not, even of a clean
+        // archive onto its own file: its options have to reach every entry.
+        guard !diff.isEmpty || destination != nil else { return nil }
 
         let source = url
         let items = excludeDSStore ? Self.excludingDSStore(diff) : diff
@@ -797,6 +798,7 @@ extension ArchiveState {
                     items: items,
                     options: effectiveOptions,
                     sourcePassword: sourcePassword,
+                    rewrite: destination != nil,
                     progress: onWriteProgress
                 )
             }

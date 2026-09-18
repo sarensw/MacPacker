@@ -21,6 +21,9 @@ extension SevenZipArchive {
     /// in `options` it is copied as it is instead, and refused for a change of
     /// format: rebuilt, it would come out unencrypted.
     ///
+    /// `rewrite` makes a Save As onto the source's own file one too: written
+    /// again with `options`, not updated.
+    ///
     /// - Parameters:
     ///   - source: URL of the source archive, or `nil` to create new.
     ///   - destination: URL where the output archive will be written.
@@ -38,6 +41,7 @@ extension SevenZipArchive {
         items: [ArchiveUpdateItem],
         options: SevenZipCompressionOptions = .init(),
         sourcePassword: String? = nil,
+        rewrite: Bool = false,
         progress: WriteProgressHandler? = nil
     ) throws {
         let inPlace = source != nil
@@ -94,7 +98,7 @@ extension SevenZipArchive {
                 throw SevenZipError.writeFailed(
                     "An encrypted archive can't be saved as \(options.format.rawValue) without a password: it would lose its encryption")
             }
-            rebuild = sourceArchive != nil && !inPlace && (!encrypted || options.encrypts)
+            rebuild = sourceArchive != nil && (!inPlace || rewrite) && (!encrypted || options.encrypts)
 
             // Resolve the diff into a full item list for the C bridge.
             resolved = try resolveDiff(sourceArchive: sourceArchive, items: items)
