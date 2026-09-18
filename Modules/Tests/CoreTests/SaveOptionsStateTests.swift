@@ -689,24 +689,84 @@ extension AllCoreTests {
             #expect(state.saveError == nil, "\(state.saveError ?? "")")
         }
 
+        /// A set of four 64 KB volumes written through the window, which then
+        /// holds it. Noise, since anything that compresses would fit in one.
+        private func splitSet(_ format: SevenZipCompressionOptions.Format, in dir: URL) async throws -> ArchiveState {
+            let file = dir.appendingPathComponent("noise.bin")
+            try noise(bytes: 200_000).write(to: file)
+            let state = makeState(Prompts([]))
+            state.create()
+            state.add(url: file)
+            await state.save(to: dir.appendingPathComponent("set.\(format.rawValue)"),
+                             options: .init(format: format, volumeSize: 64 << 10))?.value
+            return state
+        }
+
         @Test(arguments: SevenZipCompressionOptions.Format.allCases)
         func aSplitSaveReopensItsFirstVolume(_ format: SevenZipCompressionOptions.Format) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
-            var noise = Data(count: 200_000)
-            for i in noise.indices { noise[i] = UInt8(truncatingIfNeeded: i &* 2654435761 >> 7) }
-            let file = dir.appendingPathComponent("noise.bin")
-            try noise.write(to: file)
-
-            let state = makeState(Prompts([]))
-            state.create()
-            state.add(url: file)
-            let target = dir.appendingPathComponent("set.\(format.rawValue)")
-            await state.save(to: target, options: .init(format: format, volumeSize: 64 << 10))?.value
+            let state = try await splitSet(format, in: dir)
             #expect(state.error == nil, "\(state.error ?? "")")
+            #expect(FileManager.default.fileExists(atPath: dir.appendingPathComponent("set.\(format.rawValue).004").path))
             #expect(state.url?.lastPathComponent == "set.\(format.rawValue).001")
             #expect(state.name == "set.\(format.rawValue)", "the window names the set, in the format's extension")
             #expect(state.entries.values.contains { $0.name == "noise.bin" })
+        }
+
+        /// The kinds of set a window can hold.
+        enum VolumeSet: String, CaseIterable, Sendable {
+            /// 7-Zip's numbered volumes, written through the window.
+            case sevenZ, zip
+            /// Info-ZIP's `zip -s`: split_pk.z01, split_pk.z02, split_pk.zip.
+            case spanned
+        }
+
+        /// A set of volumes is not changed in place — 7-Zip does not update one
+        /// either. Save says so and leaves every volume as it was; the change stays
+        /// pending, for a Save As to write elsewhere.
+        @Test(arguments: VolumeSet.allCases)
+        func aSplitSetIsNotChangedInPlace(_ kind: VolumeSet) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state: ArchiveState
+            switch kind {
+            case .sevenZ: state = try await splitSet(.sevenZ, in: dir)
+            case .zip: state = try await splitSet(.zip, in: dir)
+            case .spanned:
+                let fixtures = Bundle.module.url(forResource: "zip", withExtension: nil)!
+                for part in ["split_pk.z01", "split_pk.z02", "split_pk.zip"] {
+                    try FileManager.default.copyItem(at: fixtures.appendingPathComponent(part),
+                                                     to: dir.appendingPathComponent(part))
+                }
+                state = makeState(Prompts([]))
+                state.open(url: dir.appendingPathComponent("split_pk.zip"))
+                try await state.openTask?.value
+            }
+            #expect(state.error == nil, "\(state.error ?? "")")
+            let volumes = {
+                try FileManager.default.contentsOfDirectory(atPath: dir.path)
+                    .filter { $0 != "noise.bin" && $0 != "added.txt" }.sorted()
+            }
+            let names = try volumes()
+            #expect(names.count >= 3, "\(names)")
+            let before = try names.map { try Data(contentsOf: dir.appendingPathComponent($0)) }
+            let added = dir.appendingPathComponent("added.txt")
+            try "added".write(to: added, atomically: true, encoding: .utf8)
+            state.add(url: added)
+
+            await state.save()?.value
+            #expect(state.saveError?.contains("Save As") == true, "\(state.saveError ?? "no reason")")
+            #expect(state.hasPendingChanges, "the change is gone")
+            #expect(try volumes() == names)
+            #expect(try names.map { try Data(contentsOf: dir.appendingPathComponent($0)) } == before, "a volume changed")
+
+            // and what it says to do works: Save As writes the set, change included, as one archive
+            let format: SevenZipCompressionOptions.Format = kind == .sevenZ ? .sevenZ : .zip
+            let joined = dir.appendingPathComponent("joined.\(format.rawValue)")
+            await state.save(to: joined, options: .init(format: format))?.value
+            #expect(state.error == nil, "\(state.error ?? "")")
+            #expect(try SevenZipArchive(url: joined).entries.contains { $0.path == "added.txt" })
         }
 
         /// The window reopens what it saved. With encrypted names that needs the

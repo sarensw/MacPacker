@@ -124,7 +124,7 @@ private func sampleText(bytes: Int, seed start: UInt64) -> Data {
 }
 
 /// Bytes no method can shrink, so volumes fill up predictably.
-private func noise(bytes: Int) -> Data {
+func noise(bytes: Int) -> Data {
     var seed: UInt64 = 7
     return Data((0..<bytes).map { _ in
         seed = seed &* 6364136223846793005 &+ 1442695040888963407

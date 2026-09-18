@@ -741,6 +741,17 @@ extension ArchiveState {
         // Save with nothing pending is a no-op. A Save As is not, even of a clean
         // archive onto its own file: its options have to reach every entry.
         guard !diff.isEmpty || destination != nil else { return nil }
+        // A set of volumes is not changed in place — 7-Zip does not update one
+        // either, and a new file over the first volume would leave the others to
+        // be read as part of it. Save As writes the change elsewhere.
+        if let url, target.standardizedFileURL == url.standardizedFileURL,
+           splitSetName(for: url) != url.lastPathComponent {
+            log.notice("Refusing to save a split archive in place", context: ["file": url.lastPathComponent])
+            let reason = "\(name ?? url.lastPathComponent) is split into volumes, so it can't be changed in place. Use Save As to write it as a new archive."
+            error = reason
+            saveError = reason
+            return nil
+        }
 
         let source = url
         let items = excludeDSStore ? Self.excludingDSStore(diff) : diff
