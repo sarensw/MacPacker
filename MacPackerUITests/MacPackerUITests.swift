@@ -415,6 +415,56 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// A password typed but not confirmed never locks a drop: the file bounces
+    /// and nothing is written. Confirmed, the same drop writes an archive that
+    /// only this password opens.
+    ///
+    /// Every accepted drop into a fresh folder asks for access to it first, so
+    /// the panel not showing is what says the drop was refused.
+    func testQuickCompressRefusesAnUnconfirmedPassword() throws {
+        let dir = try makeWorkDir("dropmismatch")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "dropped".write(to: dir.appendingPathComponent("dropped.txt"), atomically: true, encoding: .utf8)
+
+        let app = launchApp(arguments: ["-DropWindow", "1", "-dropWindowOptionsExpanded", "YES"])
+        let dropArea = app.descendants(matching: .any)["quickCompress.dropArea"].firstMatch
+        XCTAssertTrue(dropArea.waitForExistence(timeout: 15), "the drop window did not open")
+        let password = app.secureTextFields["saveOptions.password"].firstMatch
+        XCTAssertTrue(password.waitForExistence(timeout: 10), "the options do not show the password field")
+        password.click()
+        password.typeText("secret")
+
+        NSWorkspace.shared.open(dir)
+        let finder = XCUIApplication(bundleIdentifier: "com.apple.finder")
+        let source = finder.textFields.matching(NSPredicate(format: "value == %@", "dropped.txt")).firstMatch
+        XCTAssertTrue(source.waitForExistence(timeout: 15), "Finder does not show the file to drag")
+        let drop = {
+            source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+                .press(forDuration: 1, thenDragTo: dropArea.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
+        }
+        let zip = dir.appendingPathComponent("dropped.zip")
+        let grant = app.windows.buttons["Grant Access"].firstMatch
+
+        drop()
+        XCTAssertFalse(grant.waitForExistence(timeout: 5), "the drop went ahead with an unconfirmed password")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: zip.path))
+        XCTAssertTrue(app.staticTexts["saveOptions.problem"].firstMatch.exists, "the reason is not shown")
+
+        let verify = app.secureTextFields["saveOptions.passwordVerify"].firstMatch
+        verify.click()
+        verify.typeText("secret")
+        sleep(1)   // a second drag out of the same Finder row needs a pause
+        drop()
+        confirmAccessPanel(app, button: "Grant Access")
+        XCTAssertTrue(waitForFile(zip, timeout: 30), "the confirmed drop wrote nothing")
+        let sevenZip = "/opt/homebrew/bin/7zz"
+        if FileManager.default.isExecutableFile(atPath: sevenZip) {
+            XCTAssertNotEqual(status(sevenZip, ["t", "-pwrong", zip.path]), 0, "the archive opens without its password")
+            XCTAssertEqual(status(sevenZip, ["t", "-psecret", zip.path]), 0, "its password does not open it")
+        }
+        app.terminate()
+    }
+
     /// Issue #141: the toolbar display mode picked from the toolbar's context menu
     /// survives a relaunch. Drives the reported repro in both directions, so the
     /// result can't come from state a previous run left behind.
