@@ -659,16 +659,37 @@ extension AllCoreTests {
             #expect(try zipMethods(saved)["text.txt"] == "lzma")
         }
 
+        /// What locks an archive before it is saved again.
+        enum Lock: String, CaseIterable, Sendable {
+            /// A zip nothing locks.
+            case none
+            /// A zip whose contents take the password; its names do not.
+            case contents
+            /// A 7z whose names take the password too.
+            case everything
+        }
+
         /// Save As onto the archive's own file — what the panel suggests, as it
         /// opens in the archive's folder under its name — is a Save As all the
-        /// same: the new password locks every entry, not only the ones added.
-        @Test(arguments: [false, true])
-        func saveAsOntoItsOwnFileEncryptsEveryEntry(withAnAddition: Bool) async throws {
+        /// same: the new password locks every entry, not only the ones added, and
+        /// the old one opens nothing any more. The old password is asked for once:
+        /// when the archive is opened, or when the save first needs it.
+        @Test(arguments: Lock.allCases, [false, true])
+        func saveAsOntoItsOwnFileEncryptsEveryEntry(_ lock: Lock, withAnAddition: Bool) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
-            let zip = try makeSystemZipFixture(in: dir)
-            let state = makeState(Prompts([]))
-            state.open(url: zip)
+            let archive: URL
+            switch lock {
+            case .none: archive = try makeSystemZipFixture(in: dir)
+            case .contents: archive = try encryptedZip(in: dir)
+            case .everything:
+                archive = dir.appendingPathComponent("hidden.7z")
+                try FileManager.default.copyItem(at: passwordFixture("7z_encrypted_header.7z"), to: archive)
+            }
+            let format: SevenZipCompressionOptions.Format = lock == .everything ? .sevenZ : .zip
+            let prompts = Prompts(["password"])
+            let state = makeState(prompts)
+            state.open(url: archive)
             try await state.openTask?.value
             if withAnAddition {
                 let added = dir.appendingPathComponent("added.txt")
@@ -676,14 +697,25 @@ extension AllCoreTests {
                 state.add(url: added)
             }
 
-            await state.save(to: zip, options: .init(format: .zip, password: "fresh"))?.value
+            await state.save(to: archive, options: .init(format: format, password: "fresh",
+                                                         encryptFileNames: format == .sevenZ))?.value
             #expect(state.error == nil, "\(state.error ?? "")")
-            let files = try SevenZipArchive(url: zip).entries.filter { !$0.isDirectory && $0.size > 0 }
-            #expect(files.contains { $0.path == "root.txt" })
+            #expect(prompts.count == (lock == .none ? 0 : 1))
+            let files = try SevenZipArchive(url: archive, password: "fresh").entries
+                .filter { !$0.isDirectory && $0.size > 0 }
+            #expect(!files.isEmpty)
             #expect(files.contains { $0.path == "added.txt" } == withAnAddition)
             let plain = files.filter { !$0.isEncrypted }.map(\.path)
             #expect(plain.isEmpty, "left in plain: \(plain)")
-            #expect(try opens(zip, with: "fresh"))
+            #expect(try opens(archive, with: "fresh"))
+            if lock != .none {
+                #expect(try !opens(archive, with: "password"), "the old password still opens it")
+            }
+            if format == .sevenZ {
+                #expect(throws: (any Error).self, "its names open without the password") {
+                    _ = try SevenZipArchive(url: archive)
+                }
+            }
         }
     }
 }
