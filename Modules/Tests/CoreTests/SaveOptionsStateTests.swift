@@ -425,7 +425,7 @@ extension AllCoreTests {
                 .remove(sourceIndex: 3),
                 .move(sourceIndex: 4, newPath: "moved/.DS_Store"),
             ]
-            let kept = ArchiveState.excludingDSStore(items)
+            let kept = items.excludingDSStore()
             let paths: [String] = kept.map { item in
                 switch item {
                 case .addFile(let path, _, _, _), .addData(let path, _, _, _), .addDirectory(let path, _, _, _): path
@@ -579,6 +579,23 @@ extension AllCoreTests {
             #expect(state.error == nil, "\(state.error ?? "")")
             #expect(prompts.count == 2)
             #expect(try opens(saved, with: "fresh"))
+        }
+
+        /// A wrong answer is asked for again, but not without end: after the
+        /// last one the save gives up, says why, and writes nothing.
+        @Test func theSourcePasswordIsAskedForAFewTimesAtMost() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let prompts = Prompts(["nope"])
+            let state = makeState(prompts)
+            state.open(url: try encryptedZip(in: dir))
+            try await state.openTask?.value
+
+            let saved = dir.appendingPathComponent("fresh.zip")
+            await state.save(to: saved, options: .init(format: .zip, password: "fresh"))?.value
+            #expect(prompts.count == ArchiveSaver.passwordPrompts)
+            #expect(state.saveError != nil)
+            #expect(!FileManager.default.fileExists(atPath: saved.path))
         }
 
         @Test func cancellingThePromptLeavesNothingBehind() async throws {

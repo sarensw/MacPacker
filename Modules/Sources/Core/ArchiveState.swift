@@ -702,21 +702,6 @@ extension ArchiveState {
     /// Whether there are unsaved changes (pending additions/removals).
     public var hasPendingChanges: Bool { !diff.isEmpty }
 
-    /// The diff without the `.DS_Store` files it would add. Finder writes one into
-    /// every folder it shows, and nobody means to archive it. Only additions go —
-    /// entries the archive already holds stay — and only files named exactly
-    /// `.DS_Store`: a folder of that name is not Finder's.
-    nonisolated static func excludingDSStore(_ items: [ArchiveUpdateItem]) -> [ArchiveUpdateItem] {
-        items.filter { item in
-            switch item {
-            case .addFile(let path, _, _, _), .addData(let path, _, _, _):
-                return (path as NSString).lastPathComponent != ".DS_Store"
-            default:
-                return true
-            }
-        }
-    }
-
     /// Saves the pending changes.
     ///
     /// - For an archive loaded from disk, the changes are applied in place.
@@ -726,7 +711,8 @@ extension ArchiveState {
     ///   where the archive is created.
     ///
     /// After a successful write the archive is reloaded from disk so the
-    /// shown entries (and their source indices) match the file again.
+    /// shown entries (and their source indices) match the file again. The
+    /// write itself is `ArchiveSaver`'s; this keeps the window's state.
     @discardableResult
     public func save(
         to destination: URL? = nil,
@@ -741,24 +727,24 @@ extension ArchiveState {
         // Save with nothing pending is a no-op. A Save As is not, even of a clean
         // archive onto its own file: its options have to reach every entry.
         guard !diff.isEmpty || destination != nil else { return nil }
-        // A set of volumes is not changed in place — 7-Zip does not update one
-        // either, and a new file over the first volume would leave the others to
-        // be read as part of it. Save As writes the change elsewhere.
-        if let url, target.standardizedFileURL == url.standardizedFileURL,
-           splitSetName(for: url) != url.lastPathComponent {
-            log.notice("Refusing to save a split archive in place", context: ["file": url.lastPathComponent])
-            let reason = "\(name ?? url.lastPathComponent) is split into volumes, so it can't be changed in place. Use Save As to write it as a new archive."
-            error = reason
-            saveError = reason
-            return nil
-        }
-
-        let source = url
-        let items = excludeDSStore ? Self.excludingDSStore(diff) : diff
         // format follows the target extension; zip is the default
         let format: SevenZipCompressionOptions.Format =
             target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
-        let effectiveOptions = options ?? SevenZipCompressionOptions(format: format)
+        let saver = ArchiveSaver(
+            source: url,
+            // the set's name, when the archive is one volume of a split set
+            volumeSetName: url.flatMap { url in
+                let setName = splitSetName(for: url)
+                return setName == url.lastPathComponent ? nil : setName
+            },
+            target: target,
+            items: excludeDSStore ? diff.excludingDSStore() : diff,
+            options: options ?? SevenZipCompressionOptions(format: format),
+            isSaveAs: destination != nil,
+            sourcePassword: url.flatMap { passwords[$0] },
+            passwordResolver: makePasswordResolver(),
+            folderAccessProvider: folderAccessProvider,
+            onProgress: { [weak self] percent in self?.progress = percent })
 
         isSaving = true
         isBusy = true
@@ -767,138 +753,24 @@ extension ArchiveState {
         updateStatusText(String(localized: "saving...", bundle: .module, comment: "Archive operation status"))
         log.notice("Saving archive", context: [
             "target": target.lastPathComponent,
-            "changes": "\(items.count)",
-            "new": "\(source == nil)"
+            "changes": "\(saver.items.count)",
+            "new": "\(url == nil)"
         ])
-
-        // Forward 7-Zip's byte progress to the status bar. The callback fires
-        // on the writing (GCD) thread — throttle, then hop to the main actor.
-        let throttle = ProgressThrottle()
-        let onWriteProgress: @Sendable (UInt64, UInt64) -> Bool = { completed, total in
-            guard total > 0 else { return true }
-            let pct = Int((completed * 100) / total)
-            if throttle.shouldEmit(at: Date()) {
-                DispatchQueue.main.async {
-                    MainActor.assumeIsolated { self.progress = pct }
-                }
-            }
-            return true
-        }
-
-        // the write is a long synchronous C call — keep it off the
-        // cooperative pool; bracket any stored security-scoped grant
-        let performWrite: @MainActor () async throws -> Void = {
-            // Directories as well as files: a folder entry stores no contents,
-            // but the writer reads the folder's own extended attributes to store
-            // its metadata — a custom folder icon lives there. Without the grant
-            // that read is refused under the sandbox and the metadata is dropped
-            // silently, which is invisible to the unit tests because they do not
-            // run sandboxed.
-            var accessedFiles: [URL] = []
-            for item in items {
-                let diskPath: URL?
-                switch item {
-                case .addFile(_, let url, _, _): diskPath = url
-                case .addDirectory(_, let url, _, _): diskPath = url
-                default: diskPath = nil
-                }
-                if let diskPath, diskPath.startAccessingSecurityScopedResource() {
-                    accessedFiles.append(diskPath)
-                }
-            }
-            defer { for f in accessedFiles { f.stopAccessingSecurityScopedResource() } }
-
-            // A Save As reads every entry again, so an encrypted source needs its
-            // password: the one given when it was opened, or the one asked for below.
-            let sourcePassword = source.flatMap { self.passwords[$0] }
-            let work: @Sendable () throws -> Void = {
-                try SevenZipArchive.writeArchive(
-                    source: source,
-                    destination: target,
-                    items: items,
-                    options: effectiveOptions,
-                    sourcePassword: sourcePassword,
-                    rewrite: destination != nil,
-                    progress: onWriteProgress
-                )
-            }
-            try await Sandbox.access(url: target) {
-                try await runBlocking(work)
-            }
-        }
-
-        /// The archive may have been opened with a read-only grant (e.g. a
-        /// path handed over without a powerbox grant). Then the write fails
-        /// with a no-permission error — ask for folder access exactly like
-        /// the split-volume loader does, and retry once.
-        let isPermissionError: (Error) -> Bool = { error in
-            let ns = error as NSError
-            if ns.domain == NSCocoaErrorDomain,
-               ns.code == NSFileWriteNoPermissionError || ns.code == NSFileReadNoPermissionError {
-                return true
-            }
-            if case SevenZipError.writeFailed(let msg) = error {
-                return msg.contains("Cannot create output file") || msg.contains("Cannot open")
-            }
-            return false
-        }
-
-        /// The source's password was missing or wrong: asked for the way extraction
-        /// asks. A wrong one counts as a repeat request, which drops it from the
-        /// cache so the same answer is not tried again.
-        let passwordFailure: (Error) -> SevenZipError? = { error in
-            guard let error = error as? SevenZipError else { return nil }
-            switch error {
-            case .passwordMissing, .passwordWrong: return error
-            default: return nil
-            }
-        }
 
         return Task {
             do {
-                var attempt = 0
-                while true {
-                    do {
-                        do {
-                            try await performWrite()
-                        } catch where isPermissionError(error) {
-                            log.notice("Save hit a permission error — asking for folder access", context: ["target": target.lastPathComponent])
-                            guard let provider = folderAccessProvider, await provider(target) else {
-                                throw error
-                            }
-                            try await performWrite()
-                        }
-                        break
-                    } catch let failure where source != nil && attempt < 5 && passwordFailure(failure) != nil {
-                        attempt += 1
-                        var wrong = false
-                        if case .passwordWrong? = passwordFailure(failure) { wrong = true }
-                        log.notice("Save As needs the source archive's password", context: [
-                            "attempt": "\(attempt)", "wrong": "\(wrong)"
-                        ])
-                        let request = ArchivePasswordRequest(url: source!, attempt: wrong ? max(attempt, 2) : attempt)
-                        guard await makePasswordResolver()(request) != nil else { throw failure }
-                    }
-                }
-
+                let saved = try await saver.save()
                 diff.removeAll()
                 self.progress = nil
                 log.notice("Archive saved", context: ["target": target.lastPathComponent])
 
-                // reload from disk so entries and indices reflect the file — from its
-                // first volume, when it was split
-                let written = (effectiveOptions.volumeSize ?? 0) > 0
-                    ? target.deletingLastPathComponent().appendingPathComponent(target.lastPathComponent + ".001")
-                    : target
-                // What opens it now: the password just set for it, or else the
-                // source's, which a copy or an update keeps.
-                let password = effectiveOptions.password ?? source.flatMap { passwords[$0] }
-                open(url: written)
+                // reload from disk so entries and indices reflect the file
+                open(url: saved.url)
                 // Known already — reopening must not ask again. Set after open(),
                 // which starts by forgetting every password, and before the first
                 // await, so the load has not asked yet.
-                if let password {
-                    passwords[written] = password
+                if let password = saved.password {
+                    passwords[saved.url] = password
                 }
                 _ = try? await openTask?.value
                 self.isSaving = false
