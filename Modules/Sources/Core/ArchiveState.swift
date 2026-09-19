@@ -134,6 +134,11 @@ public class ArchiveState: ObservableObject {
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
+    /// Passwords the user gave, by the file they were given for. One window can
+    /// hold more than one archive: an archive inside the archive opens in the
+    /// same tree, extracted to a temp file, and each can have its own password.
+    /// Keyed by file, a password only ever goes to the file it was typed for.
+    /// Emptied on every open and when the window closes.
     private var passwords: [URL: String] = [:]
     /// Bumped by every `open(url:)`. A load whose generation is stale has been
     /// superseded and must stop touching the state: two overlapping opens both
