@@ -144,7 +144,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // Built before the window manager: the archive windows are handed the
         // compressor and the way to open the quick-compress window, so their
         // content can reach both from the environment.
-        let dropCompressor = DropCompressor(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        let dropCompressor = DropCompressor(
+            catalog: appState.catalog,
+            engineSelector: appState.engineSelector,
+            folderAccess: { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) })
         // Quick Compress's settings, kept as they change: one set for the window
         // and the start page's format menu. A password lasts until the app quits.
         let quickCompressOptions = ArchiveSaveOptions(storage: .quickCompress)
