@@ -66,3 +66,20 @@ public enum ArchiveUpdateItem: Sendable {
         posixPermissions: UInt16? = nil
     )
 }
+
+extension Array where Element == ArchiveUpdateItem {
+    /// Without the `.DS_Store` files these changes would add. Finder writes one
+    /// into every folder it shows, and nobody means to archive it. Only additions
+    /// go — entries the archive already holds stay — and only files named exactly
+    /// `.DS_Store`: a folder of that name is not Finder's.
+    public func excludingDSStore() -> [ArchiveUpdateItem] {
+        filter { item in
+            switch item {
+            case .addFile(let path, _, _, _), .addData(let path, _, _, _):
+                return (path as NSString).lastPathComponent != ".DS_Store"
+            default:
+                return true
+            }
+        }
+    }
+}

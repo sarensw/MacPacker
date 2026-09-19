@@ -68,6 +68,13 @@ public class SevenZipArchive {
         sz_is_tree(handle.ref)
     }
 
+    /// How the entry at `index` is compressed, as 7-Zip names it — `Deflate`,
+    /// `LZMA2:22`, `PPMD:o6:mem24`, `Copy`, `Store` — or `nil` when the archive
+    /// does not say.
+    public func method(ofEntryAt index: UInt32) -> String? {
+        sz_entry_method(handle.ref, index).map { String(cString: $0) }
+    }
+
     /// All entries in the archive.
     ///
     /// Alternate data streams (macOS extended attributes, NTFS ADS)

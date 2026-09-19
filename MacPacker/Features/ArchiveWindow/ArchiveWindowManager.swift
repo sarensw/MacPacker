@@ -18,20 +18,24 @@ class ArchiveWindowManager {
     private var windowControllers: [ArchiveWindowController] = []
     private let appState: AppState
     private let dropCompressor: DropCompressor
+    private let quickCompressOptions: ArchiveSaveOptions
     private let openQuickCompressWindow: @MainActor () -> Void
 
     /// Default constructor
     /// - Parameters:
     ///   - appState: The apps global state to not use AppStorage for every little global state setting that is not persisted
     ///   - dropCompressor: The shared compressor every window's compress column renders
+    ///   - quickCompressOptions: Quick Compress's settings, whose format the start page shows
     ///   - openQuickCompressWindow: Opens the floating quick-compress window
     init(
         appState: AppState,
         dropCompressor: DropCompressor,
+        quickCompressOptions: ArchiveSaveOptions,
         openQuickCompressWindow: @escaping @MainActor () -> Void
     ) {
         self.appState = appState
         self.dropCompressor = dropCompressor
+        self.quickCompressOptions = quickCompressOptions
         self.openQuickCompressWindow = openQuickCompressWindow
         log.notice("ArchiveWindowManager initialised")
     }
@@ -65,6 +69,7 @@ class ArchiveWindowManager {
             archiveState: archiveState,
             appState: appState,
             dropCompressor: dropCompressor,
+            quickCompressOptions: quickCompressOptions,
             openQuickCompressWindow: openQuickCompressWindow,
             openArchiveInNewWindow: { [weak self] url in
                 self?.openDroppedInNewWindow(url)

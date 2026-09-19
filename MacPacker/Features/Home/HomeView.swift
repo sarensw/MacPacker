@@ -34,6 +34,8 @@ enum HomeLayout {
 struct HomeView: View {
     @EnvironmentObject private var state: ArchiveState
     @EnvironmentObject private var compressor: DropCompressor
+    /// Quick Compress's settings: the start page shows only their format.
+    @EnvironmentObject private var quickCompressOptions: ArchiveSaveOptions
     @Environment(\.openQuickCompressWindow) private var openQuickCompressWindow
 
     /// Off hides the Recent section outright — an empty section for a list you
@@ -162,8 +164,9 @@ struct HomeView: View {
     }
 
     /// One drop is one archive, so the urls are collected and handed over together.
+    /// The start page shows no options: the format picked here, defaults for the rest.
     private func handleCompressDrop(_ providers: [NSItemProvider]) {
-        let options = CompressSettings.current
+        let options = quickCompressOptions.startPageOptions
         let compressor = self.compressor
         loadDroppedFileURLs(from: providers) { urls in
             log.notice("Start page compress drop", context: ["files": "\(urls.count)"])
@@ -173,7 +176,7 @@ struct HomeView: View {
 
     private var compressHeaderControls: some View {
         HStack(spacing: 2) {
-            CompressFormatMenu()
+            CompressFormatMenu(options: quickCompressOptions)
 
             Button {
                 showDropWindow()

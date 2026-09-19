@@ -4,7 +4,8 @@
 //
 //  Shared by every "drop files to compress" surface — the quick-compress window
 //  and the start page's column — so a drop does the same thing wherever it lands.
-//  Only what the writer supports: format and level.
+//  The options themselves are made once by the app delegate and handed down,
+//  like the compressor.
 //
 
 import Core
@@ -20,39 +21,16 @@ enum CompressDropIcon {
     static let name = "archivebox"
 }
 
-enum CompressSettings {
-    /// What a drop should use right now.
-    @MainActor static var current: SevenZipCompressionOptions {
-        let defaults = UserDefaults.standard
-        let format = SevenZipCompressionOptions.Format(
-            rawValue: defaults.string(forKey: Keys.dropWindowFormat) ?? Keys.defaultDropWindowFormat) ?? .zip
-        let level = defaults.object(forKey: Keys.dropWindowLevel) as? Int ?? Keys.defaultDropWindowLevel
-        return SevenZipCompressionOptions(format: format, level: UInt32(level))
-    }
-
-    /// The picker and the summary line read this same list.
-    static let levels: [Int] = [0, 3, 5, 9]
-
-    static func levelName(_ level: Int) -> String {
-        switch level {
-        case 0: String(localized: "Store", comment: "Compression level: no compression")
-        case 3: String(localized: "Fast", comment: "Compression level: fast")
-        case 9: String(localized: "Maximum", comment: "Compression level: maximum")
-        default: String(localized: "Normal", comment: "Compression level: normal")
-        }
-    }
-}
-
 /// Borderless: in a small glass panel the button chrome is louder than the choice.
 /// The label is only ever "zip" or "7z", never translated, so its width is fixed.
 struct CompressFormatMenu: View {
-    @AppStorage(Keys.dropWindowFormat) private var formatRaw = Keys.defaultDropWindowFormat
+    @ObservedObject var options: ArchiveSaveOptions
 
     var body: some View {
         Menu {
-            Picker(selection: $formatRaw) {
-                Text(verbatim: "zip").tag(SevenZipCompressionOptions.Format.zip.rawValue)
-                Text(verbatim: "7z").tag(SevenZipCompressionOptions.Format.sevenZ.rawValue)
+            Picker(selection: $options.format) {
+                Text(verbatim: "zip").tag(CompressionOptions.Format.zip)
+                Text(verbatim: "7z").tag(CompressionOptions.Format.sevenZ)
             } label: {
                 // No label at all. Two entries called "zip" and "7z" need no
                 // heading above them, and a string that is never rendered still
@@ -63,7 +41,7 @@ struct CompressFormatMenu: View {
             .labelsHidden()
         } label: {
             // a quiet capsule: borderless alone read as a label, not a control
-            Text(verbatim: formatRaw.uppercased())
+            Text(verbatim: options.format.rawValue.uppercased())
                 .font(.system(size: 12, weight: .semibold))
                 .kerning(0.3)
         }

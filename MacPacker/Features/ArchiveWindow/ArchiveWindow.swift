@@ -27,6 +27,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         archiveState: ArchiveState,
         appState: AppState,
         dropCompressor: DropCompressor,
+        quickCompressOptions: ArchiveSaveOptions,
         openQuickCompressWindow: @escaping @MainActor () -> Void,
         openArchiveInNewWindow: @escaping @MainActor (URL) -> Void,
         cascadeFrom: NSWindow? = nil
@@ -62,6 +63,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
             .environmentObject(appState)
             .environmentObject(archiveState)
             .environmentObject(dropCompressor)
+            .environmentObject(quickCompressOptions)
             .environment(\.openArchiveInNewWindow, openArchiveInNewWindow)
             .environment(\.openQuickCompressWindow, openQuickCompressWindow)
 

@@ -1,14 +1,14 @@
 //
 //  DropCompressor.swift
-//  MacPacker
+//  Modules
 //
 //  One drop → one archive: the sandbox grant, the destination name, and the
 //  headless `ArchiveState` that writes it — the same create/add/save path the
-//  Finder "Compress to …" action uses (`AppUrlCompressHandler`).
+//  Finder "Compress to …" action uses (`AppUrlCompressHandler`). In Core, with
+//  the folder-access prompt handed in, so it can be tested without the app.
 //
 
-import AppKit
-import Core
+import Combine
 import Foundation
 import Swift7zip
 import tb
@@ -18,8 +18,8 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "dropwindow")
 /// One compress job. The row observes `state.progress` directly rather than
 /// having it mirrored here.
 @MainActor
-final class DropJob: ObservableObject, Identifiable {
-    enum Outcome: Equatable {
+public final class DropJob: ObservableObject, Identifiable {
+    public enum Outcome: Equatable {
         case running
         case done(URL)
         case failed(String)
@@ -27,17 +27,19 @@ final class DropJob: ObservableObject, Identifiable {
         case denied
     }
 
-    let id = UUID()
+    public let id = UUID()
     /// Known before the write starts, so the row has a name from the first frame.
-    let name: String
+    public let name: String
     /// Published by the writer; the row shows it as a progress bar.
-    let state: ArchiveState
+    public let state: ArchiveState
     /// Set through `DropCompressor.finish` — assigning it here publishes on the
     /// job, which redraws its own row but does not tell the list to re-filter.
-    @Published fileprivate(set) var outcome: Outcome = .running
+    @Published public fileprivate(set) var outcome: Outcome = .running
+    /// The write itself, for whoever needs to wait for it.
+    var task: Task<Void, Never>?
 
     /// Whether it produced an archive. Used to decide what is worth showing.
-    var succeeded: Bool { if case .done = outcome { true } else { false } }
+    public var succeeded: Bool { if case .done = outcome { true } else { false } }
 
     init(name: String, state: ArchiveState) {
         self.name = name
@@ -46,10 +48,10 @@ final class DropJob: ObservableObject, Identifiable {
 }
 
 @MainActor
-final class DropCompressor: ObservableObject {
+public final class DropCompressor: ObservableObject {
     /// Oldest first. Owned here rather than by the view, so a compress started
     /// without the UI (`-AddFiles`) shows up too and closing the window keeps it.
-    @Published private(set) var jobs: [DropJob] = []
+    @Published public private(set) var jobs: [DropJob] = []
 
     /// Finished rows pile up otherwise — the window is small and the last few
     /// results are the only ones anybody looks at.
@@ -57,27 +59,35 @@ final class DropCompressor: ObservableObject {
 
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
+    /// Asks for access to the folder a file is in: the app's powerbox panel.
+    private let folderAccess: ArchiveFolderAccessUserProvider
 
-    init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
+    public init(
+        catalog: ArchiveTypeCatalog,
+        engineSelector: ArchiveEngineSelectorProtocol,
+        folderAccess: @escaping ArchiveFolderAccessUserProvider
+    ) {
         self.catalog = catalog
         self.engineSelector = engineSelector
+        self.folderAccess = folderAccess
     }
 
     /// Compresses `files` into one archive next to them.
     ///
     /// The drop grants read access to the items but not to their folder, and
-    /// writing needs that — a panel the first time only, since `FolderAccessStore`
-    /// reuses a bookmark on any ancestor and Downloads is entitled. Mixed
-    /// selections land next to the first item, and the grant follows it.
+    /// writing needs that — a panel the first time only, since the app's
+    /// `FolderAccessStore` reuses a bookmark on any ancestor and Downloads is
+    /// entitled. Mixed selections land next to the first item, and the grant
+    /// follows it.
     @discardableResult
-    func compress(files: [URL], options: SevenZipCompressionOptions) -> DropJob? {
+    public func compress(files: [URL], options: CompressionOptions) -> DropJob? {
         guard let first = files.first else { return nil }
         let folder = first.deletingLastPathComponent()
         let name = CompressDestination.name(files: files, target: folder, ext: options.format.rawValue)
 
         let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
         // a save that hits a permission error retries once through this
-        state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
+        state.folderAccessProvider = folderAccess
         let job = DropJob(name: name, state: state)
         jobs.append(job)
         if jobs.count > maxJobs { jobs.removeFirst(jobs.count - maxJobs) }
@@ -88,8 +98,8 @@ final class DropCompressor: ObservableObject {
             "level": "\(options.level)"
         ])
 
-        Task {
-            guard await FolderAccessStore.shared.ensureAccess(forFileIn: first) else {
+        job.task = Task {
+            guard await folderAccess(first) else {
                 log.notice("Drop compress cancelled — folder access declined")
                 finish(job, .denied)
                 return
@@ -108,8 +118,11 @@ final class DropCompressor: ObservableObject {
                 log.error("Drop compress failed", context: ["error": error])
                 finish(job, .failed(error))
             } else {
-                log.info("Drop compress finished", context: ["file": destination.lastPathComponent])
-                finish(job, .done(destination))
+                // what the save reopened: the first volume, when it was split —
+                // then there is no file at `destination` for Finder to show
+                let written = state.url ?? destination
+                log.info("Drop compress finished", context: ["file": written.lastPathComponent])
+                finish(job, .done(written))
             }
         }
 

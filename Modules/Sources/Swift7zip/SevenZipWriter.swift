@@ -16,9 +16,13 @@ extension SevenZipArchive {
     /// If `source` and `destination` are the same URL, the archive
     /// is written to a temporary file and atomically replaced. If they
     /// differ (Save As), the archive is written again from its contents,
-    /// so every entry takes `options` and the result is in their format —
-    /// except for an encrypted source, which is copied as it is and cannot
-    /// change format until a password can be given.
+    /// so every entry takes `options` and the result is in their format.
+    /// An encrypted source needs `sourcePassword` for that. Without a password
+    /// in `options` it is copied as it is instead, and refused for a change of
+    /// format: rebuilt, it would come out unencrypted.
+    ///
+    /// `rewrite` makes a Save As onto the source's own file one too: written
+    /// again with `options`, not updated.
     ///
     /// - Parameters:
     ///   - source: URL of the source archive, or `nil` to create new.
@@ -35,11 +39,32 @@ extension SevenZipArchive {
         source: URL? = nil,
         destination: URL,
         items: [ArchiveUpdateItem],
-        options: SevenZipCompressionOptions = .init(),
+        options: CompressionOptions = .init(),
+        sourcePassword: String? = nil,
+        rewrite: Bool = false,
         progress: WriteProgressHandler? = nil
     ) throws {
+        let items = options.excludeDSStore ? items.excludingDSStore() : items
         let inPlace = source != nil
             && source!.standardizedFileURL == destination.standardizedFileURL
+        if inPlace && (options.volumeSize ?? 0) > 0 {
+            throw SevenZipError.writeFailed("An archive can't be split into volumes in place")
+        }
+        // The save panel asks before replacing x.zip, never about its volumes: an
+        // older one by that name is refused, not written over. Any of them — what
+        // is left of an older set would be read as part of the new one. Where the
+        // folder cannot be listed, the bridge refuses at that volume instead.
+        if (options.volumeSize ?? 0) > 0, let existing = existingVolume(of: destination) {
+            throw SevenZipError.writeFailed(
+                "\(existing.lastPathComponent) already exists. Pick another name, or move the old volumes away first.")
+        }
+        // 7-Zip would refuse it too, with nothing to say why.
+        if options.encrypts, options.format == .zip,
+           !CompressionOptions.isValidZipPassword(options.password ?? "", encryption: options.encryption) {
+            throw SevenZipError.writeFailed(
+                "A zip password can only use plain ASCII letters, digits, spaces and symbols"
+                + (options.encryption == .zipCrypto ? "" : ", at most \(CompressionOptions.zipAESPasswordLimit) of them"))
+        }
         let actualDest: URL
         if inPlace {
             // Write to the system temp directory (always writable, even
@@ -63,19 +88,20 @@ extension SevenZipArchive {
 
         // A Save As writes the archive again from its contents: an update copies
         // what it keeps byte for byte, in the source's format and with its old
-        // method, whatever `options` say. Not for an encrypted source yet — with
-        // no password to give the copy, a rebuild would write it out in plain.
+        // method, whatever `options` say. An encrypted source only when the copy
+        // gets a password too — rebuilt without one, it would come out in plain.
         var resolved: [ResolvedItem]
         let rebuild: Bool
         do {
             // scoped, so the handle is closed again before anything is written
-            let sourceArchive = try source.map { try SevenZipArchive(url: $0) }
+            let sourceArchive = try source.map { try SevenZipArchive(url: $0, password: sourcePassword) }
             let encrypted = try sourceArchive?.entries.contains(where: \.isEncrypted) ?? false
-            if let source, !inPlace, encrypted, writableFormat(of: source) != options.format {
+            if let source, !inPlace, encrypted, !options.encrypts,
+               writableFormat(of: source) != options.format {
                 throw SevenZipError.writeFailed(
-                    "An encrypted archive can't be saved as \(options.format.rawValue) yet: it would lose its encryption")
+                    "An encrypted archive can't be saved as \(options.format.rawValue) without a password: it would lose its encryption")
             }
-            rebuild = sourceArchive != nil && !inPlace && !encrypted
+            rebuild = sourceArchive != nil && (!inPlace || rewrite) && (!encrypted || options.encrypts)
 
             // Resolve the diff into a full item list for the C bridge.
             resolved = try resolveDiff(sourceArchive: sourceArchive, items: items)
@@ -97,6 +123,7 @@ extension SevenZipArchive {
             : progress
         try performUpdate(
             source: rebuild ? nil : source,
+            sourcePassword: sourcePassword,
             destination: actualDest,
             resolvedItems: resolved,
             options: options,
@@ -112,6 +139,17 @@ extension SevenZipArchive {
                 throw error
             }
         }
+    }
+
+    /// A file next to `destination` named like one of its volumes — `x.zip.001`,
+    /// `x.zip.002`, … — or `nil`. The first by name, when there are several.
+    public static func existingVolume(of destination: URL) -> URL? {
+        let folder = destination.deletingLastPathComponent()
+        let volume = "^" + NSRegularExpression.escapedPattern(for: destination.lastPathComponent) + "\\.[0-9]{3,}$"
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
+        return names.sorted()
+            .first { $0.range(of: volume, options: [.regularExpression, .caseInsensitive]) != nil }
+            .map { folder.appendingPathComponent($0) }
     }
 
     // MARK: - Diff Resolution
@@ -309,7 +347,7 @@ extension SevenZipArchive {
     }
 
     /// The writable format a file is in, by its signature.
-    private static func writableFormat(of url: URL) -> SevenZipCompressionOptions.Format? {
+    private static func writableFormat(of url: URL) -> CompressionOptions.Format? {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { try? handle.close() }
         let head = (try? handle.read(upToCount: 6)) ?? Data()
@@ -525,9 +563,10 @@ extension SevenZipArchive {
 
     private static func performUpdate(
         source: URL?,
+        sourcePassword: String?,
         destination: URL,
         resolvedItems: [ResolvedItem],
-        options: SevenZipCompressionOptions,
+        options: CompressionOptions,
         progress: WriteProgressHandler? = nil
     ) throws {
         var cItems: [SZUpdateItem] = []
@@ -620,51 +659,54 @@ extension SevenZipArchive {
                         }
                     }
 
+                    // C strings the bridge borrows for the length of the call
+                    func cString(_ s: String?) -> UnsafeMutablePointer<CChar>? { s.flatMap { strdup($0) } }
+                    let formatC = cString(options.format.rawValue)
+                    // Level 0 is Store. 7-Zip reads an explicit method first and
+                    // would still compress with it, at its lightest setting.
+                    let methodC = cString(options.level == 0 ? nil : options.method?.rawValue)
+                    let passwordC = cString(options.encrypts ? options.password : nil)
+                    let encryptionC = cString(options.encryption?.rawValue)
+                    // what reads the source for the update, not what the update writes
+                    let sourcePasswordC = cString(source == nil ? nil : sourcePassword)
+                    defer { for pointer in [formatC, methodC, passwordC, encryptionC, sourcePasswordC] { free(pointer) } }
+
                     var cOptions = SZCompressionOptions()
-                    let formatStr = options.format.rawValue
-                    let methodStr = options.method?.rawValue
+                    cOptions.format = UnsafePointer(formatC)
+                    cOptions.level = options.level
+                    cOptions.method = UnsafePointer(methodC)
+                    cOptions.solid_mode = options.solidMode.map { Int8($0 ? 1 : 0) } ?? -1
+                    cOptions.password = UnsafePointer(passwordC)
+                    cOptions.encryption_method = UnsafePointer(encryptionC)
+                    cOptions.encrypt_names = options.encryptFileNames
+                    // Store has no codec for these to reach, and 7-Zip would refuse them.
+                    cOptions.dictionary_size = options.level == 0 ? 0 : options.dictionarySize ?? 0
+                    cOptions.word_size = options.level == 0 ? 0 : options.wordSize ?? 0
+                    cOptions.solid_block_size = options.solidBlockSize ?? 0
+                    cOptions.volume_size = options.volumeSize ?? 0
 
-                    try formatStr.withCString { fmtPtr in
-                        cOptions.format = fmtPtr
-                        cOptions.level = options.level
-                        cOptions.method = nil
-                        cOptions.solid_mode = options.solidMode.map {
-                            Int8($0 ? 1 : 0)
-                        } ?? -1
-
-                        let callBridge = { (methodPtr: UnsafePointer<CChar>?) throws in
-                            cOptions.method = methodPtr
-                            var errorPtr: UnsafeMutablePointer<CChar>?
-                            let result = sz_update_archive(
-                                source?.path,
-                                destination.path,
-                                &cItems,
-                                UInt32(cItems.count),
-                                &cOptions,
-                                progressBox != nil ? Self.writeProgressThunk : nil,
-                                progressBox.map { Unmanaged.passUnretained($0).toOpaque() },
-                                &errorPtr
-                            )
-                            if result == 2 {
-                                throw SevenZipError.cancelled
-                            }
-                            if result != 0 {
-                                let msg = errorPtr.map { ptr -> String in
-                                    let str = String(cString: ptr)
-                                    free(ptr)
-                                    return str
-                                } ?? "Unknown error"
-                                throw SevenZipError.writeFailed(msg)
-                            }
-                        }
-
-                        if let m = methodStr {
-                            try m.withCString { mPtr in
-                                try callBridge(mPtr)
-                            }
-                        } else {
-                            try callBridge(nil)
-                        }
+                    var errorPtr: UnsafeMutablePointer<CChar>?
+                    let result = sz_update_archive(
+                        source?.path,
+                        UnsafePointer(sourcePasswordC),
+                        destination.path,
+                        &cItems,
+                        UInt32(cItems.count),
+                        &cOptions,
+                        progressBox != nil ? Self.writeProgressThunk : nil,
+                        progressBox.map { Unmanaged.passUnretained($0).toOpaque() },
+                        &errorPtr
+                    )
+                    if result == 2 {
+                        throw SevenZipError.cancelled
+                    }
+                    if result != 0 {
+                        let msg = errorPtr.map { ptr -> String in
+                            let str = String(cString: ptr)
+                            free(ptr)
+                            return str
+                        } ?? "Unknown error"
+                        throw SevenZipError.writeFailed(msg)
                     }
                 }
             }

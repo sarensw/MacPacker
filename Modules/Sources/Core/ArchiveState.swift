@@ -91,6 +91,10 @@ public class ArchiveState: ObservableObject {
     /// twice. A failed open has no other surface at all: it ends in `reset()`,
     /// so the window goes back to its empty state and the user sees nothing.
     @Published private(set) public var openError: String? = nil
+    /// Why the last save failed or was refused, for the window to show. As with
+    /// `openError`, nothing else would: the status bar just stops, and the
+    /// window looks saved.
+    @Published private(set) public var saveError: String? = nil
     @Published public var isReloadNeeded: Bool = false
 
     // Listeners for non-ui
@@ -130,6 +134,11 @@ public class ArchiveState: ObservableObject {
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
+    /// Passwords the user gave, by the file they were given for. One window can
+    /// hold more than one archive: an archive inside the archive opens in the
+    /// same tree, extracted to a temp file, and each can have its own password.
+    /// Keyed by file, a password only ever goes to the file it was typed for.
+    /// Emptied on every open and when the window closes.
     private var passwords: [URL: String] = [:]
     /// Bumped by every `open(url:)`. A load whose generation is stale has been
     /// superseded and must stop touching the state: two overlapping opens both
@@ -219,7 +228,10 @@ extension ArchiveState {
     /// Resets the state of the archive
     private func reset() {
         self.hasArchive = false
-        
+        // A failed open sets its reason after this, so its alert still shows.
+        self.openError = nil
+        self.saveError = nil
+
         self.url = nil
         self.name = nil
         self.type = nil
@@ -264,6 +276,11 @@ extension ArchiveState {
     /// Dismisses the failed-open message once the user has seen it.
     public func clearOpenError() {
         openError = nil
+    }
+
+    /// Dismisses the failed-save message once the user has seen it.
+    public func clearSaveError() {
+        saveError = nil
     }
     
     /// Cancels the current operation which can be either loading the archive or extracting
@@ -695,33 +712,48 @@ extension ArchiveState {
 
     /// Saves the pending changes.
     ///
-    /// - For an archive loaded from disk, the changes are applied in place
-    ///   (`destination` may override, "save as").
+    /// - For an archive loaded from disk, the changes are applied in place.
+    ///   A `destination` makes it a Save As: the archive is written again with
+    ///   `options`, onto its own file too.
     /// - For a new archive (never saved), `destination` is required — that's
     ///   where the archive is created.
     ///
     /// After a successful write the archive is reloaded from disk so the
-    /// shown entries (and their source indices) match the file again.
+    /// shown entries (and their source indices) match the file again. The
+    /// write itself is `ArchiveSaver`'s; this keeps the window's state.
     @discardableResult
     public func save(
         to destination: URL? = nil,
-        options: SevenZipCompressionOptions? = nil
+        options: CompressionOptions? = nil
     ) -> Task<Void, Never>? {
         guard !isSaving else {
             log.notice("Ignoring save — a save is already in progress")
             return nil
         }
         guard let target = destination ?? url else { return nil }
-        // An empty diff is a no-op in place, but writing to a *different* target
-        // is a "save a copy" (Save As of a clean archive) — allow that.
-        guard !diff.isEmpty || target != url else { return nil }
-
-        let source = url
-        let items = diff
+        // Save with nothing pending is a no-op. A Save As is not, even of a clean
+        // archive onto its own file: its options have to reach every entry.
+        guard !diff.isEmpty || destination != nil else { return nil }
         // format follows the target extension; zip is the default
-        let format: SevenZipCompressionOptions.Format =
+        let format: CompressionOptions.Format =
             target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
-        let effectiveOptions = options ?? SevenZipCompressionOptions(format: format)
+        let saver = ArchiveSaver(
+            source: url,
+            // From the file's name, by the catalog's split patterns — not by
+            // comparing it with `name`, which follows an archive opened inside
+            // this one.
+            splitArchiveName: url.flatMap { url in
+                let setName = splitSetName(for: url)
+                return setName == url.lastPathComponent ? nil : setName
+            },
+            target: target,
+            items: diff,
+            options: options ?? CompressionOptions(format: format),
+            isSaveAs: destination != nil,
+            sourcePassword: url.flatMap { passwords[$0] },
+            passwordResolver: makePasswordResolver(),
+            folderAccessProvider: folderAccessProvider,
+            onProgress: { [weak self] percent in self?.progress = percent })
 
         isSaving = true
         isBusy = true
@@ -730,95 +762,25 @@ extension ArchiveState {
         updateStatusText(String(localized: "saving...", bundle: .module, comment: "Archive operation status"))
         log.notice("Saving archive", context: [
             "target": target.lastPathComponent,
-            "changes": "\(items.count)",
-            "new": "\(source == nil)"
+            "changes": "\(diff.count)",
+            "new": "\(url == nil)"
         ])
-
-        // Forward 7-Zip's byte progress to the status bar. The callback fires
-        // on the writing (GCD) thread — throttle, then hop to the main actor.
-        let throttle = ProgressThrottle()
-        let onWriteProgress: @Sendable (UInt64, UInt64) -> Bool = { completed, total in
-            guard total > 0 else { return true }
-            let pct = Int((completed * 100) / total)
-            if throttle.shouldEmit(at: Date()) {
-                DispatchQueue.main.async {
-                    MainActor.assumeIsolated { self.progress = pct }
-                }
-            }
-            return true
-        }
-
-        // the write is a long synchronous C call — keep it off the
-        // cooperative pool; bracket any stored security-scoped grant
-        let performWrite: @MainActor () async throws -> Void = {
-            // Directories as well as files: a folder entry stores no contents,
-            // but the writer reads the folder's own extended attributes to store
-            // its metadata — a custom folder icon lives there. Without the grant
-            // that read is refused under the sandbox and the metadata is dropped
-            // silently, which is invisible to the unit tests because they do not
-            // run sandboxed.
-            var accessedFiles: [URL] = []
-            for item in items {
-                let diskPath: URL?
-                switch item {
-                case .addFile(_, let url, _, _): diskPath = url
-                case .addDirectory(_, let url, _, _): diskPath = url
-                default: diskPath = nil
-                }
-                if let diskPath, diskPath.startAccessingSecurityScopedResource() {
-                    accessedFiles.append(diskPath)
-                }
-            }
-            defer { for f in accessedFiles { f.stopAccessingSecurityScopedResource() } }
-
-            let work: @Sendable () throws -> Void = {
-                try SevenZipArchive.writeArchive(
-                    source: source,
-                    destination: target,
-                    items: items,
-                    options: effectiveOptions,
-                    progress: onWriteProgress
-                )
-            }
-            try await Sandbox.access(url: target) {
-                try await runBlocking(work)
-            }
-        }
-
-        /// The archive may have been opened with a read-only grant (e.g. a
-        /// path handed over without a powerbox grant). Then the write fails
-        /// with a no-permission error — ask for folder access exactly like
-        /// the split-volume loader does, and retry once.
-        let isPermissionError: (Error) -> Bool = { error in
-            let ns = error as NSError
-            if ns.domain == NSCocoaErrorDomain,
-               ns.code == NSFileWriteNoPermissionError || ns.code == NSFileReadNoPermissionError {
-                return true
-            }
-            if case SevenZipError.writeFailed(let msg) = error {
-                return msg.contains("Cannot create output file") || msg.contains("Cannot open")
-            }
-            return false
-        }
 
         return Task {
             do {
-                do {
-                    try await performWrite()
-                } catch where isPermissionError(error) {
-                    log.notice("Save hit a permission error — asking for folder access", context: ["target": target.lastPathComponent])
-                    guard let provider = folderAccessProvider, await provider(target) else {
-                        throw error
-                    }
-                    try await performWrite()
-                }
-
+                let saved = try await saver.save()
                 diff.removeAll()
                 self.progress = nil
                 log.notice("Archive saved", context: ["target": target.lastPathComponent])
 
                 // reload from disk so entries and indices reflect the file
-                open(url: target)
+                open(url: saved.url)
+                // Known already — reopening must not ask again. Set after open(),
+                // which starts by forgetting every password, and before the first
+                // await, so the load has not asked yet.
+                if let password = saved.password {
+                    passwords[saved.url] = password
+                }
                 _ = try? await openTask?.value
                 self.isSaving = false
             } catch {
@@ -827,6 +789,7 @@ extension ArchiveState {
                     "error": String(describing: error)
                 ])
                 self.error = error.localizedDescription
+                self.saveError = error.localizedDescription
                 self.isBusy = false
                 self.isSaving = false
                 self.progress = nil
@@ -851,7 +814,9 @@ extension ArchiveState {
         let file = url.lastPathComponent
         for split in catalog.allSplits()
         where file.range(of: split.pattern, options: [.regularExpression, .caseInsensitive]) != nil {
-            return file.replacingOccurrences(of: split.pattern, with: ".\(split.format)",
+            // the format's extension, not its catalog id: a 7z set is "x.7z", not "x.7zip"
+            let ext = catalog.getType(for: split.format)?.extensions.first ?? split.format
+            return file.replacingOccurrences(of: split.pattern, with: ".\(ext)",
                                              options: [.regularExpression, .caseInsensitive])
         }
         return file
@@ -863,7 +828,6 @@ extension ArchiveState {
         openTask?.cancel()
         openGeneration += 1
         let generation = openGeneration
-        openError = nil
 
         reset()
         updateStatus(.processing)

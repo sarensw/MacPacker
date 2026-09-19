@@ -7,6 +7,7 @@
 
 import Testing
 import Foundation
+import Swift7zip
 @testable import Core
 
 // MARK: - Helpers
@@ -1218,6 +1219,112 @@ extension AllCoreTests {
             #expect(count == 1, "prompted \(count) times, expected 1")
         }
 
+        /// One window, two archives, two passwords: an encrypted zip holding an
+        /// encrypted zip, opened in place. Each password is asked for once, for
+        /// its own file, and never offered to the other — why the window keeps
+        /// its passwords per file rather than one for the archive.
+        @Test func aNestedArchiveKeepsItsOwnPassword() async throws {
+            let dir = try tempDirectory()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            // the inner archive is the fixture, which `correctPassword` opens
+            let outer = dir.appendingPathComponent("outer.zip")
+            try SevenZipArchive.writeArchive(
+                destination: outer,
+                items: [
+                    .addFile(archivePath: "inner.zip", diskPath: fixture("zip_aes256.zip")),
+                    .addData(archivePath: "note.txt", data: Data("outer note".utf8)),
+                ],
+                options: .init(format: .zip, password: "outer secret"))
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let requests = RequestLog()
+            state.passwordProvider = { request in
+                await requests.record(request)
+                return request.url.lastPathComponent == "outer.zip" ? "outer secret" : correctPassword
+            }
+            state.open(url: outer)
+            try await state.openTask?.value
+
+            // Opened in place, the inner archive is taken out of the outer first,
+            // which takes the outer's password.
+            let inner = try #require(state.entries.values.first { $0.name == "inner.zip" })
+            try await state.openAsync(item: inner)
+            let hello = try #require(state.entries.values.first { $0.name == helloPath })
+            let note = try #require(state.entries.values.first { $0.name == "note.txt" })
+            #expect(contents(of: try await state.extractToTemp(item: hello)) == helloContents)
+            #expect(contents(of: try await state.extractToTemp(item: note)) == "outer note")
+            // and both again, with nothing left to ask
+            #expect(contents(of: try await state.extractToTemp(item: hello)) == helloContents)
+            #expect(contents(of: try await state.extractToTemp(item: note)) == "outer note")
+
+            #expect(await requests.seen == ["outer.zip@1", "inner.zip@1"])
+        }
+
+        /// An archive holding a text file and, as `inner`, an archive of its own
+        /// holding another. Each takes its password from `passwords`, by name;
+        /// the format follows the extension.
+        private func nestedArchive(_ outer: String, holding inner: String, in dir: URL,
+                                   passwords: [String: String]) throws -> URL {
+            func format(_ name: String) -> CompressionOptions.Format { name.hasSuffix(".7z") ? .sevenZ : .zip }
+            let innerURL = dir.appendingPathComponent(inner)
+            try SevenZipArchive.writeArchive(
+                destination: innerURL,
+                items: [.addData(archivePath: "in \(inner).txt", data: Data("in \(inner)".utf8))],
+                options: .init(format: format(inner), password: passwords[inner]))
+            let outerURL = dir.appendingPathComponent(outer)
+            try SevenZipArchive.writeArchive(
+                destination: outerURL,
+                items: [.addFile(archivePath: inner, diskPath: innerURL),
+                        .addData(archivePath: "in \(outer).txt", data: Data("in \(outer)".utf8))],
+                options: .init(format: format(outer), password: passwords[outer]))
+            try FileManager.default.removeItem(at: innerURL)
+            return outerURL
+        }
+
+        /// Two archives in two tabs — each tab a window with its own ArchiveState —
+        /// and each holding an archive of its own: four archives, four passwords,
+        /// used by turns. Each window asks for its own two, once each, and never
+        /// offers one to another file, its own or the other window's.
+        @Test func twoWindowsKeepTheirPasswordsApart() async throws {
+            let dir = try tempDirectory()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let passwords = ["a.zip": "outer A", "a-inner.7z": "inner A",
+                             "b.7z": "outer B", "b-inner.zip": "inner B"]
+            let archives = [("a.zip", "a-inner.7z"), ("b.7z", "b-inner.zip")]
+
+            var windows: [(state: ArchiveState, requests: RequestLog)] = []
+            for (outer, inner) in archives {
+                let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+                let requests = RequestLog()
+                state.passwordProvider = { request in
+                    await requests.record(request)
+                    return passwords[request.url.lastPathComponent]
+                }
+                state.open(url: try nestedArchive(outer, holding: inner, in: dir, passwords: passwords))
+                try await state.openTask?.value
+                windows.append((state, requests))
+            }
+
+            // the nested archives open in place, one window after the other
+            for ((outer, inner), window) in zip(archives, windows) {
+                let nested = try #require(window.state.entries.values.first { $0.name == inner }, "\(outer)")
+                try await window.state.openAsync(item: nested)
+            }
+            // then every file, twice, taking turns between the windows
+            for _ in 1...2 {
+                for ((outer, inner), window) in zip(archives, windows) {
+                    for name in [inner, outer] {
+                        let file = try #require(window.state.entries.values.first { $0.name == "in \(name).txt" })
+                        #expect(contents(of: try await window.state.extractToTemp(item: file)) == "in \(name)",
+                                "in \(name).txt")
+                    }
+                }
+            }
+
+            #expect(await windows[0].requests.seen == ["a.zip@1", "a-inner.7z@1"])
+            #expect(await windows[1].requests.seen == ["b.7z@1", "b-inner.zip@1"])
+        }
+
         /// The bug behind "0% and 100% CPU": the cached password was handed back
         /// on every retry, so a wrong one made the engine loop forever without
         /// ever asking the user again.
@@ -1376,6 +1483,15 @@ private actor Counter {
     func increment() -> Int {
         value += 1
         return value
+    }
+}
+
+/// Which file each password request was for, and its attempt: `file@attempt`.
+private actor RequestLog {
+    private(set) var seen: [String] = []
+
+    func record(_ request: ArchivePasswordRequest) {
+        seen.append("\(request.url.lastPathComponent)@\(request.attempt)")
     }
 }
 

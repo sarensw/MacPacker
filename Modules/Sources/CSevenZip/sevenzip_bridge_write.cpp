@@ -13,6 +13,11 @@
 #include <climits>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <strings.h>
+#include <algorithm>
+#include <cerrno>
+#include <cstdio>
 
 #include "Common/MyWindows.h"
 #include "Common/MyCom.h"
@@ -114,6 +119,137 @@ static std::string ReadLinkTarget(const char *path) {
     return std::string(buffer, (size_t)length);
 }
 
+/// The output split into volumes of a fixed size -- `base.001`, `base.002`, ...
+/// -- the way 7-Zip's own `-v` writes them. The format handlers seek: 7z writes
+/// its start header last, at offset 0, and zip goes back to finish a local
+/// header. So this is a real IOutStream over the whole set, where a position
+/// maps to (position / volume size, position % volume size). One volume is open
+/// at a time and reopened when a seek lands in it again, so a set of hundreds
+/// of volumes never runs out of file descriptors.
+Z7_CLASS_IMP_COM_1(
+  COutVolumeStream
+  , IOutStream
+)
+  Z7_IFACE_COM7_IMP(ISequentialOutStream)
+
+  std::string _base;
+  UInt64 _volumeSize;
+  UInt64 _position = 0;
+  UInt64 _length = 0;
+  int _fd = -1;
+  size_t _openIndex = 0;
+  std::vector<bool> _created;
+
+  int volume(size_t index);
+
+public:
+  std::string errorMessage;
+
+  COutVolumeStream(const char *base, UInt64 volumeSize)
+    : _base(base), _volumeSize(volumeSize) {}
+  ~COutVolumeStream() { if (_fd >= 0) close(_fd); }
+
+  std::string path(size_t index) const {
+      char suffix[24];
+      snprintf(suffix, sizeof(suffix), ".%03zu", index + 1);
+      return _base + suffix;
+  }
+
+  /// For a write that failed: nothing half-written stays behind.
+  void removeAll() {
+      if (_fd >= 0) { close(_fd); _fd = -1; }
+      for (size_t i = 0; i < _created.size(); i++)
+          if (_created[i]) unlink(path(i).c_str());
+  }
+};
+
+int COutVolumeStream::volume(size_t index) {
+    if (_fd >= 0 && _openIndex == index)
+        return _fd;
+    if (_fd >= 0) { close(_fd); _fd = -1; }
+    if (_created.size() <= index)
+        _created.resize(index + 1, false);
+    // Made new, never opened over a file already there — 7-Zip refuses an
+    // existing volume too. Reopened as is after that: a seek back into a
+    // finished volume must not throw away what it already holds.
+    const int flags = O_RDWR | (_created[index] ? 0 : O_CREAT | O_EXCL);
+    _fd = open(path(index).c_str(), flags, 0644);
+    if (_fd < 0 && errno == EEXIST) {
+        // Not worded as a failure to create: the app would ask for folder access.
+        const std::string file = path(index);
+        errorMessage = file.substr(file.rfind('/') + 1)
+            + " already exists. Pick another name, or move the old volumes away first.";
+        return -1;
+    }
+    if (_fd < 0) {
+        // Worded like the single-file case, which the app answers by asking for
+        // access to the folder: volumes are siblings of the file the save panel
+        // granted, never that file itself.
+        errorMessage = "Cannot create output file: " + path(index);
+        return -1;
+    }
+    _created[index] = true;
+    _openIndex = index;
+    return _fd;
+}
+
+Z7_COM7F_IMF(COutVolumeStream::Write(const void *data, UInt32 size, UInt32 *processedSize))
+{
+    if (processedSize) *processedSize = 0;
+    const Byte *bytes = (const Byte *)data;
+    while (size > 0) {
+        const size_t index = (size_t)(_position / _volumeSize);
+        const UInt64 offset = _position % _volumeSize;
+        const UInt32 chunk = (UInt32)std::min<UInt64>(size, _volumeSize - offset);
+        const int fd = volume(index);
+        if (fd < 0) return E_FAIL;
+        const ssize_t written = pwrite(fd, bytes, chunk, (off_t)offset);
+        if (written <= 0) {
+            errorMessage = "Cannot write output file: " + path(index);
+            return E_FAIL;
+        }
+        bytes += written;
+        size -= (UInt32)written;
+        _position += (UInt64)written;
+        if (_position > _length) _length = _position;
+        if (processedSize) *processedSize += (UInt32)written;
+    }
+    return S_OK;
+}
+
+Z7_COM7F_IMF(COutVolumeStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition))
+{
+    Int64 base;
+    switch (seekOrigin) {
+        case STREAM_SEEK_SET: base = 0; break;
+        case STREAM_SEEK_CUR: base = (Int64)_position; break;
+        case STREAM_SEEK_END: base = (Int64)_length; break;
+        default: return E_INVALIDARG;
+    }
+    if (base + offset < 0)
+        return E_INVALIDARG;
+    _position = (UInt64)(base + offset);
+    if (newPosition) *newPosition = _position;
+    return S_OK;
+}
+
+Z7_COM7F_IMF(COutVolumeStream::SetSize(UInt64 newSize))
+{
+    // Volumes past the new end go; the last one left is cut to size.
+    const size_t keep = newSize == 0 ? 0 : (size_t)((newSize - 1) / _volumeSize) + 1;
+    if (_fd >= 0 && _openIndex >= keep) { close(_fd); _fd = -1; }
+    for (size_t i = keep; i < _created.size(); i++)
+        if (_created[i]) { unlink(path(i).c_str()); _created[i] = false; }
+    if (keep > 0) {
+        const int fd = volume(keep - 1);
+        if (fd < 0) return E_FAIL;
+        if (ftruncate(fd, (off_t)(newSize - (UInt64)(keep - 1) * _volumeSize)) != 0)
+            return E_FAIL;
+    }
+    _length = newSize;
+    return S_OK;
+}
+
 static FILETIME UnixEpochToFileTime(int64_t unixTime) {
     FILETIME ft;
     if (unixTime < 0) {
@@ -174,6 +310,8 @@ public:
     const SZUpdateItem *items;
     UInt32 itemCount;
     std::string errorMessage;
+    /// What new entries are encrypted with; empty for none.
+    std::string encryptionPassword;
 
     // Progress forwarding (optional). aborted is set when the callback
     // asks to stop, so UpdateItems bails out with E_ABORT.
@@ -386,16 +524,50 @@ Z7_COM7F_IMF(CUpdateCallback::GetStream(UInt32 index, ISequentialInStream **inSt
 
 Z7_COM7F_IMF(CUpdateCallback::CryptoGetTextPassword2(Int32 *passwordIsDefined, BSTR *password))
 {
-    *passwordIsDefined = 0;
     *password = nullptr;
-    return S_OK;
+    *passwordIsDefined = encryptionPassword.empty() ? 0 : 1;
+    if (encryptionPassword.empty())
+        return S_OK;
+    UString u = UTF8ToUString(encryptionPassword.c_str());
+    *password = ::SysAllocString((const OLECHAR *)(const wchar_t *)u);
+    return *password ? S_OK : E_OUTOFMEMORY;
 }
+
+/// Hands the source its password while it is opened for the update: a 7z whose
+/// names are encrypted cannot list its entries without one. Opened with it, the
+/// 7z handler also writes what is added, and the names, under that password.
+/// Without one the open fails, as it did with no callback at all.
+class CSourceOpenCallback final :
+    public IArchiveOpenCallback,
+    public ICryptoGetTextPassword,
+    public CMyUnknownImp
+{
+    Z7_COM_UNKNOWN_IMP_2(IArchiveOpenCallback, ICryptoGetTextPassword)
+
+    const char *_password;
+
+public:
+    explicit CSourceOpenCallback(const char *password) : _password(password) {}
+
+    Z7_COM7F_IMF(SetTotal(const UInt64 *, const UInt64 *)) { return S_OK; }
+    Z7_COM7F_IMF(SetCompleted(const UInt64 *, const UInt64 *)) { return S_OK; }
+
+    Z7_COM7F_IMF(CryptoGetTextPassword(BSTR *password)) {
+        *password = nullptr;
+        if (!_password)
+            return E_ABORT;
+        UString u = UTF8ToUString(_password);
+        *password = ::SysAllocString((const OLECHAR *)(const wchar_t *)u);
+        return *password ? S_OK : E_OUTOFMEMORY;
+    }
+};
 
 // --- Main entry point ---
 
 extern "C"
 int sz_update_archive(
     const char *source_path,
+    const char *source_password,
     const char *dest_path,
     const SZUpdateItem *items,
     uint32_t item_count,
@@ -436,6 +608,7 @@ int sz_update_archive(
                 return 1;
             }
 
+            CMyComPtr<IArchiveOpenCallback> openCallback(new CSourceOpenCallback(source_password));
             UInt32 numFormats = 0;
             GetNumberOfFormats(&numFormats);
             bool opened = false;
@@ -454,7 +627,7 @@ int sz_update_archive(
                 UInt64 newPos;
                 inFileStream->Seek(0, STREAM_SEEK_SET, &newPos);
                 UInt64 maxCheck = 1 << 22;
-                hr = candidate->Open(inFileStream, &maxCheck, nullptr);
+                hr = candidate->Open(inFileStream, &maxCheck, openCallback);
                 if (hr == S_OK) {
                     inArchive = candidate;
                     opened = true;
@@ -490,57 +663,106 @@ int sz_update_archive(
             if (setProps) {
                 std::vector<const wchar_t *> names;
                 std::vector<NWindows::NCOM::CPropVariant> values;
+                auto addUInt = [&](const wchar_t *name, UInt32 v) {
+                    NWindows::NCOM::CPropVariant prop; prop = v;
+                    names.push_back(name); values.push_back(prop);
+                };
+                auto addBool = [&](const wchar_t *name, bool v) {
+                    NWindows::NCOM::CPropVariant prop; prop = v;
+                    names.push_back(name); values.push_back(prop);
+                };
+                auto addString = [&](const wchar_t *name, const char *v) {
+                    NWindows::NCOM::CPropVariant prop; prop = UTF8ToUString(v);
+                    names.push_back(name); values.push_back(prop);
+                };
+                const bool isZip = options->format && strcasecmp(options->format, "zip") == 0;
 
-                // Compression level
-                UString levelName(L"x");
-                names.push_back(levelName);
-                NWindows::NCOM::CPropVariant levelVal;
-                levelVal = (UInt32)options->level;
-                values.push_back(levelVal);
+                addUInt(L"x", options->level);
+                if (options->method)
+                    addString(L"0", options->method);
 
-                // Method
-                UString methodName;
-                if (options->method) {
-                    methodName = L"0";
-                    names.push_back(methodName);
-                    UString methodVal = UTF8ToUString(options->method);
-                    NWindows::NCOM::CPropVariant mv;
-                    mv = methodVal;
-                    values.push_back(mv);
+                // PPMd calls its dictionary the model's memory and its word size
+                // the model's order; every other method says "d" and "fb".
+                const bool ppmd = options->method && strcasecmp(options->method, "ppmd") == 0;
+                // In bytes, as a string: a bare number is read as a power of two
+                // ("d=24" is 16 MB), which would refuse 65536 as out of range.
+                if (options->dictionary_size > 0) {
+                    char spec[32];
+                    snprintf(spec, sizeof(spec), "%llub", (unsigned long long)options->dictionary_size);
+                    addString(ppmd ? L"mem" : L"d", spec);
+                }
+                if (options->word_size > 0)
+                    addUInt(ppmd ? L"o" : L"fb", options->word_size);
+
+                // Solid mode off wins, whatever block size comes with it.
+                if (options->solid_mode == 0) {
+                    addBool(L"s", false);
+                } else if (options->solid_block_size == UINT64_MAX) {
+                    addBool(L"s", true);
+                } else if (options->solid_block_size > 0) {
+                    char spec[32];
+                    snprintf(spec, sizeof(spec), "%llub", (unsigned long long)options->solid_block_size);
+                    addString(L"s", spec);
+                } else if (options->solid_mode >= 0) {
+                    addBool(L"s", options->solid_mode != 0);
                 }
 
-                // Solid mode
-                UString solidName;
-                if (options->solid_mode >= 0) {
-                    solidName = L"s";
-                    names.push_back(solidName);
-                    NWindows::NCOM::CPropVariant sv;
-                    sv = (bool)(options->solid_mode != 0);
-                    values.push_back(sv);
-                }
+                // The password itself comes through CryptoGetTextPassword2.
+                const bool encrypts = options->password && options->password[0] != 0;
+                if (encrypts && isZip)
+                    addString(L"em", options->encryption_method ? options->encryption_method : "AES256");
+                if (encrypts && !isZip && options->encrypt_names)
+                    addBool(L"he", true);
 
-                setProps->SetProperties(names.data(), values.data(), (UInt32)names.size());
+                // A setting the handler refuses must not be dropped silently: the
+                // archive would come out other than the one asked for.
+                if (setProps->SetProperties(names.data(), values.data(), (UInt32)names.size()) != S_OK) {
+                    if (error_out) *error_out = makeCError(
+                        "7-Zip does not accept these settings for this format and method");
+                    return 1;
+                }
             }
         }
 
-        // 5. Create output file stream
-        COutFileStream *outFileStream = new COutFileStream;
-        CMyComPtr<ISequentialOutStream> outStreamLoc(outFileStream);
-        FString destFPath = us2fs(UTF8ToUString(dest_path));
-        if (!outFileStream->Create_ALWAYS(destFPath)) {
-            if (error_out) *error_out = makeCError(
-                std::string("Cannot create output file: ") + dest_path);
-            return 1;
+        // 5. Create the output: one file, or a set of volumes
+        CMyComPtr<ISequentialOutStream> outStreamLoc;
+        COutVolumeStream *volumes = nullptr;
+        if (options && options->volume_size > 0) {
+            volumes = new COutVolumeStream(dest_path, options->volume_size);
+            outStreamLoc = volumes;
+        } else {
+            COutFileStream *outFileStream = new COutFileStream;
+            outStreamLoc = outFileStream;
+            FString destFPath = us2fs(UTF8ToUString(dest_path));
+            if (!outFileStream->Create_ALWAYS(destFPath)) {
+                if (error_out) *error_out = makeCError(
+                    std::string("Cannot create output file: ") + dest_path);
+                return 1;
+            }
         }
 
         // 6. Create callback and run update
         CUpdateCallback *callbackSpec = new CUpdateCallback(items, item_count);
         callbackSpec->progressCallback = progress;
         callbackSpec->progressContext = progress_context;
+        if (options && options->password)
+            callbackSpec->encryptionPassword = options->password;
         CMyComPtr<IArchiveUpdateCallback> callback(callbackSpec);
 
         HRESULT hr = outArchive->UpdateItems(outStreamLoc, item_count, callback);
         if (hr != S_OK) {
+            // Nothing half-written stays behind under the name that was picked.
+            std::string volumeError = volumes ? volumes->errorMessage : std::string();
+            if (volumes) {
+                volumes->removeAll();
+            } else {
+                outStreamLoc.Release();
+                unlink(dest_path);
+            }
+            if (!volumeError.empty()) {
+                if (error_out) *error_out = makeCError(volumeError);
+                return 1;
+            }
             if (callbackSpec->aborted) {
                 if (error_out) *error_out = makeCError("Aborted by progress callback");
                 return 2;
