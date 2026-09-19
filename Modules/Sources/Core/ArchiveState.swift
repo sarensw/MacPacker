@@ -739,8 +739,13 @@ extension ArchiveState {
             target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
         let saver = ArchiveSaver(
             source: url,
-            // a split archive's window is named after the set, not its first volume
-            splitArchiveName: url.flatMap { $0.lastPathComponent == name ? nil : name },
+            // From the file's name, by the catalog's split patterns — not by
+            // comparing it with `name`, which follows an archive opened inside
+            // this one.
+            splitArchiveName: url.flatMap { url in
+                let setName = splitSetName(for: url)
+                return setName == url.lastPathComponent ? nil : setName
+            },
             target: target,
             items: diff,
             options: options ?? CompressionOptions(format: format),

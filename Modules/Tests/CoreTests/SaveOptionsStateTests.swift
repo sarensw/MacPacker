@@ -740,6 +740,34 @@ extension AllCoreTests {
             #expect(state.entries.values.contains { $0.name == "noise.bin" })
         }
 
+        /// Opening an archive inside the archive renames the window after the
+        /// inner one; the window still holds, and saves, the outer one — which
+        /// is no split set for all the names differ.
+        @Test func anArchiveSavesWhileANestedOneIsOpen() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let inner = dir.appendingPathComponent("inner.zip")
+            try SevenZipArchive.writeArchive(
+                destination: inner, items: [.addData(archivePath: "in.txt", data: Data("in".utf8))],
+                options: .init(format: .zip))
+            let outer = dir.appendingPathComponent("outer.zip")
+            try SevenZipArchive.writeArchive(
+                destination: outer, items: [.addFile(archivePath: "inner.zip", diskPath: inner)],
+                options: .init(format: .zip))
+            let state = makeState(Prompts([]))
+            state.open(url: outer)
+            try await state.openTask?.value
+            let added = dir.appendingPathComponent("added.txt")
+            try "added".write(to: added, atomically: true, encoding: .utf8)
+            state.add(url: added)
+            let nested = try #require(state.entries.values.first { $0.name == "inner.zip" })
+            try await state.openAsync(item: nested)
+
+            await state.save()?.value
+            #expect(state.saveError == nil, "\(state.saveError ?? "")")
+            #expect(try SevenZipArchive(url: outer).entries.contains { $0.path == "added.txt" })
+        }
+
         /// The kinds of set a window can hold.
         enum VolumeSet: String, CaseIterable, Sendable {
             /// 7-Zip's numbered volumes, written through the window.
