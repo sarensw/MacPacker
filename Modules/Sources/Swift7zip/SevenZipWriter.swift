@@ -39,11 +39,12 @@ extension SevenZipArchive {
         source: URL? = nil,
         destination: URL,
         items: [ArchiveUpdateItem],
-        options: SevenZipCompressionOptions = .init(),
+        options: CompressionOptions = .init(),
         sourcePassword: String? = nil,
         rewrite: Bool = false,
         progress: WriteProgressHandler? = nil
     ) throws {
+        let items = options.excludeDSStore ? items.excludingDSStore() : items
         let inPlace = source != nil
             && source!.standardizedFileURL == destination.standardizedFileURL
         if inPlace && (options.volumeSize ?? 0) > 0 {
@@ -59,10 +60,10 @@ extension SevenZipArchive {
         }
         // 7-Zip would refuse it too, with nothing to say why.
         if options.encrypts, options.format == .zip,
-           !SevenZipCompressionOptions.isValidZipPassword(options.password ?? "", encryption: options.encryption) {
+           !CompressionOptions.isValidZipPassword(options.password ?? "", encryption: options.encryption) {
             throw SevenZipError.writeFailed(
                 "A zip password can only use plain ASCII letters, digits, spaces and symbols"
-                + (options.encryption == .zipCrypto ? "" : ", at most \(SevenZipCompressionOptions.zipAESPasswordLimit) of them"))
+                + (options.encryption == .zipCrypto ? "" : ", at most \(CompressionOptions.zipAESPasswordLimit) of them"))
         }
         let actualDest: URL
         if inPlace {
@@ -346,7 +347,7 @@ extension SevenZipArchive {
     }
 
     /// The writable format a file is in, by its signature.
-    private static func writableFormat(of url: URL) -> SevenZipCompressionOptions.Format? {
+    private static func writableFormat(of url: URL) -> CompressionOptions.Format? {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { try? handle.close() }
         let head = (try? handle.read(upToCount: 6)) ?? Data()
@@ -565,7 +566,7 @@ extension SevenZipArchive {
         sourcePassword: String?,
         destination: URL,
         resolvedItems: [ResolvedItem],
-        options: SevenZipCompressionOptions,
+        options: CompressionOptions,
         progress: WriteProgressHandler? = nil
     ) throws {
         var cItems: [SZUpdateItem] = []

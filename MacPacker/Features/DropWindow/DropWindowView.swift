@@ -147,14 +147,14 @@ struct DropWindowView: View {
     /// A password that fails its check never locks a drop: the files bounce back,
     /// and the options open on the reason.
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
-        guard let settings = CompressSettings.current else {
+        guard let options = CompressSettings.current else {
             log.notice("Drop refused — the password has a problem")
             optionsExpanded = true
             return false
         }
         loadDroppedFileURLs(from: providers) { urls in
             log.notice("Drop window received \(urls.count) url(s)")
-            compressor.compress(files: urls, options: settings.options, excludeDSStore: settings.excludeDSStore)
+            compressor.compress(files: urls, options: options)
         }
         return true
     }

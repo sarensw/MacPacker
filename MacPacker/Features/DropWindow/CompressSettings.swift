@@ -28,9 +28,7 @@ enum CompressSettings {
     /// What a drop should use, taken when it lands: changing the options while
     /// an archive is written does not change that archive. `nil` while the
     /// password has a problem, which refuses the drop.
-    @MainActor static var current: (options: SevenZipCompressionOptions, excludeDSStore: Bool)? {
-        shared.compressionOptions.map { ($0, shared.excludeDSStore) }
-    }
+    @MainActor static var current: CompressionOptions? { shared.compressionOptions }
 }
 
 /// Borderless: in a small glass panel the button chrome is louder than the choice.
@@ -41,8 +39,8 @@ struct CompressFormatMenu: View {
     var body: some View {
         Menu {
             Picker(selection: $options.format) {
-                Text(verbatim: "zip").tag(SevenZipCompressionOptions.Format.zip)
-                Text(verbatim: "7z").tag(SevenZipCompressionOptions.Format.sevenZ)
+                Text(verbatim: "zip").tag(CompressionOptions.Format.zip)
+                Text(verbatim: "7z").tag(CompressionOptions.Format.sevenZ)
             } label: {
                 // No label at all. Two entries called "zip" and "7z" need no
                 // heading above them, and a string that is never rendered still

@@ -115,8 +115,8 @@ extension AllCoreTests {
 
         /// The writer holds the same line on its own: at level 0 a dictionary or
         /// word size is dropped, not passed on for 7-Zip to refuse.
-        @Test(arguments: SevenZipCompressionOptions.Format.allCases)
-        func theWriterStoresWhateverCodecSettingsCome(_ format: SevenZipCompressionOptions.Format) throws {
+        @Test(arguments: CompressionOptions.Format.allCases)
+        func theWriterStoresWhateverCodecSettingsCome(_ format: CompressionOptions.Format) throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let url = dir.appendingPathComponent("store.\(format.rawValue)")
@@ -156,7 +156,7 @@ extension AllCoreTests {
             let options = ArchiveSaveOptions(defaults: defaults)
             options.password = "correct horse battery staple"
             options.passwordConfirmation = options.password
-            for format in SevenZipCompressionOptions.Format.allCases {
+            for format in CompressionOptions.Format.allCases {
                 options.format = format
                 options.remember()
             }
@@ -322,6 +322,9 @@ extension AllCoreTests {
             #expect(o.solidMode == false && o.solidBlockSize == nil, "0 means no solid blocks")
             #expect(o.encryptFileNames && o.password == "pw" && o.encryption == nil)
             #expect(o.volumeSize == 100 << 20)
+            #expect(!o.excludeDSStore)
+            options.excludeDSStore = true
+            #expect(try #require(options.compressionOptions).excludeDSStore, "leaving .DS_Store out is one of the options")
 
             options.solidBlockSize = .max
             let solid = try #require(options.compressionOptions)
@@ -356,7 +359,7 @@ extension AllCoreTests {
                 written += 1
             }
 
-            for format in SevenZipCompressionOptions.Format.allCases {
+            for format in CompressionOptions.Format.allCases {
                 options.format = format
                 for method in [nil] + options.methods {
                     options.method = method
@@ -453,8 +456,8 @@ extension AllCoreTests {
             return folder
         }
 
-        @MainActor @Test(arguments: SevenZipCompressionOptions.Format.allCases)
-        func newArchivesLeaveDSStoreOutOnlyWhenAsked(_ format: SevenZipCompressionOptions.Format) async throws {
+        @MainActor @Test(arguments: CompressionOptions.Format.allCases)
+        func newArchivesLeaveDSStoreOutOnlyWhenAsked(_ format: CompressionOptions.Format) async throws {
             for exclude in [false, true] {
                 let dir = try makeTempDir()
                 defer { try? FileManager.default.removeItem(at: dir) }
@@ -464,7 +467,7 @@ extension AllCoreTests {
                 state.create()
                 state.add(url: folder)
                 let target = dir.appendingPathComponent("out.\(format.rawValue)")
-                await state.save(to: target, options: .init(format: format), excludeDSStore: exclude)?.value
+                await state.save(to: target, options: .init(format: format, excludeDSStore: exclude))?.value
                 #expect(state.error == nil, "\(state.error ?? "")")
 
                 let paths = try storedPaths(target)
@@ -504,7 +507,7 @@ extension AllCoreTests {
             state.open(url: zip)
             try await state.openTask?.value
             state.add(url: folder)
-            await state.save(options: .init(format: .zip), excludeDSStore: true)?.value
+            await state.save(options: .init(format: .zip, excludeDSStore: true))?.value
             #expect(state.error == nil, "\(state.error ?? "")")
 
             let paths = try systemZipEntries(zip)
@@ -714,7 +717,7 @@ extension AllCoreTests {
 
         /// A set of four 64 KB volumes written through the window, which then
         /// holds it. Noise, since anything that compresses would fit in one.
-        private func splitSet(_ format: SevenZipCompressionOptions.Format, in dir: URL) async throws -> ArchiveState {
+        private func splitSet(_ format: CompressionOptions.Format, in dir: URL) async throws -> ArchiveState {
             let file = dir.appendingPathComponent("noise.bin")
             try noise(bytes: 200_000).write(to: file)
             let state = makeState(Prompts([]))
@@ -725,8 +728,8 @@ extension AllCoreTests {
             return state
         }
 
-        @Test(arguments: SevenZipCompressionOptions.Format.allCases)
-        func aSplitSaveReopensItsFirstVolume(_ format: SevenZipCompressionOptions.Format) async throws {
+        @Test(arguments: CompressionOptions.Format.allCases)
+        func aSplitSaveReopensItsFirstVolume(_ format: CompressionOptions.Format) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let state = try await splitSet(format, in: dir)
@@ -785,7 +788,7 @@ extension AllCoreTests {
             #expect(try names.map { try Data(contentsOf: dir.appendingPathComponent($0)) } == before, "a volume changed")
 
             // and what it says to do works: Save As writes the set, change included, as one archive
-            let format: SevenZipCompressionOptions.Format = kind == .sevenZ ? .sevenZ : .zip
+            let format: CompressionOptions.Format = kind == .sevenZ ? .sevenZ : .zip
             let joined = dir.appendingPathComponent("joined.\(format.rawValue)")
             await state.save(to: joined, options: .init(format: format))?.value
             #expect(state.error == nil, "\(state.error ?? "")")
@@ -865,7 +868,7 @@ extension AllCoreTests {
             case .contents: archive = try encryptedZip(in: dir)
             case .everything: archive = try hiddenNames7z(in: dir)
             }
-            let format: SevenZipCompressionOptions.Format = lock == .everything ? .sevenZ : .zip
+            let format: CompressionOptions.Format = lock == .everything ? .sevenZ : .zip
             let prompts = Prompts(["password"])
             let state = makeState(prompts)
             state.open(url: archive)

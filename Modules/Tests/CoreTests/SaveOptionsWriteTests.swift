@@ -149,10 +149,10 @@ private func size(of url: URL) throws -> Int {
 
 /// One way the save panel can encrypt.
 struct EncryptionCase: Sendable, CustomTestStringConvertible {
-    let format: SevenZipCompressionOptions.Format
-    let encryption: SevenZipCompressionOptions.Encryption?
+    let format: CompressionOptions.Format
+    let encryption: CompressionOptions.Encryption?
     let encryptNames: Bool
-    let method: SevenZipCompressionOptions.Method?
+    let method: CompressionOptions.Method?
     let level: UInt32
     let password: String
 
@@ -162,7 +162,7 @@ struct EncryptionCase: Sendable, CustomTestStringConvertible {
         return "\(format.rawValue) · \(cipher) · \(how) · password of \(password.count) characters"
     }
 
-    var options: SevenZipCompressionOptions {
+    var options: CompressionOptions {
         .init(format: format, level: level, method: method, password: password,
               encryption: encryption, encryptFileNames: encryptNames)
     }
@@ -178,10 +178,10 @@ struct EncryptionCase: Sendable, CustomTestStringConvertible {
     static let sevenZipPasswords = zipPasswords + ["pässwörd✓", "密码 🔒 mit Leerzeichen"]
 
     static let all: [EncryptionCase] = {
-        let hows: [(SevenZipCompressionOptions.Method?, UInt32)] = [(nil, 5), (.lzma, 5), (nil, 0)]
-        let sevenZipHows: [(SevenZipCompressionOptions.Method?, UInt32)] = [(nil, 5), (.ppmd, 5), (nil, 0)]
+        let hows: [(CompressionOptions.Method?, UInt32)] = [(nil, 5), (.lzma, 5), (nil, 0)]
+        let sevenZipHows: [(CompressionOptions.Method?, UInt32)] = [(nil, 5), (.ppmd, 5), (nil, 0)]
         var cases: [EncryptionCase] = []
-        for encryption in SevenZipCompressionOptions.Encryption.allCases {
+        for encryption in CompressionOptions.Encryption.allCases {
             for (method, level) in hows {
                 for password in zipPasswords {
                     cases.append(.init(format: .zip, encryption: encryption, encryptNames: false,
@@ -203,24 +203,24 @@ struct EncryptionCase: Sendable, CustomTestStringConvertible {
 
 /// A method in a format, for the settings that depend on both.
 struct MethodCase: Sendable, CustomTestStringConvertible {
-    let format: SevenZipCompressionOptions.Format
-    let method: SevenZipCompressionOptions.Method?
+    let format: CompressionOptions.Format
+    let method: CompressionOptions.Method?
 
     var testDescription: String { "\(format.rawValue) · \(method?.rawValue ?? "automatic")" }
 
-    var effective: SevenZipCompressionOptions.Method {
-        SevenZipCompressionOptions.effectiveMethod(method, in: format)
+    var effective: CompressionOptions.Method {
+        CompressionOptions.effectiveMethod(method, in: format)
     }
-    var dictionarySizes: [UInt64] { SevenZipCompressionOptions.dictionarySizes(for: format, method: method) }
-    var wordSizes: [UInt32] { SevenZipCompressionOptions.wordSizes(for: format, method: method) }
+    var dictionarySizes: [UInt64] { CompressionOptions.dictionarySizes(for: format, method: method) }
+    var wordSizes: [UInt32] { CompressionOptions.wordSizes(for: format, method: method) }
 
     /// Big enough that the smallest dictionary on offer is smaller than it: at
     /// or above its size a dictionary is cut down to the data and changes
     /// nothing, and PPMd's smallest is 4 MB.
     var inputSize: Int { effective == .ppmd ? 6_000_000 : 320_000 }
 
-    static let all: [MethodCase] = SevenZipCompressionOptions.Format.allCases.flatMap { format in
-        ([nil] + SevenZipCompressionOptions.methods(for: format)).map { MethodCase(format: format, method: $0) }
+    static let all: [MethodCase] = CompressionOptions.Format.allCases.flatMap { format in
+        ([nil] + CompressionOptions.methods(for: format)).map { MethodCase(format: format, method: $0) }
     }
     static let withDictionary = all.filter { !$0.dictionarySizes.isEmpty }
     static let withWordSize = all.filter { !$0.wordSizes.isEmpty }
@@ -250,8 +250,8 @@ extension AllCoreTests {
         /// And it has to read what the writer writes, cipher included. A build too
         /// old for AES would pass every archive back as unreadable, which would
         /// make each check against it worthless.
-        @Test(arguments: SevenZipCompressionOptions.Format.allCases)
-        func theOracleReadsWhatTheWriterWrites(_ format: SevenZipCompressionOptions.Format) throws {
+        @Test(arguments: CompressionOptions.Format.allCases)
+        func theOracleReadsWhatTheWriterWrites(_ format: CompressionOptions.Format) throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let archive = dir.appendingPathComponent("oracle.\(format.rawValue)")
@@ -375,7 +375,7 @@ extension AllCoreTests {
         /// and WinZip AES stops at 99 characters. Checked before the write, with
         /// a message that says so, instead of 7-Zip's bare failure.
         @Test func zipPasswordsFollow7ZipsRule() throws {
-            let cases: [(String, SevenZipCompressionOptions.Encryption?, Bool)] = [
+            let cases: [(String, CompressionOptions.Encryption?, Bool)] = [
                 ("password", nil, true),
                 ("p@ss w'ord\"$x ~", .aes256, true),
                 (String(repeating: "a", count: 99), .aes256, true),
@@ -389,7 +389,7 @@ extension AllCoreTests {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             for (index, (password, encryption, valid)) in cases.enumerated() {
-                #expect(SevenZipCompressionOptions.isValidZipPassword(password, encryption: encryption) == valid,
+                #expect(CompressionOptions.isValidZipPassword(password, encryption: encryption) == valid,
                         "\(password.debugDescription) with \(encryption?.rawValue ?? "default")")
                 let archive = dir.appendingPathComponent("case\(index).zip")
                 let write = {
@@ -426,8 +426,8 @@ extension AllCoreTests {
         }
 
         /// No password, or an empty one, writes no encryption at all.
-        @Test(arguments: SevenZipCompressionOptions.Format.allCases)
-        func anEmptyPasswordEncryptsNothing(_ format: SevenZipCompressionOptions.Format) throws {
+        @Test(arguments: CompressionOptions.Format.allCases)
+        func anEmptyPasswordEncryptsNothing(_ format: CompressionOptions.Format) throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             for password in [nil, ""] as [String?] {
@@ -455,12 +455,12 @@ extension AllCoreTests {
         /// With a password for the copy, an encrypted archive is rebuilt like any
         /// other — read with its own password, written with the new one.
         @Test(arguments: [
-            SevenZipCompressionOptions(format: .sevenZ, password: "fresh"),
-            SevenZipCompressionOptions(format: .sevenZ, password: "fresh", encryptFileNames: true),
-            SevenZipCompressionOptions(format: .zip, password: "fresh"),
-            SevenZipCompressionOptions(format: .zip, password: "fresh", encryption: .zipCrypto),
+            CompressionOptions(format: .sevenZ, password: "fresh"),
+            CompressionOptions(format: .sevenZ, password: "fresh", encryptFileNames: true),
+            CompressionOptions(format: .zip, password: "fresh"),
+            CompressionOptions(format: .zip, password: "fresh", encryption: .zipCrypto),
         ])
-        func saveAsReencryptsUnderTheNewPassword(_ options: SevenZipCompressionOptions) async throws {
+        func saveAsReencryptsUnderTheNewPassword(_ options: CompressionOptions) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let source = try encryptedSource(in: dir)
@@ -509,7 +509,7 @@ extension AllCoreTests {
             defer { try? FileManager.default.removeItem(at: dir) }
             let source = try encryptedSource(in: dir)
             let saved = dir.appendingPathComponent("saved.7z")
-            let options = SevenZipCompressionOptions(format: .sevenZ, password: "fresh")
+            let options = CompressionOptions(format: .sevenZ, password: "fresh")
             expectError("passwordMissing") {
                 try SevenZipArchive.writeArchive(source: source, destination: saved, items: [], options: options)
             }
@@ -598,7 +598,7 @@ extension AllCoreTests {
             try sampleText(bytes: 320_000, seed: 5).write(to: small)
             let big = dir.appendingPathComponent("big.txt")
             try sampleText(bytes: 6_000_000, seed: 5).write(to: big)
-            func recorded(_ method: SevenZipCompressionOptions.Method, input: URL,
+            func recorded(_ method: CompressionOptions.Method, input: URL,
                           dictionary: UInt64? = nil, word: UInt32? = nil) throws -> String {
                 let url = dir.appendingPathComponent("\(UUID().uuidString).7z")
                 try SevenZipArchive.writeArchive(
@@ -609,7 +609,7 @@ extension AllCoreTests {
             #expect(try recorded(.lzma2, input: small, dictionary: 64 << 10) == "LZMA2:16")
             #expect(try recorded(.lzma, input: small, dictionary: 64 << 10) == "LZMA:16")
             #expect(try recorded(.ppmd, input: big, dictionary: 4 << 20, word: 8) == "PPMD:o8:mem22")
-            for order in SevenZipCompressionOptions.wordSizes(for: .sevenZ, method: .ppmd) {
+            for order in CompressionOptions.wordSizes(for: .sevenZ, method: .ppmd) {
                 #expect(try recorded(.ppmd, input: small, word: order).split(separator: ":")[1] == "o\(order)")
             }
         }
@@ -621,8 +621,8 @@ extension AllCoreTests {
             defer { try? FileManager.default.removeItem(at: dir) }
             let items: [ArchiveUpdateItem] = [.addData(archivePath: "a.txt", data: sampleText(bytes: 10_000, seed: 2))]
             for (index, options) in [
-                SevenZipCompressionOptions(format: .zip, method: .deflate, dictionarySize: 1 << 20),
-                SevenZipCompressionOptions(format: .zip, method: .bzip2, wordSize: 64),
+                CompressionOptions(format: .zip, method: .deflate, dictionarySize: 1 << 20),
+                CompressionOptions(format: .zip, method: .bzip2, wordSize: 64),
             ].enumerated() {
                 let url = dir.appendingPathComponent("refused\(index).\(options.format.rawValue)")
                 expectError("writeFailed") {
@@ -665,7 +665,7 @@ extension AllCoreTests {
                 files[name] = data
                 items.append(.addFile(archivePath: name, diskPath: url))
             }
-            func blocks(_ options: SevenZipCompressionOptions) async throws -> Int {
+            func blocks(_ options: CompressionOptions) async throws -> Int {
                 let url = dir.appendingPathComponent("\(UUID().uuidString).7z")
                 try SevenZipArchive.writeArchive(destination: url, items: items, options: options)
                 // however the blocks fell, both engines read every file back
@@ -681,7 +681,7 @@ extension AllCoreTests {
             #expect(try await blocks(.init(format: .sevenZ)) == 1, "7z is solid by default")
             #expect(try await blocks(.init(format: .sevenZ, solidMode: false)) == 3, "non-solid: a block per file")
             #expect(try await blocks(.init(format: .sevenZ, solidBlockSize: 1 << 20)) == 2, "1 MB holds two 400 KB files")
-            for size in SevenZipCompressionOptions.solidBlockSizes.dropFirst() {
+            for size in CompressionOptions.solidBlockSizes.dropFirst() {
                 #expect(try await blocks(.init(format: .sevenZ, solidBlockSize: size)) == 1, "\(size) bytes holds all three")
             }
         }
@@ -693,8 +693,8 @@ extension AllCoreTests {
 
         /// 250 KB that nothing shrinks, in 64 KB volumes: four of them, the first
         /// three exactly full.
-        @MainActor @Test(arguments: SevenZipCompressionOptions.Format.allCases)
-        func volumesSplitAtTheSizeAskedFor(_ format: SevenZipCompressionOptions.Format) async throws {
+        @MainActor @Test(arguments: CompressionOptions.Format.allCases)
+        func volumesSplitAtTheSizeAskedFor(_ format: CompressionOptions.Format) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let payload = noise(bytes: 250_000)
@@ -744,8 +744,8 @@ extension AllCoreTests {
             }
         }
 
-        @Test(arguments: SevenZipCompressionOptions.Format.allCases)
-        func encryptedVolumesNeedThePassword(_ format: SevenZipCompressionOptions.Format) throws {
+        @Test(arguments: CompressionOptions.Format.allCases)
+        func encryptedVolumesNeedThePassword(_ format: CompressionOptions.Format) throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let payload = noise(bytes: 200_000)
@@ -772,7 +772,7 @@ extension AllCoreTests {
         @Test func theSmallestPresetSplitsForReal() throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
-            let preset = try #require(SevenZipCompressionOptions.volumeSizes.first)
+            let preset = try #require(CompressionOptions.volumeSizes.first)
             #expect(preset == 10 << 20)
             let payload = noise(bytes: 25_000_000)
             let input = dir.appendingPathComponent("noise.bin")
@@ -796,7 +796,7 @@ extension AllCoreTests {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let base = dir.appendingPathComponent("set.zip")
-            let options = SevenZipCompressionOptions(format: .zip, volumeSize: 64 << 10)
+            let options = CompressionOptions(format: .zip, volumeSize: 64 << 10)
             try SevenZipArchive.writeArchive(
                 destination: base, items: [.addData(archivePath: "first.bin", data: noise(bytes: 150_000))],
                 options: options)

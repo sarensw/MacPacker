@@ -1,7 +1,8 @@
 import Foundation
 
-/// Options controlling archive creation and update.
-public struct SevenZipCompressionOptions: Sendable {
+/// Options controlling archive creation and update: 7-Zip's settings and
+/// MacPacker's own, one set for every write.
+public struct CompressionOptions: Sendable {
 
     /// Supported output archive formats.
     public enum Format: String, Sendable, CaseIterable {
@@ -149,6 +150,10 @@ public struct SevenZipCompressionOptions: Sendable {
     /// `name.001`, `name.002`, ... next to the destination. `nil` writes one file.
     public var volumeSize: UInt64?
 
+    /// Leave out the `.DS_Store` files a write adds — Finder's, not something
+    /// anyone means to archive. Entries the archive holds already stay.
+    public var excludeDSStore: Bool
+
     /// Whether this writes an encrypted archive.
     public var encrypts: Bool { !(password ?? "").isEmpty }
 
@@ -164,7 +169,8 @@ public struct SevenZipCompressionOptions: Sendable {
         dictionarySize: UInt64? = nil,
         wordSize: UInt32? = nil,
         solidBlockSize: UInt64? = nil,
-        volumeSize: UInt64? = nil
+        volumeSize: UInt64? = nil,
+        excludeDSStore: Bool = false
     ) {
         self.format = format
         self.level = level
@@ -177,5 +183,6 @@ public struct SevenZipCompressionOptions: Sendable {
         self.wordSize = wordSize
         self.solidBlockSize = solidBlockSize
         self.volumeSize = volumeSize
+        self.excludeDSStore = excludeDSStore
     }
 }

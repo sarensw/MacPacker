@@ -719,8 +719,7 @@ extension ArchiveState {
     @discardableResult
     public func save(
         to destination: URL? = nil,
-        options: SevenZipCompressionOptions? = nil,
-        excludeDSStore: Bool = false
+        options: CompressionOptions? = nil
     ) -> Task<Void, Never>? {
         guard !isSaving else {
             log.notice("Ignoring save — a save is already in progress")
@@ -731,16 +730,15 @@ extension ArchiveState {
         // archive onto its own file: its options have to reach every entry.
         guard !diff.isEmpty || destination != nil else { return nil }
         // format follows the target extension; zip is the default
-        let format: SevenZipCompressionOptions.Format =
+        let format: CompressionOptions.Format =
             target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
-        let items = excludeDSStore ? diff.excludingDSStore() : diff
         let saver = ArchiveSaver(
             source: url,
             // a split archive's window is named after the set, not its first volume
             splitArchiveName: url.flatMap { $0.lastPathComponent == name ? nil : name },
             target: target,
-            items: items,
-            options: options ?? SevenZipCompressionOptions(format: format),
+            items: diff,
+            options: options ?? CompressionOptions(format: format),
             isSaveAs: destination != nil,
             sourcePassword: url.flatMap { passwords[$0] },
             passwordResolver: makePasswordResolver(),
@@ -754,7 +752,7 @@ extension ArchiveState {
         updateStatusText(String(localized: "saving...", bundle: .module, comment: "Archive operation status"))
         log.notice("Saving archive", context: [
             "target": target.lastPathComponent,
-            "changes": "\(items.count)",
+            "changes": "\(diff.count)",
             "new": "\(url == nil)"
         ])
 

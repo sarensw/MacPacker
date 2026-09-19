@@ -22,9 +22,9 @@ import Swift7zip
 /// The save panel and Quick Compress each keep their own, in their own keys.
 @MainActor
 public final class ArchiveSaveOptions: ObservableObject {
-    public typealias Format = SevenZipCompressionOptions.Format
-    public typealias Method = SevenZipCompressionOptions.Method
-    public typealias Encryption = SevenZipCompressionOptions.Encryption
+    public typealias Format = CompressionOptions.Format
+    public typealias Method = CompressionOptions.Method
+    public typealias Encryption = CompressionOptions.Encryption
 
     /// What is wrong with the password, for the panel to say.
     public enum PasswordProblem: Equatable, Sendable {
@@ -113,15 +113,15 @@ public final class ArchiveSaveOptions: ObservableObject {
 
     // MARK: What the current format and method offer
 
-    public var levels: [UInt32] { SevenZipCompressionOptions.levels }
-    public var methods: [Method] { SevenZipCompressionOptions.methods(for: format) }
-    public var dictionarySizes: [UInt64] { SevenZipCompressionOptions.dictionarySizes(for: format, method: method) }
-    public var wordSizes: [UInt32] { SevenZipCompressionOptions.wordSizes(for: format, method: method) }
-    public var encryptions: [Encryption] { SevenZipCompressionOptions.encryptions(for: format) }
-    public var canEncryptFileNames: Bool { SevenZipCompressionOptions.canEncryptFileNames(format) }
-    public var hasSolidBlocks: Bool { SevenZipCompressionOptions.hasSolidBlocks(format) }
-    public var solidBlockSizes: [UInt64] { SevenZipCompressionOptions.solidBlockSizes }
-    public var volumeSizes: [UInt64] { SevenZipCompressionOptions.volumeSizes }
+    public var levels: [UInt32] { CompressionOptions.levels }
+    public var methods: [Method] { CompressionOptions.methods(for: format) }
+    public var dictionarySizes: [UInt64] { CompressionOptions.dictionarySizes(for: format, method: method) }
+    public var wordSizes: [UInt32] { CompressionOptions.wordSizes(for: format, method: method) }
+    public var encryptions: [Encryption] { CompressionOptions.encryptions(for: format) }
+    public var canEncryptFileNames: Bool { CompressionOptions.canEncryptFileNames(format) }
+    public var hasSolidBlocks: Bool { CompressionOptions.hasSolidBlocks(format) }
+    public var solidBlockSizes: [UInt64] { CompressionOptions.solidBlockSizes }
+    public var volumeSizes: [UInt64] { CompressionOptions.volumeSizes }
 
     /// At Store nothing is compressed, so method, dictionary, word size and solid
     /// blocks do nothing.
@@ -133,7 +133,7 @@ public final class ArchiveSaveOptions: ObservableObject {
         if password.isEmpty && passwordConfirmation.isEmpty { return nil }
         if password != passwordConfirmation { return .mismatch }
         guard format == .zip,
-              !SevenZipCompressionOptions.isValidZipPassword(password, encryption: encryption) else { return nil }
+              !CompressionOptions.isValidZipPassword(password, encryption: encryption) else { return nil }
         let ascii = password.unicodeScalars.allSatisfy { (0x20...0x7F).contains($0.value) }
         return ascii ? .tooLong : .notASCII
     }
@@ -144,9 +144,9 @@ public final class ArchiveSaveOptions: ObservableObject {
     /// archive is locked behind a password nobody confirmed. Settings the format
     /// or level has no use for are left out rather than passed along to be
     /// refused.
-    public var compressionOptions: SevenZipCompressionOptions? {
+    public var compressionOptions: CompressionOptions? {
         guard canSave else { return nil }
-        return SevenZipCompressionOptions(
+        return CompressionOptions(
             format: format,
             level: level,
             method: compresses ? method : nil,
@@ -157,13 +157,14 @@ public final class ArchiveSaveOptions: ObservableObject {
             dictionarySize: compresses ? dictionarySize : nil,
             wordSize: compresses ? wordSize : nil,
             solidBlockSize: compresses && hasSolidBlocks && (solidBlockSize ?? 0) > 0 ? solidBlockSize : nil,
-            volumeSize: volumeSize)
+            volumeSize: volumeSize,
+            excludeDSStore: excludeDSStore)
     }
 
     /// What the start page's drop area writes: the format picked there, defaults
     /// for the rest. It shows no other option, so no password or volume size set
     /// for Quick Compress may reach it.
-    public var startPageOptions: SevenZipCompressionOptions { .init(format: format) }
+    public var startPageOptions: CompressionOptions { .init(format: format) }
 
     // MARK: Memory
 

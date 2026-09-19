@@ -953,7 +953,7 @@ extension AllCoreTests {
         private static let bravo = String(repeating: "bravo bravo bravo bravo\n", count: 200)
 
         /// a.txt, folder/b.txt and an empty folder, in the format's default method.
-        private func makeSource(_ format: SevenZipCompressionOptions.Format, in dir: URL) throws -> URL {
+        private func makeSource(_ format: CompressionOptions.Format, in dir: URL) throws -> URL {
             let source = dir.appendingPathComponent("source.\(format.rawValue)")
             try SevenZipArchive.writeArchive(
                 destination: source,
@@ -968,11 +968,11 @@ extension AllCoreTests {
             return source
         }
 
-        @Test(arguments: zip([SevenZipCompressionOptions.Format.zip, .sevenZ],
-                             [SevenZipCompressionOptions.Format.sevenZ, .zip]))
+        @Test(arguments: zip([CompressionOptions.Format.zip, .sevenZ],
+                             [CompressionOptions.Format.sevenZ, .zip]))
         func saveAsWritesTheFormatItWasAskedFor(
-            from: SevenZipCompressionOptions.Format,
-            to: SevenZipCompressionOptions.Format
+            from: CompressionOptions.Format,
+            to: CompressionOptions.Format
         ) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
@@ -1022,8 +1022,8 @@ extension AllCoreTests {
                     == Self.bravo)
         }
 
-        @Test(arguments: [SevenZipCompressionOptions.Format.zip, .sevenZ])
-        func saveAsKeepsWhatTheEntriesCarry(into format: SevenZipCompressionOptions.Format) async throws {
+        @Test(arguments: [CompressionOptions.Format.zip, .sevenZ])
+        func saveAsKeepsWhatTheEntriesCarry(into format: CompressionOptions.Format) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let fm = FileManager.default
@@ -1235,9 +1235,9 @@ extension AllCoreTests {
         // Made by `zip`, not by us: sidecars beside their files and under the
         // `__MACOSX/` mirror, one for a folder the archive only implies, a real file
         // named like a sidecar, and a sidecar with nothing to describe.
-        @Test(arguments: [SevenZipCompressionOptions.Format.zip, .sevenZ])
+        @Test(arguments: [CompressionOptions.Format.zip, .sevenZ])
         func saveAsKeepsTheMacMetadataOfAFinderStyleArchive(
-            into format: SevenZipCompressionOptions.Format
+            into format: CompressionOptions.Format
         ) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
@@ -1309,15 +1309,15 @@ func sampleText(bytes: Int) -> Data {
 
 /// One combination the save panel can produce.
 struct WriteCase: Sendable, CustomTestStringConvertible {
-    let format: SevenZipCompressionOptions.Format
-    let method: SevenZipCompressionOptions.Method?
+    let format: CompressionOptions.Format
+    let method: CompressionOptions.Method?
     let level: UInt32
 
     var testDescription: String {
         "\(format.rawValue) · \(method?.rawValue ?? "automatic") · level \(level)"
     }
 
-    var options: SevenZipCompressionOptions { .init(format: format, level: level, method: method) }
+    var options: CompressionOptions { .init(format: format, level: level, method: method) }
 
     /// What 7-Zip records for this combination: the part of `kpidMethod` before
     /// its first colon.
@@ -1339,8 +1339,8 @@ struct WriteCase: Sendable, CustomTestStringConvertible {
     /// Each format, Automatic plus each method it offers, each of 7-Zip's levels —
     /// built from the same list the panel reads, so a method added there is under
     /// test without anyone writing a case for it.
-    static let all: [WriteCase] = SevenZipCompressionOptions.Format.allCases.flatMap { format in
-        ([nil] + SevenZipCompressionOptions.methods(for: format)).flatMap { method in
+    static let all: [WriteCase] = CompressionOptions.Format.allCases.flatMap { format in
+        ([nil] + CompressionOptions.methods(for: format)).flatMap { method in
             [UInt32(0), 1, 3, 5, 7, 9].map { WriteCase(format: format, method: method, level: $0) }
         }
     }
@@ -1434,7 +1434,7 @@ extension AllCoreTests {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let sample = try writeSample(into: dir)
-            func recorded(_ method: SevenZipCompressionOptions.Method, _ level: UInt32) throws -> String {
+            func recorded(_ method: CompressionOptions.Method, _ level: UInt32) throws -> String {
                 let url = dir.appendingPathComponent("\(method.rawValue)-L\(level).7z")
                 try SevenZipArchive.writeArchive(
                     destination: url,
@@ -1458,7 +1458,7 @@ extension AllCoreTests {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let sample = try writeSample(into: dir)
-            let other: SevenZipCompressionOptions.Format = c.format == .zip ? .sevenZ : .zip
+            let other: CompressionOptions.Format = c.format == .zip ? .sevenZ : .zip
             let source = dir.appendingPathComponent("source.\(other.rawValue)")
             try SevenZipArchive.writeArchive(
                 destination: source,

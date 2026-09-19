@@ -33,7 +33,7 @@ final actor ArchiveSaver {
     private let splitArchiveName: String?
     private let target: URL
     private let items: [ArchiveUpdateItem]
-    private let options: SevenZipCompressionOptions
+    private let options: CompressionOptions
     /// A Save As writes every entry again with `options`, onto the source's own
     /// file too. A Save updates the archive in place: what it keeps stays as is.
     private let isSaveAs: Bool
@@ -52,7 +52,7 @@ final actor ArchiveSaver {
         splitArchiveName: String?,
         target: URL,
         items: [ArchiveUpdateItem],
-        options: SevenZipCompressionOptions,
+        options: CompressionOptions,
         isSaveAs: Bool,
         sourcePassword: String?,
         passwordResolver: @escaping ArchivePasswordResolver,
@@ -201,23 +201,6 @@ final actor ArchiveSaver {
         case .passwordWrong?: true
         case .passwordMissing?: false
         default: nil
-        }
-    }
-}
-
-extension Array where Element == ArchiveUpdateItem {
-    /// Without the `.DS_Store` files these changes would add. Finder writes one
-    /// into every folder it shows, and nobody means to archive it. Only additions
-    /// go — entries the archive already holds stay — and only files named exactly
-    /// `.DS_Store`: a folder of that name is not Finder's.
-    func excludingDSStore() -> [ArchiveUpdateItem] {
-        filter { item in
-            switch item {
-            case .addFile(let path, _, _, _), .addData(let path, _, _, _):
-                return (path as NSString).lastPathComponent != ".DS_Store"
-            default:
-                return true
-            }
         }
     }
 }

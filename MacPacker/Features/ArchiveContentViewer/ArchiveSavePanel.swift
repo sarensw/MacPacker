@@ -253,9 +253,9 @@ struct MethodControl: View {
 
     var body: some View {
         Picker(selection: $options.method) {
-            automaticEntry().tag(SevenZipCompressionOptions.Method?.none)
+            automaticEntry().tag(CompressionOptions.Method?.none)
             ForEach(options.methods, id: \.self) { method in
-                Text(verbatim: method.displayName).tag(SevenZipCompressionOptions.Method?.some(method))
+                Text(verbatim: method.displayName).tag(CompressionOptions.Method?.some(method))
             }
         } label: {
             EmptyView()
@@ -371,7 +371,7 @@ private func sizeName(_ bytes: UInt64) -> String {
     Int64(clamping: bytes).formatted(.byteCount(style: bytes % 1024 == 0 ? .memory : .decimal))
 }
 
-private extension SevenZipCompressionOptions.Method {
+private extension CompressionOptions.Method {
     /// How 7-Zip spells the codec in its own UI.
     var displayName: String {
         switch self {
@@ -385,7 +385,7 @@ private extension SevenZipCompressionOptions.Method {
     }
 }
 
-private extension SevenZipCompressionOptions.Encryption {
+private extension CompressionOptions.Encryption {
     var displayName: String {
         switch self {
         case .aes256: return "AES-256"
@@ -402,7 +402,7 @@ extension ArchiveSaveOptions.PasswordProblem {
         case .notASCII:
             String(localized: "A zip password can only use letters A–Z, digits, spaces and common symbols. 7z takes any password.", comment: "Save options: the zip password has characters zip encryption cannot take")
         case .tooLong:
-            String(localized: "With AES-256, a zip password can be at most \(SevenZipCompressionOptions.zipAESPasswordLimit) characters long.", comment: "Save options: the zip password is too long; the number is the limit")
+            String(localized: "With AES-256, a zip password can be at most \(CompressionOptions.zipAESPasswordLimit) characters long.", comment: "Save options: the zip password is too long; the number is the limit")
         }
     }
 }
@@ -484,10 +484,7 @@ enum ArchiveSavePanel {
                 return
             }
             options.remember()
-            let task = state.save(
-                to: url,
-                options: compression,
-                excludeDSStore: options.excludeDSStore)
+            let task = state.save(to: url, options: compression)
             onSave?(task)
         }
         if let window {

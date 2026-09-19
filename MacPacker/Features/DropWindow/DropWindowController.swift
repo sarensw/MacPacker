@@ -52,11 +52,11 @@ final class DropWindowController {
     /// write) drivable from a script without a real drag.
     @discardableResult
     func compress(files: [URL]) -> DropJob? {
-        guard let settings = CompressSettings.current else {
+        guard let options = CompressSettings.current else {
             log.notice("Compress refused — the password has a problem")
             return nil
         }
-        return compressor.compress(files: files, options: settings.options, excludeDSStore: settings.excludeDSStore)
+        return compressor.compress(files: files, options: options)
     }
 
     private func makePanel() -> NSPanel {
