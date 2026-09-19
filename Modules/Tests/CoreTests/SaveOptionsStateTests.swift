@@ -704,6 +704,12 @@ extension AllCoreTests {
 
             await state.save(to: dir.appendingPathComponent("copy.zip"), options: .init(format: .zip))?.value
             #expect(state.saveError == nil, "\(state.saveError ?? "")")
+
+            // a reason belongs to the archive it was given for: opening another drops it
+            await state.save(to: dir.appendingPathComponent("again.7z"), options: .init(format: .sevenZ))?.value
+            #expect(state.saveError != nil)
+            state.open(url: try makeSystemZipFixture(in: dir))
+            #expect(state.saveError == nil)
         }
 
         /// A set of four 64 KB volumes written through the window, which then

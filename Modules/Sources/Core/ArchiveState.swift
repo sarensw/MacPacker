@@ -223,7 +223,10 @@ extension ArchiveState {
     /// Resets the state of the archive
     private func reset() {
         self.hasArchive = false
-        
+        // A failed open sets its reason after this, so its alert still shows.
+        self.openError = nil
+        self.saveError = nil
+
         self.url = nil
         self.name = nil
         self.type = nil
@@ -819,7 +822,6 @@ extension ArchiveState {
         openTask?.cancel()
         openGeneration += 1
         let generation = openGeneration
-        openError = nil
 
         reset()
         updateStatus(.processing)
