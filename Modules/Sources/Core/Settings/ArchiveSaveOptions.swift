@@ -57,6 +57,9 @@ public final class ArchiveSaveOptions: ObservableObject {
             guard oldValue != format else { return }
             remembered[oldValue] = snapshot()
             apply(remembered[format] ?? Remembered())
+            // The split size belongs to the save, like the password, and stays —
+            // unless the new format does not offer it.
+            if let size = volumeSize, !volumeSizes.contains(size) { volumeSize = nil }
             autosave()
         }
     }

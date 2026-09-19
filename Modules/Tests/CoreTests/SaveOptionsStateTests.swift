@@ -77,6 +77,18 @@ extension AllCoreTests {
             #expect(options.encryptFileNames && options.solidBlockSize == 0)
         }
 
+        /// The split size belongs to the save, like the password: it stays when
+        /// the format changes — as long as the new format offers that size.
+        @Test func aSplitSizeStaysWhileTheFormatOffersIt() {
+            let options = ArchiveSaveOptions(defaults: isolatedDefaults())
+            options.volumeSize = 100 << 20
+            options.format = .sevenZ
+            #expect(options.volumeSize == 100 << 20, "7z offers 100 MB as well")
+            options.volumeSize = 12_345
+            options.format = .zip
+            #expect(options.volumeSize == nil, "a size the new format does not offer goes")
+        }
+
         @Test func aNewMethodDropsSettingsItDoesNotOffer() {
             let options = ArchiveSaveOptions(defaults: isolatedDefaults())
             options.format = .sevenZ
