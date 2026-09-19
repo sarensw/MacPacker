@@ -15,43 +15,70 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
-@MainActor
-struct ArchiveSaver {
+/// Off the main actor, like the loader and the extractor: only the progress it
+/// reports goes back there.
+final actor ArchiveSaver {
     /// What a save wrote: the file to open again — the first volume, when the
     /// archive was split — and the password that opens it, if it takes one.
-    struct Saved {
+    struct Saved: Sendable {
         let url: URL
         let password: String?
     }
 
     /// The archive on disk the save starts from; `nil` for a new one.
-    let source: URL?
-    /// The set's name when `source` is one volume of a split archive.
-    let volumeSetName: String?
-    let target: URL
-    let items: [ArchiveUpdateItem]
-    let options: SevenZipCompressionOptions
+    private let source: URL?
+    /// The name the window shows when `source` is a volume of a split archive
+    /// — `x.zip` for `x.zip.001` — and `nil` for a single file. Only the name:
+    /// nothing is read to know it.
+    private let splitArchiveName: String?
+    private let target: URL
+    private let items: [ArchiveUpdateItem]
+    private let options: SevenZipCompressionOptions
     /// A Save As writes every entry again with `options`, onto the source's own
     /// file too. A Save updates the archive in place: what it keeps stays as is.
-    let isSaveAs: Bool
+    private let isSaveAs: Bool
     /// The source's password, when it is known already.
-    let sourcePassword: String?
-    let passwordResolver: ArchivePasswordResolver
-    let folderAccessProvider: ArchiveFolderAccessUserProvider?
+    private let sourcePassword: String?
+    private let passwordResolver: ArchivePasswordResolver
+    private let folderAccessProvider: ArchiveFolderAccessUserProvider?
     /// Percent written, on the main actor.
-    let onProgress: @MainActor @Sendable (Int) -> Void
+    private let onProgress: @MainActor @Sendable (Int) -> Void
 
     /// How often the source's password is asked for before the save gives up.
     static let passwordPrompts = 5
+
+    init(
+        source: URL?,
+        splitArchiveName: String?,
+        target: URL,
+        items: [ArchiveUpdateItem],
+        options: SevenZipCompressionOptions,
+        isSaveAs: Bool,
+        sourcePassword: String?,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        folderAccessProvider: ArchiveFolderAccessUserProvider?,
+        onProgress: @escaping @MainActor @Sendable (Int) -> Void
+    ) {
+        self.source = source
+        self.splitArchiveName = splitArchiveName
+        self.target = target
+        self.items = items
+        self.options = options
+        self.isSaveAs = isSaveAs
+        self.sourcePassword = sourcePassword
+        self.passwordResolver = passwordResolver
+        self.folderAccessProvider = folderAccessProvider
+        self.onProgress = onProgress
+    }
 
     func save() async throws -> Saved {
         // A set of volumes is not changed in place — 7-Zip does not update one
         // either, and a new file over the first volume would leave the others to
         // be read as part of it. Save As writes the change elsewhere.
-        if let volumeSetName, let source, target.standardizedFileURL == source.standardizedFileURL {
+        if let splitArchiveName, let source, target.standardizedFileURL == source.standardizedFileURL {
             log.notice("Refusing to save a split archive in place", context: ["file": source.lastPathComponent])
             throw ArchiveError.saveRefused(
-                "\(volumeSetName) is split into volumes, so it can't be changed in place. Use Save As to write it as a new archive.")
+                "\(splitArchiveName) is split into volumes, so it can't be changed in place. Use Save As to write it as a new archive.")
         }
         let password = try await write(prompts: 0, sourcePassword: sourcePassword)
         let written = (options.volumeSize ?? 0) > 0

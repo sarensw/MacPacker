@@ -733,15 +733,13 @@ extension ArchiveState {
         // format follows the target extension; zip is the default
         let format: SevenZipCompressionOptions.Format =
             target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
+        let items = excludeDSStore ? diff.excludingDSStore() : diff
         let saver = ArchiveSaver(
             source: url,
-            // the set's name, when the archive is one volume of a split set
-            volumeSetName: url.flatMap { url in
-                let setName = splitSetName(for: url)
-                return setName == url.lastPathComponent ? nil : setName
-            },
+            // a split archive's window is named after the set, not its first volume
+            splitArchiveName: url.flatMap { $0.lastPathComponent == name ? nil : name },
             target: target,
-            items: excludeDSStore ? diff.excludingDSStore() : diff,
+            items: items,
             options: options ?? SevenZipCompressionOptions(format: format),
             isSaveAs: destination != nil,
             sourcePassword: url.flatMap { passwords[$0] },
@@ -756,7 +754,7 @@ extension ArchiveState {
         updateStatusText(String(localized: "saving...", bundle: .module, comment: "Archive operation status"))
         log.notice("Saving archive", context: [
             "target": target.lastPathComponent,
-            "changes": "\(saver.items.count)",
+            "changes": "\(items.count)",
             "new": "\(url == nil)"
         ])
 
