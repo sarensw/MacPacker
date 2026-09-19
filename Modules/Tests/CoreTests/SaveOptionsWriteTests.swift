@@ -681,6 +681,8 @@ extension AllCoreTests {
             #expect(try await blocks(.init(format: .sevenZ)) == 1, "7z is solid by default")
             #expect(try await blocks(.init(format: .sevenZ, solidMode: false)) == 3, "non-solid: a block per file")
             #expect(try await blocks(.init(format: .sevenZ, solidBlockSize: 1 << 20)) == 2, "1 MB holds two 400 KB files")
+            #expect(try await blocks(.init(format: .sevenZ, solidMode: false, solidBlockSize: 1 << 20)) == 3,
+                    "solid mode off wins over a block size, as the bridge's header promises")
             for size in CompressionOptions.solidBlockSizes.dropFirst() {
                 #expect(try await blocks(.init(format: .sevenZ, solidBlockSize: size)) == 1, "\(size) bytes holds all three")
             }

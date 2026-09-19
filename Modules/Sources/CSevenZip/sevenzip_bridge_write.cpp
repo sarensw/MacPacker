@@ -694,7 +694,10 @@ int sz_update_archive(
                 if (options->word_size > 0)
                     addUInt(ppmd ? L"o" : L"fb", options->word_size);
 
-                if (options->solid_block_size == UINT64_MAX) {
+                // Solid mode off wins, whatever block size comes with it.
+                if (options->solid_mode == 0) {
+                    addBool(L"s", false);
+                } else if (options->solid_block_size == UINT64_MAX) {
                     addBool(L"s", true);
                 } else if (options->solid_block_size > 0) {
                     char spec[32];
