@@ -118,8 +118,11 @@ public final class DropCompressor: ObservableObject {
                 log.error("Drop compress failed", context: ["error": error])
                 finish(job, .failed(error))
             } else {
-                log.info("Drop compress finished", context: ["file": destination.lastPathComponent])
-                finish(job, .done(destination))
+                // what the save reopened: the first volume, when it was split —
+                // then there is no file at `destination` for Finder to show
+                let written = state.url ?? destination
+                log.info("Drop compress finished", context: ["file": written.lastPathComponent])
+                finish(job, .done(written))
             }
         }
 
