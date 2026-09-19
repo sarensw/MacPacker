@@ -17,7 +17,8 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "dropwindow")
 
 struct DropWindowView: View {
     @AppStorage(Keys.dropWindowOptionsExpanded) private var optionsExpanded = false
-    @ObservedObject private var options = CompressSettings.shared
+    /// Quick Compress's own settings, shared with the start page's format menu.
+    @ObservedObject var options: ArchiveSaveOptions
 
     @State private var isTargeted = false
 
@@ -147,14 +148,16 @@ struct DropWindowView: View {
     /// A password that fails its check never locks a drop: the files bounce back,
     /// and the options open on the reason.
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
-        guard let options = CompressSettings.current else {
+        // taken when it lands: changing the options while it is written does not
+        // change this archive
+        guard let compression = options.compressionOptions else {
             log.notice("Drop refused — the password has a problem")
             optionsExpanded = true
             return false
         }
         loadDroppedFileURLs(from: providers) { urls in
             log.notice("Drop window received \(urls.count) url(s)")
-            compressor.compress(files: urls, options: options)
+            compressor.compress(files: urls, options: compression)
         }
         return true
     }

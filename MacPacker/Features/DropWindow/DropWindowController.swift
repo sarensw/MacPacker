@@ -18,9 +18,12 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "dropwindow")
 final class DropWindowController {
     private var panel: NSPanel?
     private let compressor: DropCompressor
+    /// Quick Compress's own settings, shared with the start page's format menu.
+    private let options: ArchiveSaveOptions
 
-    init(compressor: DropCompressor) {
+    init(compressor: DropCompressor, options: ArchiveSaveOptions) {
         self.compressor = compressor
+        self.options = options
     }
 
     /// Creates the panel on first use; later calls just bring it forward.
@@ -52,15 +55,15 @@ final class DropWindowController {
     /// write) drivable from a script without a real drag.
     @discardableResult
     func compress(files: [URL]) -> DropJob? {
-        guard let options = CompressSettings.current else {
+        guard let compression = options.compressionOptions else {
             log.notice("Compress refused — the password has a problem")
             return nil
         }
-        return compressor.compress(files: files, options: options)
+        return compressor.compress(files: files, options: compression)
     }
 
     private func makePanel() -> NSPanel {
-        let hostingView = NSHostingView(rootView: DropWindowView(compressor: compressor))
+        let hostingView = NSHostingView(rootView: DropWindowView(options: options, compressor: compressor))
         hostingView.frame.size = hostingView.fittingSize
 
         let panel = DropPanel(
@@ -119,7 +122,7 @@ final class DropWindowController {
         let controls = NSTitlebarAccessoryViewController()
         controls.layoutAttribute = .trailing
         let controlsView = NSHostingView(rootView: HStack(spacing: 10) {
-            CompressFormatMenu()
+            CompressFormatMenu(options: options)
             CompressPinButton { [weak self] floats in
                 self?.panel?.level = floats ? .floating : .normal
             }

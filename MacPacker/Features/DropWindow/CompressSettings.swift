@@ -4,7 +4,8 @@
 //
 //  Shared by every "drop files to compress" surface — the quick-compress window
 //  and the start page's column — so a drop does the same thing wherever it lands.
-//  The same options the save panel offers, remembered apart from its own.
+//  The options themselves are made once by the app delegate and handed down,
+//  like the compressor.
 //
 
 import Core
@@ -20,21 +21,10 @@ enum CompressDropIcon {
     static let name = "archivebox"
 }
 
-enum CompressSettings {
-    /// One set for every surface that compresses a drop, kept as it changes.
-    /// A password lasts only as long as the app runs.
-    @MainActor static let shared = ArchiveSaveOptions(storage: .quickCompress)
-
-    /// What a drop should use, taken when it lands: changing the options while
-    /// an archive is written does not change that archive. `nil` while the
-    /// password has a problem, which refuses the drop.
-    @MainActor static var current: CompressionOptions? { shared.compressionOptions }
-}
-
 /// Borderless: in a small glass panel the button chrome is louder than the choice.
 /// The label is only ever "zip" or "7z", never translated, so its width is fixed.
 struct CompressFormatMenu: View {
-    @ObservedObject private var options = CompressSettings.shared
+    @ObservedObject var options: ArchiveSaveOptions
 
     var body: some View {
         Menu {
