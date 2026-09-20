@@ -1,4 +1,4 @@
-# ── Per-app PR shell (workflows-macos v0.5.6, product-file model) ─────────────
+# ── Per-app PR shell (workflows-macos v0.5.8, product-file model) ─────────────
 # Trigger-only: the orchestrator discovers every Config/products/<id>.json and
 # compiles each product (unsigned, fork-PR safe), then runs the Swift package
 # tests. Identity + channels live in the product files, not here.
@@ -11,6 +11,10 @@
 #
 # v0.5.6 adds the post-build hook that check-architectures.sh runs from, so the
 # architecture guard rides the compile above instead of buying a second build.
+# v0.5.8 is the floor for that hook: before it, resolving the built product
+# piped a 124 KiB settings dump into an awk that exits on the first match, and
+# the resulting SIGPIPE failed the step on any scheme with more than one target
+# (workflows-macos #28) — which is every MacPacker Direct build.
 #
 # Runs on GitHub-hosted runners by design: MacPacker is a PUBLIC repo, and
 # pointing a public-repo PR build at a self-hosted runner would let fork PRs
@@ -27,7 +31,7 @@ permissions:
 
 jobs:
   pr:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.5.6
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.5.8
     with:
       # All jobs shall run on GitHub infrastructure, not LeanBytes infrastructure
       runs-on-discover: '"macos-26"'
