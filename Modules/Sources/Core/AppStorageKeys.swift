@@ -16,6 +16,18 @@ public enum Keys {
     /// empties what was already collected — a history you can no longer see is one
     /// you should no longer keep.
     public static let rememberRecentArchives = "rememberRecentArchives"
+    /// Whether extraction decides on its own that the result needs a container
+    /// folder named after the archive. On by default.
+    public static let smartExtraction = "smartExtraction"
+
+    /// `smartExtraction`, read from the app group so the Quick Look extension —
+    /// a separate process with its own `.standard` — sees what the app wrote.
+    ///
+    /// Unset falls back to `true` rather than being registered, so a fresh
+    /// extension process extracts the same way without the app ever having run.
+    public static func smartExtractionEnabled(in defaults: UserDefaults = .macPackerShared) -> Bool {
+        defaults.object(forKey: smartExtraction) as? Bool ?? true
+    }
     
     // table settings
     public static let showParentRow = "showParentRow"

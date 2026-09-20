@@ -39,6 +39,29 @@
           {
             "type": "feat",
             "title": {
+                "en": "Extract without scattering files or nesting folders",
+                "zh-Hans": "解压不再散落文件或多套一层文件夹",
+                "fr": "Extraire sans éparpiller ni imbriquer de dossier",
+                "de": "Entpacken ohne verstreute Dateien und doppelte Ordner",
+                "it": "Estrarre senza file sparsi né cartelle annidate",
+                "ja": "ファイルが散らばらず、フォルダも二重にならない展開",
+                "fa": "استخراج بدون پراکندگی فایل‌ها یا پوشه‌های تودرتو",
+                "pl": "Wypakowywanie bez rozsypanych plików i zagnieżdżonych folderów",
+                "pt-BR": "Extrair sem espalhar arquivos nem aninhar pastas",
+                "ru": "Распаковка без разбросанных файлов и вложенных папок",
+                "uk": "Розпакування без розкиданих файлів і вкладених тек",
+                "es-MX": "Extraer sin archivos sueltos ni carpetas anidadas",
+                "ko": "파일이 흩어지거나 폴더가 중첩되지 않는 압축 해제",
+                "nl": "Uitpakken zonder losse bestanden of dubbele mappen",
+                "tr": "Dosyalar dağılmadan, klasör iç içe geçmeden çıkarma"
+            },
+            "issues": [
+                "196"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
                 "en": "Encrypt archives with a password",
                 "zh-Hans": "用密码加密压缩包",
                 "fr": "Chiffrer les archives avec un mot de passe",

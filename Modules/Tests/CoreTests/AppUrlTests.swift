@@ -148,5 +148,20 @@ extension AllCoreTests {
             let url = try #require(request.url(scheme: scheme))
             #expect(try AppUrl(url: url, scheme: scheme) == request)
         }
-    }
+    
+        /// Only the entry that creates and names its own folder opts out of the
+        /// smart rule — everything else lets the setting decide. Nesting a
+        /// container inside `Extract to "Photos"` gives `Photos/Photos`.
+        @Test("Extract to <name> is the one action the smart rule must not touch")
+        func extractToFolderDoesNotHonorSmartExtraction() {
+            #expect(!AppUrlAction.extractToFolder.honorsSmartExtraction)
+            #expect(AppUrlAction.extractHere.honorsSmartExtraction)
+            #expect(AppUrlAction.extractTo.honorsSmartExtraction)
+
+            // nothing that does not extract gets a say either
+            for action in [AppUrlAction.open, .compress, .compressEach, .compressContents, .addToArchive] {
+                #expect(!action.honorsSmartExtraction, "\(action) does not extract")
+            }
+        }
+}
 }

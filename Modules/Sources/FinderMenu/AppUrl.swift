@@ -19,6 +19,27 @@ public enum AppUrlAction: String, Sendable {
     case addToArchive
 }
 
+public extension AppUrlAction {
+    /// Whether the smart-extraction setting gets a say in where this action's
+    /// output lands.
+    ///
+    /// `extractToFolder` is named after the folder it creates, and creates it
+    /// itself — the question is already answered, and letting the rule wrap a
+    /// second container inside would give exactly the `Photos/Photos` nesting
+    /// smart extraction exists to prevent. Every other extracting action hands
+    /// the user's own destination to the extractor, and there the setting
+    /// decides.
+    var honorsSmartExtraction: Bool {
+        switch self {
+        case .extractHere, .extractTo:
+            true
+        case .extractToFolder, .open, .compress, .compressEach,
+             .compressContents, .addToArchive:
+            false
+        }
+    }
+}
+
 /// A request from the Finder extension, sent as
 /// `<scheme>://<action>?files=…&target=…[&format=…][&dated=<seconds since 1970>]`.
 ///

@@ -377,7 +377,7 @@ extension AllCoreTests {
                 state.onStatusChange = { status in
                     if status == .done { continuation.resume() }
                 }
-                state.extract(items: [fileItem], to: dest)
+                state.extract(items: [fileItem], to: dest, smart: false)
             }
 
             #expect(center.jobs.count == 1)
@@ -424,7 +424,7 @@ extension AllCoreTests {
                 state.onStatusChange = { status in
                     if status == .done { continuation.resume() }
                 }
-                state.extract(to: dest)
+                state.extract(to: dest, smart: false)
             }
 
             // the full-archive extraction must actually produce files

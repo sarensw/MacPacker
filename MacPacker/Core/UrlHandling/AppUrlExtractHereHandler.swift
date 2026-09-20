@@ -34,7 +34,7 @@ class AppUrlExtractHereHandler: AppUrlHandler {
             Task { @MainActor in
                 var extracted: [URL] = []
                 for fileUrl in appUrl.files {
-                    extracted += await self.extractArchive(fileUrl, into: url, catalog: self.catalog, engineSelector: self.engineSelector)
+                    extracted += await self.extractArchive(fileUrl, into: url, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
                 }
                 if !extracted.isEmpty {
                     NSWorkspace.shared.activateFileViewerSelecting(extracted)

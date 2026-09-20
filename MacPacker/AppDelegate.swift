@@ -238,9 +238,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                     try? await state.openTask?.value
                     if asItems {
                         let items = state.root?.children?.compactMap { state.entries[$0] } ?? []
-                        state.extract(items: items, to: destURL)
+                        state.extract(items: items, to: destURL, smart: Keys.smartExtractionEnabled())
                     } else {
-                        state.extract(to: destURL)
+                        state.extract(to: destURL, smart: Keys.smartExtractionEnabled())
                     }
                 }
             }

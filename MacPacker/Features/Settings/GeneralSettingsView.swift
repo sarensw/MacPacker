@@ -19,6 +19,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
+    @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
 
     var body: some View {
         VStack(spacing: 8) {
@@ -101,6 +102,19 @@ struct GeneralSettingsView: View {
 
                 HStack {
                     Toggle(isOn: $rememberRecentArchives) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            Divider()
+
+            HStack(alignment: .top) {
+                Text("Smart extraction:", comment: "When extracting an archive, automatically decide whether to extract into a folder named after the archive. Files are extracted into that folder unless the archive already has a single top-level folder.")
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $smartExtraction) {}
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)

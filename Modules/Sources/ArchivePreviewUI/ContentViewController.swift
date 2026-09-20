@@ -76,7 +76,7 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
         
         let completion: (NSApplication.ModalResponse) -> Void = { response in
             if response == .OK, let url = panel.url {
-                state.extract(items: selectedItems, to: url)
+                state.extract(items: selectedItems, to: url, smart: Keys.smartExtractionEnabled())
             }
         }
         
@@ -95,7 +95,7 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
         
         let completion: (NSApplication.ModalResponse) -> Void = { response in
             if response == .OK, let url = panel.url {
-                state.extract(to: url)
+                state.extract(to: url, smart: Keys.smartExtractionEnabled())
             }
         }
         
