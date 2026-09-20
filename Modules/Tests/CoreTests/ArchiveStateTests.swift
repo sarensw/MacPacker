@@ -416,7 +416,7 @@ extension AllCoreTests {
 
             let fileItem = state.entries.values.first(where: { $0.type == .file })!
 
-            state.extract(items: [fileItem], to: tempDest)
+            state.extract(items: [fileItem], to: tempDest, smart: false)
 
             // Wait for the internal Task to complete
             try await Task.sleep(nanoseconds: 2_000_000_000)
@@ -455,7 +455,7 @@ extension AllCoreTests {
                         continuation.resume()
                     }
                 }
-                state.extract(to: tempDest)
+                state.extract(to: tempDest, smart: false)
             }
 
             #expect(state.error == nil)
@@ -811,7 +811,7 @@ extension AllCoreTests {
                         continuation.resume()
                     }
                 }
-                state.extract(items: [nestedArchive], to: destination)
+                state.extract(items: [nestedArchive], to: destination, smart: false)
             }
 
             // Byte-compare against the fixture: the extracted file is named after

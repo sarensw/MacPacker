@@ -1338,9 +1338,14 @@ extension ArchiveState {
     /// - Parameters:
     ///   - items: items to extract
     ///   - destination: destination folder
+    ///   - smart: whether to decide for the user that the extraction needs a
+    ///     container folder named after the archive. The caller owns that
+    ///     decision: a menu entry that already names the folder it creates
+    ///     passes `false`, everything else passes `Keys.smartExtractionEnabled()`.
     public func extract(
         items: [ArchiveItem],
-        to destination: URL
+        to destination: URL,
+        smart: Bool
     ) {
         updateStatus(.processing)
 
@@ -1377,8 +1382,7 @@ extension ArchiveState {
                 defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
 
                 var target = destination
-                if UserDefaults.standard.bool(forKey: Keys.smartExtraction),
-                   coversWholeArchive(items) {
+                if smart, coversWholeArchive(items) {
                     let archiveUrl = url
                     target = SmartExtraction.containerFolder(
                         for: entries,
@@ -1422,7 +1426,11 @@ extension ArchiveState {
         }
     }
     
-    public func extract(to destination: URL) {
+    /// Extracts the whole archive to the given destination.
+    /// - Parameters:
+    ///   - destination: destination folder
+    ///   - smart: see `extract(items:to:smart:)`
+    public func extract(to destination: URL, smart: Bool) {
         isBusy = true
         updateStatus(.processing)
 
@@ -1451,7 +1459,7 @@ extension ArchiveState {
                 defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
 
                 var target = destination
-                if UserDefaults.standard.bool(forKey: Keys.smartExtraction) {
+                if smart {
                     // Folder name from the archive file, extension stripped —
                     // compounds (tar.gz) and split parts included — so it
                     // matches the "Extract to …" folder naming.

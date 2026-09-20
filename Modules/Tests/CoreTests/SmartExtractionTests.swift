@@ -2,10 +2,15 @@
 //  SmartExtractionTests.swift
 //  Modules
 //
-//  Smart extraction (Bandizip-style): `ArchiveState.extract(to:)` and
+//  Smart extraction (Bandizip-style): `ArchiveState.extract(to:smart:)` and
 //  "Extract selected" with the whole archive selected extract into a folder
 //  named after the archive unless the archive already has a single top-level
 //  entry (one file, or one folder holding everything).
+//
+//  `smart` is the caller's decision, not a setting Core reads — the app, the
+//  Finder handlers and the Quick Look extension each pass
+//  `Keys.smartExtractionEnabled()`, except the "Extract to <name>" entry, which
+//  passes `false` because it just created the folder it is named after.
 //
 //  Fixtures are zips built at test time with the system `zip` CLI — the
 //  checked-in archives all have the "one folder + one file" layout and would
@@ -52,15 +57,15 @@ extension AllCoreTests {
             ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
         }
 
-        /// Opens the archive and extracts it fully to `dest` via `state.extract(to:)`.
-        private func extractFull(_ state: ArchiveState, _ url: URL, to dest: URL) async throws {
+        /// Opens the archive and extracts it fully to `dest` via `state.extract(to:smart:)`.
+        private func extractFull(_ state: ArchiveState, _ url: URL, to dest: URL, smart: Bool = true) async throws {
             state.open(url: url)
             try await state.openTask?.value
             await withCheckedContinuation { continuation in
                 state.onStatusChange = { status in
                     if status == .done { continuation.resume() }
                 }
-                state.extract(to: dest)
+                state.extract(to: dest, smart: smart)
             }
         }
 
@@ -154,9 +159,9 @@ extension AllCoreTests {
             #expect(FileManager.default.fileExists(atPath: dest.appending(path: "mixed/hello world.txt").path))
         }
 
-        // MARK: - Setting off
+        // MARK: - Smart off
 
-        @Test func disabledSettingExtractsFlat() async throws {
+        @Test func smartOffExtractsFlat() async throws {
             let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: dir) }
@@ -165,24 +170,48 @@ extension AllCoreTests {
             let dest = dir.appendingPathComponent("out")
             try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
 
-            // Capture the previous value and restore it — an unconditional
-            // `set(true)` would clobber a user's explicit off choice.
-            let hadValue = UserDefaults.standard.object(forKey: Keys.smartExtraction) != nil
-            let previous = UserDefaults.standard.bool(forKey: Keys.smartExtraction)
-            UserDefaults.standard.set(false, forKey: Keys.smartExtraction)
-            defer {
-                if hadValue {
-                    UserDefaults.standard.set(previous, forKey: Keys.smartExtraction)
-                } else {
-                    UserDefaults.standard.removeObject(forKey: Keys.smartExtraction)
-                }
-            }
-
             let state = newState()
-            try await extractFull(state, zip, to: dest)
+            try await extractFull(state, zip, to: dest, smart: false)
 
             let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
-            #expect(contents == ["a.txt", "b.txt"], "setting off extracts flat, got \(contents)")
+            #expect(contents == ["a.txt", "b.txt"], "smart off extracts flat, got \(contents)")
+        }
+
+        /// What the Finder entry `Extract to "scatter"` does: it creates
+        /// `scatter/` itself and extracts into it. The smart rule must not wrap
+        /// a second `scatter/` inside — the folder is already the answer.
+        @Test func extractIntoAlreadyNamedFolderDoesNotNestAgain() async throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let zip = try makeZip(in: dir, name: "scatter", entries: ["a.txt", "b.txt"])
+            // the handler's own folder, named after the archive
+            let dest = dir.appendingPathComponent("out/scatter")
+            try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
+
+            let state = newState()
+            try await extractFull(state, zip, to: dest, smart: false)
+
+            let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
+            #expect(contents == ["a.txt", "b.txt"], "no second container, got \(contents)")
+            #expect(
+                !FileManager.default.fileExists(atPath: dest.appending(path: "scatter").path),
+                "scatter/scatter must not exist"
+            )
+        }
+
+        // MARK: - The setting itself
+
+        /// Unset means on, in every process — the Quick Look extension never
+        /// runs `Keys.registerDefaults()`, so the fallback is what it reads.
+        @Test func smartExtractionDefaultsToOnWhenUnset() {
+            let defaults = isolatedDefaults()
+
+            #expect(Keys.smartExtractionEnabled(in: defaults))
+
+            defaults.set(false, forKey: Keys.smartExtraction)
+            #expect(!Keys.smartExtractionEnabled(in: defaults))
         }
 
         // MARK: - "Extract selected" with the whole archive selected
@@ -205,7 +234,7 @@ extension AllCoreTests {
                 state.onStatusChange = { status in
                     if status == .done { continuation.resume() }
                 }
-                state.extract(items: topLevel, to: dest)
+                state.extract(items: topLevel, to: dest, smart: true)
             }
 
             let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
@@ -230,7 +259,7 @@ extension AllCoreTests {
                 state.onStatusChange = { status in
                     if status == .done { continuation.resume() }
                 }
-                state.extract(items: [a], to: dest)
+                state.extract(items: [a], to: dest, smart: true)
             }
 
             let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()

@@ -184,7 +184,7 @@ extension AllCoreTests {
             try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: tempDir) }
 
-            state.extract(to: tempDir)
+            state.extract(to: tempDir, smart: false)
             try await Task.sleep(for: .milliseconds(500))
 
             // XAD full extraction should produce files
@@ -521,7 +521,7 @@ extension AllCoreTests {
             try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: tempDir) }
 
-            state.extract(to: tempDir)
+            state.extract(to: tempDir, smart: false)
             try await Task.sleep(for: .milliseconds(200))
             // No root set — should handle gracefully
         }
@@ -565,7 +565,7 @@ extension AllCoreTests {
 
             // Orphan item not connected to any archive
             let orphanItem = ArchiveItem(name: "orphan.txt", virtualPath: "orphan.txt", type: .file)
-            state.extract(items: [orphanItem], to: tempDir)
+            state.extract(items: [orphanItem], to: tempDir, smart: false)
             try await Task.sleep(for: .milliseconds(300))
             #expect(state.error != nil)
         }
@@ -830,7 +830,7 @@ extension AllCoreTests {
 
             // Extract to a read-only destination to trigger error
             let readOnlyDir = URL(fileURLWithPath: "/nonexistent_path_\(UUID().uuidString)")
-            state.extract(to: readOnlyDir)
+            state.extract(to: readOnlyDir, smart: false)
             try await Task.sleep(for: .milliseconds(500))
             // Error path should set error without crashing
         }

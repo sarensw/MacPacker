@@ -66,12 +66,16 @@ extension AppUrlHandler {
     /// the job to end. Returns what the extraction added to `destination`, so
     /// the caller can select it in Finder.
     ///
+    /// `smart` is the caller's: an entry that already created the folder it
+    /// named passes `false`, so the extraction does not wrap a second one.
+    ///
     /// "Added" is found by comparing the folder before and after rather than
     /// by predicting names, so it stays right however the extraction names
     /// what it creates.
     func extractArchive(
         _ archive: URL,
         into destination: URL,
+        smart: Bool,
         catalog: ArchiveTypeCatalog,
         engineSelector: ArchiveEngineSelectorProtocol
     ) async -> [URL] {
@@ -92,7 +96,7 @@ extension AppUrlHandler {
 
         // extract(to:) raises isBusy before it returns and lowers it once the
         // job ends — done, cancelled or failed
-        state.extract(to: destination)
+        state.extract(to: destination, smart: smart)
         for await busy in state.$isBusy.values where !busy {
             break
         }

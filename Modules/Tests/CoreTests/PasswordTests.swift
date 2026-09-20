@@ -1376,7 +1376,7 @@ extension AllCoreTests {
             try await state.openTask?.value
 
             let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
-            state.extract(items: [hello], to: try tempDirectory())
+            state.extract(items: [hello], to: try tempDirectory(), smart: false)
 
             try await Task.sleep(for: .milliseconds(400))
             let job = try #require(center.jobs.first)
@@ -1396,7 +1396,7 @@ extension AllCoreTests {
             try await state.openTask?.value
 
             let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
-            state.extract(items: [hello], to: try tempDirectory())
+            state.extract(items: [hello], to: try tempDirectory(), smart: false)
 
             try await Task.sleep(for: .milliseconds(400))
             let job = try #require(center.jobs.first)
@@ -1420,7 +1420,7 @@ extension AllCoreTests {
             try await state.openTask?.value
 
             let hello = try #require(state.entries.values.first { $0.virtualPath == helloPath })
-            state.extract(items: [hello], to: try tempDirectory())
+            state.extract(items: [hello], to: try tempDirectory(), smart: false)
 
             try await Task.sleep(for: .milliseconds(600))
             let job = try #require(center.jobs.first)

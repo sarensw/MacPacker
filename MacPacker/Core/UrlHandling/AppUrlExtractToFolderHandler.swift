@@ -44,7 +44,11 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
                         log.error(error.localizedDescription)
                         continue
                     }
-                    _ = await self.extractArchive(fileUrl, into: folderUrl, catalog: self.catalog, engineSelector: self.engineSelector)
+                    // `honorsSmartExtraction` is false for this action: the folder
+                    // it is named after has just been created, so wrapping a second
+                    // one inside would be the `Photos/Photos` nesting the smart rule
+                    // exists to avoid.
+                    _ = await self.extractArchive(fileUrl, into: folderUrl, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
                     folders.append(folderUrl)
                 }
                 if !folders.isEmpty {

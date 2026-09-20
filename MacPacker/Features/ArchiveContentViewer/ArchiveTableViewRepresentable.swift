@@ -439,7 +439,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             panel.begin { response in
                 guard response == .OK, let url = panel.url else { return }
                 Task { @MainActor in
-                    state.extract(items: items, to: url)
+                    state.extract(items: items, to: url, smart: Keys.smartExtractionEnabled())
                 }
             }
         }

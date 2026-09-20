@@ -130,7 +130,8 @@ struct ArchiveContentToolbarView: ToolbarContent {
                    let folderURL = urls.first {
                         archiveState.extract(
                             items: archiveState.selectedItems,
-                            to: folderURL)
+                            to: folderURL,
+                            smart: Keys.smartExtractionEnabled())
                 }
             }
             
@@ -152,7 +153,8 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 if case .success(let urls) = result,
                    let folderURL = urls.first {
                         archiveState.extract(
-                            to: folderURL)
+                            to: folderURL,
+                            smart: Keys.smartExtractionEnabled())
                 }
             }
             
