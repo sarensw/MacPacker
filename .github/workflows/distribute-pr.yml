@@ -1,7 +1,16 @@
-# ── Per-app PR shell (workflows-macos v0.5.3, product-file model) ─────────────
+# ── Per-app PR shell (workflows-macos v0.5.6, product-file model) ─────────────
 # Trigger-only: the orchestrator discovers every Config/products/<id>.json and
 # compiles each product (unsigned, fork-PR safe), then runs the Swift package
 # tests. Identity + channels live in the product files, not here.
+#
+# v0.5.5 is the floor: before it the compile was gated on `!run-tests`, so an
+# app using the `swift` test runner — whose tests never open the Xcode project —
+# got an 11-second no-op instead of a build, and MacPacker.app was never
+# compiled on a pull request at all (workflows-macos #21). The app target, the
+# Finder extension and the Quick Look extension now build on every PR.
+#
+# v0.5.6 adds the post-build hook that check-architectures.sh runs from, so the
+# architecture guard rides the compile above instead of buying a second build.
 #
 # Runs on GitHub-hosted runners by design: MacPacker is a PUBLIC repo, and
 # pointing a public-repo PR build at a self-hosted runner would let fork PRs
@@ -18,7 +27,7 @@ permissions:
 
 jobs:
   pr:
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.5.3
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-pr.yml@v0.5.6
     with:
       # All jobs shall run on GitHub infrastructure, not LeanBytes infrastructure
       runs-on-discover: '"macos-26"'
@@ -26,6 +35,15 @@ jobs:
       runs-on-test:     '"macos-26"'
 
       artifact-retention-days: 90   # CI artifacts kept 90 days
+
+      # The store leg compiles "Release Store"; the orchestrator default is
+      # "Release", which would compile a flavor that never ships. Must match
+      # distribute-release.yml.
+      configuration-app-store: Release Store
+
+      # Runs on the bundle each verify leg just built, with the .app as $1.
+      # Fails the PR when a bundled binary is missing its arm64 or x86_64 slice.
+      post-build-script: scripts/check-architectures.sh
       # ── Test configuration ──
       run-tests: true
       test-runner: swift
