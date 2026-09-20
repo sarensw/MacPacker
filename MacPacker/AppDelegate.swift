@@ -92,7 +92,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             // (url starting with app.macpacker:// scheme)
             switch appUrl.action {
             case .open:
-                handler = AppUrlOpenHandler(catalog: appState.catalog)
+                handler = AppUrlOpenHandler()
             case .extractHere:
                 handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .extractToFolder:

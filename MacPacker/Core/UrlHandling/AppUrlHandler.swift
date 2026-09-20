@@ -20,48 +20,6 @@ protocol AppUrlHandler {
 }
 
 extension AppUrlHandler {
-    func requestAccess(
-        for fileUrl: URL,
-        dirHint: URL.DirectoryHint,
-        completion: @escaping (NSApplication.ModalResponse, URL?) -> Void
-    ) {
-        let message = String(localized: "\(Constants.appName) needs access to \(fileUrl.lastPathComponent)", comment: "Message in the file- and folder-access panel explaining why permission is required. The first placeholder is the app name MacPacker, the second is the name of the file or folder that needs access.")
-        let openPanel = NSOpenPanel()
-        openPanel.allowsMultipleSelection = false
-        openPanel.canChooseFiles = dirHint == .notDirectory
-        openPanel.canChooseDirectories = dirHint == .isDirectory
-        openPanel.allowsOtherFileTypes = false
-        openPanel.prompt = String(localized: "Grant Access", comment: "Confirmation button in the file- and folder-access panel")
-        openPanel.message = message
-        openPanel.directoryURL = fileUrl
-        openPanel.level = .floating
-        openPanel.begin() { response in
-            completion(response, openPanel.url)
-        }
-    }
-    
-    func requestAccessToFile(
-        for fileUrl: URL,
-        completion: @escaping (NSApplication.ModalResponse, URL?) -> Void
-    ) {
-        requestAccess(
-            for: fileUrl,
-            dirHint: .notDirectory,
-            completion: completion
-        )
-    }
-    
-    func requestAccessToDir(
-        for fileUrl: URL,
-        completion: @escaping (NSApplication.ModalResponse, URL?) -> Void
-    ) {
-        requestAccess(
-            for: fileUrl,
-            dirHint: .isDirectory,
-            completion: completion
-        )
-    }
-
     /// Opens `archive`, extracts all of it into `destination` and waits for
     /// the job to end. Returns what the extraction added to `destination`, so
     /// the caller can select it in Finder.

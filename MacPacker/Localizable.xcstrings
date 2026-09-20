@@ -262,9 +262,6 @@
         }
       }
     },
-    "Smart extraction:" : {
-      "comment" : "When extracting an archive, automatically decide whether to extract into a folder named after the archive. Files are extracted into that folder unless the archive already has a single top-level folder."
-    },
     "“%@” is password protected." : {
       "comment" : "Explains that the named archive requires a password",
       "localizations" : {
@@ -1144,6 +1141,9 @@
           }
         }
       }
+    },
+    "Access granted" : {
+      "comment" : "Shown in the Permissions settings once the app has access to a folder"
     },
     "Acknowledgements" : {
       "comment" : "Button text to open the window with the list of attributions for other open-source libraries used for the app",
@@ -3118,6 +3118,12 @@
     "Could not save archive" : {
       "comment" : "Title of the alert shown when saving an archive failed or was refused; the reason follows below it"
     },
+    "Covers the Desktop, Documents, Downloads and everything else in your home folder." : {
+      "comment" : "Explains what granting access to the home folder covers"
+    },
+    "Covers USB drives, memory cards and network shares, which appear in /Volumes." : {
+      "comment" : "Explains what granting access to the /Volumes folder covers"
+    },
     "Create a new archive" : {
       "comment" : "Drop zone shown while dragging a file that isn't an archive: releasing here starts a new archive containing that file.",
       "localizations" : {
@@ -4332,6 +4338,9 @@
           }
         }
       }
+    },
+    "External volumes:" : {
+      "comment" : "Label of the external-volumes row in the Permissions settings"
     },
     "Extract" : {
       "comment" : "Prompt of the folder picker used to extract items",
@@ -5572,6 +5581,9 @@
         }
       }
     },
+    "Home folder:" : {
+      "comment" : "Label of the home-folder row in the Permissions settings"
+    },
     "How to set %@ as default?" : {
       "comment" : "A button that shows a popover explaining how to set MacPacker as the default file opener.",
       "localizations" : {
@@ -6261,6 +6273,9 @@
           }
         }
       }
+    },
+    "macOS lets %@ open and write files only where you allow it, which is why a folder-access panel shows up now and then. A grant covers everything inside the folder you pick, so allowing these two puts an end to the asking." : {
+      "comment" : "Explains, in the Permissions settings, why the app asks for folder access and what granting these two folders achieves"
     },
     "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself." : {
       "comment" : "Explains the automatic engine selection toggle in the archive format settings",
@@ -7870,7 +7885,7 @@
       }
     },
     "Permissions" : {
-      "comment" : "Column that shows the file permissions",
+      "comment" : "Column that shows the file permissions\nSettings tab that grants the app access to folders",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9479,6 +9494,9 @@
           }
         }
       }
+    },
+    "Smart extraction:" : {
+      "comment" : "When extracting an archive, automatically decide whether to extract into a folder named after the archive. Files are extracted into that folder unless the archive already has a single top-level folder."
     },
     "Solid" : {
       "comment" : "Solid block choice: all files compressed as one block"

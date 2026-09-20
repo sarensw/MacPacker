@@ -13,13 +13,6 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
-/// Whether `folder` is `ancestor` or lies somewhere inside it.
-private func isInside(_ folder: URL, _ ancestor: URL) -> Bool {
-    let f = folder.standardizedFileURL.path
-    let a = ancestor.standardizedFileURL.path
-    return f == a || f.hasPrefix(a + "/")
-}
-
 /// Finder action "Extract to…": asks where to extract, extracts every
 /// selected archive there, then selects what came out in Finder. Picking the folder also grants writing into it;
 /// archives outside the picked folder need their own read grant, which the
@@ -52,8 +45,15 @@ class AppUrlExtractToChosenFolderHandler: AppUrlHandler {
                 log.notice("Extract-to cancelled")
                 return
             }
+            // Picking the folder *is* the grant — powerbox hands it over with
+            // the pick — so this only has to keep it, and the next extraction
+            // there needs no panel at all. `ensureAccess` is for the other
+            // case: it sees no stored bookmark yet and would put a second
+            // panel over the one the user just answered. It is used below,
+            // where it belongs: on the archives' own folder.
+            Sandbox.storeBookmark(url: destination)
             Task { @MainActor in
-                if !isInside(appUrl.target, destination),
+                if !FolderAccess.isInside(appUrl.target, destination),
                    let first = appUrl.files.first,
                    !(await FolderAccessStore.shared.ensureAccess(forFileIn: first)) {
                     log.error("No read access to the archives' folder — cannot extract")

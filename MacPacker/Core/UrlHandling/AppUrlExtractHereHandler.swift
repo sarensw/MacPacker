@@ -28,17 +28,19 @@ class AppUrlExtractHereHandler: AppUrlHandler {
         log.debug("Extracting \(appUrl.files.count) archive(s) here: \(appUrl.target)")
 
         // the selected archives share one folder: a single grant covers
-        // reading them and writing next to them
-        requestAccessToDir(for: appUrl.target) { response, url in
-            guard response == .OK, let url else { return }
-            Task { @MainActor in
-                var extracted: [URL] = []
-                for fileUrl in appUrl.files {
-                    extracted += await self.extractArchive(fileUrl, into: url, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
-                }
-                if !extracted.isEmpty {
-                    NSWorkspace.shared.activateFileViewerSelecting(extracted)
-                }
+        // reading them and writing next to them, and it is asked for only
+        // when no stored grant covers it already
+        Task { @MainActor in
+            guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
+                log.error("No access to \(appUrl.target.lastPathComponent) — cannot extract here")
+                return
+            }
+            var extracted: [URL] = []
+            for fileUrl in appUrl.files {
+                extracted += await self.extractArchive(fileUrl, into: appUrl.target, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
+            }
+            if !extracted.isEmpty {
+                NSWorkspace.shared.activateFileViewerSelecting(extracted)
             }
         }
     }
