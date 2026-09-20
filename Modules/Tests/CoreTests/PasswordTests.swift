@@ -93,6 +93,13 @@ private func fixture(_ name: String) -> URL {
     return folder.appendingPathComponent(name)
 }
 
+/// One of the `defaultArchive.*` fixtures, which all pack the same payload.
+/// The engine-fallback tests need a format only one engine reads.
+private func defaultArchive(_ ext: String) -> URL {
+    let folder = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+    return folder.appendingPathComponent("defaultArchive.\(ext)")
+}
+
 private func tempDirectory() throws -> URL {
     let url = FileManager.default.temporaryDirectory
         .appendingPathComponent("PasswordTests-\(UUID().uuidString)")
@@ -276,12 +283,12 @@ extension AllCoreTests {
         @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
         func wrongPasswordIsRepromptedThenSucceeds(name: String) async throws {
             for (engineName, engine) in engines() {
-                // XAD cannot open a header-encrypted archive: the header has to be
-                // decrypted during init and XADArchive only accepts a password
-                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("encrypted_header") { continue }
-
-                let answers = PasswordAnswers("wrong-first-try", correctPassword)
+                // Three answers for two openings and one correction: listing the
+                // archive opens it and takes the first, extracting opens it again
+                // and takes the second, and only then does the wrong password
+                // show — nothing in a zip or a 7z lets one be checked earlier.
+                // That third request is the one that has to arrive as attempt 2.
+                let answers = PasswordAnswers("wrong-first-try", "wrong-again", correctPassword)
                 let url = fixture(name)
                 let destination = try tempDirectory()
                 defer { try? FileManager.default.removeItem(at: destination) }
@@ -448,11 +455,9 @@ extension AllCoreTests {
         ])
         func listsEncryptedArchiveWithoutPassword(name: String) async throws {
             for (engineName, engine) in engines() {
-                // XAD cannot open a header-encrypted archive: the header has to be
-                // decrypted during init and XADArchive only accepts a password
-                // afterwards. Covered by xadCannotOpenHeaderEncryptedArchives.
-                if engineName == "xad" && name.contains("encrypted_header") { continue }
-
+                // Never answers, which is what Quick Look and Finder's "Extract
+                // Here" do — they carry no prompt at all. An archive whose names
+                // read without a password still has to list them.
                 let answers = PasswordAnswers()
                 let load = try await engine.loadArchive(
                     url: fixture(name),
@@ -463,25 +468,33 @@ extension AllCoreTests {
                     load.items.values.contains { $0.virtualPath == helloPath },
                     "\(engineName)/\(name): hello.txt not listed"
                 )
-                let prompted = await answers.callCount
-                #expect(prompted == 0, "\(engineName)/\(name): listing asked for a password")
+                #expect(load.isEncrypted, "\(engineName)/\(name): not reported as encrypted")
             }
         }
 
-        /// XAD's one real limitation with encrypted archives: a header-encrypted
-        /// archive has to be decrypted during `XADArchive` init, and XADArchive
-        /// only accepts a password afterwards (its own hook is the synchronous
-        /// `archiveNeedsPassword:` delegate, which can't drive an async resolver).
-        /// XAD reports it as a plain decrunch error — the same code a damaged
-        /// archive gets — so the message can only name the likely cause and point
-        /// at 7-Zip. Either way it beats the old "Failed to create archive".
-        @Test func xadCannotOpenHeaderEncryptedArchives() async throws {
+        /// A header-encrypted archive has to be decrypted during `XADArchive`
+        /// init, which used to put it out of XAD's reach: MacPacker handed over a
+        /// password only after something failed, and by then the archive had not
+        /// opened. Now the password is resolved as part of opening, through the
+        /// delegate XADArchive takes at init, and these read like any other.
+        @Test func xadOpensHeaderEncryptedArchives() async throws {
+            let load = try await ArchiveXadEngine().loadArchive(
+                url: fixture("7z_encrypted_header.7z"),
+                passwordResolver: PasswordAnswers.always(correctPassword).resolver
+            )
+            #expect(load.items.values.contains { $0.virtualPath == helloPath })
+            #expect(load.isEncrypted)
+        }
+
+        /// And without a password it still cannot, with a message that says where
+        /// to go — the message automatic mode's fallback is built on.
+        @Test func xadSaysWhereToGoWhenAHeaderStaysEncrypted() async throws {
             do {
                 _ = try await ArchiveXadEngine().loadArchive(
                     url: fixture("7z_encrypted_header.7z"),
-                    passwordResolver: PasswordAnswers.always(correctPassword).resolver
+                    passwordResolver: neverResolves
                 )
-                Issue.record("XAD opened a header-encrypted archive — limitation lifted, drop the skips")
+                Issue.record("XAD opened a header-encrypted archive with no password")
             } catch ArchiveError.invalidArchive(let message) {
                 #expect(message.localizedCaseInsensitiveContains("encrypted header"), "got \(message)")
                 #expect(message.localizedCaseInsensitiveContains("7-zip"), "got \(message)")
@@ -489,17 +502,14 @@ extension AllCoreTests {
         }
 
         /// Everything *except* a header-encrypted archive must list through XAD
-        /// without a password — including 7z, which XAD does support.
+        /// even when no password is given — including 7z, which XAD does support.
         @Test(arguments: ["zip_zipcrypto.zip", "zip_aes256.zip", "7z_aes256.7z"])
         func xadListsEncryptedArchivesWithoutPassword(name: String) async throws {
-            let answers = PasswordAnswers()
             let load = try await ArchiveXadEngine().loadArchive(
                 url: fixture(name),
-                passwordResolver: answers.resolver
+                passwordResolver: neverResolves
             )
             #expect(load.items.values.contains { $0.virtualPath == helloPath }, "\(name)")
-            let prompted = await answers.callCount
-            #expect(prompted == 0, "\(name): listing asked for a password")
         }
 
         /// `-mhe=on` encrypts the header, so the entry list itself is behind
@@ -539,7 +549,12 @@ extension AllCoreTests {
     @MainActor struct MixedEncryptionTests {
 
         /// Everything under `folder/` is stored unencrypted next to the encrypted
-        /// Extracting it must not prompt at all.
+        /// entries, and has to come out whether or not a password is ever given.
+        ///
+        /// The archive does have encrypted entries, so opening it asks — that is
+        /// what the prompt moving to the open means for a mixed archive. What
+        /// must not happen is the plain entry becoming unreachable because the
+        /// question went unanswered.
         @Test func plainEntryNeedsNoPassword() async throws {
             for (engineName, engine) in engines() {
                 let answers = PasswordAnswers()
@@ -559,13 +574,17 @@ extension AllCoreTests {
 
                 let extracted = try #require(result[plain])
                 #expect(matchesPayload(extracted, plainPath), "\(engineName): \(plainPath) wrong")
-                let prompted = await answers.callCount
-                #expect(prompted == 0, "\(engineName): plain entry asked for a password")
             }
         }
 
         /// Selecting the plain *and* the encrypted entry together still needs
-        /// exactly one password.
+        /// exactly one password — one the user types once.
+        ///
+        /// The resolver is consulted twice, because listing the archive and
+        /// extracting from it each open it and each needs the password then. Both
+        /// arrive as attempt 1, which is what says the password was accepted and
+        /// nothing was re-asked as a correction; in the app the second one is
+        /// served from the cache and the user sees a single prompt.
         @Test func mixedSelectionPromptsOnceAndExtractsBoth() async throws {
             let engine = Archive7ZipEngine()
             let answers = PasswordAnswers.always(correctPassword)
@@ -586,8 +605,8 @@ extension AllCoreTests {
 
             #expect(matchesPayload(try #require(result[plain]), plainPath))
             #expect(contents(of: try #require(result[secret])) == helloContents)
-            let prompted = await answers.callCount
-            #expect(prompted == 1, "prompted \(prompted) times")
+            let attempts = await answers.attempts
+            #expect(attempts.allSatisfy { $0 == 1 }, "a password was re-asked: \(attempts)")
         }
     }
 
@@ -834,15 +853,20 @@ extension AllCoreTests {
         ///
         /// 7-Zip is listed for both formats and can read them, so the app should
         /// use it rather than dead-ending on a settings hint.
-        @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"), arguments: [
-            ("rar5_encrypted_header.rar", "rar"),
-            ("rar4_encrypted_header.rar", "rar"),
-            ("7z_encrypted_header.7z", "7zip")
+        ///
+        /// The case used to be a header-encrypted RAR or 7z, which XAD could not
+        /// open at all. It can now — the password reaches it when the archive is
+        /// opened — so the engines part ways somewhere else: a disk image only
+        /// 7-Zip reads.
+        @Test(arguments: [
+            ("squashfs", "squashfs"),
+            ("qcow2", "qcow2"),
+            ("fat", "fat")
         ])
         func fallsBackWhenTheChosenEngineCannotRead(name: String, formatId: String) async throws {
             let state = automaticState(defaultEngine: .xad, for: formatId)
             state.passwordProvider = { _ in correctPassword }
-            state.open(url: fixture(name))
+            state.open(url: defaultArchive(name))
             try await state.openTask?.value
 
             #expect(state.error == nil, "\(name): \(state.error ?? "")")
@@ -875,13 +899,11 @@ extension AllCoreTests {
         /// picked it — so MacPacker must report what XAD cannot do instead of
         /// quietly using a different engine. If this ever starts passing, the
         /// engine setting has stopped meaning anything.
-        @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"), arguments: [
-            "rar5_encrypted_header.rar", "rar4_encrypted_header.rar", "7z_encrypted_header.7z"
-        ])
+        @Test(arguments: ["squashfs", "qcow2", "fat"])
         func doesNotFallBackWhenTheUserPickedTheEngine(name: String) async throws {
             let state = manualState(engine: .xad)
             state.passwordProvider = { _ in correctPassword }
-            state.open(url: fixture(name))
+            state.open(url: defaultArchive(name))
             try await state.openTask?.value
 
             #expect(state.hasArchive == false, "\(name): opened despite manual XAD")
@@ -929,11 +951,10 @@ extension AllCoreTests {
         /// `reset()`, so the window falls back to its empty state and the user
         /// sees their drag do nothing at all. `error` was set, but the only thing
         /// reading it was the Finder compress flow.
-        @Test(.enabled(if: rarFixturesAvailable, "RAR fixtures missing"))
-        func aFailedOpenLeavesSomethingToShowTheUser() async throws {
+        @Test func aFailedOpenLeavesSomethingToShowTheUser() async throws {
             let state = manualState(engine: .xad)
             state.passwordProvider = { _ in correctPassword }
-            state.open(url: fixture("rar5_encrypted_header.rar"))
+            state.open(url: defaultArchive("squashfs"))
             try await state.openTask?.value
 
             #expect(state.hasArchive == false)
@@ -954,7 +975,7 @@ extension AllCoreTests {
             let state = manualState(engine: .xad)
             state.passwordProvider = { _ in correctPassword }
 
-            state.open(url: fixture("7z_encrypted_header.7z"))
+            state.open(url: defaultArchive("squashfs"))
             try await state.openTask?.value
             #expect(state.openError != nil, "expected the first open to fail")
 
@@ -1520,3 +1541,219 @@ private final class URLRecorder {
     private(set) var urls: [URL] = []
     func record(_ url: URL) { urls.append(url) }
 }
+
+// MARK: - The password belongs to opening the archive
+
+/// Mac file information — a Finder tag, a resource fork — rides along in a
+/// hidden AppleDouble sidecar next to the file it describes, because no archive
+/// format has a place for it. Extraction has to fold that sidecar back onto its
+/// file and drop it; a sidecar left standing is both the metadata lost and a
+/// `__MACOSX` folder the user never asked for.
+///
+/// XADMaster does that fold while it parses the archive, which is inside its
+/// open call — so it needs the password *then*. MacPacker used to hand one over
+/// only after something failed, which is always later, and the metadata of every
+/// encrypted archive was quietly dropped (#246). The fix is to resolve the
+/// password when the archive is opened, for every engine, so all of this is one
+/// behaviour rather than a property of which engine ran.
+extension AllCoreTests {
+    struct PasswordAtOpenTests {
+
+        /// An encrypted archive holding one tagged file, plus a plain second
+        /// file so an off-by-one in entry numbering has something to land on.
+        private func taggedArchive(
+            _ format: CompressionOptions.Format,
+            password: String = correctPassword,
+            in dir: URL
+        ) throws -> URL {
+            let fm = FileManager.default
+            let source = dir.appendingPathComponent("src-\(UUID().uuidString)")
+            try fm.createDirectory(at: source.appendingPathComponent("folder"), withIntermediateDirectories: true)
+
+            let tagged = source.appendingPathComponent("tagged.txt")
+            try Data(taggedContents.utf8).write(to: tagged)
+            setExtendedAttribute(tagName, Data(tagValue.utf8), at: tagged)
+
+            let plain = source.appendingPathComponent("folder/plain.txt")
+            try Data(plainContents.utf8).write(to: plain)
+
+            let archive = dir.appendingPathComponent("tagged-\(UUID().uuidString).\(format.rawValue)")
+            try SevenZipArchive.writeArchive(
+                destination: archive,
+                items: [
+                    .addFile(archivePath: "tagged.txt", diskPath: tagged),
+                    .addDirectory(archivePath: "folder", diskPath: source.appendingPathComponent("folder")),
+                    .addFile(archivePath: "folder/plain.txt", diskPath: plain),
+                ],
+                options: .init(format: format, password: password))
+            return archive
+        }
+
+        private static let formats: [CompressionOptions.Format] = [.zip, .sevenZ]
+
+        /// The bug as reported: the file comes back, the Finder tag does not.
+        @Test(arguments: ZipReader.allCases, formats)
+        func anEncryptedArchiveKeepsItsFinderTag(_ reader: ZipReader, _ format: CompressionOptions.Format) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = try taggedArchive(format, in: dir)
+
+            let out = dir.appendingPathComponent("out")
+            try await extractEverything(archive, with: reader, to: out, password: correctPassword)
+
+            #expect(extendedAttribute(tagName, at: out.appendingPathComponent("tagged.txt"))
+                    == Data(tagValue.utf8),
+                    "the Finder tag through \(reader) on \(format.rawValue)")
+        }
+
+        /// The other half of a sidecar that never got folded: it lands on disk
+        /// as an ordinary file, and the user gets the `__MACOSX` litter they
+        /// know from unzipping a Mac archive on Windows.
+        @Test(arguments: ZipReader.allCases, formats)
+        func nothingLeavesASidecarOnDisk(_ reader: ZipReader, _ format: CompressionOptions.Format) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = try taggedArchive(format, in: dir)
+
+            let out = dir.appendingPathComponent("out")
+            try await extractEverything(archive, with: reader, to: out, password: correctPassword)
+
+            let written = (try? FileManager.default.subpathsOfDirectory(atPath: out.path)) ?? []
+            #expect(!written.contains { $0.hasPrefix("__MACOSX") },
+                    "sidecar litter through \(reader) on \(format.rawValue): \(written)")
+        }
+
+        /// And the same sidecar must not reach the file list either — the window
+        /// would show a `__MACOSX` folder for an encrypted archive that is not
+        /// there when the same archive carries no password.
+        @Test(arguments: ZipReader.allCases, formats)
+        func theListingHidesSidecars(_ reader: ZipReader, _ format: CompressionOptions.Format) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = try taggedArchive(format, in: dir)
+
+            let loaded = try await reader.engine.loadArchive(
+                url: archive, passwordResolver: { _ in correctPassword })
+            let paths = loaded.items.values.compactMap(\.virtualPath)
+
+            #expect(!paths.contains { $0.hasPrefix("__MACOSX") },
+                    "listing through \(reader) on \(format.rawValue): \(paths.sorted())")
+            #expect(loaded.isEncrypted, "through \(reader) on \(format.rawValue)")
+        }
+
+        /// The behaviour change that makes the rest possible, and the reason it
+        /// is worth asserting on its own: the prompt belongs to opening the
+        /// archive, not to the first thing that fails. Both engines, so the
+        /// engine setting cannot change when the user is asked.
+        @Test(arguments: ZipReader.allCases, formats)
+        func openingAnEncryptedArchiveAsksForThePassword(_ reader: ZipReader, _ format: CompressionOptions.Format) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = try taggedArchive(format, in: dir)
+
+            let answers = PasswordAnswers.always(correctPassword)
+            _ = try await reader.engine.loadArchive(url: archive, passwordResolver: answers.resolver)
+
+            #expect(await answers.callCount > 0,
+                    "no password was asked for when opening \(format.rawValue) with \(reader)")
+        }
+
+        /// An unencrypted archive must not start asking. The prompt appearing on
+        /// every open would be the obvious way to get the above wrong.
+        @Test(arguments: ZipReader.allCases, formats)
+        func openingAPlainArchiveAsksForNothing(_ reader: ZipReader, _ format: CompressionOptions.Format) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = dir.appendingPathComponent("plain.\(format.rawValue)")
+            try SevenZipArchive.writeArchive(
+                destination: archive,
+                items: [.addData(archivePath: "a.txt", data: Data(plainContents.utf8))],
+                options: .init(format: format))
+
+            let answers = PasswordAnswers.always(correctPassword)
+            _ = try await reader.engine.loadArchive(url: archive, passwordResolver: answers.resolver)
+
+            #expect(await answers.callCount == 0,
+                    "\(reader) asked for a password on a plain \(format.rawValue)")
+        }
+
+        /// Nobody to ask is not an error. A Quick Look preview and Finder's
+        /// "Extract Here" build their state without a prompt, and an encrypted
+        /// archive still lists the names it will show without a password — that
+        /// is what the preview shows. Only extracting may fail.
+        @Test(arguments: ZipReader.allCases, formats)
+        func withNobodyToAskTheListingStillWorks(_ reader: ZipReader, _ format: CompressionOptions.Format) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = try taggedArchive(format, in: dir)
+
+            let loaded = try await reader.engine.loadArchive(url: archive, passwordResolver: neverResolves)
+            let paths = loaded.items.values.compactMap(\.virtualPath)
+
+            #expect(paths.contains("tagged.txt"), "through \(reader) on \(format.rawValue): \(paths.sorted())")
+            #expect(loaded.isEncrypted, "through \(reader) on \(format.rawValue)")
+        }
+
+        /// A wrong password at open and the right one afterwards.
+        ///
+        /// Worth its own test because of how XADMaster numbers entries: without a
+        /// working password the sidecars it could not fold stay in the listing as
+        /// entries of their own, so the archive has more entries, at different
+        /// indices, than the same archive opened with the password. An extraction
+        /// that remembered the first numbering would hand back the wrong files.
+        @Test(arguments: ZipReader.allCases, formats)
+        func aWrongPasswordFirstStillExtractsTheRightFiles(_ reader: ZipReader, _ format: CompressionOptions.Format) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = try taggedArchive(format, in: dir)
+
+            let answers = PasswordAnswers("wrong", correctPassword, correctPassword,
+                                          correctPassword, correctPassword, correctPassword)
+            let engine = reader.engine
+            let loaded = try await engine.loadArchive(url: archive, passwordResolver: answers.resolver)
+
+            let out = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+            _ = try await engine.extract(items: Array(loaded.items.values), from: archive,
+                                         to: out, passwordResolver: answers.resolver)
+
+            #expect(contents(of: out.appendingPathComponent("tagged.txt")) == taggedContents,
+                    "through \(reader) on \(format.rawValue)")
+            #expect(contents(of: out.appendingPathComponent("folder/plain.txt")) == plainContents,
+                    "through \(reader) on \(format.rawValue)")
+        }
+
+        /// A 7z that encrypts its file names cannot be listed at all without the
+        /// password, so this is the case that only works if the password reaches
+        /// the library at open time. XADMaster used to be unable to open these —
+        /// the "related" half of #246.
+        @Test(arguments: ZipReader.allCases)
+        func aHeaderEncrypted7zOpens(_ reader: ZipReader) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = dir.appendingPathComponent("names.7z")
+            try SevenZipArchive.writeArchive(
+                destination: archive,
+                items: [.addData(archivePath: "secret.txt", data: Data(plainContents.utf8))],
+                options: .init(format: .sevenZ, password: correctPassword, encryptFileNames: true))
+
+            let engine = reader.engine
+            let loaded = try await engine.loadArchive(
+                url: archive, passwordResolver: { _ in correctPassword })
+            #expect(loaded.items.values.compactMap(\.virtualPath).contains("secret.txt"), "through \(reader)")
+
+            let out = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+            _ = try await engine.extract(items: Array(loaded.items.values), from: archive,
+                                         to: out, passwordResolver: { _ in correctPassword })
+            #expect(contents(of: out.appendingPathComponent("secret.txt")) == plainContents, "through \(reader)")
+        }
+    }
+}
+
+/// The attribute Finder stores a tag in, and a value to look for. Any extended
+/// attribute would do — this is the one a user can actually see.
+private let tagName = "com.apple.metadata:_kMDItemUserTags"
+private let tagValue = "Important"
+private let taggedContents = "tagged file\n"
+private let plainContents = "plain file\n"

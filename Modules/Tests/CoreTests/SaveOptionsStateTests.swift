@@ -605,10 +605,13 @@ extension AllCoreTests {
             let state = makeState(prompts)
             state.open(url: try encryptedZip(in: dir))
             try await state.openTask?.value
+            // Opening an encrypted archive asks too, so what the save asks for is
+            // the difference.
+            let afterOpening = prompts.count
 
             let saved = dir.appendingPathComponent("fresh.zip")
             await state.save(to: saved, options: .init(format: .zip, password: "fresh"))?.value
-            #expect(prompts.count == ArchiveSaver.passwordPrompts)
+            #expect(prompts.count - afterOpening == ArchiveSaver.passwordPrompts)
             #expect(state.saveError != nil)
             #expect(!FileManager.default.fileExists(atPath: saved.path))
         }
@@ -620,11 +623,12 @@ extension AllCoreTests {
             let state = makeState(prompts)
             state.open(url: try encryptedZip(in: dir))
             try await state.openTask?.value
+            let afterOpening = prompts.count
 
             let saved = dir.appendingPathComponent("fresh.7z")
             await state.save(to: saved, options: .init(format: .sevenZ, password: "fresh"))?.value
             #expect(state.error != nil)
-            #expect(prompts.count == 1)
+            #expect(prompts.count - afterOpening == 1)
             #expect(!FileManager.default.fileExists(atPath: saved.path))
         }
 
@@ -652,10 +656,14 @@ extension AllCoreTests {
         @Test func withoutANewPasswordAnEncryptedArchiveStaysEncrypted() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
+            // Answers nothing, ever. Opening the archive asks once and gets
+            // nowhere, so nothing is remembered and every later open of the same
+            // file asks again — which is the one question a save still carries.
             let prompts = Prompts([])
             let state = makeState(prompts)
             state.open(url: try encryptedZip(in: dir))
             try await state.openTask?.value
+            let afterOpening = prompts.count
 
             let same = dir.appendingPathComponent("copy.zip")
             await state.save(to: same, options: .init(format: .zip))?.value
@@ -666,7 +674,9 @@ extension AllCoreTests {
             await state.save(to: other, options: .init(format: .sevenZ))?.value
             #expect(state.error?.contains("password") == true, "\(state.error ?? "no error")")
             #expect(!FileManager.default.fileExists(atPath: other.path))
-            #expect(prompts.count == 0, "nothing needed asking")
+            // One for the copy's own open of the source, and nothing beyond it:
+            // neither the copy nor the refusal needs a password of its own.
+            #expect(prompts.count == afterOpening + 1, "asked \(prompts.count - afterOpening) times")
         }
 
         /// A 7z whose names are encrypted saves like any other: Save takes an added

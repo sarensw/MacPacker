@@ -306,29 +306,16 @@ extension AllCoreTests {
                 #expect(method.contains(c.cipherName), "\(entry.path) recorded \(method)")
             }
 
-            // with the password, both engines read it back — except XAD, which
-            // cannot open a 7z whose names are encrypted
+            // with the password, both engines read it back, contents and Mac
+            // metadata alike — each is given the password when it opens the
+            // archive, which is when the sidecar carrying the tag is decrypted
             for engine in ZipReader.allCases {
                 let out = dir.appendingPathComponent("out-\(engine.rawValue)")
-                if engine == .xad && c.encryptNames {
-                    await #expect(throws: (any Error).self, "XAD opened a 7z with encrypted names") {
-                        try await extractEverything(archive, with: engine, to: out, password: c.password)
-                    }
-                    continue
-                }
                 try await extractEverything(archive, with: engine, to: out, password: c.password)
                 #expect(try Data(contentsOf: out.appendingPathComponent("text.txt")) == text, "through \(engine)")
                 #expect(try Data(contentsOf: out.appendingPathComponent("folder/inner.txt")) == inner, "through \(engine)")
                 let tag = extendedAttribute("com.apple.metadata:_kMDItemUserTags", at: out.appendingPathComponent("text.txt"))
-                if engine == .xad {
-                    // XAD hands back the contents of an encrypted archive, but not the
-                    // Mac metadata in its encrypted sidecars. The 7-Zip engine does.
-                    withKnownIssue("XAD does not restore Mac metadata from an encrypted archive (#246)") {
-                        #expect(tag == Data("tag".utf8), "the Finder tag through \(engine)")
-                    }
-                } else {
-                    #expect(tag == Data("tag".utf8), "the Finder tag through \(engine)")
-                }
+                #expect(tag == Data("tag".utf8), "the Finder tag through \(engine)")
             }
 
             // without it: a zip and a 7z with plain names still list their names
@@ -475,16 +462,11 @@ extension AllCoreTests {
             #expect(try archiveFormat(of: saved) == options.format.rawValue)
             let reader = try SevenZipArchive(url: saved, password: "fresh")
             #expect(try reader.entries.filter { !$0.isDirectory && $0.size > 0 }.allSatisfy(\.isEncrypted))
-            // both engines read it back with the new password — except XAD, which
-            // cannot open a 7z whose names are encrypted
+            // both engines read it back with the new password, encrypted names
+            // included: each gets the password when it opens the archive, which
+            // is the only point a header-encrypted one can be decrypted at
             for engine in ZipReader.allCases {
                 let out = dir.appendingPathComponent("out-\(engine.rawValue)")
-                if engine == .xad && options.encryptFileNames {
-                    await #expect(throws: (any Error).self, "XAD opened a 7z with encrypted names") {
-                        try await extractEverything(saved, with: engine, to: out, password: "fresh")
-                    }
-                    continue
-                }
                 try await extractEverything(saved, with: engine, to: out, password: "fresh")
                 for file in FileManager.default.subpaths(atPath: original.path) ?? [] {
                     var isDirectory: ObjCBool = false
