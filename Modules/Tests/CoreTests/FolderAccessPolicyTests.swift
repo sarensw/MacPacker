@@ -93,6 +93,46 @@ extension AllCoreTests {
             #expect(decision == .prompt(dir("/Volumes/Backup/2026")))
         }
 
+        /// A link inside ~/Downloads pointing somewhere else is not covered by
+        /// the Downloads entitlement: the sandbox judges the path the link
+        /// resolves to. Claiming Downloads access for it would leave the read
+        /// to fail with no way back. Real directories and a real symlink —
+        /// path arithmetic alone cannot tell this case apart.
+        @Test func aLinkOutOfDownloadsIsNotCoveredByIt() throws {
+            let fm = FileManager.default
+            let base = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+                .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            let downloads = base.appendingPathComponent("Downloads", isDirectory: true)
+            let elsewhere = base.appendingPathComponent("Elsewhere", isDirectory: true)
+            try fm.createDirectory(at: downloads, withIntermediateDirectories: true)
+            try fm.createDirectory(at: elsewhere, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: base) }
+            let link = downloads.appendingPathComponent("backup", isDirectory: true)
+            try fm.createSymbolicLink(at: link, withDestinationURL: elsewhere)
+
+            let decision = FolderAccess.decide(
+                for: link.appendingPathComponent("a.zip"), isDirectory: false,
+                downloads: downloads,
+                isCovered: { _ in false })
+            #expect(decision == .prompt(dir(link.path)))
+        }
+
+        /// The same folder without the link in the way is covered.
+        @Test func aRealFolderInsideDownloadsIsCovered() throws {
+            let fm = FileManager.default
+            let downloads = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+                .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            let inside = downloads.appendingPathComponent("tools", isDirectory: true)
+            try fm.createDirectory(at: inside, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: downloads) }
+
+            let decision = FolderAccess.decide(
+                for: inside.appendingPathComponent("a.zip"), isDirectory: false,
+                downloads: downloads,
+                isCovered: { _ in false })
+            #expect(decision == .downloads(downloads))
+        }
+
         /// No home to speak of (a test rig, a system account): ask.
         @Test func withoutADownloadsFolderItIsAsked() {
             let decision = FolderAccess.decide(

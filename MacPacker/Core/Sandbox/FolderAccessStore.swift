@@ -67,10 +67,20 @@ final class FolderAccessStore {
     }
 
     /// Ask for `folder` outright and persist it: the Permissions buttons, where
-    /// the point *is* the grant. Returns false if the user cancelled.
+    /// the point *is* the grant. Returns false if the user cancelled, or picked
+    /// a folder that does not contain the one asked for — the panel lets them
+    /// navigate anywhere, and answering it elsewhere leaves the operation
+    /// without access. What they picked is kept even then: they did grant it,
+    /// and it saves a panel the next time something below it is opened.
     func grantAccess(to folder: URL) async -> Bool {
         guard let granted = await promptForFolder(seed: folder) else { return false }
         Sandbox.storeBookmark(url: granted)
+        guard FolderAccess.isInside(folder, granted) else {
+            log.error("Granted folder does not cover the one asked for", context: [
+                "asked": folder.lastPathComponent, "granted": granted.lastPathComponent
+            ])
+            return false
+        }
         log.info("Folder access granted", context: ["folder": granted.lastPathComponent])
         return true
     }

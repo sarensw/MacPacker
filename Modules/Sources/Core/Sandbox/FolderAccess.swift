@@ -31,9 +31,15 @@ public enum FolderAccess {
     }
 
     /// Whether `url` is `ancestor` or lies somewhere inside it.
+    ///
+    /// Symlinks are resolved first, because the sandbox judges the resolved
+    /// path: a link inside ~/Downloads pointing at an external volume is not
+    /// covered by the Downloads entitlement, however its path reads. Resolving
+    /// standardizes `.` and `..` on the way, and settles `/tmp` against
+    /// `/private/tmp` too.
     public static func isInside(_ url: URL, _ ancestor: URL) -> Bool {
-        let u = url.standardizedFileURL.path
-        let a = ancestor.standardizedFileURL.path
+        let u = url.resolvingSymlinksInPath().path
+        let a = ancestor.resolvingSymlinksInPath().path
         return u == a || u.hasPrefix(a + "/")
     }
 

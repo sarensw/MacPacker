@@ -21,11 +21,16 @@ class AppUrlOpenHandler: AppUrlHandler {
         // rather than the file — it is the same single panel, and it covers the
         // sibling volumes of a split archive, saving in place, and every further
         // archive in that folder, which a file grant does not.
-        for fileUrl in appUrl.files {
-            Task { @MainActor in
+        //
+        // One task for the whole selection, not one per file: the files are
+        // usually in the same folder, and asked for in parallel each would put
+        // up its own panel before any of them had stored the grant. Serialized,
+        // the first answer covers the rest. A refused one skips only itself.
+        Task { @MainActor in
+            for fileUrl in appUrl.files {
                 guard await FolderAccessStore.shared.ensureAccess(forFileIn: fileUrl) else {
                     log.error("No access to \(fileUrl.lastPathComponent) — archive cannot be read")
-                    return
+                    continue
                 }
                 archiveWindowManager.openArchiveWindow(for: fileUrl)
             }
