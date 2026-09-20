@@ -1069,16 +1069,15 @@ extension AllCoreTests {
             let out = dir.appendingPathComponent("out")
             try await extractWithOurEngine(saved, to: out)
 
-            // MacPacker's 7z reader only asks for kpidPosixAttrib, which the 7z
-            // handler does not report — the mode sits in kpidAttrib's high bits —
-            // so any 7z extracts without execute bits or links, however it was
-            // written. 7zz, below, shows the archive itself is right.
-            try withKnownIssue("7z extraction drops unix modes and symlinks (#243)") {
-                let mode = try fm.attributesOfItem(atPath: out.appendingPathComponent("run.sh").path)[.posixPermissions] as? Int
-                #expect(mode == 0o755, "the execute bit must survive, got \(String(mode ?? 0, radix: 8))")
-                #expect(try fm.destinationOfSymbolicLink(atPath: out.appendingPathComponent("link.txt").path)
-                        == "target.txt", "link.txt must stay a link")
-            } when: { format == .sevenZ }
+            // Both formats keep the mode, and neither keeps it the same way: zip
+            // has a POSIX-permissions field, 7z carries the mode in the high bits
+            // of the attribute word. That second half is #243, where every 7z
+            // extracted without execute bits or links however it was written.
+            // 7zz, below, shows the archive itself was right all along.
+            let mode = try fm.attributesOfItem(atPath: out.appendingPathComponent("run.sh").path)[.posixPermissions] as? Int
+            #expect(mode == 0o755, "the execute bit must survive, got \(String(mode ?? 0, radix: 8))")
+            #expect(try fm.destinationOfSymbolicLink(atPath: out.appendingPathComponent("link.txt").path)
+                    == "target.txt", "link.txt must stay a link")
 
             if format == .sevenZ,
                let sevenZip = ["/opt/homebrew/bin/7zz", "/usr/local/bin/7zz"].first(where: fm.isExecutableFile(atPath:)) {

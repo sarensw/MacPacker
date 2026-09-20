@@ -213,6 +213,66 @@ extension AllCoreTests {
             )
         }
 
+        // Regression for #243: the same tree, stored as 7z. Zip has a
+        // POSIX-permissions field of its own; 7z has none, and keeps the mode in
+        // the high 16 bits of the attribute word. Reading only the dedicated
+        // field passes the test above and still extracts `bin` as 0644 and
+        // `link` as a text file holding "bin", so the two formats need separate
+        // coverage.
+        @Test func extractionPreservesSymlinksAndExecBitFrom7z() async throws {
+            let engine = Archive7ZipEngine()
+            let folder = Bundle.module.url(forResource: "sevenzip", withExtension: nil)!
+            let url = folder.appendingPathComponent("appbundle.7z")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let items = Array(loadResult.items.values)
+
+            let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: tempDir) }
+
+            _ = try await engine.extract(
+                items: items,
+                from: url,
+                to: tempDir,
+                passwordResolver: { _ in nil }
+            )
+
+            let macOSDir = tempDir.appendingPathComponent("payload/Contents/MacOS")
+            let binURL = macOSDir.appendingPathComponent("bin")
+            let linkURL = macOSDir.appendingPathComponent("link")
+
+            let linkDestination = try? FileManager.default.destinationOfSymbolicLink(atPath: linkURL.path)
+            #expect(
+                linkDestination == "bin",
+                "link should be a symlink -> bin, got \(String(describing: linkDestination))"
+            )
+
+            let attrs = try FileManager.default.attributesOfItem(atPath: binURL.path)
+            let perms = (attrs[.posixPermissions] as? NSNumber)?.uint16Value ?? 0
+            #expect(
+                perms & 0o111 != 0,
+                "bin should keep an execute bit, got mode \(String(perms, radix: 8))"
+            )
+        }
+
+        // The listing has to carry the mode too, not just the extraction: the
+        // tree view shows it, and "Extract here" reads it back off the item. Same
+        // high-bits fallback, a second call site in the bridge — #243 broke both.
+        @Test func listingCarriesPosixModeFrom7z() async throws {
+            let engine = Archive7ZipEngine()
+            let folder = Bundle.module.url(forResource: "sevenzip", withExtension: nil)!
+            let url = folder.appendingPathComponent("appbundle.7z")
+
+            let loadResult = try await engine.loadArchive(url: url, passwordResolver: { _ in nil })
+            let bin = loadResult.items.values.first { $0.virtualPath?.hasSuffix("MacOS/bin") == true }
+            let mode = try #require(bin?.posixPermissions, "bin missing from the listing")
+            #expect(
+                mode & 0o111 != 0,
+                "listing should report an execute bit, got mode \(String(mode, radix: 8))"
+            )
+        }
+
         // Regression for #189: when macOS cannot store a file's xattrs and resource
         // fork in place — a FAT stick, an SMB share — it splits them into a sibling
         // `._name` file in AppleDouble format. That sidecar is then an ordinary

@@ -266,6 +266,29 @@
                 "216",
                 "191"
             ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "7z extraction strips execute bits and links",
+                "zh-Hans": "解压 7z 会丢失可执行权限和链接",
+                "fr": "L’extraction 7z supprime les droits d’exécution et les liens",
+                "de": "Entpacken von 7z entfernt Ausführungsrechte und Links",
+                "it": "L’estrazione 7z rimuove i permessi di esecuzione e i link",
+                "ja": "7z を展開すると実行権限とリンクが失われる",
+                "fa": "استخراج 7z مجوز اجرا و پیوندها را حذف می‌کند",
+                "pl": "Wypakowanie 7z usuwa prawa wykonywania i dowiązania",
+                "pt-BR": "Extrair 7z remove permissões de execução e links",
+                "ru": "Распаковка 7z удаляет права на выполнение и ссылки",
+                "uk": "Розпакування 7z видаляє права на виконання та посилання",
+                "es-MX": "Al extraer 7z se pierden los permisos de ejecución y los enlaces",
+                "ko": "7z 압축을 풀면 실행 권한과 링크가 사라짐",
+                "nl": "Uitpakken van 7z verwijdert uitvoerrechten en links",
+                "tr": "7z çıkarma yürütme izinlerini ve bağlantıları siliyor"
+            },
+            "issues": [
+                "243"
+            ]
           }
         ]
       },
