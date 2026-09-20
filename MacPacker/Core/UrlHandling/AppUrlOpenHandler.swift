@@ -13,37 +13,21 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 class AppUrlOpenHandler: AppUrlHandler {
-    private let catalog: ArchiveTypeCatalog
-
-    init(catalog: ArchiveTypeCatalog) {
-        self.catalog = catalog
-    }
 
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
         log.notice("Open handler: \(appUrl.files.count) file(s) to open")
+        // Nothing arrives with ambient access on the Finder-extension path: the
+        // extension hands over paths, not a grant. Ask for the archive's *folder*
+        // rather than the file — it is the same single panel, and it covers the
+        // sibling volumes of a split archive, saving in place, and every further
+        // archive in that folder, which a file grant does not.
         for fileUrl in appUrl.files {
-            // A split part (`.z01`, `.zip.001`) needs *folder* access, which the
-            // loader requests downstream — asking for single-file access here would
-            // be a wasted, extra prompt. The detector recognizes such a part by its
-            // extension alone (no read needed).
-            if ArchiveTypeDetector(catalog: catalog).detect(for: fileUrl)?.split != nil {
-                log.notice("Split archive; loader will request folder access for \(fileUrl.lastPathComponent)")
-                archiveWindowManager.openArchiveWindow(for: fileUrl)
-                continue
-            }
-
-            // A plain archive on the Finder-extension path has no ambient sandbox
-            // access — request the single file.
-            log.notice("Requesting sandbox access for \(fileUrl.lastPathComponent)")
-            requestAccessToFile(for: fileUrl) { response, url in
-                guard response == .OK, let url else {
-                    log.error("Sandbox access not granted for \(fileUrl.lastPathComponent) (response \(response.rawValue)) — archive cannot be read")
+            Task { @MainActor in
+                guard await FolderAccessStore.shared.ensureAccess(forFileIn: fileUrl) else {
+                    log.error("No access to \(fileUrl.lastPathComponent) — archive cannot be read")
                     return
                 }
-                DispatchQueue.main.async {
-                    log.notice("Access granted, opening window for \(url.lastPathComponent)")
-                    archiveWindowManager.openArchiveWindow(for: url)
-                }
+                archiveWindowManager.openArchiveWindow(for: fileUrl)
             }
         }
     }

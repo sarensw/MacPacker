@@ -267,6 +267,52 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Grant folder access once in Settings",
+                "zh-Hans": "在设置中一次性授予文件夹访问权限",
+                "fr": "Autoriser l’accès aux dossiers dans les réglages",
+                "de": "Ordnerzugriff einmalig in den Einstellungen erteilen",
+                "it": "Concedere l’accesso alle cartelle nelle impostazioni",
+                "ja": "設定でフォルダへのアクセスを一度だけ許可",
+                "fa": "اجازه دسترسی به پوشه‌ها یک‌بار در تنظیمات",
+                "pl": "Dostęp do folderów przyznawany raz w ustawieniach",
+                "pt-BR": "Conceder acesso às pastas uma vez nos ajustes",
+                "ru": "Доступ к папкам — один раз в настройках",
+                "uk": "Доступ до папок — один раз у параметрах",
+                "es-MX": "Conceder acceso a las carpetas una vez en ajustes",
+                "ko": "설정에서 폴더 접근을 한 번만 허용",
+                "nl": "Maptoegang één keer verlenen in instellingen",
+                "tr": "Klasör erişimini ayarlarda bir kez verme"
+            },
+            "issues": [
+                "252"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Fewer folder-access prompts",
+                "zh-Hans": "更少的文件夹访问询问",
+                "fr": "Moins de demandes d’accès aux dossiers",
+                "de": "Weniger Abfragen nach Ordnerzugriff",
+                "it": "Meno richieste di accesso alle cartelle",
+                "ja": "フォルダアクセスの確認が減少",
+                "fa": "درخواست‌های کمتر برای دسترسی به پوشه‌ها",
+                "pl": "Mniej pytań o dostęp do folderów",
+                "pt-BR": "Menos pedidos de acesso a pastas",
+                "ru": "Меньше запросов доступа к папкам",
+                "uk": "Менше запитів доступу до папок",
+                "es-MX": "Menos solicitudes de acceso a carpetas",
+                "ko": "폴더 접근 요청 감소",
+                "nl": "Minder verzoeken om maptoegang",
+                "tr": "Daha az klasör erişimi isteği"
+            },
+            "issues": [
+                "252"
+            ]
+          },
+          {
             "type": "fix",
             "title": {
                 "en": "Archiving strips Mac file information",

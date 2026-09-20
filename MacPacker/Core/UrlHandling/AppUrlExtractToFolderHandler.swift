@@ -28,32 +28,32 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
         log.debug("Extracting \(appUrl.files.count) archive(s) to folders in \(appUrl.target)")
 
         // the selected archives share one folder: a single grant covers them all
-        requestAccessToDir(for: appUrl.target) { response, url in
-            guard response == .OK, let url else { return }
-            Task { @MainActor in
-                var folders: [URL] = []
-                for fileUrl in appUrl.files {
-                    // `url` is the folder the user granted access to — the
-                    // destination. The folder we create inside it is named
-                    // after the archive, so the name comes from `fileUrl`.
-                    let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
-                    let folderUrl = url.appendingPathComponent(folderName)
-                    do {
-                        try FileManager.default.createDirectory(at: folderUrl, withIntermediateDirectories: true)
-                    } catch {
-                        log.error(error.localizedDescription)
-                        continue
-                    }
-                    // `honorsSmartExtraction` is false for this action: the folder
-                    // it is named after has just been created, so wrapping a second
-                    // one inside would be the `Photos/Photos` nesting the smart rule
-                    // exists to avoid.
-                    _ = await self.extractArchive(fileUrl, into: folderUrl, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
-                    folders.append(folderUrl)
+        Task { @MainActor in
+            guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
+                log.error("No access to \(appUrl.target.lastPathComponent) — cannot extract")
+                return
+            }
+            var folders: [URL] = []
+            for fileUrl in appUrl.files {
+                // The folder we create in the target is named after the
+                // archive, so the name comes from `fileUrl`.
+                let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
+                let folderUrl = appUrl.target.appendingPathComponent(folderName)
+                do {
+                    try FileManager.default.createDirectory(at: folderUrl, withIntermediateDirectories: true)
+                } catch {
+                    log.error(error.localizedDescription)
+                    continue
                 }
-                if !folders.isEmpty {
-                    NSWorkspace.shared.activateFileViewerSelecting(folders)
-                }
+                // `honorsSmartExtraction` is false for this action: the folder
+                // it is named after has just been created, so wrapping a second
+                // one inside would be the `Photos/Photos` nesting the smart rule
+                // exists to avoid.
+                _ = await self.extractArchive(fileUrl, into: folderUrl, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
+                folders.append(folderUrl)
+            }
+            if !folders.isEmpty {
+                NSWorkspace.shared.activateFileViewerSelecting(folders)
             }
         }
     }

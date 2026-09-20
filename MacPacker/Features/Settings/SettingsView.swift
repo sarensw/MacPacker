@@ -12,6 +12,7 @@ enum SettingsViewTab: Int, CaseIterable, Identifiable {
     case general
     case formats
     case advanced
+    case permissions
     case integration
     case about
     case debug
@@ -45,6 +46,13 @@ struct SettingsView: View {
                         Text("Advanced", comment: "Advanced settings")
                     }
                     .tag(SettingsViewTab.advanced)
+                
+                PermissionsSettingsView()
+                    .tabItem {
+                        Image(systemName: "lock.shield")
+                        Text("Permissions", comment: "Settings tab that grants the app access to folders")
+                    }
+                    .tag(SettingsViewTab.permissions)
                 
                 IntegrationSettingsView()
                     .tabItem {

@@ -2,19 +2,16 @@
 //  FolderAccessStore.swift
 //  MacPacker
 //
-//  Acquires read access to the folder containing an archive so split /
-//  multi-volume siblings are readable under the App Sandbox. This is only the
-//  *acquisition* (grant) side — persistence, ancestor-reuse and the access scope
-//  itself live in `Core.Sandbox`, which the read sites bracket with
-//  `Sandbox.access`.
+//  Acquires access to the folder an operation reads from or writes into: the
+//  folder holding an archive (so split siblings are readable), the folder a
+//  Finder action writes into. This is only the *acquisition* (grant) side —
+//  the rule is `Core.FolderAccess`, persistence and the access scope live in
+//  `Core.Sandbox`, which the read and write sites bracket with `Sandbox.access`.
 //
-//  Strategy, cheapest first:
-//   • already covered by a stored bookmark (this folder or an ancestor) → done.
-//   • under ~/Downloads → the `files.downloads.read-write` entitlement gives a
-//     one-click system prompt, no panel and no bookmark.
-//   • otherwise → prompt (powerbox) for the folder and persist a bookmark via
-//     `Sandbox.storeBookmark`. A grant on any ancestor is reused (step 1), so
-//     opening more archives under it doesn't re-prompt.
+//  Every folder-access prompt in the app goes through here, so a grant is asked
+//  for at most once per folder tree: what the panel returns is persisted as a
+//  bookmark, and any stored grant on an ancestor is reused. Settings › Permissions
+//  grants the home folder and /Volumes up front, which covers most of it.
 //
 
 import AppKit
@@ -27,53 +24,87 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "sandbox")
 final class FolderAccessStore {
     static let shared = FolderAccessStore()
 
-    /// Ensure the folder containing `fileURL` is readable. Returns false only if
-    /// the user declined. On success the grant is a persisted bookmark (powerbox)
-    /// or the Downloads entitlement — the read sites pick it up via `Sandbox.access`.
+    /// The two folders Settings › Permissions offers: one grant each covers
+    /// everything the user keeps at home and on every mounted volume.
+    static let volumesFolder = URL(fileURLWithPath: "/Volumes", isDirectory: true)
+
+    /// The real (non-container) home. `getpwuid` gives the true home even inside
+    /// the sandbox, where `NSHomeDirectory()` returns the container.
+    static var homeFolder: URL? {
+        guard let pw = getpwuid(getuid()) else { return nil }
+        let home = String(cString: pw.pointee.pw_dir)
+        return home.isEmpty ? nil : URL(fileURLWithPath: home, isDirectory: true)
+    }
+
+    /// The real `~/Downloads` — the folder the `files.downloads.read-write`
+    /// entitlement covers.
+    ///
+    /// The name is spelled out on purpose. On disk the folder is `Downloads` in
+    /// every language: what a Japanese Finder shows as ダウンロード is the display
+    /// name macOS derives from the `.localized` marker inside it, never the path.
+    /// `FileManager.urls(for: .downloadsDirectory…)` would be the tidier call, but
+    /// inside the sandbox it answers with the *container's* Downloads, which is
+    /// not what the entitlement covers and not where the user's files are.
+    static var downloadsFolder: URL? {
+        homeFolder?.appendingPathComponent("Downloads", isDirectory: true)
+    }
+
+    /// Ensure the folder containing `fileURL` is accessible. Returns false only
+    /// if the user declined.
     func ensureAccess(forFileIn fileURL: URL) async -> Bool {
-        // 1. Already covered by a stored bookmark on this folder or an ancestor.
-        if Sandbox.securityScopedURL(for: fileURL) != nil {
+        await ensureAccess(to: fileURL, isDirectory: false)
+    }
+
+    /// Ensure `folder` itself is accessible — a Finder action's target folder,
+    /// which is where it reads its input and writes its result.
+    func ensureAccess(forFolder folder: URL) async -> Bool {
+        await ensureAccess(to: folder, isDirectory: true)
+    }
+
+    /// Whether a stored grant already covers `folder` — what Settings shows.
+    func hasAccess(to folder: URL) -> Bool {
+        Sandbox.securityScopedURL(for: folder) != nil
+    }
+
+    /// Ask for `folder` outright and persist it: the Permissions buttons, where
+    /// the point *is* the grant. Returns false if the user cancelled.
+    func grantAccess(to folder: URL) async -> Bool {
+        guard let granted = await promptForFolder(seed: folder) else { return false }
+        Sandbox.storeBookmark(url: granted)
+        log.info("Folder access granted", context: ["folder": granted.lastPathComponent])
+        return true
+    }
+
+    private func ensureAccess(to url: URL, isDirectory: Bool) async -> Bool {
+        switch FolderAccess.decide(
+            for: url,
+            isDirectory: isDirectory,
+            downloads: Self.downloadsFolder,
+            isCovered: { Sandbox.securityScopedURL(for: $0) != nil }
+        ) {
+        case .covered:
             return true
-        }
 
-        let folder = fileURL.deletingLastPathComponent()
-
-        // 2. Downloads — covered by the entitlement: a single one-click system
-        //    prompt on first use, no panel and no bookmark.
-        if let downloads = downloadsFolder(), isUnder(folder, downloads) {
+        // Covered by the entitlement: no panel and no bookmark of ours. macOS
+        // still asks once, as the system alert about the Downloads folder, and
+        // remembers that answer itself; listing the folder is what triggers it.
+        // Detached because that listing blocks for as long as the alert is up,
+        // and this runs on the main actor.
+        case .downloads(let downloads):
             let path = downloads.path
             let granted = await Task.detached {
                 (try? FileManager.default.contentsOfDirectory(atPath: path)) != nil
             }.value
             if !granted { log.error("Downloads access declined") }
             return granted
+
+        case .prompt(let folder):
+            guard await grantAccess(to: folder) else {
+                log.error("Folder access denied", context: ["folder": folder.lastPathComponent])
+                return false
+            }
+            return true
         }
-
-        // 3. Otherwise prompt for this folder and persist the grant.
-        guard let granted = await promptForFolder(seed: folder) else {
-            log.error("Folder access denied", context: ["folder": folder.lastPathComponent])
-            return false
-        }
-        Sandbox.storeBookmark(url: granted)
-        return true
-    }
-
-    private func isUnder(_ folder: URL, _ ancestor: URL) -> Bool {
-        let f = folder.standardizedFileURL.path
-        let a = ancestor.standardizedFileURL.path
-        return f == a || f.hasPrefix(a + "/")
-    }
-
-    /// The real (non-container) home. `getpwuid` gives the true home even inside
-    /// the sandbox, where `NSHomeDirectory()` returns the container.
-    private func realHome() -> URL? {
-        guard let pw = getpwuid(getuid()) else { return nil }
-        let home = String(cString: pw.pointee.pw_dir)
-        return home.isEmpty ? nil : URL(fileURLWithPath: home, isDirectory: true)
-    }
-
-    private func downloadsFolder() -> URL? {
-        realHome()?.appendingPathComponent("Downloads", isDirectory: true)
     }
 
     // MARK: - Prompt
@@ -88,6 +119,7 @@ final class FolderAccessStore {
             panel.prompt = String(localized: "Grant Access", comment: "Confirmation button in the file- and folder-access panel")
             panel.message = String(localized: "\(Constants.appName) needs access to \(seed.lastPathComponent)", comment: "Message in the file- and folder-access panel explaining why permission is required. The first placeholder is the app name MacPacker, the second is the name of the file or folder that needs access.")
             panel.level = .floating
+            NSApp.activate(ignoringOtherApps: true)
             panel.begin { response in
                 continuation.resume(returning: response == .OK ? panel.url : nil)
             }
