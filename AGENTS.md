@@ -19,8 +19,9 @@ build` of the `MacPacker` and `MacPacker Store` schemes.
 
 Each app build then runs `scripts/check-architectures.sh` as a post-build hook,
 so a bundled Mach-O missing its `arm64` or `x86_64` slice fails the pull
-request. Locally, pass `--arm64-only` — a Debug build is `arm64`-only under
-`ONLY_ACTIVE_ARCH`.
+request. Locally on Apple silicon, pass `--arm64-only` — a Debug build there is
+`arm64`-only under `ONLY_ACTIVE_ARCH`. On an Intel Mac that same setting makes
+Debug `x86_64`-only, so check a Release build instead.
 
 `MacPacker.xctestplan` runs the XCUITest target only, outside PR CI.
 
