@@ -10,9 +10,18 @@ a Finder and a Quick Look extension.
 
 ```bash
 git submodule update --init --recursive   # required — the build fails without it
-swift test --package-path Modules         # unit tests; what PR CI runs
+swift test --package-path Modules         # unit tests
 xcodebuild -scheme MacPacker build        # app build; also extracts new UI strings
 ```
+
+PR CI runs both: `swift test` on the package, and an unsigned `xcodebuild
+build` of the `MacPacker` and `MacPacker Store` schemes.
+
+Each app build then runs `scripts/check-architectures.sh` as a post-build hook,
+so a bundled Mach-O missing its `arm64` or `x86_64` slice fails the pull
+request. Locally on Apple silicon, pass `--arm64-only` — a Debug build there is
+`arm64`-only under `ONLY_ACTIVE_ARCH`. On an Intel Mac that same setting makes
+Debug `x86_64`-only, so check a Release build instead.
 
 `MacPacker.xctestplan` runs the XCUITest target only, outside PR CI.
 
