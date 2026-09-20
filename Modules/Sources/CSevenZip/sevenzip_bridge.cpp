@@ -371,6 +371,34 @@ static EntryTime readEntryTime(IInArchive *archive, UInt32 index) {
     return out;
 }
 
+/// The full Unix mode an archive gives an entry -- file type bits included, so
+/// S_ISLNK works on it -- or 0 when the archive carries no mode at all.
+///
+/// Two formats, two places to look. Zip has a POSIX-permissions field of its
+/// own and the zip handler reports it as kpidPosixAttrib. 7z has no such field:
+/// it reuses the Windows attribute word and keeps the mode in its high 16 bits,
+/// flagged with FILE_ATTRIBUTE_UNIX_EXTENSION (0x8000) -- the same convention
+/// the write side follows in sevenzip_bridge_write.cpp. tar and the other Unix
+/// formats are stored in the archive one way or the other, so asking both
+/// questions is what makes this work for all of them; reading only the
+/// dedicated field is issue #243, where a 7z executable extracts as 0644 and a
+/// symlink as a text file holding its target.
+static UInt32 readEntryUnixMode(IInArchive *archive, UInt32 index) {
+    NWindows::NCOM::CPropVariant propPosix;
+    if (archive->GetProperty(index, kpidPosixAttrib, &propPosix) == S_OK
+        && propPosix.vt == VT_UI4)
+        return propPosix.ulVal;
+
+    static const UInt32 kUnixExtension = 0x8000;
+    NWindows::NCOM::CPropVariant propAttrib;
+    if (archive->GetProperty(index, kpidAttrib, &propAttrib) == S_OK
+        && propAttrib.vt == VT_UI4
+        && (propAttrib.ulVal & kUnixExtension) != 0)
+        return propAttrib.ulVal >> 16;
+
+    return 0;
+}
+
 /// Stamps `path` with the entry's modification time, leaving the access time
 /// alone. NOFOLLOW so a symlink entry gets its own time rather than passing it
 /// on to whatever it points at.
@@ -577,9 +605,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     // Capture the entry's POSIX mode so SetOperationResult can restore the exec
     // bit and turn symlink entries (7-Zip writes them as a regular file whose
     // contents are the link target) into real symlinks. Absent on non-Unix zips.
-    NWindows::NCOM::CPropVariant propPosix;
-    _archive->GetProperty(index, kpidPosixAttrib, &propPosix);
-    _currentMode = (propPosix.vt == VT_UI4) ? propPosix.ulVal : 0;
+    _currentMode = readEntryUnixMode(_archive, index);
     _currentIsSymlink = S_ISLNK(_currentMode);
     _currentTime = readEntryTime(_archive, index);
     _currentFilePath = fullPath;
@@ -1391,10 +1417,7 @@ bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
             entry_out->attributes = propAttrib.ulVal;
 
         // POSIX permissions
-        NWindows::NCOM::CPropVariant propPosix;
-        arc->GetProperty(index, kpidPosixAttrib, &propPosix);
-        if (propPosix.vt == VT_UI4)
-            entry_out->posix_permissions = propPosix.ulVal & 0xFFFF;
+        entry_out->posix_permissions = readEntryUnixMode(arc, index) & 0xFFFF;
 
         // Is directory
         NWindows::NCOM::CPropVariant propIsDir;
