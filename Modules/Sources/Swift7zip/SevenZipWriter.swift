@@ -462,12 +462,54 @@ extension SevenZipArchive {
             }
         }
 
+        try carryHiddenFlag(from: source, onto: donor)
+
         let destination = scratch.appendingPathComponent(UUID().uuidString)
         let flags = copyfile_flags_t(COPYFILE_PACK | COPYFILE_XATTR)
         guard copyfile(donor.path, destination.path, nil, flags) == 0 else {
             throw metadataError("copyfile", source)
         }
         return destination
+    }
+
+    /// Passes `source`'s hidden state to `donor` as the FinderInfo flag that says
+    /// the same thing, so that packing the donor carries it into the archive.
+    ///
+    /// macOS hides a file in two unrelated ways. `Icon\r` and everything Finder's
+    /// "Show View Options" hides carry the invisible flag in FinderInfo, which is
+    /// an extended attribute and so already travels. `chflags hidden` instead sets
+    /// UF_HIDDEN on the file itself — a filesystem flag, mentioned by no extended
+    /// attribute, and AppleDouble has nowhere to put one. That is issue #216 after
+    /// the icon half of it was fixed: the picture came back, a file the user had
+    /// hidden came back visible.
+    ///
+    /// Sending it as the flag rather than inventing somewhere to keep it: the two
+    /// mean the same thing to the user, every tool that folds an AppleDouble in
+    /// understands the flag, and macOS puts UF_HIDDEN back by itself when the
+    /// attribute lands — so the file arrives hidden by both measures.
+    private static func carryHiddenFlag(from source: URL, onto donor: URL) throws {
+        var status = stat()
+        // lstat: a symlink's own flags. Links get no sidecar, but the sample the
+        // empty check is built from goes through here too.
+        guard lstat(source.path, &status) == 0 else { throw metadataError("lstat", source) }
+        guard status.st_flags & UInt32(UF_HIDDEN) != 0 else { return }
+
+        // 32 bytes whether or not the file has any: the attribute is fixed-size,
+        // and all-zero is what "no FinderInfo" looks like once one is needed.
+        var info = [UInt8](repeating: 0, count: 32)
+        let stored = getxattr(donor.path, "com.apple.FinderInfo", &info, info.count, 0, XATTR_NOFOLLOW)
+        // Carrying none yet is the ordinary case and leaves the zeroes standing.
+        // Anything else is a read that failed, and overwriting what it could not
+        // report would throw away the flags the file does have.
+        guard stored == info.count || (stored < 0 && errno == ENOATTR) else {
+            throw metadataError("getxattr com.apple.FinderInfo", donor)
+        }
+
+        // The flags field is two bytes at offset 8 for a file and for a folder
+        // alike, big-endian, and the invisible flag is its top bit but one.
+        info[8] |= 0x40
+        guard setxattr(donor.path, "com.apple.FinderInfo", info, info.count, 0, XATTR_NOFOLLOW) == 0
+        else { throw metadataError("setxattr com.apple.FinderInfo", donor) }
     }
 
     /// What an AppleDouble looks like when there was nothing to put in it.

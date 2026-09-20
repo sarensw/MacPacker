@@ -673,6 +673,51 @@ extension AllCoreTests {
                     "the folder should keep its own date, got \(extractedDate)")
         }
 
+        // The half of #216 that the first fix left open. macOS hides a file in two
+        // unrelated ways and only one of them is metadata `copyfile` can pack:
+        // `Icon\r` is hidden by a FinderInfo flag, which is an extended attribute
+        // and so travelled, while `chflags hidden` sets UF_HIDDEN on the file
+        // itself — a filesystem flag no extended attribute mentions, so a file the
+        // user had hidden came back out visible.
+        //
+        // Carried as the FinderInfo flag, which is the same bit and the only place
+        // AppleDouble has for it. macOS mirrors that bit onto UF_HIDDEN when the
+        // attribute is written, so the flag itself comes back too — asserted here,
+        // because it is that mirroring the fix relies on.
+        @Test func createdArchiveKeepsAFileHidden() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let file = dir.appendingPathComponent("secret.txt")
+            try "contents".write(to: file, atomically: true, encoding: .utf8)
+            #expect(chflags(file.path, UInt32(UF_HIDDEN)) == 0)
+
+            let dest = dir.appendingPathComponent("created.zip")
+            try SevenZipArchive.writeArchive(
+                destination: dest,
+                items: [.addFile(archivePath: "secret.txt", diskPath: file)],
+                options: .init(format: .zip)
+            )
+
+            // Being hidden is the only thing this file has to say, so without it
+            // reaching the sidecar there is no sidecar at all.
+            #expect(try systemZipList(dest).contains("__MACOSX/._secret.txt"),
+                    "a hidden file needs a sidecar to carry the flag")
+            try run("/usr/bin/unzip", ["-t", dest.path])
+
+            let out = dir.appendingPathComponent("out")
+            try await extractWithOurEngine(dest, to: out)
+
+            let extracted = out.appendingPathComponent("secret.txt")
+            #expect(try extracted.resourceValues(forKeys: [.isHiddenKey]).isHidden == true,
+                    "the file was hidden before it was archived and should come back hidden")
+
+            var status = stat()
+            #expect(lstat(extracted.path, &status) == 0)
+            #expect(status.st_flags & UInt32(UF_HIDDEN) != 0,
+                    "the FinderInfo flag should have put UF_HIDDEN back on the file")
+        }
+
         // The write path used to `stat` what it was given and open it as a file,
         // so a symlink went into the archive as a full copy of whatever it pointed
         // at. Inside a framework or an .app the version symlinks are what hold the
