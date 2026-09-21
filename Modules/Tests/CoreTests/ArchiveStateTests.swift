@@ -693,6 +693,27 @@ extension AllCoreTests {
             #expect(state.root !== firstRoot)
             #expect(state.type?.id == "zip")
         }
+
+        /// One window per archive (issue #256). The start page's recents and a
+        /// drop on an empty window open through here: an archive another window
+        /// has open brings that window forward instead of loading a second time.
+        @Test func anArchiveOpenInAnotherWindowBringsThatWindowForward() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let url = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+                .appendingPathComponent("defaultArchive.zip")
+            var asked: [URL] = []
+            state.focusWindowHolding = { asked.append($0); return true }
+
+            state.openDropped(url: url)
+            #expect(asked == [url])
+            #expect(!state.hasArchive, "opened a second time")
+
+            // open in no other window: it opens here
+            state.focusWindowHolding = { _ in false }
+            state.openDropped(url: url)
+            try await state.openTask?.value
+            #expect(state.url == url)
+        }
     }
 
     // MARK: - Password handling

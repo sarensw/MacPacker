@@ -358,6 +358,29 @@
             "issues": [
                 "243"
             ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "An archive can be opened twice",
+                "zh-Hans": "同一压缩包可被打开两次",
+                "fr": "Une archive peut être ouverte deux fois",
+                "de": "Ein Archiv kann zweimal geöffnet werden",
+                "it": "Un archivio può essere aperto due volte",
+                "ja": "同じアーカイブを2回開けてしまう",
+                "fa": "یک آرشیو را می‌توان دو بار باز کرد",
+                "pl": "Archiwum można otworzyć dwa razy",
+                "pt-BR": "Um arquivo pode ser aberto duas vezes",
+                "ru": "Архив можно открыть дважды",
+                "uk": "Архів можна відкрити двічі",
+                "es-MX": "Un archivo se puede abrir dos veces",
+                "ko": "같은 아카이브를 두 번 열 수 있음",
+                "nl": "Een archief kan twee keer worden geopend",
+                "tr": "Bir arşiv iki kez açılabiliyor"
+            },
+            "issues": [
+                "256"
+            ]
           }
         ]
       },

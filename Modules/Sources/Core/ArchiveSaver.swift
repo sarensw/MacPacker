@@ -31,6 +31,8 @@ final actor ArchiveSaver {
     /// — `x.zip` for `x.zip.001` — and `nil` for a single file. Only the name:
     /// nothing is read to know it.
     private let splitArchiveName: String?
+    /// The source's file as the window opened it; `nil` for a new archive.
+    private let sourceAsOpened: FileStamp?
     private let target: URL
     private let items: [ArchiveUpdateItem]
     private let options: CompressionOptions
@@ -50,6 +52,7 @@ final actor ArchiveSaver {
     init(
         source: URL?,
         splitArchiveName: String?,
+        sourceAsOpened: FileStamp?,
         target: URL,
         items: [ArchiveUpdateItem],
         options: CompressionOptions,
@@ -61,6 +64,7 @@ final actor ArchiveSaver {
     ) {
         self.source = source
         self.splitArchiveName = splitArchiveName
+        self.sourceAsOpened = sourceAsOpened
         self.target = target
         self.items = items
         self.options = options
@@ -72,6 +76,15 @@ final actor ArchiveSaver {
     }
 
     func save() async throws -> Saved {
+        // A removal names its entry by position in the source as the window read
+        // it, and a Save As reads the source by those positions too. Once anything
+        // else has written to it — another window's save, another app — they point
+        // at other entries.
+        if let sourceAsOpened, FileStamp(sourceAsOpened.url) != sourceAsOpened {
+            log.notice("Refusing to save a source changed since it was opened", context: ["file": sourceAsOpened.url.lastPathComponent])
+            throw ArchiveError.saveRefused(
+                "\(splitArchiveName ?? sourceAsOpened.url.lastPathComponent) was changed by another window or app after it was opened, so your changes can't be saved. Close the window and open the archive again.")
+        }
         // A set of volumes is not changed in place — 7-Zip does not update one
         // either, and a new file over the first volume would leave the others to
         // be read as part of it. Save As writes the change elsewhere.
@@ -202,5 +215,27 @@ final actor ArchiveSaver {
         case .passwordMissing?: false
         default: nil
         }
+    }
+}
+
+/// A file as it was at one moment, to tell later whether anything has written to
+/// it since. Read inside the file's stored grant, as every read here is.
+/// ponytail: modification date and size, rsync's quick check. A write that keeps
+/// both slips through; hash the contents if that ever matters.
+struct FileStamp: Equatable, Sendable {
+    let url: URL
+    private let modified: Date
+    private let size: Int
+
+    /// `nil` when the file can't be read: gone, or no access.
+    init?(_ url: URL) {
+        guard let attributes = Sandbox.accessSync(url: url, perform: {
+                  try? FileManager.default.attributesOfItem(atPath: url.path)
+              }),
+              let modified = attributes[.modificationDate] as? Date,
+              let size = attributes[.size] as? Int else { return nil }
+        self.url = url
+        self.modified = modified
+        self.size = size
     }
 }

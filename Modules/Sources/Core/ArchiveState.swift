@@ -130,6 +130,10 @@ public class ArchiveState: ObservableObject {
     /// wires this to `NSWorkspace.shared.open`; the default is a no-op so Core
     /// carries no AppKit dependency and unit tests never launch an external app.
     public var openFileExternally: (URL) -> Void = { _ in }
+    /// Brings forward the window that already has the archive at this url open,
+    /// and says whether there was one. The app wires this to its window manager;
+    /// the default finds none, so Core and the unit tests open in place.
+    public var focusWindowHolding: (URL) -> Bool = { _ in false }
     /// Where user-triggered extractions report their progress. Defaults to
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
@@ -145,7 +149,11 @@ public class ArchiveState: ObservableObject {
     /// wrote to it, so which archive the window ended up showing depended on
     /// which load happened to finish last.
     private var openGeneration = 0
-    
+    /// The archive's file as this window opened it. A pending removal names its
+    /// entry by position in that file, so a save must not go ahead once anything
+    /// else has written to it.
+    private var openedFile: FileStamp?
+
     public private(set) var openTask: Task<Void, any Error>?
     private var archiveLoader: ArchiveLoader?
     
@@ -233,6 +241,7 @@ extension ArchiveState {
         self.saveError = nil
 
         self.url = nil
+        self.openedFile = nil
         self.name = nil
         self.type = nil
         self.compositionType = nil
@@ -695,11 +704,13 @@ extension ArchiveState {
         entries.removeValue(forKey: item.id)
     }
 
-    /// Opens a dropped file in this window: a supported archive is opened directly;
+    /// Opens a dropped file in this window: a supported archive is opened directly,
+    /// unless another window has it open already — that one comes forward instead;
     /// anything else becomes the first entry of a new archive. `open`/`create` reset
     /// the state, so this replaces whatever is currently loaded.
     public func openDropped(url: URL) {
         if isSupportedArchive(url: url) {
+            guard !focusWindowHolding(url) else { return }
             open(url: url)
         } else {
             create()
@@ -746,6 +757,7 @@ extension ArchiveState {
                 let setName = splitSetName(for: url)
                 return setName == url.lastPathComponent ? nil : setName
             },
+            sourceAsOpened: openedFile,
             target: target,
             items: diff,
             options: options ?? CompressionOptions(format: format),
@@ -836,6 +848,8 @@ extension ArchiveState {
         self.isBusy = true
         self.error = nil
         self.url = url
+        // before the load reads it, so a write during the load counts too
+        self.openedFile = FileStamp(url)
         self.name = splitSetName(for: url)
         self.ext = url.pathExtension
         log.info("Opening archive", context: ["file": url.lastPathComponent, "ext": url.pathExtension])

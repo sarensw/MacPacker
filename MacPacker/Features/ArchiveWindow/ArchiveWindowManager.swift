@@ -58,6 +58,9 @@ class ArchiveWindowManager {
         archiveState.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
         // Opening a plain (non-archive) entry hands it to the system editor.
         archiveState.openFileExternally = { NSWorkspace.shared.open($0) }
+        // One window per archive, for what the window opens itself too: the start
+        // page and a drop on an empty window.
+        archiveState.focusWindowHolding = { [weak self] in self?.focusWindow(holding: $0) != nil }
         if let url {
             archiveState.open(url: url)
         }
@@ -164,14 +167,7 @@ class ArchiveWindowManager {
     }
 
     private func showWindow(for url: URL) -> ArchiveState {
-        let key = windowKey(for: url)
-        if let wc = windowControllers.first(where: {
-            guard let existing = $0.archiveState.url else { return false }
-            // case-insensitive: matches the (default) case-insensitive filesystem.
-            return windowKey(for: existing).path.caseInsensitiveCompare(key.path) == .orderedSame
-        }) {
-            log.notice("Archive already open, focusing existing window for \(url.lastPathComponent)")
-            wc.showWindow(nil)
+        if let wc = focusWindow(holding: url) {
             return wc.archiveState
         } else if let ewc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {
             log.notice("Reusing empty window to open \(url.lastPathComponent)")
@@ -182,6 +178,19 @@ class ArchiveWindowManager {
             log.notice("Opening a new window for \(url.lastPathComponent)")
             return createAndShowArchiveWindow(url)
         }
+    }
+
+    /// Brings forward the window that has `url` open, if one has.
+    private func focusWindow(holding url: URL) -> ArchiveWindowController? {
+        let key = windowKey(for: url)
+        guard let wc = windowControllers.first(where: {
+            guard let existing = $0.archiveState.url else { return false }
+            // case-insensitive: matches the (default) case-insensitive filesystem.
+            return windowKey(for: existing).path.caseInsensitiveCompare(key.path) == .orderedSame
+        }) else { return nil }
+        log.notice("Archive already open, focusing existing window for \(url.lastPathComponent)")
+        wc.showWindow(nil)
+        return wc
     }
 
     /// The window's dedup identity: every volume of a split set reduces to one
