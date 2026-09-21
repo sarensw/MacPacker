@@ -503,6 +503,46 @@ extension AllCoreTests {
         }
     }
 
+    // MARK: - Removing from an encrypted archive
+
+    struct EncryptedRemovalTests {
+
+        /// Removing a file from a 7z packs what is left of its solid block again,
+        /// which takes the archive's password to read, and to lock back up. A zip
+        /// copies every entry it keeps as it is: its removals need no password.
+        @Test(arguments: ["7z_aes256.7z", "7z_encrypted_header.7z", "zip_aes256.zip"])
+        func aRemovalLeavesTheRestLocked(_ fixture: String) throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent(fixture)
+            try FileManager.default.copyItem(at: passwordFixture(fixture), to: source)
+            let sevenZ = source.pathExtension == "7z"
+            let hello = try #require(try SevenZipArchive(url: source, password: "password").entries
+                .first { $0.path == "hello world.txt" })
+            let remove = { (password: String?) in
+                try SevenZipArchive.writeArchive(
+                    source: source, destination: source, items: [.remove(sourceIndex: hello.index)],
+                    options: .init(format: sevenZ ? .sevenZ : .zip), sourcePassword: password)
+            }
+            if sevenZ {
+                expectError("passwordMissing") { try remove(nil) }
+                expectError("passwordWrong") { try remove("nope") }
+                try remove("password")
+            } else {
+                try remove(nil)
+            }
+
+            let reader = try SevenZipArchive(url: source, password: "password")
+            let files = try reader.entries.filter { !$0.isDirectory && $0.size > 0 }
+            #expect(files.map(\.path).sorted() == ["folder/NestedArchive.zip", "folder/README.md"])
+            let plain = files.filter { !$0.isEncrypted }.map(\.path)
+            #expect(plain.isEmpty, "left in plain: \(plain)")
+            let out = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+            try reader.extractAll(to: out)
+        }
+    }
+
     // MARK: - Dictionary, word size, solid blocks
 
     struct CodecSettingTests {

@@ -21,6 +21,13 @@ extension SevenZipArchive {
     /// in `options` it is copied as it is instead, and refused for a change of
     /// format: rebuilt, it would come out unencrypted.
     ///
+    /// What an update writes anew into an encrypted source — what it adds, and
+    /// in a 7z the solid blocks it packs again around a removal — is encrypted
+    /// with `sourcePassword`, in the cipher the source's entries use, unless
+    /// `options` set a password. It throws ``SevenZipError/passwordMissing``
+    /// without one, and ``SevenZipError/passwordWrong`` when it does not
+    /// decrypt the source.
+    ///
     /// `rewrite` makes a Save As onto the source's own file one too: written
     /// again with `options`, not updated.
     ///
@@ -44,6 +51,7 @@ extension SevenZipArchive {
         rewrite: Bool = false,
         progress: WriteProgressHandler? = nil
     ) throws {
+        var options = options
         let items = options.excludeDSStore ? items.excludingDSStore() : items
         let inPlace = source != nil
             && source!.standardizedFileURL == destination.standardizedFileURL
@@ -57,13 +65,6 @@ extension SevenZipArchive {
         if (options.volumeSize ?? 0) > 0, let existing = existingVolume(of: destination) {
             throw SevenZipError.writeFailed(
                 "\(existing.lastPathComponent) already exists. Pick another name, or move the old volumes away first.")
-        }
-        // 7-Zip would refuse it too, with nothing to say why.
-        if options.encrypts, options.format == .zip,
-           !CompressionOptions.isValidZipPassword(options.password ?? "", encryption: options.encryption) {
-            throw SevenZipError.writeFailed(
-                "A zip password can only use plain ASCII letters, digits, spaces and symbols"
-                + (options.encryption == .zipCrypto ? "" : ", at most \(CompressionOptions.zipAESPasswordLimit) of them"))
         }
         let actualDest: URL
         if inPlace {
@@ -95,13 +96,58 @@ extension SevenZipArchive {
         do {
             // scoped, so the handle is closed again before anything is written
             let sourceArchive = try source.map { try SevenZipArchive(url: $0, password: sourcePassword) }
-            let encrypted = try sourceArchive?.entries.contains(where: \.isEncrypted) ?? false
+            let locked = try sourceArchive?.entries.filter(\.isEncrypted) ?? []
+            let encrypted = !locked.isEmpty
             if let source, !inPlace, encrypted, !options.encrypts,
                writableFormat(of: source) != options.format {
                 throw SevenZipError.writeFailed(
                     "An encrypted archive can't be saved as \(options.format.rawValue) without a password: it would lose its encryption")
             }
             rebuild = sourceArchive != nil && (!inPlace || rewrite) && (!encrypted || options.encrypts)
+
+            // Not rebuilt, an encrypted source keeps its entries as they are, and
+            // what is written anew takes their password and cipher. What is added:
+            // left in plain, it would be the one part of a locked archive anybody
+            // could read (#253). And in a 7z what is left of a solid block a
+            // removal cuts into, which 7-Zip packs again and cannot even read
+            // without the password.
+            // ponytail: every 7z removal asks, though only one cutting into a solid
+            // block needs it; the bridge could pass on 7-Zip's own ask
+            // (ICryptoGetTextPassword) if that prompt ever gets in the way.
+            let sevenZ = source.map { writableFormat(of: $0) == .sevenZ } ?? false
+            let writesAnew = items.contains {
+                switch $0 {
+                case .addFile, .addData, .addDirectory: true
+                case .remove: sevenZ
+                case .move: false
+                }
+            }
+            if let sourceArchive, encrypted, !options.encrypts, writesAnew {
+                guard let sourcePassword else { throw SevenZipError.passwordMissing }
+                // Tried first on the entry with the least to decrypt: nothing in a
+                // zip, or in a 7z with plain names, tells a wrong password before
+                // something is decrypted, and a typo would lock the added files
+                // away under a password nobody knows. In a 7z only a block's first
+                // file has a packed size, and decrypting it stops where it ends.
+                if let probe = locked.filter({ !$0.isDirectory && $0.packedSize > 0 })
+                    .min(by: { $0.packedSize < $1.packedSize }) {
+                    let out = scratch.appendingPathComponent("probe")
+                    try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+                    try sourceArchive.extract(index: probe.index, to: out)
+                }
+                options.password = sourcePassword
+                // 7-Zip's own rule for a zip it updates: AES as soon as one entry has it
+                options.encryption = locked.contains { sourceArchive.method(ofEntryAt: $0.index)?.contains("AES") == true }
+                    ? .aes256 : .zipCrypto
+            }
+
+            // 7-Zip would refuse it too, with nothing to say why.
+            if options.encrypts, options.format == .zip,
+               !CompressionOptions.isValidZipPassword(options.password ?? "", encryption: options.encryption) {
+                throw SevenZipError.writeFailed(
+                    "A zip password can only use plain ASCII letters, digits, spaces and symbols"
+                    + (options.encryption == .zipCrypto ? "" : ", at most \(CompressionOptions.zipAESPasswordLimit) of them"))
+            }
 
             // Resolve the diff into a full item list for the C bridge.
             resolved = try resolveDiff(sourceArchive: sourceArchive, items: items)
