@@ -417,6 +417,70 @@ extension AllCoreTests {
             try run("/usr/bin/unzip", ["-t", zip.path])
         }
 
+        /// What can write to an archive while a window has it open.
+        enum OutsideWrite: CaseIterable, Sendable {
+            /// Another window holding the same archive saves it.
+            case anotherWindowSaves
+            /// A Save As in another window writes a new archive over it.
+            case saveAsOverIt
+            /// Another app changes it.
+            case anotherApp
+        }
+
+        /// A pending removal names entries by their position in the file as the
+        /// window read it. Once something else has written to the file, those
+        /// positions hold other entries: Save and Save As are refused and say to
+        /// open the archive again, and the file stays as the other write left it
+        /// (issue #256). The window's own save is no such write.
+        @Test(arguments: OutsideWrite.allCases)
+        func aSaveIsRefusedOnceTheFileChangedSinceItWasOpened(_ write: OutsideWrite) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try makeSystemZipFixture(in: dir)
+            let state = makeState()
+            state.open(url: zip)
+            try await state.openTask?.value
+
+            // two saves in a row: the first does not make the second stale
+            for name in ["a.txt", "b.txt"] {
+                let file = dir.appendingPathComponent(name)
+                try name.write(to: file, atomically: true, encoding: .utf8)
+                state.add(url: file)
+                await state.save()?.value
+                #expect(state.saveError == nil, "\(state.saveError ?? "")")
+            }
+
+            switch write {
+            case .anotherWindowSaves:
+                let other = makeState()
+                other.open(url: zip)
+                try await other.openTask?.value
+                other.remove(items: [try #require(item("root.txt", in: other))])
+                await other.save()?.value
+            case .saveAsOverIt:
+                let other = makeState()
+                other.create()
+                other.add(url: dir.appendingPathComponent("src/other"))
+                await other.save(to: zip)?.value
+            case .anotherApp:
+                try run("/usr/bin/zip", ["-d", zip.path, "root.txt"])
+            }
+            let written = try systemZipEntries(zip)
+
+            // second in the file, after root.txt — in the changed file its
+            // positions hold other entries
+            state.remove(items: [try #require(item("folder", in: state))])
+            await state.save()?.value
+            #expect(state.saveError?.contains("open the archive again") == true, "\(state.saveError ?? "saved")")
+            state.clearSaveError()
+            let copy = dir.appendingPathComponent("copy.zip")
+            await state.save(to: copy)?.value
+            #expect(state.saveError?.contains("open the archive again") == true, "Save As: \(state.saveError ?? "saved")")
+            #expect(!FileManager.default.fileExists(atPath: copy.path))
+            #expect(try systemZipEntries(zip) == written, "wrote over the change")
+            #expect(state.hasPendingChanges)
+        }
+
         @Test func mutationsRefusedWhileSaving() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }

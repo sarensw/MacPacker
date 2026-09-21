@@ -214,7 +214,8 @@ final class MacPackerUITests: XCTestCase {
     }
 
     /// An empty window shows the home screen, lists the archives opened before,
-    /// and opening one from that list loads it in that very window.
+    /// and opening one from that list loads it in that very window — unless
+    /// another window has it open already: that one comes forward (#256).
     ///
     /// The empty window is opened with ⌘⇧N from a window launched via
     /// `-ArchivePath`: that both seeds the recents list and keeps the welcome
@@ -237,10 +238,16 @@ final class MacPackerUITests: XCTestCase {
         let openButton = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Open Archive…")).firstMatch
         XCTAssertTrue(openButton.waitForExistence(timeout: 10), "the empty window does not show the home screen")
 
-        // the archive just opened is listed under Recent, and opening it from
-        // there replaces the home screen with the archive
+        // the archive just opened is listed under Recent. The first window still
+        // has it open, so opening it from here brings that window forward: ⌘W
+        // then closes it and leaves the home screen, not a second copy of it.
         let recent = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "recents-fixture.zip")).firstMatch
         XCTAssertTrue(recent.waitForExistence(timeout: 5), "the archive is not listed under Recent")
+        recent.click()
+        app.typeKey("w", modifierFlags: .command)
+        XCTAssertTrue(openButton.waitForExistence(timeout: 10), "the archive opened a second time instead of coming forward")
+
+        // open nowhere now, it replaces the home screen with the archive
         recent.click()
         XCTAssertTrue(openButton.waitForNonExistence(timeout: 15), "the recent archive did not open in that window")
         XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "the archive content is not shown")

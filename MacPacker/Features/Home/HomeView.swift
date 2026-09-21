@@ -229,7 +229,8 @@ struct HomeView: View {
 
     // MARK: - Actions
 
-    /// Opens in *this* window — it's empty, that's why the start page is up.
+    /// Opens in *this* window — it's empty, that's why the start page is up —
+    /// unless another window has the archive open: that one comes forward.
     private func open(_ url: URL) {
         if state.isSupportedArchive(url: url) { RecentArchives.note(url) }
         state.openDropped(url: url)
