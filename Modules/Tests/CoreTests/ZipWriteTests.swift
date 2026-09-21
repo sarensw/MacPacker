@@ -615,6 +615,179 @@ extension AllCoreTests {
             #expect(try String(contentsOf: out.appendingPathComponent("folder/two.txt"), encoding: .utf8) == "two")
         }
 
+        // MARK: - The engine that read the archive
+
+        /// A window with its Settings: the engine picked for zip, which can change
+        /// while the window is open.
+        private func stateWithSettings(zip engine: ArchiveEngineType) -> (ArchiveEngineConfigStore, ArchiveState) {
+            let catalog = ArchiveTypeCatalog()
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
+            store.isAutomatic = false
+            store.setSelectedEngine(engine, for: "zip")
+            let state = ArchiveState(catalog: catalog, engineSelector: ArchiveEngineSelector(catalog: catalog, configStore: store))
+            state.folderAccessProvider = { _ in true }
+            return (store, state)
+        }
+
+        /// Finder's `__MACOSX/._name` sidecars, which XAD folds into the files
+        /// they describe, so its entries are numbered unlike 7-Zip's: XAD's
+        /// number for `helper` is 7-Zip's for the sidecar of `icon.png`.
+        private func appleDoubleZip(in dir: URL) throws -> URL {
+            let zip = dir.appendingPathComponent("appledouble.zip")
+            try FileManager.default.copyItem(
+                at: Bundle.module.url(forResource: "zip", withExtension: nil)!.appendingPathComponent("appledouble.zip"),
+                to: zip)
+            return zip
+        }
+
+        /// `helper` as 7-Zip finds it by its own path.
+        private func helperContents(in zip: URL, dir: URL) throws -> Data {
+            let archive = try SevenZipArchive(url: zip)
+            let entry = try #require(try archive.entries.first { $0.path == "payload/Contents/MacOS/helper" })
+            let out = dir.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+            return try Data(contentsOf: #require(try archive.extract(index: entry.index, to: out)[entry.index]))
+        }
+
+        /// Only an engine that writes a format can change an archive it opened,
+        /// and for zip that is 7-Zip. XAD numbers entries its own way — it folds
+        /// Mac metadata sidecars into the files they describe — and a delete made
+        /// through its listing handed those numbers to 7-Zip's writer: deleting
+        /// `helper` removed the sidecar of `icon.png`. A zip XAD opened is
+        /// read-only.
+        @Test func aZipXADOpenedCannotBeChanged() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (_, state) = stateWithSettings(zip: .xad)
+            state.open(url: try appleDoubleZip(in: dir))
+            try await state.openTask?.value
+            #expect(state.activeEngine == .xad)
+            #expect(!state.canBeEdited)
+
+            state.remove(items: [try #require(item("payload/Contents/MacOS/helper", in: state))])
+            #expect(!state.hasPendingChanges)
+        }
+
+        /// The archive a save reloads is still the one the window opened: it keeps
+        /// its engine, and a switch to XAD in Settings meanwhile does not turn it
+        /// read-only once it is saved.
+        @Test func aSaveKeepsTheEngineThatOpenedTheArchive() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (settings, state) = stateWithSettings(zip: .`7zip`)
+            state.open(url: try makeSystemZipFixture(in: dir))
+            try await state.openTask?.value
+
+            settings.setSelectedEngine(.xad, for: "zip")
+            state.remove(items: [try #require(item("folder/one.txt", in: state))])
+            await state.save()?.value
+            #expect(state.saveError == nil, "\(state.saveError ?? "")")
+            #expect(item("folder/one.txt", in: state) == nil)
+            #expect(state.activeEngine == .`7zip`)
+            #expect(state.canBeEdited)
+        }
+
+        /// A window holds one archive's editing at a time: opening one that cannot
+        /// be edited does not carry over the editing of the one before.
+        @Test func editingEndsWithTheArchiveItBelongsTo() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let sevenZ = dir.appendingPathComponent("plain.7z")
+            try SevenZipArchive.writeArchive(
+                destination: sevenZ, items: [.addData(archivePath: "a.txt", data: Data("a".utf8))],
+                options: .init(format: .sevenZ))
+            let state = makeState()
+            state.open(url: try makeSystemZipFixture(in: dir))
+            try await state.openTask?.value
+            #expect(state.canBeEdited)
+
+            state.open(url: sevenZ)
+            try await state.openTask?.value
+            #expect(!state.canBeEdited)
+        }
+
+        /// An archive opened inside the archive keeps its entries in an archive of
+        /// its own, and a save writes only the outer one: nothing inside can be
+        /// removed or added from here. Deleting `x.txt` inside `inner.zip` deleted
+        /// the outer archive's `a.txt`, since both were entry 0. The row of the
+        /// inner archive is the outer one's, and goes alone.
+        @Test func anArchiveOpenedInsideIsNotChangedThroughTheOuterOne() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let inner = dir.appendingPathComponent("inner.zip")
+            try SevenZipArchive.writeArchive(
+                destination: inner,
+                items: [.addData(archivePath: "x.txt", data: Data("x".utf8)),
+                        .addData(archivePath: "y.txt", data: Data("y".utf8))],
+                options: .init(format: .zip))
+            let outer = dir.appendingPathComponent("outer.zip")
+            try SevenZipArchive.writeArchive(
+                destination: outer,
+                items: [.addData(archivePath: "a.txt", data: Data("a".utf8)),
+                        .addData(archivePath: "b.txt", data: Data("b".utf8)),
+                        .addFile(archivePath: "inner.zip", diskPath: inner)],
+                options: .init(format: .zip))
+            let state = makeState()
+            state.open(url: outer)
+            try await state.openTask?.value
+            let innerRow = try #require(item("inner.zip", in: state))
+            try await state.openAsync(item: innerRow)
+
+            let x = try #require(state.entries.values.first { $0.name == "x.txt" })
+            #expect(!state.canRemove([x]))
+            state.remove(items: [x])
+            #expect(!state.canAddHere)
+            state.add(url: inner)
+            #expect(!state.hasPendingChanges)
+
+            state.openParent()
+            #expect(state.canAddHere)
+            #expect(state.canRemove([innerRow]))
+            state.remove(items: [innerRow])
+            await state.save()?.value
+            #expect(state.saveError == nil, "\(state.saveError ?? "")")
+            #expect(try systemZipEntries(outer) == ["a.txt", "b.txt"])
+        }
+
+        /// A switch of engine in Settings applies to the archives opened after it.
+        /// The open one stays on the engine that read it and numbered its entries:
+        /// 7-Zip extracts by number, and would have taken XAD's number for `helper`
+        /// for the sidecar of `icon.png`.
+        @Test func anOpenArchiveKeepsTheEngineThatReadIt() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try appleDoubleZip(in: dir)
+            let (settings, state) = stateWithSettings(zip: .xad)
+            state.open(url: zip)
+            try await state.openTask?.value
+            let helper = try #require(item("payload/Contents/MacOS/helper", in: state))
+
+            settings.setSelectedEngine(.`7zip`, for: "zip")
+            let extracted = try await state.extractToTemp(item: helper)
+            #expect(try Data(contentsOf: extracted) == helperContents(in: zip, dir: dir))
+        }
+
+        /// So does an archive opened inside the archive, with the engine that read
+        /// it — not the outer one's, which is another format's.
+        @Test func anArchiveOpenedInsideKeepsTheEngineThatReadIt() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try appleDoubleZip(in: dir)
+            let outer = dir.appendingPathComponent("outer.7z")
+            try SevenZipArchive.writeArchive(
+                destination: outer, items: [.addFile(archivePath: "appledouble.zip", diskPath: zip)],
+                options: .init(format: .sevenZ))
+            let (settings, state) = stateWithSettings(zip: .xad)
+            state.open(url: outer)
+            try await state.openTask?.value
+            try await state.openAsync(item: try #require(item("appledouble.zip", in: state)))
+            let helper = try #require(item("payload/Contents/MacOS/helper", in: state))
+
+            settings.setSelectedEngine(.`7zip`, for: "zip")
+            let extracted = try await state.extractToTemp(item: helper)
+            #expect(try Data(contentsOf: extracted) == helperContents(in: zip, dir: dir))
+        }
+
         // MARK: - macOS metadata (#191, #216)
 
         // A zip has nowhere to keep a resource fork or an extended attribute, so

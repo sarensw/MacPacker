@@ -15,9 +15,9 @@ import Foundation
 /// the header has to be decrypted during `XADArchive` init and XADArchive only
 /// takes a password afterwards.
 ///
-/// In automatic mode `ArchiveLoader` may fall back to another engine to read an
-/// archive; `ArchiveState` then pins that engine here for the rest of the
-/// window. Without it the archive would list through the fallback and then fail
+/// `ArchiveState` pins here the engine that read each archive, for the rest of
+/// the window. In automatic mode that may be a fallback `ArchiveLoader` took;
+/// without the pin the archive would list through the fallback and then fail
 /// on the first extraction, which resolves the engine from the format all over
 /// again. Fallback stays on so the pinned engine keeps its own alternatives.
 struct AutomaticEngineSelector: ArchiveEngineSelectorProtocol {

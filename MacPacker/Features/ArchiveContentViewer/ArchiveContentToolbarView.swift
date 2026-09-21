@@ -84,7 +84,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .help("Add files or folders to the archive")
-            .disabled(!archiveState.canBeEdited || archiveState.isSaving)
+            .disabled(!archiveState.canAddHere)
 
             Button {
                 archiveState.remove(items: archiveState.selectedItems)
@@ -96,7 +96,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .help("Delete the selected items from the archive")
-            .disabled(!archiveState.canBeEdited || archiveState.selectedItems.isEmpty || archiveState.isSaving)
+            .disabled(!archiveState.canRemove(archiveState.selectedItems))
 
             Spacer()
             

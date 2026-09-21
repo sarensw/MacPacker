@@ -43,9 +43,10 @@ struct ArchiveView: View {
     /// How far the archive window's drop cards sit inside the window.
     private static let dropInset: CGFloat = 12
 
-    /// Adding needs an archive that the format can write, and no in-flight save.
+    /// Adding needs an archive that the format can write, no in-flight save, and
+    /// the window in that archive, not in one opened within it.
     private var canAdd: Bool {
-        state.hasArchive && state.canBeEdited && !state.isSaving
+        state.hasArchive && state.canAddHere
     }
 
     /// Dropping a non-archive doesn't open anything — it starts a new archive with

@@ -126,6 +126,11 @@ public struct EngineDto: Codable, Sendable {
     public let id: String                // engine ID ("xad", "7zip", ...)
     public let capabilities: [String]    // ["listContents", "extractFiles", "splitVolumes"]
     public let `default`: Bool?          // optional, only present on one item
+
+    /// Whether the engine writes archives of its format, so one it opened can be
+    /// changed. An engine that only reads numbers entries its own way, and the
+    /// writer would take those numbers for other entries.
+    public var canEdit: Bool { capabilities.contains("edit") }
 }
 
 // MARK: - Compounds

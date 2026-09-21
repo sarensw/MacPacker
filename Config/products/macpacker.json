@@ -381,6 +381,29 @@
             "issues": [
                 "256"
             ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Deleting a file could remove a different one",
+                "zh-Hans": "删除文件时可能误删另一个文件",
+                "fr": "Supprimer un fichier pouvait en retirer un autre",
+                "de": "Löschen einer Datei konnte eine andere entfernen",
+                "it": "Eliminare un file poteva rimuoverne un altro",
+                "ja": "ファイルを削除すると別のファイルが消えることがあった",
+                "fa": "حذف یک فایل ممکن بود فایل دیگری را پاک کند",
+                "pl": "Usunięcie pliku mogło usunąć inny plik",
+                "pt-BR": "Excluir um arquivo podia remover outro",
+                "ru": "Удаление файла могло стереть другой файл",
+                "uk": "Видалення файлу могло стерти інший файл",
+                "es-MX": "Eliminar un archivo podía quitar otro",
+                "ko": "파일을 삭제하면 다른 파일이 지워질 수 있었음",
+                "nl": "Een bestand verwijderen kon een ander wissen",
+                "tr": "Bir dosyayı silmek başka birini silebiliyordu"
+            },
+            "issues": [
+                "267"
+            ]
           }
         ]
       },
