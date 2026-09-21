@@ -410,7 +410,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             delete.keyEquivalentModifierMask = []
             delete.target = self
             delete.image = NSImage(systemSymbolName: "trash", accessibilityDescription: nil)
-            delete.isEnabled = hasSelection && state.canBeEdited && !state.isSaving
+            delete.isEnabled = state.canRemove(state.selectedItems)
             menu.addItem(delete)
         }
 
@@ -446,7 +446,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
 
         @objc func contextDelete(_ sender: Any?) {
             let state = parent.archiveState
-            guard state.canBeEdited, !state.selectedItems.isEmpty else { return }
+            guard state.canRemove(state.selectedItems) else { return }
             state.remove(items: state.selectedItems)
         }
         
@@ -716,12 +716,12 @@ class ArchiveTableView: NSTableView, NSMenuItemValidation {
     }
 
     /// Enables Edit ▸ Delete only when the front archive is editable and has a
-    /// selection; every other item keeps the default "enabled if the responder
-    /// handles it" behavior.
+    /// selection that is its own, not inside an archive opened within it; every
+    /// other item keeps the default "enabled if the responder handles it" behavior.
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.action == #selector(delete(_:)) {
             guard let state else { return false }
-            return state.canBeEdited && !state.selectedItems.isEmpty && !state.isSaving
+            return state.canRemove(state.selectedItems)
         }
         return true
     }

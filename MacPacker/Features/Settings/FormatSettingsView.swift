@@ -13,6 +13,9 @@ struct ArchiveFormatSettings: Identifiable {
     let name: String
     let extensions: String
     let engines: [ArchiveEngineType]
+    /// The engines that can also edit archives of this format, as the catalog
+    /// says: one that only reads opens them read-only.
+    let editors: Set<ArchiveEngineType>
     var selectedEngine: ArchiveEngineType
     var defaultOpen: Bool = false
 }
@@ -56,6 +59,7 @@ struct FormatSettingsView: View {
                     appState.archiveEngineConfigStore.selectedEngine(for: formatId) else { continue }
 
             let engines = engineOptions.compactMap { ArchiveEngineType(configId: $0.id) }
+            let editors = Set(engineOptions.filter(\.canEdit).compactMap { ArchiveEngineType(configId: $0.id) })
             let extString = type.extensions.joined(separator: ", ")
 
             // Default app detection: keep false for now (toggle is disabled anyway)
@@ -69,6 +73,7 @@ struct FormatSettingsView: View {
                 name: type.name,
                 extensions: extString,
                 engines: engines,
+                editors: editors,
                 selectedEngine: selectedEngine,
                 defaultOpen: isDefaultApp
             )
@@ -132,7 +137,8 @@ struct FormatSettingsView: View {
                 TableColumn("File Format", value: \.name)
                 TableColumn("Extensions", value: \.extensions)
                 TableColumn("Engine") {
-                    supportedPicker(identifier: $0.id, selectedEngine: $0.selectedEngine, supportedEngines: $0.engines)
+                    supportedPicker(identifier: $0.id, selectedEngine: $0.selectedEngine,
+                                    supportedEngines: $0.engines, editors: $0.editors)
                 }
             }
             .tableStyle(.bordered)
@@ -184,6 +190,15 @@ struct FormatSettingsView: View {
                             }
                         }
                         .font(.footnote)
+
+                        Divider()
+
+                        Label {
+                            Text("Edits archives, not only opens them", comment: "Legend in the engine info popover: the pencil next to an engine in the format table means that engine can also change archives of that format, where the others only open and extract them")
+                        } icon: {
+                            Image(systemName: "pencil")
+                        }
+                        .font(.footnote)
                     }
                     .frame(width: 260)
                     .padding()
@@ -228,11 +243,23 @@ struct FormatSettingsView: View {
             .disabled(true)
     }
     
+    /// A menu takes the width of its widest engine. Every row's menu is as wide
+    /// as the longest engine name at the table's small size, with room for the
+    /// pencil, so they all line up.
+    private static let engineMenuWidth: CGFloat = {
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .small))
+        let widest = ArchiveEngineType.allCases
+            .map { ($0.rawValue as NSString).size(withAttributes: [.font: font]).width }
+            .max() ?? 0
+        return ceil(widest) + 17   // the pencil and its spacing
+    }()
+
     @ViewBuilder
     func supportedPicker(
         identifier: String,
         selectedEngine: ArchiveEngineType,
-        supportedEngines: [ArchiveEngineType]
+        supportedEngines: [ArchiveEngineType],
+        editors: Set<ArchiveEngineType>
     ) -> some View {
         let binding = Binding<ArchiveEngineType>(
             get: { selectedEngine },
@@ -246,7 +273,15 @@ struct FormatSettingsView: View {
 
         Picker(String(""), selection: binding) {
             ForEach(supportedEngines, id: \.self) { engine in
-                Text(engine.rawValue).tag(engine)
+                Group {
+                    if editors.contains(engine) {
+                        Label(engine.rawValue, systemImage: "pencil")
+                    } else {
+                        Text(engine.rawValue)
+                    }
+                }
+                .frame(width: Self.engineMenuWidth, alignment: .leading)
+                .tag(engine)
             }
         }
         .labelsHidden()
@@ -257,4 +292,3 @@ struct FormatSettingsView: View {
         .disabled(isAutomatic)
     }
 }
-

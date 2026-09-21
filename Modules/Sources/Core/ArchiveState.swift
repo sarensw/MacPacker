@@ -108,10 +108,12 @@ public class ArchiveState: ObservableObject {
     
     private let catalog: ArchiveTypeCatalog
     private let archiveEngineSelector: ArchiveEngineSelectorProtocol
-    /// Formats whose configured engine could not open *this* archive, mapped to
-    /// the engine that could. Set by the loader's fallback and used for every
-    /// later lookup so extraction does not resolve back to the engine that
-    /// already failed. Cleared on reset with the rest of the archive state.
+    /// The engine that read this window's archives, by format — the archive and
+    /// any opened inside it. Every later lookup gets it, whatever Settings say
+    /// by then: entries are numbered by the engine that listed them, and 7-Zip
+    /// takes XAD's numbers for other entries. It is also where the loader's
+    /// fallback stays, when the configured engine could not open the archive.
+    /// Cleared on reset with the rest of the archive state.
     private var pinnedEngines: [String: ArchiveEngineType] = [:]
 
     /// The selector everything downstream should use.
@@ -236,6 +238,7 @@ extension ArchiveState {
     /// Resets the state of the archive
     private func reset() {
         self.hasArchive = false
+        self.canBeEdited = false
         // A failed open sets its reason after this, so its alert still shows.
         self.openError = nil
         self.saveError = nil
@@ -547,6 +550,12 @@ extension ArchiveState {
             return
         }
         guard let selectedItem else { return }
+        // A save writes only this archive. Added inside one opened within it,
+        // the file would land in this one, in a folder named like that archive.
+        guard !isWithinOpenedArchive(selectedItem) else {
+            log.notice("Ignoring add — inside an archive opened within this one", context: ["file": url.lastPathComponent])
+            return
+        }
         let base = (selectedItem.virtualPath?.isEmpty == false && selectedItem.virtualPath != "/")
             ? selectedItem.virtualPath! + "/" : ""
 
@@ -634,6 +643,10 @@ extension ArchiveState {
             log.notice("Ignoring delete — a save is in progress", context: ["items": "\(items.count)"])
             return
         }
+        guard canRemove(items) else {
+            log.notice("Ignoring delete — nothing this archive can remove", context: ["items": "\(items.count)"])
+            return
+        }
 
         let dropped = discard(items: items)
 
@@ -685,23 +698,40 @@ extension ArchiveState {
 
     /// Depth-first: collects the source indices (real archive entries) and
     /// pending-addition paths of the item and all of its descendants, and
-    /// drops them from `entries`.
+    /// drops them from `entries`. An archive opened within this one goes as the
+    /// entry it is: what it holds leaves the tree with it, but belongs to that
+    /// archive, numbered as that one's entries.
     private func collectRemovals(
         _ item: ArchiveItem,
         indices: inout Set<UInt32>,
-        pendingPaths: inout Set<String>
+        pendingPaths: inout Set<String>,
+        inThisArchive: Bool = true
     ) {
         for childId in item.children ?? [] {
             if let child = entries[childId] {
-                collectRemovals(child, indices: &indices, pendingPaths: &pendingPaths)
+                collectRemovals(child, indices: &indices, pendingPaths: &pendingPaths,
+                                inThisArchive: inThisArchive && item.archiveTypeId == nil)
             }
         }
-        if let index = item.index {
-            indices.insert(index)
-        } else if let path = item.virtualPath, path != "/" {
-            pendingPaths.insert(path)
+        if inThisArchive {
+            if let index = item.index {
+                indices.insert(index)
+            } else if let path = item.virtualPath, path != "/" {
+                pendingPaths.insert(path)
+            }
         }
         entries.removeValue(forKey: item.id)
+    }
+
+    /// Whether `item` is an archive opened within this one, or inside one: what
+    /// such an archive holds is that archive's, and a save writes only this one.
+    private func isWithinOpenedArchive(_ item: ArchiveItem) -> Bool {
+        var current: ArchiveItem? = item
+        while let node = current, node.type != .root {
+            if node.archiveTypeId != nil { return true }
+            current = node.parent.flatMap { entries[$0] }
+        }
+        return false
     }
 
     /// Opens a dropped file in this window: a supported archive is opened directly,
@@ -720,6 +750,20 @@ extension ArchiveState {
 
     /// Whether there are unsaved changes (pending additions/removals).
     public var hasPendingChanges: Bool { !diff.isEmpty }
+
+    /// Whether `items` can be removed: none of them is inside an archive opened
+    /// within this one. The row of such an archive is this archive's own entry,
+    /// and can go.
+    public func canRemove(_ items: [ArchiveItem]) -> Bool {
+        canBeEdited && !isSaving && !items.isEmpty
+            && !items.contains { item in item.parent.flatMap { entries[$0] }.map(isWithinOpenedArchive) ?? false }
+    }
+
+    /// Whether files can be added where the window is: into this archive, not
+    /// into one opened within it.
+    public var canAddHere: Bool {
+        canBeEdited && !isSaving && selectedItem.map { !isWithinOpenedArchive($0) } == true
+    }
 
     /// Saves the pending changes.
     ///
@@ -786,6 +830,7 @@ extension ArchiveState {
                 log.notice("Archive saved", context: ["target": target.lastPathComponent])
 
                 // reload from disk so entries and indices reflect the file
+                let engines = pinnedEngines
                 open(url: saved.url)
                 // Known already — reopening must not ask again. Set after open(),
                 // which starts by forgetting every password, and before the first
@@ -793,6 +838,9 @@ extension ArchiveState {
                 if let password = saved.password {
                     passwords[saved.url] = password
                 }
+                // Likewise the engine: it is still the archive the window opened,
+                // whatever Settings have said since.
+                pinnedEngines = engines
                 _ = try? await openTask?.value
                 self.isSaving = false
             } catch {
@@ -894,25 +942,31 @@ extension ArchiveState {
                 if let firstVolume = loaderResult.firstVolumeURL {
                     self.url = firstVolume
                 }
-                if let type,
-                    type.engines.contains(where: {$0.capabilities.contains(where: {$0 == "edit"})}) {
+                // Changed only by an engine that writes the format, since a
+                // change names entries by the numbers of the engine that listed
+                // them. XAD only reads, and 7-Zip's writer would take its numbers
+                // for other entries.
+                if let type, let used = loaderResult.engineType,
+                   type.engines.contains(where: { $0.id == used.configId && $0.canEdit }) {
                     canBeEdited = true
                 }
                 
                 self.uncompressedSize = loaderResult.uncompressedSize
                 self.isEncrypted = loaderResult.isEncrypted
-                // The loader may have fallen back to another engine because the
-                // configured one cannot read this archive. Pin it, or the first
-                // extraction would resolve the failing engine all over again.
+                // The archive stays with the engine that read it (see
+                // `pinnedEngines`). That may be a fallback, when the configured
+                // engine cannot read this archive: the first extraction would
+                // otherwise resolve the failing engine all over again.
                 self.activeEngine = loaderResult.engineType
-                if let used = loaderResult.engineType,
-                   used != archiveEngineSelector.engineType(for: loaderResult.type.id) {
+                if let used = loaderResult.engineType {
                     pinnedEngines[loaderResult.type.id] = used
-                    log.notice("Engine pinned for this archive", context: [
-                        "file": url.lastPathComponent,
-                        "type": loaderResult.type.id,
-                        "engine": used.configId
-                    ])
+                    if used != archiveEngineSelector.engineType(for: loaderResult.type.id) {
+                        log.notice("Engine pinned for this archive", context: [
+                            "file": url.lastPathComponent,
+                            "type": loaderResult.type.id,
+                            "engine": used.configId
+                        ])
+                    }
                 }
 
                 updateStatusText(String(localized: "building tree...", bundle: .module, comment: "Archive operation status"))
@@ -1177,6 +1231,13 @@ extension ArchiveState {
                 
                 updateStatusText(String(localized: "loading...", bundle: .module, comment: "Archive operation status"))
                 let loaderResult = try await archiveLoader.loadEntries(url: url)
+                // Stays with the engine that read it, like the archive around it.
+                // One of that archive's format keeps its pin: the pin is per
+                // format, and moving it would hand the outer archive's entries to
+                // an engine that numbers them otherwise.
+                if let used = loaderResult.engineType, pinnedEngines[loaderResult.type.id] == nil {
+                    pinnedEngines[loaderResult.type.id] = used
+                }
                 
                 if let tempDirectory = loaderResult.tempDirectory {
                     tempDirectories.append(tempDirectory)
