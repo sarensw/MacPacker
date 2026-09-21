@@ -1,4 +1,4 @@
-# ── Per-app release shell (workflows-macos v0.5.3, product-file model) ────────
+# ── Per-app release shell (workflows-macos v0.5.9, product-file model) ────────
 # Fires on a version tag. The orchestrator parses the tag → the target product,
 # validates the version against that product's inline changelog, then builds and
 # publishes just it. The GH Release is created last (fail-safe ordering).
@@ -26,7 +26,7 @@ jobs:
   release:
     # Make sure the release job only runs in our own repo, not any fork repo.
     if: github.repository == 'sarensw/MacPacker'
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.5.3
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.5.9
     secrets:
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}

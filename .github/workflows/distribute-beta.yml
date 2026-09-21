@@ -1,8 +1,13 @@
-# ── Per-app beta shell (workflows-macos v0.5.3, product-file model) ───────────
+# ── Per-app beta shell (workflows-macos v0.5.9, product-file model) ───────────
 # Fires on push to main. The orchestrator discovers Config/products/*.json and
 # cuts a beta for each product whose OWN file changed and whose version is still
 # unreleased (primary MacPacker → bare v<ver>-beta.N). Channel toggles and the
 # Finder/QuickLook extension identity live in the product file; infra only here.
+#
+# Also runs by hand (Actions → Distribute Beta → Run workflow) to re-cut a beta
+# when nothing changed since the last one — after a flaky runner, a toolchain
+# bump, or to reship the same code. It never overrides "already released": a
+# released version needs a new changelog version first.
 #
 # Cross-account (sarensw/MacPacker → LeanBytes/workflows-macos): `secrets: inherit`
 # forwards nothing across accounts, so the map stays explicit.
@@ -12,15 +17,22 @@ name: Distribute Beta
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      force-beta:
+        description: "Cut a beta even if nothing changed"
+        type: boolean
+        default: false
 
 permissions:
   contents: write          # GH pre-release + the auto-pushed beta tag
 
 jobs:
   beta:
-    # Make sure the beta job only runs in our own repo, not any fork repo.
-    if: github.repository == 'sarensw/MacPacker'
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.5.3
+    # Make sure the beta job only runs in our own repo, not any fork repo. A
+    # manual run from any branch but main would publish that branch as a beta.
+    if: github.repository == 'sarensw/MacPacker' && github.ref == 'refs/heads/main'
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.5.9
     secrets:
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
@@ -45,6 +57,10 @@ jobs:
       JIRA_API_TOKEN:                 ${{ secrets.JIRA_API_TOKEN }}
       SHARED_WORKFLOWS_TOKEN:         ${{ secrets.SHARED_WORKFLOWS_TOKEN }}
     with:
+      # false on a push (the input does not exist there), true only when the box
+      # is ticked on a manual run.
+      force-beta: ${{ inputs.force-beta || false }}
+
       # All jobs shall run on GitHub infrastructure, not LeanBytes infrastructure
       runs-on-prepare:      '"macos-26"'
       runs-on-build-direct: '"macos-26"'
