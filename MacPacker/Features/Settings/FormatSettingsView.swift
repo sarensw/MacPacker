@@ -243,6 +243,17 @@ struct FormatSettingsView: View {
             .disabled(true)
     }
     
+    /// A menu takes the width of its widest engine. Every row's menu is as wide
+    /// as the longest engine name at the table's small size, with room for the
+    /// pencil, so they all line up.
+    private static let engineMenuWidth: CGFloat = {
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .small))
+        let widest = ArchiveEngineType.allCases
+            .map { ($0.rawValue as NSString).size(withAttributes: [.font: font]).width }
+            .max() ?? 0
+        return ceil(widest) + 17   // the pencil and its spacing
+    }()
+
     @ViewBuilder
     func supportedPicker(
         identifier: String,
@@ -260,64 +271,24 @@ struct FormatSettingsView: View {
             }
         )
 
-        EnginePopUp(engines: supportedEngines, editors: editors, selection: binding)
-            // In automatic mode the column shows what MacPacker picked; editing it
-            // would imply a choice that is not being honoured.
-            .disabled(isAutomatic)
-    }
-}
-
-/// A format's engine menu. AppKit's popup rather than SwiftUI's menu picker,
-/// which keeps the width of its longest engine whatever frame it is given, so
-/// the rows would not line up. An engine that can edit the format carries a
-/// pencil, in the menu and on the button.
-private struct EnginePopUp: NSViewRepresentable {
-    let engines: [ArchiveEngineType]
-    let editors: Set<ArchiveEngineType>
-    @Binding var selection: ArchiveEngineType
-
-    func makeCoordinator() -> Coordinator { Coordinator(self) }
-
-    func makeNSView(context: Context) -> NSPopUpButton {
-        let button = NSPopUpButton(frame: .zero, pullsDown: false)
-        button.controlSize = .small
-        button.font = .systemFont(ofSize: NSFont.systemFontSize(for: .small))
-        button.target = context.coordinator
-        button.action = #selector(Coordinator.picked(_:))
-        return button
-    }
-
-    func updateNSView(_ button: NSPopUpButton, context: Context) {
-        context.coordinator.parent = self
-        button.removeAllItems()
-        for engine in engines {
-            button.addItem(withTitle: engine.rawValue)
-            if editors.contains(engine) {
-                button.lastItem?.image = NSImage(
-                    systemSymbolName: "pencil",
-                    accessibilityDescription: String(localized: "Edits archives, not only opens them", comment: "Legend in the engine info popover: the pencil next to an engine in the format table means that engine can also change archives of that format, where the others only open and extract them"))
+        Picker(String(""), selection: binding) {
+            ForEach(supportedEngines, id: \.self) { engine in
+                Group {
+                    if editors.contains(engine) {
+                        Label(engine.rawValue, systemImage: "pencil")
+                    } else {
+                        Text(engine.rawValue)
+                    }
+                }
+                .frame(width: Self.engineMenuWidth, alignment: .leading)
+                .tag(engine)
             }
         }
-        button.selectItem(at: engines.firstIndex(of: selection) ?? -1)
-        button.isEnabled = context.environment.isEnabled
-    }
-
-    /// As wide as the column.
-    func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSPopUpButton, context: Context) -> CGSize? {
-        let fitting = nsView.intrinsicContentSize
-        let width = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? fitting.width
-        return CGSize(width: width, height: fitting.height)
-    }
-
-    final class Coordinator: NSObject {
-        var parent: EnginePopUp
-        init(_ parent: EnginePopUp) { self.parent = parent }
-
-        @objc func picked(_ sender: NSPopUpButton) {
-            let index = sender.indexOfSelectedItem
-            guard parent.engines.indices.contains(index) else { return }
-            parent.selection = parent.engines[index]
-        }
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .controlSize(.small)
+        // In automatic mode the column shows what MacPacker picked; editing it
+        // would imply a choice that is not being honoured.
+        .disabled(isAutomatic)
     }
 }
-
