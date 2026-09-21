@@ -337,10 +337,12 @@ final class MacPackerUITests: XCTestCase {
         let source = finder.textFields.matching(NSPredicate(format: "value == %@", "dropped.txt")).firstMatch
         XCTAssertTrue(source.waitForExistence(timeout: 15), "Finder does not show the file to drag")
 
-        // upper half of the window = the "add" zone
+        // upper half of the window = the "add" zone. A click-drag, not a press: on
+        // macOS 27 XCTest plays `press` back as a touch gesture, and no mouse drag
+        // comes of it — the pointer never moves.
         let target = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35))
         source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            .press(forDuration: 1, thenDragTo: target)
+            .click(forDuration: 1, thenDragTo: target)
 
         XCTAssertTrue(app.staticTexts["dropped.txt"].waitForExistence(timeout: 15),
                       "the dropped file was not added to the archive")
@@ -355,7 +357,7 @@ final class MacPackerUITests: XCTestCase {
         sleep(1)
         let openZone = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8))
         source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            .press(forDuration: 1, thenDragTo: openZone)
+            .click(forDuration: 1, thenDragTo: openZone)
         XCTAssertTrue(app.staticTexts["New Archive"].waitForExistence(timeout: 15),
                       "the open zone did not start a new archive for the plain file")
         XCTAssertTrue(app.staticTexts["Open in a new window"].waitForNonExistence(timeout: 5),
@@ -375,7 +377,8 @@ final class MacPackerUITests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: dir) }
         try "dropped".write(to: dir.appendingPathComponent("dropped.txt"), atomically: true, encoding: .utf8)
 
-        let app = launchApp(arguments: ["-DropWindow", "1"])
+        // zip, whatever format Quick Compress was last used with on this Mac
+        let app = launchApp(arguments: ["-DropWindow", "1", "-dropWindowFormat", "zip"])
         // by identifier, not by window title: the window is titled after the app,
         // exactly like the archive windows
         let dropArea = app.descendants(matching: .any)["quickCompress.dropArea"].firstMatch
@@ -388,7 +391,7 @@ final class MacPackerUITests: XCTestCase {
 
         let target = dropArea.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            .press(forDuration: 1, thenDragTo: target)
+            .click(forDuration: 1, thenDragTo: target)
 
         confirmAccessPanel(app, button: "Grant Access")
 
@@ -442,7 +445,8 @@ final class MacPackerUITests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: dir) }
         try "dropped".write(to: dir.appendingPathComponent("dropped.txt"), atomically: true, encoding: .utf8)
 
-        let app = launchApp(arguments: ["-DropWindow", "1", "-dropWindowOptionsExpanded", "YES"])
+        let app = launchApp(arguments: ["-DropWindow", "1", "-dropWindowOptionsExpanded", "YES",
+                                        "-dropWindowFormat", "zip"])
         let dropArea = app.descendants(matching: .any)["quickCompress.dropArea"].firstMatch
         XCTAssertTrue(dropArea.waitForExistence(timeout: 15), "the drop window did not open")
         let password = app.secureTextFields["saveOptions.password"].firstMatch
@@ -459,7 +463,7 @@ final class MacPackerUITests: XCTestCase {
         XCTAssertTrue(source.waitForExistence(timeout: 15), "Finder does not show the file to drag")
         let drop = {
             source.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-                .press(forDuration: 1, thenDragTo: dropArea.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
+                .click(forDuration: 1, thenDragTo: dropArea.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)))
         }
 
         drop()
