@@ -520,8 +520,7 @@
       "rules": [
         { "policy": "any", "tests": [
           {"type": "signature", "bytes": "50 4B 03 04", "offset": 0},
-          {"type": "signature", "bytes": "50 4B 03 06", "offset": 0},
-          {"type": "signature", "bytes": "50 4B 03 08", "offset": 0}
+          {"type": "signature", "bytes": "50 4B 05 06", "offset": 0}
           ] }
       ],
       "engines": [
@@ -540,8 +539,7 @@
       "rules": [
         { "policy": "any", "tests": [
           {"type": "signature", "bytes": "50 4B 03 04", "offset": 0},
-          {"type": "signature", "bytes": "50 4B 03 06", "offset": 0},
-          {"type": "signature", "bytes": "50 4B 03 08", "offset": 0}
+          {"type": "signature", "bytes": "50 4B 05 06", "offset": 0}
           ] }
       ],
       "engines": [
