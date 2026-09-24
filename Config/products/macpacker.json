@@ -404,6 +404,29 @@
             "issues": [
                 "267"
             ]
+          },
+          {
+            "type": "lang",
+            "title": {
+                "en": "Language update",
+                "zh-Hans": "语言更新",
+                "fr": "Mise à jour des traductions",
+                "de": "Sprachaktualisierung",
+                "it": "Aggiornamento delle traduzioni",
+                "ja": "翻訳の更新",
+                "fa": "به‌روزرسانی ترجمه‌ها",
+                "pl": "Aktualizacja tłumaczeń",
+                "pt-BR": "Atualização de traduções",
+                "ru": "Обновление переводов",
+                "uk": "Оновлення перекладів",
+                "es-MX": "Actualización de traducciones",
+                "ko": "번역 업데이트",
+                "nl": "Taalupdate",
+                "tr": "Çeviri güncellemesi"
+            },
+            "issues": [
+                "270"
+            ]
           }
         ]
       },
