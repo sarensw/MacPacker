@@ -41,6 +41,12 @@
             "value" : "Çıkarma işlemi hâlâ sürüyor"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "An extraction is still in progress"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -131,6 +137,12 @@
             "value" : "Все одно завершити"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quit Anyway"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -179,6 +191,12 @@
             "value" : "Şimdi çıkarsanız çıkarma işlemi durdurulur ve hedefte tamamlanmamış dosyalar kalabilir."
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quitting now stops the extraction and may leave incomplete files at the destination."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -224,6 +242,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seçilen öğeleri arşivden sil"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Delete the selected items from the archive"
           }
         },
         "zh-Hans" : {
@@ -316,6 +340,12 @@
             "value" : "Змінено"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modified"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -404,6 +434,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "На рівень вгору"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enclosing Folder"
           }
         },
         "zh-Hans" : {
@@ -496,6 +532,12 @@
             "value" : "Відкрити в новому вікні"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Open in New Window"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -572,6 +614,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Швидкий перегляд"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quick Look"
           }
         },
         "zh-Hans" : {
@@ -664,6 +712,12 @@
             "value" : "Перетягніть сюди, щоб стиснути"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Drop here to compress"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -752,6 +806,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Стиснути тут"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Compress here"
           }
         },
         "zh-Hans" : {
@@ -844,6 +904,12 @@
             "value" : "Поверх інших вікон"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Keep on Top"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -889,6 +955,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Arşive dosya veya klasör ekle"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Add files or folders to the archive"
           }
         },
         "zh-Hans" : {
@@ -981,6 +1053,12 @@
             "value" : "Інформація про архів"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Archive info"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -998,6 +1076,12 @@
             "state" : "translated",
             "value" : "Automatic"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Automatic"
+          }
         }
       }
     },
@@ -1010,6 +1094,12 @@
             "state" : "translated",
             "value" : "Change the password under Options…"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Change the password under Options…"
+          }
         }
       }
     },
@@ -1020,6 +1110,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "A zip password can only use letters A–Z, digits, spaces and common symbols. 7z takes any password."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "A zip password can only use letters A–Z, digits, spaces and common symbols. 7z takes any password."
           }
         }
@@ -1065,6 +1161,12 @@
             "value" : "Yeni Arşiv Oluştur"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Create a new archive"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1080,6 +1182,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Choose where to extract"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Choose where to extract"
           }
         }
@@ -1125,6 +1233,12 @@
             "value" : "%@ kaldı"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ left"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1142,6 +1256,12 @@
             "state" : "translated",
             "value" : "With AES-256, a zip password can be at most %lld characters long."
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "With AES-256, a zip password can be at most %lld characters long."
+          }
         }
       }
     },
@@ -1152,6 +1272,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "ZipCrypto is easily broken. Pick it only for tools that cannot open AES-256."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "ZipCrypto is easily broken. Pick it only for tools that cannot open AES-256."
           }
         }
@@ -1197,6 +1323,12 @@
             "value" : "arşiv"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "the archive"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1212,6 +1344,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Dictionary size"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Dictionary size"
           }
         }
@@ -1299,6 +1437,12 @@
             "value" : "Не зберігати"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Don't Save"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1316,6 +1460,12 @@
             "state" : "translated",
             "value" : "Don't split"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Don't split"
+          }
         }
       }
     },
@@ -1326,6 +1476,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Encrypt file names"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Encrypt file names"
           }
         }
@@ -1340,6 +1496,12 @@
             "state" : "translated",
             "value" : "File names stay readable in a zip archive. 7z can encrypt them too."
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "File names stay readable in a zip archive. 7z can encrypt them too."
+          }
         }
       }
     },
@@ -1350,6 +1512,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Encryption method"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Encryption method"
           }
         }
@@ -1364,6 +1532,12 @@
             "state" : "translated",
             "value" : "Exclude .DS_Store files"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Exclude .DS_Store files"
+          }
         }
       }
     },
@@ -1374,6 +1548,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Format"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Format"
           }
         }
@@ -1461,6 +1641,12 @@
             "value" : "Швидко"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fast"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1476,6 +1662,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Fastest"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Fastest"
           }
         }
@@ -1567,6 +1759,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Максимальне"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Maximum"
           }
         },
         "zh-Hans" : {
@@ -1665,6 +1863,12 @@
             "value" : "Звичайне"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Normal"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1761,6 +1965,12 @@
             "value" : "Без стиснення"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Store"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1778,6 +1988,12 @@
             "state" : "translated",
             "value" : "Ultra"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ultra"
+          }
         }
       }
     },
@@ -1788,6 +2004,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Method"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Method"
           }
         }
@@ -1802,6 +2024,12 @@
             "state" : "translated",
             "value" : "Non-solid"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non-solid"
+          }
         }
       }
     },
@@ -1812,6 +2040,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Verify"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Verify"
           }
         }
@@ -1826,6 +2060,12 @@
             "state" : "translated",
             "value" : "Solid"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Solid"
+          }
         }
       }
     },
@@ -1838,6 +2078,12 @@
             "state" : "translated",
             "value" : "Solid block size"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Solid block size"
+          }
         }
       }
     },
@@ -1848,6 +2094,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Split into volumes"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Split into volumes"
           }
         }
@@ -1891,6 +2143,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "“%@” üzerinde yaptığınız değişiklikleri kaydetmek istiyor musunuz?"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Do you want to save the changes you made to “%@”?"
           }
         },
         "zh-Hans" : {
@@ -1941,6 +2199,12 @@
             "value" : "Kaydetmezseniz değişiklikleriniz kaybolacak."
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Your changes will be lost if you don’t save them."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1956,6 +2220,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Word size"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Word size"
           }
         }
@@ -2043,6 +2313,12 @@
             "value" : "Дата модифікації"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Date Modified"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2125,6 +2401,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Назва"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Name"
           }
         },
         "zh-Hans" : {
@@ -2211,6 +2493,12 @@
             "value" : "Запакований розмір"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Packed Size"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2293,6 +2581,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Дозволи"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Permissions"
           }
         },
         "zh-Hans" : {
@@ -2379,6 +2673,12 @@
             "value" : "Розмір"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Size"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2463,6 +2763,12 @@
             "value" : "Про %@"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "About %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2539,6 +2845,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Подяки"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Acknowledgements"
           }
         },
         "zh-Hans" : {
@@ -2625,6 +2937,12 @@
             "value" : "Додати"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Add"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2640,6 +2958,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Add to Archive…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Add to Archive…"
           }
         }
@@ -2719,6 +3043,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Додати в «%@»"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Add to “%@”"
           }
         },
         "zh-Hans" : {
@@ -2811,6 +3141,12 @@
             "value" : "Назад"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Back"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2901,6 +3237,12 @@
             "value" : "внизу"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bottom"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2955,6 +3297,12 @@
             "value" : "Vazgeç"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cancel"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3004,10 +3352,28 @@
             "value" : "Temizle"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clear"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "清除"
+          }
+        }
+      }
+    },
+    "commonCompressContentsTo" : {
+      "comment" : "Finder context menu: compress what is inside the selected folder, without the folder itself, into a zip next to it",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compress Contents of \"%@\""
           }
         }
       }
@@ -3020,6 +3386,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compression"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Compression"
+          }
+        }
+      }
+    },
+    "commonCompressTo" : {
+      "comment" : "Finder context menu: compress the selection directly to the named archive in the current directory",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compress to \"%@\""
           }
         }
       }
@@ -3099,6 +3483,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Продовжити"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Continue"
           }
         },
         "zh-Hans" : {
@@ -3191,6 +3581,12 @@
             "value" : "Видалити"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Delete"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3276,6 +3672,12 @@
             "value" : "вимкнено"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Disabled"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3293,6 +3695,12 @@
             "state" : "translated",
             "value" : "Done"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Done"
+          }
         }
       }
     },
@@ -3304,6 +3712,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Enabled"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Enabled"
           }
         }
@@ -3389,6 +3803,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "витягти"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extract"
           }
         },
         "zh-Hans" : {
@@ -3481,6 +3901,12 @@
             "value" : "Розпакувати архів"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extract archive"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3496,6 +3922,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Extract Here"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Extract Here"
           }
         }
@@ -3539,6 +3971,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Çıkarılıyor"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extracting"
           }
         },
         "zh-Hans" : {
@@ -3631,10 +4069,28 @@
             "value" : "Розпакувати вибране"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extract selected"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "解压选中项"
+          }
+        }
+      }
+    },
+    "commonExtractTo" : {
+      "comment" : "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extract to \"%@\""
           }
         }
       }
@@ -3721,6 +4177,12 @@
             "value" : "Пошук"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Find"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3761,6 +4223,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Дать доступ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Grant Access"
           }
         },
         "zh-Hans" : {
@@ -3809,6 +4277,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Çeviriye Katkıda Bulun"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Help with translation"
           }
         },
         "zh-Hans" : {
@@ -3899,6 +4373,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Правова інформація"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Legal Notice"
           }
         },
         "zh-Hans" : {
@@ -4142,6 +4622,18 @@
             }
           }
         },
+        "vi" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld items"
+                }
+              }
+            }
+          }
+        },
         "zh-Hans" : {
           "variations" : {
             "plural" : {
@@ -4239,6 +4731,12 @@
             "value" : "Докладніше…"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Learn more…"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4323,6 +4821,12 @@
             "value" : "Більше"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "More"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4375,6 +4879,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yeni Arşiv"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "New Archive"
           }
         },
         "zh-Hans" : {
@@ -4447,6 +4957,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нове вікно %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "New %@ Window"
           }
         },
         "zh-Hans" : {
@@ -4539,10 +5055,28 @@
             "value" : "Не призначено"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "None"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "无"
+          }
+        }
+      }
+    },
+    "commonNothingSelected" : {
+      "comment" : "Disabled Finder toolbar menu item shown when no files are selected",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing selected"
           }
         }
       }
@@ -4632,6 +5166,12 @@
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "OK"
           }
         },
@@ -4731,6 +5271,12 @@
             "value" : "Відкрити"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Open"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4747,6 +5293,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Open archive"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Open archive"
+          }
+        }
+      }
+    },
+    "commonOpenArchives" : {
+      "comment" : "Opens the archive in an archive window",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open %lld Archive"
           }
         }
       }
@@ -4833,6 +5397,12 @@
             "value" : "Параметри"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Options"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4848,6 +5418,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Password"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Password"
           }
         }
@@ -4927,6 +5503,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "«%@» захищено паролем."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "“%@” is password protected."
           }
         },
         "zh-Hans" : {
@@ -5011,6 +5593,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Попередній перегляд"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preview"
           }
         },
         "zh-Hans" : {
@@ -5103,6 +5691,12 @@
             "value" : "Приватність"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Privacy"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5145,6 +5739,12 @@
             "value" : "Быстрое сжатие"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quick Compress"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5185,6 +5785,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Окно быстрого сжатия"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quick Compress Window"
           }
         },
         "zh-Hans" : {
@@ -5263,6 +5869,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Оновити"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Refresh"
           }
         },
         "zh-Hans" : {
@@ -5347,6 +5959,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "зберегти"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "save"
           }
         },
         "zh-Hans" : {
@@ -5437,6 +6055,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Зберегти як…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Save As…"
           }
         },
         "zh-Hans" : {
@@ -5680,6 +6304,18 @@
             }
           }
         },
+        "vi" : {
+          "variations" : {
+            "plural" : {
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld selected"
+                }
+              }
+            }
+          }
+        },
         "zh-Hans" : {
           "variations" : {
             "plural" : {
@@ -5770,6 +6406,12 @@
             "value" : "Налаштування..."
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Settings..."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5853,6 +6495,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Почати"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Start"
           }
         },
         "zh-Hans" : {
@@ -5945,6 +6593,12 @@
             "value" : "Умови та положення"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terms & Conditions"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6035,6 +6689,12 @@
             "value" : "Зверху"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Top"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6117,6 +6777,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Веб-сайт"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Website"
           }
         },
         "zh-Hans" : {
@@ -6203,6 +6869,12 @@
             "value" : "Що нового"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "What's New"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6286,6 +6958,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Зв’яжіться з нами"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Contact us"
           }
         },
         "zh-Hans" : {
@@ -6378,6 +7056,12 @@
             "value" : "... повідомити про помилку"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... raise a Bug"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6460,6 +7144,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "... надіслати листа на адресу %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... send a mail to %@"
           }
         },
         "zh-Hans" : {
@@ -6552,6 +7242,12 @@
             "value" : "... запросити функцію"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... request a Feature"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6642,6 +7338,12 @@
             "value" : "Перейти сюди, щоб ..."
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Go here to ..."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6682,6 +7384,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ошибка экспорта"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Export failed"
           }
         },
         "zh-Hans" : {
@@ -6733,6 +7441,12 @@
             "value" : "Arşiv açılamadı"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Could not open archive"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6781,6 +7495,12 @@
             "value" : "Bu parola yanlış. Yeniden deneyin."
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "That password is incorrect. Try again."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6798,6 +7518,12 @@
             "state" : "translated",
             "value" : "The passwords do not match."
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "The passwords do not match."
+          }
         }
       }
     },
@@ -6808,6 +7534,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Could not save archive"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Could not save archive"
           }
         }
@@ -6845,6 +7577,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отменено — нет доступа к этой папке."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cancelled - no access to that folder"
           }
         },
         "zh-Hans" : {
@@ -6937,6 +7675,12 @@
             "value" : "Залишити відгук в App Store"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Leave a review in the App Store"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7010,6 +7754,12 @@
             "value" : "Відслідкувати"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Follow"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7081,6 +7831,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Додати відгук"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Review"
           }
         },
         "zh-Hans" : {
@@ -7167,6 +7923,12 @@
             "value" : "Надіслати посмішку"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Send a smile"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7237,6 +7999,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Додати до обраного"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Star"
           }
         },
         "zh-Hans" : {
@@ -7323,6 +8091,12 @@
             "value" : "Відмітити репозиторій на GitHub"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Star the repository on GitHub"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7405,6 +8179,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Підтримати розробку..."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Support the development..."
           }
         },
         "zh-Hans" : {
@@ -7496,6 +8276,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Перекласти"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Translate"
           }
         },
         "zh-Hans" : {
@@ -7594,6 +8380,12 @@
             "value" : "Посібники та документація"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Guides & documentation"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7643,6 +8435,12 @@
             "value" : "%@ kullanımını öğrenin"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Learn to use %@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7689,6 +8487,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Son kullanılan arşiv yok."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No recent archives."
           }
         },
         "zh-Hans" : {
@@ -7781,6 +8585,12 @@
             "value" : "Недавні"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Recent"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7871,6 +8681,12 @@
             "value" : "Примітки до випуску"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Release Notes"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7911,6 +8727,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%(appName)@ нужен доступ к %(path)@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%(appName)@ needs access to %(path)@"
           }
         },
         "zh-Hans" : {
@@ -7998,6 +8820,12 @@
             "value" : "Про пристрій"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "About"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8013,6 +8841,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Access granted"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Access granted"
           }
         }
@@ -8106,6 +8940,12 @@
             "value" : "Додаткові"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Advanced"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8184,6 +9024,12 @@
             "value" : "Формати архівів"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Archive Formats"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8230,6 +9076,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Güncellemeleri otomatik olarak denetle"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Automatically check for updates"
           }
         },
         "zh-Hans" : {
@@ -8281,6 +9133,12 @@
             "value" : "Otomatik altyapı seçimi"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Automatic engine selection"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8327,6 +9185,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MacPacker her arşiv için uygun altyapıyı seçer; ilk altyapı arşivi okuyamazsa başka birini dener. Altyapıları kendiniz seçmek için bu seçeneği kapatın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself."
           }
         },
         "zh-Hans" : {
@@ -8411,6 +9275,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Позиція рядка навігації:"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Breadcrumb position:"
           }
         },
         "zh-Hans" : {
@@ -8503,6 +9373,12 @@
             "value" : "Кеш:"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cache:"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8591,6 +9467,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Очистити кеш"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clear cache"
           }
         },
         "zh-Hans" : {
@@ -8683,6 +9565,12 @@
             "value" : "Очистити весь вміст кешу"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clears all content from the cache"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8773,6 +9661,12 @@
             "value" : "Стовпці:"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Columns:"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8790,6 +9684,12 @@
             "state" : "translated",
             "value" : "Compress each item separately"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Compress each item separately"
+          }
         }
       }
     },
@@ -8800,6 +9700,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Compress a folder’s contents"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Compress a folder’s contents"
           }
         }
@@ -8814,6 +9720,12 @@
             "state" : "translated",
             "value" : "Compress to 7z"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Compress to 7z"
+          }
         }
       }
     },
@@ -8824,6 +9736,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Compress to zip"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Compress to zip"
           }
         }
@@ -8838,6 +9756,12 @@
             "state" : "translated",
             "value" : "Compress to zip with date and time"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Compress to zip with date and time"
+          }
         }
       }
     },
@@ -8848,6 +9772,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Context menu:"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Context menu:"
           }
         }
@@ -8891,6 +9821,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MacPacker’ı bir dosya türü için varsayılan uygulama yapmak üzere dosyayı sağ tıklayın → ‘Bilgi Ver’i seçin → ‘Birlikte aç:’ bölümünde MacPacker’ı seçin → aynı türdeki tüm arşivlere uygulamak için ‘Tümünü Değiştir…’i tıklayın."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives."
           }
         },
         "zh-Hans" : {
@@ -8971,6 +9907,12 @@
             "value" : "Стан за замовчуванням та налаштування рушія"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Default status & engine settings"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8986,6 +9928,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Edits archives, not only opens them"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Edits archives, not only opens them"
           }
         }
@@ -9061,6 +10009,12 @@
             "value" : "Рушій"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Engine"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9125,6 +10079,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MacPacker включає кілька архівних рушіїв. Рекомендується використовувати рушій за замовчуванням; альтернативні рушії можуть допомогти у вирішенні проблем, пов'язаних із конкретними форматами. Майте на увазі, що підтримка движків залежить від формату."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format."
           }
         },
         "zh-Hans" : {
@@ -9211,6 +10171,12 @@
             "value" : "Експортувати журнали"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Export Logs"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9289,6 +10255,12 @@
             "value" : "Розширення"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extensions"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9306,6 +10278,12 @@
             "state" : "translated",
             "value" : "External volumes:"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "External volumes:"
+          }
         }
       }
     },
@@ -9316,6 +10294,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Covers USB drives, memory cards and network shares, which appear in /Volumes."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Covers USB drives, memory cards and network shares, which appear in /Volumes."
           }
         }
@@ -9330,6 +10314,12 @@
             "state" : "translated",
             "value" : "Extract to a chosen folder…"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Extract to a chosen folder…"
+          }
         }
       }
     },
@@ -9340,6 +10330,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Extract to folder"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Extract to folder"
           }
         }
@@ -9421,6 +10417,12 @@
             "value" : "Формат файлу"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "File Format"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9499,6 +10501,12 @@
             "value" : "Розширення менеджера файлів"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "File provider extension"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9514,6 +10522,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "macOS lets %@ open and write files only where you allow it, which is why a folder-access panel shows up now and then. A grant covers everything inside the folder you pick, so allowing these two puts an end to the asking."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "macOS lets %@ open and write files only where you allow it, which is why a folder-access panel shows up now and then. A grant covers everything inside the folder you pick, so allowing these two puts an end to the asking."
           }
         }
@@ -9601,6 +10615,12 @@
             "value" : "Загальні"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "General"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9618,6 +10638,12 @@
             "state" : "translated",
             "value" : "Home folder:"
           }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Home folder:"
+          }
         }
       }
     },
@@ -9628,6 +10654,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Covers the Desktop, Documents, Downloads and everything else in your home folder."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Covers the Desktop, Documents, Downloads and everything else in your home folder."
           }
         }
@@ -9703,6 +10735,12 @@
             "value" : "Як встановити %@ за замовчуванням?"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "How to set %@ as default?"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9750,6 +10788,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Beta güncellemelerini dahil et"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Include Beta updates"
           }
         },
         "zh-Hans" : {
@@ -9828,6 +10872,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Інформація про рушії"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Info on Engines"
           }
         },
         "zh-Hans" : {
@@ -9914,6 +10964,12 @@
             "value" : "Журнали:"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Logs:"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9960,6 +11016,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MacPacker’ı Varsayılan Uygulama Yapma"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Set MacPacker as the default app"
           }
         },
         "zh-Hans" : {
@@ -10040,6 +11102,12 @@
             "value" : "Керувати в Налаштуваннях системи"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Manage in System Settings"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10055,6 +11123,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Nest in a submenu:"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Nest in a submenu:"
           }
         }
@@ -10136,6 +11210,12 @@
             "value" : "Відкрити каталог кешу"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Open cache directory"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10184,6 +11264,12 @@
             "value" : "Son pencere kapatıldığında uygulamadan çık:"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quit on last window closed:"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10199,6 +11285,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Remember recent archives:"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Remember recent archives:"
           }
         }
@@ -10278,6 +11370,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Показати папку налаштувань програми"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Show application support folder"
           }
         },
         "zh-Hans" : {
@@ -10370,6 +11468,12 @@
             "value" : "Показувати на смузі меню:"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Show in Menu Bar:"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10412,6 +11516,12 @@
             "value" : "Показать запись родительской папки (“..”)"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Show parent folder entry (“..”)"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10427,6 +11537,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Smart extraction:"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Smart extraction:"
           }
         }
@@ -10508,6 +11624,12 @@
             "value" : "Перевірити наявність оновлень…"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Check for Updates…"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10555,6 +11677,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Değişiklik Günlüğü"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Changelog"
           }
         },
         "zh-Hans" : {
@@ -10605,6 +11733,12 @@
             "value" : "Sırada Ne Var"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Coming next"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10651,6 +11785,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "❤️ Bu projeye katkıda bulunan, çeviri yapan ve sponsor olan herkese çok teşekkürler!"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
           }
         },
         "zh-Hans" : {
@@ -10735,6 +11875,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ласкаво просимо до %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Welcome to %@"
           }
         },
         "zh-Hans" : {

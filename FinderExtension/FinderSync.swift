@@ -124,7 +124,7 @@ class FinderSync: FIFinderSync {
             if menuKind == .toolbarItemMenu {
                 let menu = NSMenu(title: "??")
                 let item = NSMenuItem(
-                    title: String(localized: "Nothing selected", comment: "Disabled Finder toolbar menu item shown when no files are selected"),
+                    title: String(localized: .commonNothingSelected),
                     action: nil,
                     keyEquivalent: ""
                 )
@@ -193,7 +193,7 @@ class FinderSync: FIFinderSync {
         switch item {
         case .open:
             let count = fileItems.count
-            return String(localized: "Open \(count) Archive", comment: "Opens the archive in an archive window")
+            return String(localized: .commonOpenArchives(count))
 
         case .extractHere:
             return String(localized: .commonExtractHere)
@@ -214,13 +214,13 @@ class FinderSync: FIFinderSync {
             } else if fileItems.count > 1 {
                 folderName = "*/"
             }
-            return String(localized: "Extract to \"\(folderName)\"", comment: "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to.")
+            return String(localized: .commonExtractTo(folderName))
 
         case .addToArchive:
             return String(localized: .commonAddToArchive)
 
         case .extractToChosenFolder:
-            return String(localized: "Extract to…", comment: "Finder context menu: ask where to extract the selected archives, then extract them there")
+            return String(localized: .settingsExtractToChosenFolder)
 
         case .compressToZip, .compressToDatedZip, .compressTo7z:
             let ext = item.archiveExtension ?? "zip"
@@ -228,14 +228,14 @@ class FinderSync: FIFinderSync {
             if item.isDated {
                 name = FinderMenuItem.datedName(name, extension: ext, at: Self.menuShownAt)
             }
-            return String(localized: "Compress to \"\(name)\"", comment: "Finder context menu: compress the selection directly to the named archive in the current directory")
+            return String(localized: .commonCompressTo(name))
 
         case .compressEachSeparately:
-            return String(localized: "Compress Each Item Separately", comment: "Finder context menu: compress every selected item into its own zip next to it")
+            return String(localized: .settingsCompressEachItemSeparately)
 
         case .compressFolderContents:
             let folder = allItems.first?.lastPathComponent ?? ""
-            return String(localized: "Compress Contents of \"\(folder)\"", comment: "Finder context menu: compress what is inside the selected folder, without the folder itself, into a zip next to it")
+            return String(localized: .commonCompressContentsTo(folder))
         }
     }
 

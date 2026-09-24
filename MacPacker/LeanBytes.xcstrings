@@ -28,6 +28,12 @@
             "value" : "Yeni Finder pencereleri açmadan dosyaları favori klasörlerinize ve alt klasörlerine kopyalayın veya taşıyın."
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37,10 +43,26 @@
       }
     },
     "Do more with your voice" : {
-      "comment" : "Short description of the FlowMoose app"
+      "comment" : "Short description of the FlowMoose app",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Do more with your voice"
+          }
+        }
+      }
     },
     "I made the App Store screenshots with this tool." : {
-      "comment" : "Description to the FrameBeast app"
+      "comment" : "Description to the FrameBeast app",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "I made the App Store screenshots with this tool."
+          }
+        }
+      }
     },
     "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool." : {
       "comment" : "Explains that supporting the listed LeanBytes apps supports MacPacker",
@@ -69,6 +91,12 @@
             "value" : "MacPacker, LeanBytes bünyesindeki çalışmalarım sayesinde desteklenmektedir. Aşağıdaki uygulamaları destekleyerek bu açık kaynak aracına doğrudan katkıda bulunabilirsiniz."
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -78,7 +106,15 @@
       }
     },
     "MacPackers app store & social media assets are made with this app" : {
-      "comment" : "Short description of the FrameBeast app"
+      "comment" : "Short description of the FrameBeast app",
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MacPackers app store & social media assets are made with this app"
+          }
+        }
+      }
     },
     "More Apps" : {
       "comment" : "Hint to the user that the submenu contains links for more apps that they might like.",
@@ -155,6 +191,12 @@
             "value" : "Більше програм"
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "More Apps"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -190,6 +232,12 @@
             "value" : "Dosyalarınızı hızla düzenleyin."
           }
         },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Organize files. Fast."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -223,6 +271,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yapay zekâ sohbetleri çağında bilek ve kol yorgunluğunu azaltan Sesten Metne özelliği. Çevrimdışı çalışır; veriler yalnızca aygıtınızda kalır."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only."
           }
         },
         "zh-Hans" : {
