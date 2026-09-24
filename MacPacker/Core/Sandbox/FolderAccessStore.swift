@@ -127,7 +127,7 @@ final class FolderAccessStore {
             panel.allowsMultipleSelection = false
             panel.directoryURL = seed
             panel.prompt = String(localized: .commonGrantAccess)
-            panel.message = String(localized: .sandboxAccessNeededMessage(appName: Constants.appName, path: seed.lastPathComponent))
+            panel.message = String(localized: .sandboxAccessNeededMessage(Constants.appName, seed.lastPathComponent))
             panel.level = .floating
             NSApp.activate(ignoringOtherApps: true)
             panel.begin { response in
