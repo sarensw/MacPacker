@@ -89,8 +89,8 @@ struct FormatSettingsView: View {
     func showInfoToSetAsDefault() {
         let alert = NSAlert()
         alert.icon = NSImage(named: "AppIcon")
-        alert.messageText = String(localized: "Set MacPacker as the default app", comment: "Title of the alert that explains how to set MacPacker as the default app for archive files.")
-        alert.informativeText = String(localized: "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives.", comment: "Instructions in the alert explaining how to set MacPacker as the default app for archive files in Finder.")
+        alert.messageText = String(localized: .settingsMacpackerAsDefault)
+        alert.informativeText = String(localized: .settingsDefaultAppHint)
         alert.alertStyle = .informational
         alert.runModal()
     }
@@ -116,8 +116,8 @@ struct FormatSettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
             Toggle(isOn: automaticBinding) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Automatic engine selection")
-                    Text("MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself.", comment: "Explains the automatic engine selection toggle in the archive format settings")
+                    Text(.settingsAutomaticEngineSelection)
+                    Text(.settingsAutomaticEngineSelectionHint)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -127,16 +127,16 @@ struct FormatSettingsView: View {
 
             Divider()
 
-            Text("Default status & engine settings:")
+            Text(.settingsDefaultStatusEngineSettings)
 
             Table(rows, selection: $selection) {
                 TableColumn(String("")) {
                     defaultToggle(identifier: $0.id, defaultOpen: $0.defaultOpen)
                 }
                 .width(20)
-                TableColumn("File Format", value: \.name)
-                TableColumn("Extensions", value: \.extensions)
-                TableColumn("Engine") {
+                TableColumn(.settingsFileFormat, value: \.name)
+                TableColumn(.settingsExtensions, value: \.extensions)
+                TableColumn(.settingsEngine) {
                     supportedPicker(identifier: $0.id, selectedEngine: $0.selectedEngine,
                                     supportedEngines: $0.engines, editors: $0.editors)
                 }
@@ -147,14 +147,14 @@ struct FormatSettingsView: View {
                 Button {
                     refreshFormatConfig()
                 } label: {
-                    Label("Refresh", systemImage: "arrow.clockwise")
+                    Label(.commonRefresh, systemImage: "arrow.clockwise")
                 }
                 
                 Button {
                     showInfoToSetAsDefault()
                 } label: {
                     Label {
-                        Text("How to set \(Bundle.main.displayName) as default?")
+                        Text(.settingsHowToSetAsDefault(Bundle.main.displayName))
                     } icon: {
                         Image(systemName: "info.circle")
                     }
@@ -166,7 +166,7 @@ struct FormatSettingsView: View {
                     showEngineInfo.toggle()
                 } label: {
                     Label {
-                        Text("Info on Engines")
+                        Text(.settingsInfoOnEngines)
                     } icon: {
                         Image(systemName: "info.circle")
                             .foregroundStyle(.orange)
@@ -176,7 +176,7 @@ struct FormatSettingsView: View {
                 .buttonStyle(.borderless)
                 .popover(isPresented: $showEngineInfo) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format.", comment: "Help text to let users understand what the engine selection for each archive format is about")
+                        Text(.settingsEngineChoiceHint)
 
                         Divider()
 
@@ -194,7 +194,7 @@ struct FormatSettingsView: View {
                         Divider()
 
                         Label {
-                            Text("Edits archives, not only opens them", comment: "Legend in the engine info popover: the pencil next to an engine in the format table means that engine can also change archives of that format, where the others only open and extract them")
+                            Text(.settingsEditsArchivesHint)
                         } icon: {
                             Image(systemName: "pencil")
                         }

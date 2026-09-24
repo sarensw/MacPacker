@@ -20,7 +20,7 @@ struct SendSmileView: View {
                 
                 openURL(gitHubURL)
             } label: {
-                Text("Star the repository on GitHub", comment: "Opens the GitHub page of the MacPacker repository for the user to star it.")
+                Text(.feedbackStarRepo)
             }
             
             #if STORE
@@ -31,12 +31,12 @@ struct SendSmileView: View {
 
                 openURL(writeReviewURL)
             } label: {
-                Text("Leave a review in the App Store", comment: "Opens the App Store review page for the MacPacker app for the user to write a review.")
+                Text(.feedbackAppStoreReview)
             }
             #endif
         } label: {
             Label {
-                Text("Send a smile", comment: "This is the menu in the 'More' menu of the archive window to give customers a hint on how to support the developer. The user has the option to open the MacPacker repository on GitHub or leave a review in the App Store.")
+                Text(.feedbackSendSmile)
             } icon: {
                 Image(systemName: "face.smiling")
             }

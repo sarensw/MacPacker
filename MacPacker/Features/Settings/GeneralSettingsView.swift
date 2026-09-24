@@ -24,21 +24,21 @@ struct GeneralSettingsView: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
-                Text("Columns:", comment: "Let's the user choose to show or hide columns in the archive window")
+                Text(.settingsColumns)
                     .frame(width: 200, alignment: .trailing)
                 
                 VStack(alignment: .leading) {
                     Toggle(isOn: $showCompressedSize) {
-                        Text("Packed Size", comment: "Column that shows the packed size of the archive files")
+                        Text(.columnPackedSize)
                     }
                     Toggle(isOn: $showUncompressedSize) {
-                        Text("Size", comment: "Column that shows the unpacked size of the archive files")
+                        Text(.columnSize)
                     }
                     Toggle(isOn: $showModificationDate) {
-                        Text("Date Modified", comment: "Column that shows the date the file was modified")
+                        Text(.columnDateModified)
                     }
                     Toggle(isOn: $showPermissions) {
-                        Text("Permissions", comment: "Column that shows the file permissions")
+                        Text(.columnPermissions)
                     }
                 }
                 .padding(.leading, 8)
@@ -47,7 +47,7 @@ struct GeneralSettingsView: View {
             }
 
             HStack(alignment: .top) {
-                Text("Show parent folder entry (“..”):", comment: "Setting that shows or hides the \"..\" row at the top of the archive window that leads back to the containing folder")
+                Text(.settingsShowParentFolderEntry)
                     .frame(width: 200, alignment: .trailing)
 
                 HStack {
@@ -60,7 +60,7 @@ struct GeneralSettingsView: View {
             Divider()
             
             HStack(alignment: .top) {
-                Text("Breadcrumb position:", comment: "Allows the user to change the breadcrumb position to either top or bottom of the archive window")
+                Text(.settingsBreadcrumbPosition)
                     .frame(width: 200, alignment: .trailing)
                 
                 HStack {
@@ -75,7 +75,7 @@ struct GeneralSettingsView: View {
             }
             
             HStack(alignment: .top) {
-                Text("Quit on last window closed:", comment: "Quit the app when the last archive window is closed")
+                Text(.settingsQuitOnLastWindowClosed)
                     .frame(width: 200, alignment: .trailing)
                 
                 HStack {
@@ -86,7 +86,7 @@ struct GeneralSettingsView: View {
             }
 
             HStack(alignment: .top) {
-                Text("Show in menu bar:", comment: "Setting that adds a MacPacker icon to the menu bar, which opens the Quick Compress window")
+                Text(.settingsShowInMenuBar)
                     .frame(width: 200, alignment: .trailing)
 
                 HStack {
@@ -97,7 +97,7 @@ struct GeneralSettingsView: View {
             }
 
             HStack(alignment: .top) {
-                Text("Remember recent archives:", comment: "Setting that keeps a list of the archives that were opened, shown under Recent on the start page")
+                Text(.settingsRememberRecentArchives)
                     .frame(width: 200, alignment: .trailing)
 
                 HStack {
@@ -110,7 +110,7 @@ struct GeneralSettingsView: View {
             Divider()
 
             HStack(alignment: .top) {
-                Text("Smart extraction:", comment: "When extracting an archive, automatically decide whether to extract into a folder named after the archive. Files are extracted into that folder unless the archive already has a single top-level folder.")
+                Text(.settingsSmartExtraction)
                     .frame(width: 200, alignment: .trailing)
 
                 HStack {
@@ -133,11 +133,11 @@ struct GeneralSettingsView: View {
     private func breadcrumbPositionLabel(_ position: BreadcrumbPosition) -> some View {
         switch position {
         case .top:
-            Text("Top", comment: "Breadcrumb position at the top of the archive window")
+            Text(.commonTop)
         case .bottom:
-            Text("Bottom", comment: "Breadcrumb position at the bottom of the archive window")
+            Text(.commonBottom)
         case .none:
-            Text("None", comment: "Hide the breadcrumb in the archive window")
+            Text(.commonNone)
         }
     }
 }

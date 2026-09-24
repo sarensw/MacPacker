@@ -111,13 +111,13 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
               archiveState.hasPendingChanges,
               !archiveState.isSaving else { return true }
 
-        let name = archiveState.name ?? String(localized: "the archive", comment: "Fallback name in the save-on-close prompt when the archive has no file name yet")
+        let name = archiveState.name ?? String(localized: .archiveSaveDefaultName)
         let alert = NSAlert()
-        alert.messageText = String(localized: "Do you want to save the changes you made to “\(name)”?", comment: "Title of the prompt shown when closing an archive window with unsaved changes")
-        alert.informativeText = String(localized: "Your changes will be lost if you don’t save them.", comment: "Explanation in the save-on-close prompt")
-        alert.addButton(withTitle: String(localized: "Save", comment: "Button in the save-on-close prompt that saves the archive"))
-        alert.addButton(withTitle: String(localized: "Cancel", comment: "Button in the save-on-close prompt that keeps the window open"))
-        alert.addButton(withTitle: String(localized: "Don’t Save", comment: "Button in the save-on-close prompt that discards the changes"))
+        alert.messageText = String(localized: .archiveSaveUnsavedChangesPrompt(name))
+        alert.informativeText = String(localized: .archiveSaveUnsavedChangesWarning)
+        alert.addButton(withTitle: String(localized: .commonSave))
+        alert.addButton(withTitle: String(localized: .commonCancel))
+        alert.addButton(withTitle: String(localized: .archiveSaveDiscardChanges))
         alert.buttons[1].keyEquivalent = "\u{1b}"                                  // Esc = Cancel
         alert.buttons[2].keyEquivalent = "d"; alert.buttons[2].keyEquivalentModifierMask = .command  // ⌘D = Don't Save
 

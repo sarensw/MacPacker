@@ -66,8 +66,7 @@ struct DropWindowView: View {
             Image(systemName: CompressDropIcon.name)
                 .font(.system(size: 30, weight: .light))
                 .foregroundStyle(isTargeted ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
-            Text("Drop here to compress",
-                 comment: "Caption of the Quick Compress window. Releasing files on the window creates an archive next to them.")
+            Text(.archiveCompressDropHint)
                 .font(.callout.weight(.medium))
         }
         // Hung from the top, not centred: centring drags the icon and caption
@@ -106,7 +105,7 @@ struct DropWindowView: View {
                     Image(systemName: "chevron.right")
                         .rotationEffect(.degrees(optionsExpanded ? 90 : 0))
                         .font(.caption2)
-                    Text("Options", comment: "Shows or hides the compression settings of the Quick Compress window.")
+                    Text(.commonOptions)
                 }
             }
             .buttonStyle(.plain)
@@ -242,8 +241,7 @@ struct DropJobRow: View {
         case .running: return nil
         case .done: return nil   // the check and the name already say it
         case .failed(let message): return message
-        case .denied: return String(localized: "Cancelled — no access to that folder",
-                                    comment: "Status shown in the drop window when the user declined the permission panel that grants MacPacker access to the folder the archive would be written to.")
+        case .denied: return String(localized: .errrorNoAccess)
         }
     }
 }

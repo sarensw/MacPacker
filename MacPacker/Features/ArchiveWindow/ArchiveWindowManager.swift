@@ -137,7 +137,7 @@ class ArchiveWindowManager {
     @discardableResult
     func openCreateArchiveWindow(with files: [URL] = []) -> ArchiveState {
         let state = createAndShowArchiveWindow(nil)
-        state.create(named: String(localized: "New Archive", comment: "File menu entry that opens a window with a new, empty archive ready to be filled and saved"))
+        state.create(named: String(localized: .commonNewArchive))
         for file in files {
             state.add(url: file)
         }

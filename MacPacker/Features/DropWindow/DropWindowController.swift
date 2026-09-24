@@ -73,7 +73,7 @@ final class DropWindowController {
             defer: false
         )
         // set but not drawn — the Window menu and accessibility still read it
-        panel.title = String(localized: "Quick Compress", comment: "Title of the quick-compress window, the small floating window that compresses whatever is dropped on it. Also the title of the compress section on the start page.")
+        panel.title = String(localized: .commonQuickCompress)
         panel.titleVisibility = .hidden
         panel.titlebarAppearsTransparent = true
         panel.titlebarSeparatorStyle = .none

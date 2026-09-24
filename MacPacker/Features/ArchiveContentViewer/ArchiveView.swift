@@ -166,14 +166,11 @@ struct ArchiveView: View {
 
     private var openZoneTitle: String {
         if dropCreatesArchive {
-            return String(localized: "Create a new archive",
-                          comment: "Drop zone shown while dragging a file that isn't an archive: releasing here starts a new archive containing that file.")
+            return String(localized: .archiveCreateNewArchive)
         }
         return state.hasArchive
-            ? String(localized: "Open in a new window",
-                     comment: "Drop zone shown while dragging an archive over a window that already holds one: releasing here opens it in a new window.")
-            : String(localized: "Open",
-                     comment: "Drop zone shown while dragging an archive over an empty window: releasing here opens it.")
+            ? String(localized: .archiveBrowseOpenInNewWindow)
+            : String(localized: .commonOpen)
     }
 
     /// The two cards an archive window offers. The start page shows nothing — its
@@ -195,8 +192,7 @@ struct ArchiveView: View {
                     zone: .add, active: active,
                     icon: "plus.rectangle.on.folder",
                     title: String(
-                        localized: "Add to “\(state.name ?? "")”",
-                        comment: "Drop zone shown while dragging a file over an editable archive: releasing here adds the file to that archive. The placeholder is the archive's file name."
+                        localized: .commonAddToNamed(state.name ?? "")
                     )
                 )
             }

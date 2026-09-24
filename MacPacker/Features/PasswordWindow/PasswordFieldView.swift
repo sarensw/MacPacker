@@ -15,9 +15,9 @@ struct PasswordFieldView: View {
         HStack {
             Group {
                 if isRevealed {
-                    TextField("Password:", text: $password)
+                    TextField(String(localized: .commonPassword), text: $password)
                 } else {
-                    SecureField("Password:", text: $password)
+                    SecureField(.commonPassword, text: $password)
                 }
             }
             .textFieldStyle(.roundedBorder)

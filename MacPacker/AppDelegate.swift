@@ -285,10 +285,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         log.notice("Quit requested while extraction is running — asking user")
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = String(localized: "An extraction is still in progress", comment: "Title of the alert shown when the user quits while an extraction is running.")
-        alert.informativeText = String(localized: "Quitting now stops the extraction and may leave incomplete files at the destination.", comment: "Body of the alert shown when the user quits while an extraction is running.")
-        alert.addButton(withTitle: String(localized: "Cancel", comment: "Alert button that keeps the app running so the extraction can finish."))
-        alert.addButton(withTitle: String(localized: "Quit Anyway", comment: "Alert button that quits the app even though an extraction is running."))
+        alert.messageText = String(localized: .appExtractionInProgress)
+        alert.informativeText = String(localized: .appQuitDuringExtractionWarning)
+        alert.addButton(withTitle: String(localized: .commonCancel))
+        alert.addButton(withTitle: String(localized: .appQuitAnyway))
 
         if alert.runModal() == .alertFirstButtonReturn {
             log.notice("Quit cancelled — extraction continues")

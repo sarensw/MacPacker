@@ -24,19 +24,19 @@ struct PasswordView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let name = request?.url.lastPathComponent {
-                Text("“\(name)” is password protected.", comment: "Explains that the named archive requires a password")
+                Text(.commonPasswordProtectedMessage(name))
                     .font(.callout)
             }
 
             HStack(spacing: 4) {
-                Text("Password:", comment: "Label for the password field")
+                Text(.commonPassword)
                 PasswordFieldView(password: $password)
                     .onSubmit { onSubmit?(password) }
             }
 
             if isRetry {
                 Label {
-                    Text("That password is incorrect. Try again.", comment: "Shown after an incorrect password is entered")
+                    Text(.errorPasswordIncorrect)
                 } icon: {
                     Image(systemName: "exclamationmark.triangle.fill")
                 }
@@ -50,13 +50,13 @@ struct PasswordView: View {
                 Button {
                     onCancel?()
                 } label: {
-                    Text("Cancel", comment: "Cancels password entry")
+                    Text(.commonCancel)
                 }
 
                 Button {
                     onSubmit?(password)
                 } label: {
-                    Text("OK", comment: "Submits the entered password")
+                    Text(.commonOk)
                 }
                 .buttonStyle(.borderedProminent)
             }

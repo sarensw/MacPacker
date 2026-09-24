@@ -34,7 +34,7 @@ struct StatusBarView: View {
                         openURL(gitHubURL)
                     } label: {
                         Image("github.fill")
-                        Text("Star")
+                        Text(.feedbackStar)
                     }
                     .controlSize(.small)
                     
@@ -47,7 +47,7 @@ struct StatusBarView: View {
                         openURL(writeReviewURL)
                     } label: {
                         Image(systemName: "star")
-                        Text("Review")
+                        Text(.feedbackReview)
                     }
                     .controlSize(.small)
                     #endif
@@ -60,7 +60,7 @@ struct StatusBarView: View {
                         openURL(twitterURL)
                     } label: {
                         Image("x-twitter")
-                        Text("Follow")
+                        Text(.feedbackFollow)
                     }
                     .controlSize(.small)
                     
@@ -72,7 +72,7 @@ struct StatusBarView: View {
                         openURL(translateURL)
                     } label: {
                         Image(systemName: "flag")
-                        Text("Translate")
+                        Text(.feedbackTranslate)
                     }
                     .controlSize(.small)
                 }
@@ -97,7 +97,7 @@ struct StatusBarView: View {
                         
                         Spacer()
                     } else {
-                        Text("\(archiveState.itemCount) items")
+                        Text(.commonItemCount(archiveState.itemCount))
                         if let uncompressedSize = archiveState.uncompressedSize {
                             Text(verbatim: " • \(SystemHelper.shared.format(bytes: uncompressedSize))")
                         }
@@ -111,7 +111,7 @@ struct StatusBarView: View {
                                 Image(systemName: "lock.fill")
                             }
                         } else {
-                            Text("\(archiveState.selectedItems.count) selected")
+                            Text(.commonSelectedCount(archiveState.selectedItems.count))
                             Text(verbatim: " • ")
                             Text(verbatim: "\(SystemHelper.shared.format(bytes: archiveState.selectedItems.reduce(into: 0) { $0 += $1.uncompressedSize }))")
                         }

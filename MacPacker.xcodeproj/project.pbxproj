@@ -151,6 +151,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Assets.xcassets,
+				Localizable.xcstrings,
 			);
 			target = 252F12012E7ABDD9004CCEBE /* FinderExtension */;
 		};
@@ -455,6 +456,7 @@
 				"es-MX",
 				nl,
 				tr,
+				vi,
 			);
 			mainGroup = 25C0A89B2A78DE5F002C1C2A;
 			packageReferences = (

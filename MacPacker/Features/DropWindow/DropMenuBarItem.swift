@@ -49,7 +49,7 @@ final class DropMenuBarItem {
     private func install() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         item.button?.image = Self.icon
-        item.button?.toolTip = String(localized: "Quick Compress", comment: "Title of the quick-compress window, the small floating window that compresses whatever is dropped on it. Also the title of the compress section on the start page.")
+        item.button?.toolTip = String(localized: .commonQuickCompress)
         // Assigning a menu is what makes a click open it; no target/action needed.
         item.menu = makeMenu()
         statusItem = item
@@ -69,7 +69,7 @@ final class DropMenuBarItem {
         image.size = NSSize(width: (height * artwork.width / artwork.height).rounded(),
                             height: height)
         image.isTemplate = true
-        image.accessibilityDescription = String(localized: "Quick Compress", comment: "Title of the quick-compress window, the small floating window that compresses whatever is dropped on it. Also the title of the compress section on the start page.")
+        image.accessibilityDescription = String(localized: .commonQuickCompress)
         return image
     }()
 
@@ -86,14 +86,14 @@ final class DropMenuBarItem {
     private func makeMenu() -> NSMenu {
         let menu = NSMenu()
         menu.addItem(entry(
-            String(localized: "New \(Bundle.main.displayName) Window"),
+            String(localized: .commonNewWindow(Bundle.main.displayName)),
             symbol: "plus.rectangle", action: #selector(newWindow)))
         menu.addItem(entry(
-            String(localized: "Quick Compress Window", comment: "Opens the small floating window that compresses whatever is dropped on it. Used in the File menu and in the More menu of the archive window."),
+            String(localized: .commonQuickCompressWindow),
             symbol: "shippingbox", action: #selector(quickCompress)))
         menu.addItem(.separator())
         menu.addItem(entry(
-            String(localized: "Open…", comment: "A label for a button that allows the user to open an archive from disk."),
+            String(localized: .commonOpen),
             symbol: "arrow.up.right.square", action: #selector(openArchive)))
         return menu
     }

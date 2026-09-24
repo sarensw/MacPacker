@@ -14,8 +14,7 @@ struct WelcomeView: View {
     
     var styledString: AttributedString {
         var string = AttributedString(
-            localized: "Welcome to \(Bundle.main.displayName)",
-            comment: "'Welcome to <app name>'. The order of the greeting might be different in different languages. For example: English: Welcome to MacPacker, Japanese: MacPackerへようこそ. This is up to the translator to decide."
+            localized: .welcomeTitle(Bundle.main.displayName)
         )
         string.foregroundColor = .secondary
         string.font = .system(size: 24, weight: .medium)
@@ -56,7 +55,7 @@ struct WelcomeView: View {
                         .padding(.top, 22)
                         .padding(.bottom, 22)
                     
-                    Text("❤️ Many thanks to all the PR contributors, translators and sponsors of this project!", comment: "Thanks shown to contributors, translators, and project sponsors on the welcome screen")
+                    Text(.welcomeCreditsMessage)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 16)
                     

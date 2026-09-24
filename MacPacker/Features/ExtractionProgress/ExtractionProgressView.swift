@@ -167,8 +167,7 @@ private struct ExtractionProgressRowView: View {
                             Spacer()
 
                             if job.state == .running, let remaining = job.estimatedSecondsRemaining {
-                                Text("\(formatDuration(remaining)) left",
-                                     comment: "Time remaining in the extraction row, e.g. '14 sec left'.")
+                                Text(.archiveExtractTimeLeft(formatDuration(remaining)))
                                     .foregroundStyle(.tertiary)
                             }
                         }

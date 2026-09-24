@@ -22,19 +22,19 @@ struct ArchiveSavePanelAccessoryView: View {
     var body: some View {
         HStack(spacing: 16) {
             FormatPicker(options: options) {
-                Text("Format:", comment: "Label of the archive format picker in the save panel")
+                Text(.archiveSaveFormat)
             }
             .fixedSize()
             .accessibilityIdentifier("saveFormatPicker")
 
             LevelPicker(options: options) {
-                Text("Compression:", comment: "Label of the compression level picker in the save panel")
+                Text(.commonCompression)
             }
             .fixedSize()
             .accessibilityIdentifier("saveLevelPicker")
 
             Button(action: onOptions) {
-                Text("Options…", comment: "Button in the save panel that opens the advanced archive options")
+                Text(.commonOptions)
             }
             .accessibilityIdentifier("saveOptionsButton")
         }
@@ -63,7 +63,7 @@ struct ArchiveSaveOptionsView: View {
             HStack {
                 Spacer()
                 Button(action: onDone) {
-                    Text("Done", comment: "Button that closes the archive options sheet")
+                    Text(.commonDone)
                 }
                 .keyboardShortcut(.defaultAction)
                 .disabled(!options.canSave)
@@ -90,20 +90,20 @@ struct SaveOptionsRows: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if showsFormat {
-                row(Text("Format", comment: "Label of the archive format picker in the archive options")) {
+                row(Text(.archiveSaveFormat)) {
                     FormatPicker(options: options) { EmptyView() }
                         .labelsHidden()
                         .fixedSize()
                         .accessibilityIdentifier("saveOptions.format")
                 }
             }
-            row(Text("Compression", comment: "Label of the compression level picker in the archive options")) {
+            row(Text(.commonCompression)) {
                 LevelPicker(options: options) { EmptyView() }
                     .labelsHidden()
                     .fixedSize()
                     .accessibilityIdentifier("saveOptions.level")
             }
-            row(Text("Split into volumes", comment: "Label of the picker that writes the archive as several files of a given size")) {
+            row(Text(.archiveSaveSplitIntoVolumes)) {
                 VolumeControl(options: options)
                     .fixedSize()
                     .accessibilityIdentifier("saveOptions.volume")
@@ -111,13 +111,13 @@ struct SaveOptionsRows: View {
 
             Divider()
 
-            row(Text("Password", comment: "Label of the password field in the archive options")) {
+            row(Text(.commonPassword)) {
                 SecureField(text: $options.password) { EmptyView() }
                     .labelsHidden()
                     .frame(width: fieldWidth)
                     .accessibilityIdentifier("saveOptions.password")
             }
-            row(Text("Verify", comment: "Label of the field that repeats the archive password")) {
+            row(Text(.archiveSavePasswordVerify)) {
                 SecureField(text: $options.passwordConfirmation) { EmptyView() }
                     .labelsHidden()
                     .frame(width: fieldWidth)
@@ -125,7 +125,7 @@ struct SaveOptionsRows: View {
             }
             // zip can still use ZipCrypto for old tools; 7z is AES-256 only
             if options.encryptions.count > 1 {
-                row(Text("Encryption method", comment: "Label of the picker between AES-256 and ZipCrypto")) {
+                row(Text(.archiveSaveEncryptionMethod)) {
                     EncryptionControl(options: options)
                         .fixedSize()
                         .accessibilityIdentifier("saveOptions.encryptionMethod")
@@ -133,7 +133,7 @@ struct SaveOptionsRows: View {
             }
             // a zip always lists its file names in the clear
             if options.canEncryptFileNames {
-                row(Text("Encrypt file names", comment: "Toggle that hides a 7z archive's file list behind the password")) {
+                row(Text(.archiveSaveEncryptFileNames)) {
                     Toggle(isOn: $options.encryptFileNames) { EmptyView() }
                         .labelsHidden()
                         .accessibilityIdentifier("saveOptions.encryptNames")
@@ -144,27 +144,27 @@ struct SaveOptionsRows: View {
             Divider()
 
             Group {
-                row(Text("Method", comment: "Label of the compression method picker in the archive options")) {
+                row(Text(.archiveSaveMethod)) {
                     MethodControl(options: options)
                         .fixedSize()
                         .accessibilityIdentifier("saveOptions.method")
                 }
                 if !options.dictionarySizes.isEmpty {
-                    row(Text("Dictionary size", comment: "Label of the compression dictionary size picker in the archive options")) {
+                    row(Text(.archiveSaveDictionarySize)) {
                         DictionaryControl(options: options)
                             .fixedSize()
                             .accessibilityIdentifier("saveOptions.dictionary")
                     }
                 }
                 if !options.wordSizes.isEmpty {
-                    row(Text("Word size", comment: "Label of the compression word size picker in the archive options (7-Zip's term)")) {
+                    row(Text(.archiveSaveWordSize)) {
                         WordSizeControl(options: options)
                             .fixedSize()
                             .accessibilityIdentifier("saveOptions.wordSize")
                     }
                 }
                 if options.hasSolidBlocks {
-                    row(Text("Solid block size", comment: "Label of the 7z solid block size picker in the archive options")) {
+                    row(Text(.archiveSaveSolidBlockSize)) {
                         SolidControl(options: options)
                             .fixedSize()
                             .accessibilityIdentifier("saveOptions.solid")
@@ -174,7 +174,7 @@ struct SaveOptionsRows: View {
             // at Store nothing is compressed, so these do nothing
             .disabled(!options.compresses)
 
-            row(Text("Exclude .DS_Store files", comment: "Toggle that leaves Finder's hidden .DS_Store files out of the archive")) {
+            row(Text(.archiveSaveExcludeDsStoreFiles)) {
                 Toggle(isOn: $options.excludeDSStore) { EmptyView() }
                     .labelsHidden()
                     .accessibilityIdentifier("saveOptions.excludeDSStore")
@@ -198,9 +198,9 @@ struct SaveOptionsRows: View {
                 .accessibilityIdentifier("saveOptions.problem")
         } else if !options.password.isEmpty && options.format == .zip {
             if options.encryption == .zipCrypto {
-                note(Text("ZipCrypto is easily broken. Pick it only for tools that cannot open AES-256.", comment: "Footer under the archive password when the weak ZipCrypto is picked"))
+                note(Text(.archivePasswordZipCryptoWarning))
             } else {
-                note(Text("File names stay readable in a zip archive. 7z can encrypt them too.", comment: "Footer under the archive password for zip archives"))
+                note(Text(.archiveSaveEncryptFileNamesHint))
             }
         }
     }
@@ -221,7 +221,7 @@ struct VolumeControl: View {
 
     var body: some View {
         Picker(selection: $options.volumeSize) {
-            Text("Don't split", comment: "Split choice: write the archive as a single file")
+            Text(.archiveSaveDontSplit)
                 .tag(UInt64?.none)
             ForEach(options.volumeSizes, id: \.self) { size in
                 Text(verbatim: sizeName(size)).tag(UInt64?.some(size))
@@ -302,12 +302,12 @@ struct SolidControl: View {
     var body: some View {
         Picker(selection: $options.solidBlockSize) {
             automaticEntry().tag(UInt64?.none)
-            Text("Non-solid", comment: "Solid block choice: every file compressed on its own")
+            Text(.archiveSaveNonSolid)
                 .tag(UInt64?.some(0))
             ForEach(options.solidBlockSizes.filter { $0 != .max }, id: \.self) { size in
                 Text(verbatim: sizeName(size)).tag(UInt64?.some(size))
             }
-            Text("Solid", comment: "Solid block choice: all files compressed as one block")
+            Text(.archiveSaveSolid)
                 .tag(UInt64?.some(.max))
         } label: {
             EmptyView()
@@ -318,7 +318,7 @@ struct SolidControl: View {
 
 /// The entry that leaves a setting to the format and the level.
 func automaticEntry() -> Text {
-    Text("Automatic", comment: "Picker entry that leaves a compression setting to the archive format and level")
+    Text(.archiveContentViewerAutomatic)
 }
 
 /// Format picker, the same in the panel and in the sheet.
@@ -357,12 +357,12 @@ struct LevelPicker<Label: View>: View {
 /// 7-Zip's name for a compression level.
 func compressionLevelName(_ level: UInt32) -> String {
     switch level {
-    case 0: String(localized: "Store", comment: "Compression level: no compression")
-    case 1: String(localized: "Fastest", comment: "Compression level: fastest")
-    case 3: String(localized: "Fast", comment: "Compression level: fast")
-    case 7: String(localized: "Maximum", comment: "Compression level: maximum")
-    case 9: String(localized: "Ultra", comment: "Compression level: ultra, the strongest")
-    default: String(localized: "Normal", comment: "Compression level: normal")
+    case 0: String(localized: .archiveSaveLevelStore)
+    case 1: String(localized: .archiveSaveLevelFastest)
+    case 3: String(localized: .archiveSaveLevelFast)
+    case 7: String(localized: .archiveSaveLevelMaximum)
+    case 9: String(localized: .archiveSaveLevelUltra)
+    default: String(localized: .archiveSaveLevelNormal)
     }
 }
 
@@ -398,11 +398,11 @@ extension ArchiveSaveOptions.PasswordProblem {
     var message: String {
         switch self {
         case .mismatch:
-            String(localized: "The passwords do not match.", comment: "Save options: the password and its verification differ")
+            String(localized: .errorPasswordMismatch)
         case .notASCII:
-            String(localized: "A zip password can only use letters A–Z, digits, spaces and common symbols. 7z takes any password.", comment: "Save options: the zip password has characters zip encryption cannot take")
+            String(localized: .archiveContentViewerZipPasswordCharacterHint)
         case .tooLong:
-            String(localized: "With AES-256, a zip password can be at most \(CompressionOptions.zipAESPasswordLimit) characters long.", comment: "Save options: the zip password is too long; the number is the limit")
+            String(localized: .archivePasswordMaxLengthHint(CompressionOptions.zipAESPasswordLimit))
         }
     }
 }
@@ -422,7 +422,7 @@ private final class SavePanelValidator: NSObject, NSOpenSavePanelDelegate {
         guard let problem = options.passwordProblem else { return }
         throw NSError(domain: "app.MacPacker.save", code: 1, userInfo: [
             NSLocalizedDescriptionKey: problem.message,
-            NSLocalizedRecoverySuggestionErrorKey: String(localized: "Change the password under Options…", comment: "How to fix a password the save panel refused")
+            NSLocalizedRecoverySuggestionErrorKey: String(localized: .archiveContentViewerChangeThePasswordUnderOptions)
         ])
     }
 }
@@ -448,7 +448,7 @@ enum ArchiveSavePanel {
 
         let panel = NSSavePanel()
         panel.canCreateDirectories = true
-        panel.title = String(localized: "New Archive", comment: "Title of the save panel used to create a new archive")
+        panel.title = String(localized: .commonNewArchive)
         // Save As opens where the archive is, as documents do
         panel.directoryURL = state.url?.deletingLastPathComponent()
 
@@ -458,7 +458,7 @@ enum ArchiveSavePanel {
             panel.allowedContentTypes = [UTType(filenameExtension: format.rawValue) ?? .data]
             panel.nameFieldStringValue = base + "." + format.rawValue
         }
-        let baseName = state.name ?? String(localized: "New Archive", comment: "Default file name of a new archive")
+        let baseName = state.name ?? String(localized: .commonNewArchive)
         useFormat(options.format, (baseName as NSString).deletingPathExtension)
 
         let accessory = NSHostingView(rootView: ArchiveSavePanelAccessoryView(

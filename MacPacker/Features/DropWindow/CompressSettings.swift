@@ -71,7 +71,7 @@ struct CompressPinButton: View {
         }
         .buttonStyle(.plain)
         .contentShape(Rectangle())
-        .help(Text("Keep on top", comment: "Setting of the Quick Compress window: keeps it visible above other apps, so files can be dragged onto it from Finder."))
+        .help(Text(.archiveCompressWindowTop))
         .onChange(of: floats, initial: true) { _, value in apply(value) }
     }
 }
