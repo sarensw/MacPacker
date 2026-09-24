@@ -29,42 +29,42 @@ struct SettingsView: View {
                 GeneralSettingsView()
                     .tabItem {
                         Image(systemName: "gear")
-                        Text("General", comment: "General settings")
+                        Text(.settingsGeneral)
                     }
                     .tag(SettingsViewTab.general)
                 
                 FormatSettingsView()
                     .tabItem {
                         Image(systemName: "doc.badge.gearshape")
-                        Text("Archive Formats")
+                        Text(.settingsArchiveFormats)
                     }
                     .tag(SettingsViewTab.formats)
                 
                 AdvancedSettingsView()
                     .tabItem {
                         Image(systemName: "exclamationmark.octagon")
-                        Text("Advanced", comment: "Advanced settings")
+                        Text(.settingsAdvanced)
                     }
                     .tag(SettingsViewTab.advanced)
                 
                 PermissionsSettingsView()
                     .tabItem {
                         Image(systemName: "lock.shield")
-                        Text("Permissions", comment: "Settings tab that grants the app access to folders")
+                        Text(.columnPermissions)
                     }
                     .tag(SettingsViewTab.permissions)
                 
                 IntegrationSettingsView()
                     .tabItem {
                         Image(systemName: "puzzlepiece.extension")
-                        Text("Extensions")
+                        Text(.settingsExtensions)
                     }
                     .tag(SettingsViewTab.integration)
                 
                 AboutSettingsView()
                     .tabItem {
                         Image(systemName: "info.circle")
-                        Text("About")
+                        Text(.settingsAbout)
                     }
                     .tag(SettingsViewTab.about)
                 

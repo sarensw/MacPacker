@@ -35,8 +35,8 @@ class AppUrlExtractToChosenFolderHandler: AppUrlHandler {
         panel.canCreateDirectories = true
         panel.allowsMultipleSelection = false
         panel.directoryURL = appUrl.target
-        panel.prompt = String(localized: "Extract", comment: "Prompt of the folder picker used to extract items")
-        panel.message = String(localized: "Choose where to extract", comment: "Message of the panel that picks where to extract the archives selected in Finder")
+        panel.prompt = String(localized: .commonExtract)
+        panel.message = String(localized: .archiveExtractChooseDestination)
         panel.level = .floating
         NSApp.activate(ignoringOtherApps: true)
 

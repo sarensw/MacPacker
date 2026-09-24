@@ -15,7 +15,7 @@ struct AdvancedSettingsView: View {
     var body: some View {
         VStack {
             HStack(alignment: .top) {
-                Text("Cache:", comment: "Cache related settings")
+                Text(.settingsCache)
                     .frame(width: 160, alignment: .trailing)
                 
                 VStack(alignment: .leading) {
@@ -24,31 +24,31 @@ struct AdvancedSettingsView: View {
                             NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: url.path)
                         }
                     } label: {
-                        Text("Open cache directory", comment: "Allows the user to open the application support folder that holds the cache for temporarly extracted archive files")
+                        Text(.settingsOpenCacheDirectory)
                     }
-                    .help("Show application support folder")
+                    .help(.settingsShowApplicationSupportFolder)
                     .disabled(applicationSupportDirectory == nil)
                     
                     Button {
                         CacheCleaner().clean()
                     } label: {
-                        Text("Clear cache", comment: "Allows the user to clear the cache")
+                        Text(.settingsClearCache)
                     }
-                    .help("Clears all content from the cache")
+                    .help(.settingsClearCacheHint)
                     .disabled(applicationSupportDirectory == nil)
                 }
                 .frame(width: 240, alignment: .leading)
             }
             
             HStack(alignment: .top) {
-                Text("Logs:", comment: "A label for the log related section in the advanced settings")
+                Text(.settingsLogs)
                     .frame(width: 160, alignment: .trailing)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Button {
                         exportLogs()
                     } label: {
-                        Text("Export Logs", comment: "A button that allows the user to export the app's recent logs")
+                        Text(.settingsExportLogs)
                     }
                 }
                 .frame(width: 240, alignment: .leading)
@@ -67,7 +67,7 @@ struct AdvancedSettingsView: View {
             NSWorkspace.shared.activateFileViewerSelecting([url])
         } catch {
             let alert = NSAlert()
-            alert.messageText = String(localized: "Export failed", comment: "Title of the alert shown when exporting logs fails")
+            alert.messageText = String(localized: .errorExportFailed)
             alert.informativeText = error.localizedDescription
             alert.runModal()
         }

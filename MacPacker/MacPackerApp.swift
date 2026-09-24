@@ -44,7 +44,7 @@ struct MacPackerApp: App {
                     appDelegate.appState.selectedSettingsTab = .about
                     openSettings()
                 } label: {
-                    Text("About \(Bundle.main.displayName)", comment: "Link to the About page of the app. The order depends on the language. For example: English: About MacPacker, Japanese: MacPackerについて")
+                    Text(.commonAbout(Bundle.main.displayName))
                 }
             }
 #if !STORE
@@ -58,7 +58,7 @@ struct MacPackerApp: App {
                     appDelegate.openCreateArchiveWindow()
                 } label: {
                     Label {
-                        Text("New Archive", comment: "File menu entry that opens a window with a new, empty archive ready to be filled and saved")
+                        Text(.commonNewArchive)
                     } icon: {
                         Image(systemName: "doc.badge.plus")
                     }
@@ -69,7 +69,7 @@ struct MacPackerApp: App {
                     appDelegate.openNewArchiveWindow()
                 } label: {
                     Label {
-                        Text("New \(Bundle.main.displayName) Window")
+                        Text(.commonNewWindow(Bundle.main.displayName))
                     } icon: {
                         Image(systemName: "plus.rectangle")
                     }
@@ -80,7 +80,7 @@ struct MacPackerApp: App {
                     appDelegate.showDropWindow()
                 } label: {
                     Label {
-                        Text("Quick Compress Window", comment: "Opens the small floating window that compresses whatever is dropped on it. Used in the File menu and in the More menu of the archive window.")
+                        Text(.commonQuickCompressWindow)
                     } icon: {
                         Image(systemName: "shippingbox")
                     }
@@ -96,7 +96,7 @@ struct MacPackerApp: App {
                     appDelegate.openArchiveUsingOpenPanel()
                 } label: {
                     Label {
-                        Text("Open…", comment: "A label for a button that allows the user to open an archive from disk.")
+                        Text(.commonOpen)
                     } icon: {
                         Image(systemName: "arrow.up.right.square")
                     }

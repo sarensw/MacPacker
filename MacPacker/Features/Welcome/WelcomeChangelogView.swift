@@ -160,7 +160,7 @@ struct WelcomeChangelogView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text("What's new", comment: "Header of the changelog shown in the welcome page.")
+                Text(.commonWhatsNew)
                     .font(.body)
                     .fontWeight(.bold)
                 
@@ -177,7 +177,7 @@ struct WelcomeChangelogView: View {
             .padding(.top, 12)
             
             HStack(alignment: .firstTextBaseline) {
-                Text("Coming next", comment: "Header of the upcoming big changes shown in the welcome page")
+                Text(.welcomeComingNext)
                     .font(.body)
                     .fontWeight(.bold)
                 Text(localizedChangelogText(comingNext))

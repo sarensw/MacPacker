@@ -83,7 +83,7 @@ struct ContentView: View {
         // nothing. Extraction failures are deliberately not shown here — the
         // progress window already reports those.
         .alert(
-            "Could not open archive",
+            .errorOpenArchive,
             isPresented: Binding(
                 get: { archiveState.openError != nil },
                 set: { presented in
@@ -92,14 +92,14 @@ struct ContentView: View {
             ),
             presenting: archiveState.openError
         ) { _ in
-            Button("OK", role: .cancel) { }
+            Button(.commonOk, role: .cancel) { }
         } message: { reason in
             Text(verbatim: reason)
         }
         // A failed or refused save has no other surface either: the status bar
         // just stops, and the window looks saved.
         .alert(
-            Text("Could not save archive", comment: "Title of the alert shown when saving an archive failed or was refused; the reason follows below it"),
+            Text(.errorSaveFailed),
             isPresented: Binding(
                 get: { archiveState.saveError != nil },
                 set: { presented in
@@ -108,7 +108,7 @@ struct ContentView: View {
             ),
             presenting: archiveState.saveError
         ) { _ in
-            Button("OK", role: .cancel) { }
+            Button(.commonOk, role: .cancel) { }
         } message: { reason in
             Text(verbatim: reason)
         }
@@ -129,7 +129,7 @@ struct ContentView: View {
             .frame(width: 366)
         }
         .navigationTitle(archiveState.hasArchive == false ? Bundle.main.displayName : archiveState.name!)
-        .navigationSubtitle(Text(verbatim: "\(archiveState.diff.count > 0 ? String(localized: "Edited", comment: "Window subtitle marker shown when the archive has unsaved changes") + " • " : "")\(archiveState.url == nil ? "" : archiveState.url!.deletingLastPathComponent().path + "/")"))
+        .navigationSubtitle(Text(verbatim: "\(archiveState.diff.count > 0 ? String(localized: .archiveBrowseEdited) + " • " : "")\(archiveState.url == nil ? "" : archiveState.url!.deletingLastPathComponent().path + "/")"))
         .environmentObject(archiveState)
     }
 }

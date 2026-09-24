@@ -34,7 +34,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
         panel.canChooseFiles = true
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = true
-        panel.prompt = String(localized: "Add", comment: "Prompt of the open panel used to add files to an archive")
+        panel.prompt = String(localized: .commonAdd)
         let state = archiveState
         panel.begin { response in
             guard response == .OK else { return }
@@ -64,12 +64,12 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 archiveState.openParent()
             } label: {
                 Label {
-                    Text("Back", comment: "Button in the toolbar that leaves the current folder of the archive and shows the folder containing it.")
+                    Text(.commonBack)
                 } icon: {
                     Image(systemName: "chevron.backward")
                 }
             }
-            .help(Text("Enclosing folder", comment: "Tooltip of the toolbar's back button: it shows the folder that contains the one being browsed."))
+            .help(Text(.archiveBrowseEnclosingFolder))
             .disabled(!archiveState.canGoUp)
         }
 
@@ -78,24 +78,24 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 addFilesViaOpenPanel()
             } label: {
                 Label {
-                    Text("Add", comment: "Button in the tooblar that allows the user to add a file to the current archive path.")
+                    Text(.commonAdd)
                 } icon: {
                     Image(systemName: "plus")
                 }
             }
-            .help("Add files or folders to the archive")
+            .help(.archiveContentViewerAddHint)
             .disabled(!archiveState.canAddHere)
 
             Button {
                 archiveState.remove(items: archiveState.selectedItems)
             } label: {
                 Label {
-                    Text("Delete", comment: "Button in the toolbar that deletes the selected files from the archive.")
+                    Text(.commonDelete)
                 } icon: {
                     Image(systemName: "trash")
                 }
             }
-            .help("Delete the selected items from the archive")
+            .help(.archiveBrowseDeleteSelectedHint)
             .disabled(!archiveState.canRemove(archiveState.selectedItems))
 
             Spacer()
@@ -104,23 +104,23 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 archiveState.updateSelectedItemForQuickLook()
             } label: {
                 Label {
-                    Text("Preview", comment: "Button in the tooblar that allows the user to preview the selected file.")
+                    Text(.commonPreview)
                 } icon: {
                     Image("custom.document.badge.eye")
                 }
             }
-            .help("Quick Look")
+            .help(.archiveBrowseQuickLook)
             
             Button {
                 isExportingItem.toggle()
             } label: {
                 Label {
-                    Text("Extract selected", comment: "Button in the tooblar that allows the user to extract the selected files.")
+                    Text(.commonExtractSelected)
                 } icon: {
                     Image("custom.document.badge.arrow.down")
                 }
             }
-            .help("Extract selected")
+            .help(.commonExtractSelected)
             .fileImporter(
                 isPresented: $isExportingItem,
                 allowedContentTypes: [.folder],
@@ -139,12 +139,12 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 isExportingAll.toggle()
             } label: {
                 Label {
-                    Text("Extract archive", comment: "Button in the toolbar that allows the user to extract the full archive to a target directory.")
+                    Text(.commonExtractArchive)
                 } icon: {
                     Image("custom.shippingbox.badge.arrow.down")
                 }
             }
-            .help("Extract archive")
+            .help(.commonExtractArchive)
             .fileImporter(
                 isPresented: $isExportingAll,
                 allowedContentTypes: [.folder],
@@ -165,7 +165,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     openQuickCompressWindow()
                 } label: {
                     Label {
-                        Text("Quick Compress Window", comment: "Opens the small floating window that compresses whatever is dropped on it. Used in the File menu and in the More menu of the archive window.")
+                        Text(.commonQuickCompressWindow)
                     } icon: {
                         Image(systemName: "shippingbox")
                     }
@@ -179,7 +179,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     openSettings()
                 } label: {
                     Label {
-                        Text("Settings...", comment: "Used to open the settings/preferences window")
+                        Text(.commonSettings)
                     } icon: {
                         Image(systemName: "gear")
                     }
@@ -194,7 +194,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     }
                 } label: {
                     Label {
-                        Text("Archive info", comment: "Used to open Quick Look feature for the current archive file")
+                        Text(.archiveContentViewerArchiveInfo)
                     } icon: {
                         Image(systemName: "info.circle")
                     }
@@ -209,7 +209,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     openURL(URL(string: "https://poeditor.com/join/project/J2Qq2SUzYr")!)
                 } label: {
                     Label {
-                        Text("Help with translation", comment: "Menu item that opens the translation contribution page")
+                        Text(.commonHelpWithTranslation)
                     } icon: {
                         Image(systemName: "flag")
                     }
@@ -221,7 +221,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                         openURL(URL(string: "https://github.com/sarensw/MacPacker/issues/new?assignees=&labels=enhancement&projects=&template=&title=")!)
                     } label: {
                         Label {
-                            Text("... request a Feature", comment: "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.")
+                            Text(.contactFeature)
                         } icon: {
                             Image(systemName: "shippingbox")
                         }
@@ -232,7 +232,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                         openURL(URL(string: "https://github.com/sarensw/MacPacker/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=")!)
                     } label: {
                         Label {
-                            Text("... raise a Bug", comment: "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.")
+                            Text(.contactBug)
                         } icon: {
                             Image(systemName: "ladybug")
                         }
@@ -243,7 +243,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                         openURL(URL(string: "mailto:\(Constants.supportMail)")!)
                     } label: {
                         Label {
-                            Text("... send a mail to \(Constants.supportMail)", comment: "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.")
+                            Text(.contactEmail(Constants.supportMail))
                         } icon: {
                             Image(systemName: "mail")
                         }
@@ -251,7 +251,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     }
                 } label: {
                     Label {
-                        Text("Go here to ...", comment: "This is the menu in the 'More' menu of the archive window to give customers a hint what they can do to reach the dev. A submenu will open with links to GitHub, a bug report form, and a mail to the developer.")
+                        Text(.contactMenuIntro)
                     } icon: {
                         Image(systemName: "exclamationmark.bubble")
                     }
@@ -309,7 +309,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 Button {
                     openURL(URL(string: "https://macpacker.app/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui")!)
                 } label: {
-                    Text("Website", comment: "Hint to the user that the button links to the app's website.")
+                    Text(.commonWebsite)
                 }
                 
                 Button {
@@ -323,7 +323,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                     openSettings()
                 } label: {
                     Label {
-                        Text("About \(Bundle.main.displayName)")
+                        Text(.commonAbout(Bundle.main.displayName))
                     } icon: {
                         Image(systemName: "info.circle")
                     }
@@ -331,7 +331,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             } label: {
                 Label {
-                    Text("More", comment: "The 'More' menu in the archive window")
+                    Text(.commonMore)
                 } icon: {
                     Image(systemName: "ellipsis")
                 }

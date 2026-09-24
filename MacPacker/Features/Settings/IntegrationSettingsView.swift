@@ -18,14 +18,14 @@ struct IntegrationSettingsView: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
-                Text("File provider extension")
+                Text(.settingsFileProviderExtension)
                     .frame(width: 160, alignment: .trailing)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Button {
                         FIFinderSyncController.showExtensionManagementInterface()
                     } label: {
-                        Text("Manage in System Settings")
+                        Text(.settingsManageInSystemSettings)
                     }
                     .disabled(applicationSupportDirectory == nil)
 
@@ -34,7 +34,7 @@ struct IntegrationSettingsView: View {
                             .frame(width: 6, height: 6)
                             .foregroundStyle(isFinderSyncEnabled ? Color.green : Color.red)
 
-                        Text(FIFinderSyncController.isExtensionEnabled ? "Enabled" : "Disabled")
+                        Text(isFinderSyncEnabled ? .commonEnabled : .commonDisabled)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
 
@@ -55,7 +55,7 @@ struct IntegrationSettingsView: View {
             Divider()
 
             HStack(alignment: .top) {
-                Text("Context menu:", comment: "Settings label above the list of entries the MacPacker Finder context menu offers")
+                Text(.settingsContextMenu)
                     .frame(width: 160, alignment: .trailing)
 
                 VStack(alignment: .leading) {
@@ -69,7 +69,7 @@ struct IntegrationSettingsView: View {
             }
 
             HStack(alignment: .top) {
-                Text("Nest in a submenu:", comment: "Setting that puts the MacPacker Finder entries into a MacPacker submenu instead of directly into the Finder context menu")
+                Text(.settingsNestInSubmenu)
                     .frame(width: 160, alignment: .trailing)
 
                 HStack {
@@ -114,25 +114,25 @@ private struct FinderMenuItemToggle: View {
     private var label: some View {
         switch item {
         case .open:
-            Text("Open archive", comment: "Context menu entry in the settings list: opens the selection in an archive window")
+            Text(.commonOpenArchive)
         case .extractHere:
-            Text("Extract Here", comment: "Context menu entry in the settings list: extracts next to the archive")
+            Text(.commonExtractHere)
         case .extractToFolder:
-            Text("Extract to folder", comment: "Context menu entry in the settings list: extracts into a new folder named after the archive")
+            Text(.settingsExtractToFolder)
         case .addToArchive:
-            Text("Add to Archive…", comment: "Context menu entry in the settings list: opens a new-archive window for the selection")
+            Text(.commonAddToArchive)
         case .compressToZip:
-            Text("Compress to zip", comment: "Context menu entry in the settings list: compresses the selection straight to a zip file")
+            Text(.settingsCompressToZip)
         case .compressTo7z:
-            Text("Compress to 7z", comment: "Context menu entry in the settings list: compresses the selection straight to a 7z file")
+            Text(.settingsCompressTo7Z)
         case .extractToChosenFolder:
-            Text("Extract to a chosen folder…", comment: "Context menu entry in the settings list: asks where to extract, then extracts there")
+            Text(.settingsExtractToChosenFolder)
         case .compressToDatedZip:
-            Text("Compress to zip with date and time", comment: "Context menu entry in the settings list: compresses the selection to a zip whose name carries the current date and time")
+            Text(.settingsCompressToZipDateTime)
         case .compressEachSeparately:
-            Text("Compress each item separately", comment: "Context menu entry in the settings list: compresses every selected item into its own zip")
+            Text(.settingsCompressEachItemSeparately)
         case .compressFolderContents:
-            Text("Compress a folder’s contents", comment: "Context menu entry in the settings list: compresses what is inside a folder, without the folder itself")
+            Text(.settingsCompressFolderContents)
         }
     }
 }
@@ -143,7 +143,6 @@ private struct FinderMenuCascadedToggle: View {
 
     var body: some View {
         Toggle(isOn: $isCascaded) {
-            Text("Show in a MacPacker submenu", comment: "Setting that nests the Finder context menu entries under a MacPacker submenu instead of listing them directly")
         }
     }
 }

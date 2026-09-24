@@ -37,7 +37,7 @@ struct CheckForUpdatesView: View {
         Button {
             updater.checkForUpdates()
         } label: {
-            Text("Check for Updates…", comment: "Allow the user to check for updates")
+            Text(.updatesCheckForUpdates)
         }
         .disabled(!checkForUpdatesViewModel.canCheckForUpdates)
     }

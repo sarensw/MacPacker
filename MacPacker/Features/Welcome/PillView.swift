@@ -172,7 +172,7 @@ private extension UIColor {
 private struct PillPreviewGrid: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text("Changelog")
+            Text(.welcomeChangelog)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
             HStack(spacing: 8) {

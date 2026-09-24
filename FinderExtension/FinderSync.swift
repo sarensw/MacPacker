@@ -196,7 +196,7 @@ class FinderSync: FIFinderSync {
             return String(localized: "Open \(count) Archive", comment: "Opens the archive in an archive window")
 
         case .extractHere:
-            return String(localized: "Extract Here", comment: "Tell the user in the Finder context menu to extract the archive in the current directory as is")
+            return String(localized: .commonExtractHere)
 
         case .extractToFolder:
             // "Extract to "*\"" > if multiple archives files are selected
@@ -217,7 +217,7 @@ class FinderSync: FIFinderSync {
             return String(localized: "Extract to \"\(folderName)\"", comment: "Tell the user in the Finder context menu to extract the archive in the current directory. But there is a folder created based on the name of the archive where the archive is extracted to.")
 
         case .addToArchive:
-            return String(localized: "Add to Archive…", comment: "Finder context menu: open a new-archive window pre-filled with the selection so name, format and compression can be picked")
+            return String(localized: .commonAddToArchive)
 
         case .extractToChosenFolder:
             return String(localized: "Extract to…", comment: "Finder context menu: ask where to extract the selected archives, then extract them there")

@@ -42,7 +42,7 @@ struct AboutSettingsView: View {
                         Button {
                             openURL(Constants.changelogURL)
                         } label: {
-                            Text("What's New")
+                            Text(.commonWhatsNew)
                         }
                     }
                     
@@ -58,11 +58,11 @@ struct AboutSettingsView: View {
                                 }
                             }
                         )) {
-                            Text("Automatically check for updates", comment: "Toggle to enable or disable the automatic check for updates")
+                            Text(.settingsAutomaticallyCheckForUpdates)
                         }
                         .toggleStyle(.checkbox)
                         
-                        Toggle("Include Beta updates", isOn: $updateBetaChannelOn)
+                        Toggle(.settingsIncludeBetaUpdates, isOn: $updateBetaChannelOn)
                         .toggleStyle(.checkbox)
                         .padding(.leading, 20)
                         .disabled(checkForUpdates == .manually)
@@ -81,7 +81,7 @@ struct AboutSettingsView: View {
                         .foregroundStyle(.secondary)
                     
                     #if !STORE
-                    Text("Support the development...", comment: "Hint to the user to support the app's development via some donation")
+                    Text(.feedbackSupport)
                         .fontWeight(.semibold)
                         .padding(.top, 14)
                     HStack {
@@ -115,7 +115,7 @@ struct AboutSettingsView: View {
                 Button {
                     AckWindowController().show()
                 } label: {
-                    Text("Acknowledgements")
+                    Text(.commonAcknowledgements)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -125,7 +125,7 @@ struct AboutSettingsView: View {
                 Button {
                     openURL(Constants.privacyURL)
                 } label: {
-                    Text("Privacy", comment: "Button that opens the privacy policy")
+                    Text(.commonPrivacy)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -135,7 +135,7 @@ struct AboutSettingsView: View {
                 Button {
                     openURL(Constants.termsURL)
                 } label: {
-                    Text("Terms", comment: "Button that opens the terms of service")
+                    Text(.commonTerms)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -145,7 +145,7 @@ struct AboutSettingsView: View {
                 Button {
                     openURL(Constants.imprintURL)
                 } label: {
-                    Text("Imprint", comment: "Button that opens the imprint")
+                    Text(.commonImprint)
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -156,13 +156,13 @@ struct AboutSettingsView: View {
                 Button {
                     openURL(Constants.homepageURL)
                 } label: {
-                    Text("Visit Website", comment: "Button that opens the MacPacker website")
+                    Text(.commonWebsite)
                 }
                 
                 Button {
                     openURL(URL(string: "mailto:\(Constants.supportMail)")!)
                 } label: {
-                    Text("Contact Us")
+                    Text(.contact)
                 }
             }
             .padding(.horizontal, 16)

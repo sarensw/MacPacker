@@ -20,20 +20,20 @@ struct PermissionsSettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("macOS lets \(Constants.appName) open and write files only where you allow it, which is why a folder-access panel shows up now and then. A grant covers everything inside the folder you pick, so allowing these two puts an end to the asking.", comment: "Explains, in the Permissions settings, why the app asks for folder access and what granting these two folders achieves")
+            Text(.settingsFolderAccessHint(Constants.appName))
                 .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(.secondary)
 
             grantRow(
-                label: Text("Home folder:", comment: "Label of the home-folder row in the Permissions settings"),
-                help: Text("Covers the Desktop, Documents, Downloads and everything else in your home folder.", comment: "Explains what granting access to the home folder covers"),
+                label: Text(.settingsHomeFolder),
+                help: Text(.settingsHomeFolderScopeHint),
                 folder: home,
                 granted: homeGranted
             ) { homeGranted = true }
 
             grantRow(
-                label: Text("External volumes:", comment: "Label of the external-volumes row in the Permissions settings"),
-                help: Text("Covers USB drives, memory cards and network shares, which appear in /Volumes.", comment: "Explains what granting access to the /Volumes folder covers"),
+                label: Text(.settingsExternalVolumes),
+                help: Text(.settingsExternalVolumesScopeHint),
                 folder: volumes,
                 granted: volumesGranted
             ) { volumesGranted = true }
@@ -59,7 +59,7 @@ struct PermissionsSettingsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 if granted {
                     Label {
-                        Text("Access granted", comment: "Shown in the Permissions settings once the app has access to a folder")
+                        Text(.settingsAccessGranted)
                     } icon: {
                         Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                     }
@@ -70,7 +70,7 @@ struct PermissionsSettingsView: View {
                             if await FolderAccessStore.shared.grantAccess(to: folder) { onGranted() }
                         }
                     } label: {
-                        Text("Grant Access", comment: "Confirmation button in the file- and folder-access panel")
+                        Text(.commonGrantAccess)
                     }
                     .disabled(folder == nil)
                 }

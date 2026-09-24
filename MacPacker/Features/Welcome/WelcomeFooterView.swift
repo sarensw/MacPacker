@@ -42,7 +42,7 @@ struct WelcomeFooterView: View {
                         openURL(Constants.privacyURL)
                     } label: {
                         HStack(spacing: 2) {
-                            Text("Privacy", comment: "Button that opens the privacy policy")
+                            Text(.commonPrivacy)
                         }
                     }
                     .buttonStyle(.plain)
@@ -51,7 +51,7 @@ struct WelcomeFooterView: View {
                         openURL(Constants.termsURL)
                     } label: {
                         HStack(spacing: 2) {
-                            Text("Terms", comment: "Button that opens the terms of service")
+                            Text(.commonTerms)
                         }
                     }
                     .buttonStyle(.plain)
@@ -60,7 +60,7 @@ struct WelcomeFooterView: View {
                         openURL(Constants.imprintURL)
                     } label: {
                         HStack(spacing: 2) {
-                            Text("Imprint", comment: "Button that opens the imprint")
+                            Text(.commonImprint)
                         }
                     }
                     .buttonStyle(.plain)
@@ -78,7 +78,7 @@ struct WelcomeFooterView: View {
                 dismissWindow()
 //                    StartupFlowCoordinator.shared.completed(.updateInfo)
             } label: {
-                Text("Continue")
+                Text(.commonContinue)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)

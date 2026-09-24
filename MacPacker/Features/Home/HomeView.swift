@@ -95,26 +95,26 @@ struct HomeView: View {
     // MARK: - Sections
 
     private var startSection: some View {
-        section("Start") {
+        section(LocalizedStringResource.commonStart) {
             VStack(spacing: 10) {
                 StartCard(
                     icon: "folder",
-                    title: String(localized: "Open Archive…", comment: "Start-page card that shows the open panel")
+                    title: String(localized: .commonOpenArchive)
                 ) { openUsingPanel() }
 
                 // Also the name the new archive carries until it is saved.
-                let newArchive = String(localized: "New Archive", comment: "Start-page card that starts a new, empty archive in this window")
+                let newArchive = String(localized: .commonNewArchive)
                 StartCard(icon: "doc.badge.plus", title: newArchive) { state.create(named: newArchive) }
             }
         }
     }
 
     private var recentSection: some View {
-        section("Recent", trailing: recents.isEmpty ? nil : AnyView(
-            Button("Clear", action: clearRecents).buttonStyle(.link)
+        section(LocalizedStringResource.homeRecent, trailing: recents.isEmpty ? nil : AnyView(
+            Button(.commonClear, action: clearRecents).buttonStyle(.link)
         )) {
             if recents.isEmpty {
-                Text("No recent archives.", comment: "Shown in place of the recents list on the start page when nothing has been opened yet")
+                Text(.homeNoRecentArchives)
                     .foregroundStyle(.tertiary)
                     .padding(.horizontal, 8)
             } else {
@@ -129,7 +129,7 @@ struct HomeView: View {
     /// target — SwiftUI hit-tests to the innermost target that accepts, so a
     /// release here compresses and a release anywhere else opens.
     private var compressSection: some View {
-        section("Quick Compress", trailing: AnyView(compressHeaderControls), pinTrailingRight: true) {
+        section(LocalizedStringResource.commonQuickCompress, trailing: AnyView(compressHeaderControls), pinTrailingRight: true) {
             Image(systemName: CompressDropIcon.name)
                 .font(.system(size: 26, weight: .light))
                 .foregroundStyle(isCompressTargeted ? AnyShapeStyle(.primary) : AnyShapeStyle(.tertiary))
@@ -142,8 +142,7 @@ struct HomeView: View {
                                   style: StrokeStyle(lineWidth: 1.5, dash: isCompressTargeted ? [] : [5])))
                 .overlay(alignment: .bottom) {
                     if isCompressTargeted {
-                        Text("Compress here",
-                             comment: "Drop zone shown while dragging files over the compress area: releasing here writes an archive next to those files, without opening a window.")
+                        Text(.archiveCompressHere)
                             .font(.callout.weight(.medium))
                             .padding(.bottom, 10)
                     }
@@ -189,18 +188,17 @@ struct HomeView: View {
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
             .contentShape(Rectangle())
-            .help(Text("Quick Compress Window",
-                       comment: "Opens the small floating window that compresses whatever is dropped on it. Used in the File menu and in the More menu of the archive window."))
+            .help(Text(.commonQuickCompressWindow))
         }
     }
 
     private var learnSection: some View {
-        section("Learn") {
-            DocLinkRow(icon: "book", title: String(localized: "Learn to use \(Bundle.main.displayName)"),
-                       detail: String(localized: "Guides & documentation", comment: "Detail line of the documentation link on the start page"),
+        section(LocalizedStringResource.commonLearn) {
+            DocLinkRow(icon: "book", title: String(localized: .homeLearnToUse(Bundle.main.displayName)),
+                       detail: String(localized: .homeDocs),
                        url: Constants.docsURL)
-            DocLinkRow(icon: "sparkles", title: String(localized: "What's new", comment: "Start-page link to the release notes"),
-                       detail: String(localized: "Release notes", comment: "Detail line of the release-notes link on the start page"),
+            DocLinkRow(icon: "sparkles", title: String(localized: .commonWhatsNew),
+                       detail: String(localized: .homeReleaseNotes),
                        url: Constants.changelogURL)
         }
     }
@@ -208,7 +206,7 @@ struct HomeView: View {
     /// `pinTrailingRight` puts the trailing view at the column's right edge, where
     /// a control belongs; "Recent ▸ Clear" reads as title and stays put.
     @ViewBuilder
-    private func section<Content: View>(_ title: LocalizedStringKey, trailing: AnyView? = nil,
+    private func section<Content: View>(_ title: LocalizedStringResource, trailing: AnyView? = nil,
                                         pinTrailingRight: Bool = false,
                                         @ViewBuilder _ content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {

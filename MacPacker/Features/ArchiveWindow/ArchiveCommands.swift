@@ -38,7 +38,7 @@ struct ArchiveCommands: Commands {
                     state.save()
                 }
             } label: {
-                Text("Save", comment: "File menu entry that saves the pending changes of the front archive window")
+                Text(.commonSave)
             }
             .keyboardShortcut("s", modifiers: [.command])
 
@@ -50,7 +50,7 @@ struct ArchiveCommands: Commands {
                       state.canBeEdited, !state.isSaving else { return }
                 ArchiveSavePanel.runAndSave(state: state, window: NSApp.keyWindow)
             } label: {
-                Text("Save As…", comment: "File menu entry that saves the front archive to a new location")
+                Text(.commonSaveAs)
             }
             .keyboardShortcut("s", modifiers: [.command, .shift])
 
@@ -73,7 +73,7 @@ struct ArchiveCommands: Commands {
                     .beginSearchInteraction()
             } label: {
                 Label(
-                    String(localized: "Find", comment: "Edit menu entry that moves the focus to the search field of the archive window"),
+                    String(localized: .commonFind),
                     systemImage: "magnifyingglass"
                 )
             }

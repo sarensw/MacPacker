@@ -376,7 +376,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let hasSelection = !state.selectedItems.isEmpty
 
             let open = NSMenuItem(
-                title: String(localized: "Open", comment: "Context menu: open the clicked item"),
+                title: String(localized: .commonOpen),
                 action: #selector(contextOpen(_:)), keyEquivalent: "")
             open.target = self
             open.image = NSImage(systemSymbolName: "arrow.up.forward.square", accessibilityDescription: nil)
@@ -384,7 +384,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             menu.addItem(open)
 
             let quickLook = NSMenuItem(
-                title: String(localized: "Quick Look", comment: "Context menu: preview the clicked item"),
+                title: String(localized: .archiveBrowseQuickLook),
                 action: #selector(contextQuickLook(_:)), keyEquivalent: " ")
             quickLook.keyEquivalentModifierMask = []   // Space, not ⌘Space
             quickLook.target = self
@@ -395,7 +395,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             menu.addItem(.separator())
 
             let extract = NSMenuItem(
-                title: String(localized: "Extract Selected…", comment: "Context menu: extract the selected items to a folder"),
+                title: String(localized: .commonExtractSelected),
                 action: #selector(contextExtract(_:)), keyEquivalent: "")
             extract.target = self
             extract.image = NSImage(named: "custom.document.badge.arrow.down")
@@ -405,7 +405,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             menu.addItem(.separator())
 
             let delete = NSMenuItem(
-                title: String(localized: "Delete", comment: "Context menu: delete the selected items from the archive"),
+                title: String(localized: .commonDelete),
                 action: #selector(contextDelete(_:)), keyEquivalent: "\u{8}")
             delete.keyEquivalentModifierMask = []
             delete.target = self
@@ -435,7 +435,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             panel.canChooseDirectories = true
             panel.canCreateDirectories = true
             panel.allowsMultipleSelection = false
-            panel.prompt = String(localized: "Extract", comment: "Prompt of the folder picker used to extract items")
+            panel.prompt = String(localized: .commonExtract)
             panel.begin { response in
                 guard response == .OK, let url = panel.url else { return }
                 Task { @MainActor in
@@ -628,32 +628,32 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
     
     func createColumns(_ tableView: NSTableView) {
         let colName = NSTableColumn(identifier: ArchiveViewerColumn.name.identifier)
-        colName.title = NSLocalizedString("Name", comment: "Column that shows the name of the archive files")
+        colName.title = String(localized: .columnName)
         colName.width = 300
         colName.resizingMask = .userResizingMask
         colName.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.name.rawValue, ascending: true)
         tableView.addTableColumn(colName)
         
         let colSizeCompressed = NSTableColumn(identifier: ArchiveViewerColumn.compressedSize.identifier)
-        colSizeCompressed.title = NSLocalizedString("Packed Size", comment: "Column that shows the packed size of the archive files")
+        colSizeCompressed.title = String(localized: .columnPackedSize)
         colSizeCompressed.width = 100
         colSizeCompressed.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.compressedSize.rawValue, ascending: true)
         tableView.addTableColumn(colSizeCompressed)
         
         let colSizeUncompressed = NSTableColumn(identifier: ArchiveViewerColumn.uncompressedSize.identifier)
-        colSizeUncompressed.title = NSLocalizedString("Size", comment: "Column that shows the unpacked size of the archive files")
+        colSizeUncompressed.title = String(localized: .columnSize)
         colSizeUncompressed.width = 100
         colSizeUncompressed.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.uncompressedSize.rawValue, ascending: true)
         tableView.addTableColumn(colSizeUncompressed)
         
         let colModDate = NSTableColumn(identifier: ArchiveViewerColumn.modificationDate.identifier)
-        colModDate.title = NSLocalizedString("Date Modified", comment: "Column that shows the date the file was modified")
+        colModDate.title = String(localized: .columnDateModified)
         colModDate.width = 150
         colModDate.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.modificationDate.rawValue, ascending: true)
         tableView.addTableColumn(colModDate)
         
         let colPosInArchive = NSTableColumn(identifier: ArchiveViewerColumn.posixPermissions.identifier)
-        colPosInArchive.title = NSLocalizedString("Permissions", comment: "Column that shows the file permissions")
+        colPosInArchive.title = String(localized: .columnPermissions)
         colPosInArchive.width = 80
         colPosInArchive.sortDescriptorPrototype = NSSortDescriptor(key: ArchiveSortOrder.posixPermissions.rawValue, ascending: true)
         tableView.addTableColumn(colPosInArchive)
