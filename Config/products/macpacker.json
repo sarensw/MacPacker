@@ -53,7 +53,8 @@
                 "es-MX": "Extraer sin archivos sueltos ni carpetas anidadas",
                 "ko": "파일이 흩어지거나 폴더가 중첩되지 않는 압축 해제",
                 "nl": "Uitpakken zonder losse bestanden of dubbele mappen",
-                "tr": "Dosyalar dağılmadan, klasör iç içe geçmeden çıkarma"
+                "tr": "Dosyalar dağılmadan, klasör iç içe geçmeden çıkarma",
+                "vi": "Giải nén không làm rải tệp hay lồng thư mục"
             },
             "issues": [
                 "196"
@@ -76,7 +77,8 @@
                 "es-MX": "Cifrar archivos con contraseña",
                 "ko": "비밀번호로 압축 파일 암호화",
                 "nl": "Archieven versleutelen met een wachtwoord",
-                "tr": "Arşivleri parolayla şifreleme"
+                "tr": "Arşivleri parolayla şifreleme",
+                "vi": "Mã hóa tệp nén bằng mật khẩu"
             },
             "issues": [
                 "231"
@@ -99,7 +101,8 @@
                 "es-MX": "Dividir archivos en volúmenes",
                 "ko": "압축 파일을 여러 볼륨으로 분할",
                 "nl": "Archieven splitsen in delen",
-                "tr": "Arşivleri birimlere bölme"
+                "tr": "Arşivleri birimlere bölme",
+                "vi": "Chia tệp nén thành nhiều phần"
             },
             "issues": [
                 "230"
@@ -122,7 +125,8 @@
                 "es-MX": "Más opciones de compresión al guardar",
                 "ko": "저장 시 더 많은 압축 설정",
                 "nl": "Meer compressie-instellingen bij opslaan",
-                "tr": "Kaydederken daha fazla sıkıştırma ayarı"
+                "tr": "Kaydederken daha fazla sıkıştırma ayarı",
+                "vi": "Thêm tùy chọn nén khi lưu"
             },
             "issues": [
                 "245"
@@ -145,7 +149,8 @@
                 "es-MX": "Excluir archivos .DS_Store al comprimir",
                 "ko": "압축 파일에서 .DS_Store 파일 제외",
                 "nl": ".DS_Store-bestanden weglaten uit archieven",
-                "tr": ".DS_Store dosyalarını arşivlerden hariç tutma"
+                "tr": ".DS_Store dosyalarını arşivlerden hariç tutma",
+                "vi": "Không đưa tệp .DS_Store vào tệp nén"
             },
             "issues": [
                 "236"
@@ -168,7 +173,8 @@
                 "es-MX": "Nuevas opciones en la integración con Finder",
                 "ko": "Finder 통합에 새 옵션 추가",
                 "nl": "Nieuwe opties in de Finder-integratie",
-                "tr": "Finder entegrasyonunda yeni seçenekler"
+                "tr": "Finder entegrasyonunda yeni seçenekler",
+                "vi": "Tùy chọn mới trong tích hợp Finder"
             },
             "issues": [
                 "238"
@@ -191,7 +197,8 @@
                 "es-MX": "La lista de recientes se puede desactivar",
                 "ko": "최근 아카이브 목록을 끌 수 있음",
                 "nl": "Lijst met recente archieven uitschakelbaar",
-                "tr": "Son arşivler listesi kapatılabilir"
+                "tr": "Son arşivler listesi kapatılabilir",
+                "vi": "Có thể tắt danh sách tệp nén gần đây"
             },
             "issues": [
                 "215"
@@ -214,7 +221,8 @@
                 "es-MX": "Vista previa de Quick Look para cbz y cbr",
                 "ko": "cbz 및 cbr의 Quick Look 미리보기",
                 "nl": "Quick Look-voorbeeld voor cbz en cbr",
-                "tr": "cbz ve cbr için Quick Look önizlemesi"
+                "tr": "cbz ve cbr için Quick Look önizlemesi",
+                "vi": "Xem trước Quick Look cho cbz và cbr"
             },
             "issues": [
                 "187"
@@ -237,7 +245,8 @@
                 "es-MX": "Quick Look sigue la configuración del motor",
                 "ko": "Quick Look이 엔진 설정을 따릅니다",
                 "nl": "Quick Look volgt de engine-instellingen",
-                "tr": "Quick Look motor ayarlarını uygular"
+                "tr": "Quick Look motor ayarlarını uygular",
+                "vi": "Quick Look theo cài đặt engine bạn chọn"
             },
             "issues": [
                 "149"
@@ -260,7 +269,8 @@
                 "es-MX": "Abrir archivos anidados en Quick Look",
                 "ko": "Quick Look에서 중첩된 압축 파일 열기",
                 "nl": "Geneste archieven openen in Quick Look",
-                "tr": "Quick Look’ta iç içe arşivleri açma"
+                "tr": "Quick Look’ta iç içe arşivleri açma",
+                "vi": "Mở tệp nén lồng nhau trong Quick Look"
             },
             "issues": [
                 "212"
@@ -283,7 +293,8 @@
                 "es-MX": "Conceder acceso a las carpetas una vez en ajustes",
                 "ko": "설정에서 폴더 접근을 한 번만 허용",
                 "nl": "Maptoegang één keer verlenen in instellingen",
-                "tr": "Klasör erişimini ayarlarda bir kez verme"
+                "tr": "Klasör erişimini ayarlarda bir kez verme",
+                "vi": "Cấp quyền truy cập thư mục một lần trong Cài đặt"
             },
             "issues": [
                 "252"
@@ -306,7 +317,8 @@
                 "es-MX": "Menos solicitudes de acceso a carpetas",
                 "ko": "폴더 접근 요청 감소",
                 "nl": "Minder verzoeken om maptoegang",
-                "tr": "Daha az klasör erişimi isteği"
+                "tr": "Daha az klasör erişimi isteği",
+                "vi": "Ít yêu cầu quyền truy cập thư mục hơn"
             },
             "issues": [
                 "252"
@@ -329,7 +341,8 @@
                 "es-MX": "Al archivar se pierde la información de archivo de Mac",
                 "ko": "압축하면 Mac 파일 정보가 사라짐",
                 "nl": "Archiveren verwijdert Mac-bestandsinformatie",
-                "tr": "Arşivleme Mac dosya bilgilerini siliyor"
+                "tr": "Arşivleme Mac dosya bilgilerini siliyor",
+                "vi": "Nén làm mất thông tin tệp đặc trưng của Mac"
             },
             "issues": [
                 "216",
@@ -353,7 +366,8 @@
                 "es-MX": "Al extraer 7z se pierden los permisos de ejecución y los enlaces",
                 "ko": "7z 압축을 풀면 실행 권한과 링크가 사라짐",
                 "nl": "Uitpakken van 7z verwijdert uitvoerrechten en links",
-                "tr": "7z çıkarma yürütme izinlerini ve bağlantıları siliyor"
+                "tr": "7z çıkarma yürütme izinlerini ve bağlantıları siliyor",
+                "vi": "Giải nén 7z làm mất quyền thực thi và liên kết"
             },
             "issues": [
                 "243"
@@ -376,7 +390,8 @@
                 "es-MX": "Un archivo se puede abrir dos veces",
                 "ko": "같은 아카이브를 두 번 열 수 있음",
                 "nl": "Een archief kan twee keer worden geopend",
-                "tr": "Bir arşiv iki kez açılabiliyor"
+                "tr": "Bir arşiv iki kez açılabiliyor",
+                "vi": "Một tệp nén có thể bị mở hai lần"
             },
             "issues": [
                 "256"
@@ -399,7 +414,8 @@
                 "es-MX": "Eliminar un archivo podía quitar otro",
                 "ko": "파일을 삭제하면 다른 파일이 지워질 수 있었음",
                 "nl": "Een bestand verwijderen kon een ander wissen",
-                "tr": "Bir dosyayı silmek başka birini silebiliyordu"
+                "tr": "Bir dosyayı silmek başka birini silebiliyordu",
+                "vi": "Xóa một tệp có thể xóa nhầm tệp khác"
             },
             "issues": [
                 "267"
@@ -422,7 +438,32 @@
                 "es-MX": "Actualización de traducciones",
                 "ko": "번역 업데이트",
                 "nl": "Taalupdate",
-                "tr": "Çeviri güncellemesi"
+                "tr": "Çeviri güncellemesi",
+                "vi": "Cập nhật ngôn ngữ"
+            },
+            "issues": [
+                "270"
+            ]
+          },
+          {
+            "type": "lang",
+            "title": {
+                "en": "Now available in Vietnamese",
+                "zh-Hans": "现已支持越南语",
+                "fr": "Désormais disponible en vietnamien",
+                "de": "Jetzt auch auf Vietnamesisch",
+                "it": "Ora disponibile anche in vietnamita",
+                "ja": "ベトナム語にも対応しました",
+                "fa": "اکنون به زبان ویتنامی نیز در دسترس است",
+                "pl": "Dostępne teraz również po wietnamsku",
+                "pt-BR": "Agora disponível em vietnamita",
+                "ru": "Теперь доступно на вьетнамском",
+                "uk": "Тепер доступно вʼєтнамською",
+                "es-MX": "Ahora disponible en vietnamita",
+                "ko": "이제 베트남어로도 제공됩니다",
+                "nl": "Nu ook beschikbaar in het Vietnamees",
+                "tr": "Artık Vietnamca da mevcut",
+                "vi": "Hiện đã có tiếng Việt"
             },
             "issues": [
                 "270"
