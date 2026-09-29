@@ -17,20 +17,22 @@
   "appcast-seed-path": "Config/appcast.xml",
   "changelog": {
     "comingNext": {
-      "en": "Complete archive creation and editing",
-      "zh-Hans": "完善压缩包的创建与编辑",
-      "fr": "Création et modification d’archives complètes",
-      "de": "Vollständiges Erstellen und Bearbeiten von Archiven",
-      "it": "Creazione e modifica complete degli archivi",
-      "ja": "アーカイブの作成と編集を完成させる",
-      "fa": "ساخت و ویرایش کامل آرشیوها",
-      "pl": "Pełne tworzenie i edycja archiwów",
-      "pt-BR": "Criação e edição completas de arquivos",
-      "ru": "Полноценное создание и редактирование архивов",
-      "uk": "Повноцінне створення та редагування архівів",
-      "es-MX": "Creación y edición completas de archivos",
-      "ko": "압축 파일 생성 및 편집 완성",
-      "nl": "Volledig aanmaken en bewerken van archieven"
+      "en": "Integrity check and recovery",
+      "zh-Hans": "完整性检查与恢复",
+      "fr": "Vérification de l’intégrité et récupération",
+      "de": "Integritätsprüfung und Wiederherstellung",
+      "it": "Verifica dell’integrità e recupero",
+      "ja": "整合性チェックと復旧",
+      "fa": "بررسی یکپارچگی و بازیابی",
+      "pl": "Sprawdzanie integralności i odzyskiwanie",
+      "pt-BR": "Verificação de integridade e recuperação",
+      "ru": "Проверка целостности и восстановление",
+      "uk": "Перевірка цілісності та відновлення",
+      "es-MX": "Verificación de integridad y recuperación",
+      "ko": "무결성 검사 및 복구",
+      "nl": "Integriteitscontrole en herstel",
+      "vi": "Kiểm tra tính toàn vẹn và khôi phục",
+      "tr": "Bütünlük kontrolü ve kurtarma"
     },
     "versions": [
       {

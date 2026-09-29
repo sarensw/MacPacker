@@ -107,18 +107,18 @@ struct MoreFromLeanBytesProductView: View {
 struct WelcomeMoreFromLeanBytesView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool.", tableName: "LeanBytes", comment: "Explains that supporting the listed LeanBytes apps supports MacPacker")
+            Text(.LeanBytes.sponsoringInfo)
                 .foregroundStyle(.secondary)
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
             
-            MoreFromLeanBytesProductView(logo: "AppIcon_FlowMoose", title: Constants.otherAppFlowMoose, description: LocalizedStringResource("Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only.", table: "LeanBytes", comment: "Description of the FlowMoose app"), openSource: false, url: Constants.otherAppFlowMooseURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FlowMoose", title: Constants.otherAppFlowMoose, description: LocalizedStringResource.LeanBytes.flowMoose, openSource: false, url: Constants.otherAppFlowMooseURL)
             
-            MoreFromLeanBytesProductView(logo: "AppIcon_FileFillet", title: Constants.otherAppFileFillet, description: LocalizedStringResource("Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows.", table: "LeanBytes", comment: "Description of the FileFillet app"), openSource: false, url: Constants.otherAppFileFilletURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FileFillet", title: Constants.otherAppFileFillet, description: LocalizedStringResource.LeanBytes.fileFillet, openSource: false, url: Constants.otherAppFileFilletURL)
 
             // Deliberately untranslated: FrameBeast is early access and its
             // pitch still changes, so it stays out of POEditor for now.
-            MoreFromLeanBytesProductView(logo: "AppIcon_FrameBeast", title: Constants.otherAppFrameBeast, description: LocalizedStringResource("I made the App Store screenshots with this tool.", table: "LeanBytes", comment: "Description to the FrameBeast app"), openSource: false, url: Constants.otherAppFrameBeastURL, pill: .earlyAccess, videoURL: Constants.otherAppFrameBeastVideoURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FrameBeast", title: Constants.otherAppFrameBeast, description: LocalizedStringResource.LeanBytes.frameBeastShort, openSource: false, url: Constants.otherAppFrameBeastURL, pill: .earlyAccess, videoURL: Constants.otherAppFrameBeastVideoURL)
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
