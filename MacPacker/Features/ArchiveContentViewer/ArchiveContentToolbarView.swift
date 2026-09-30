@@ -294,7 +294,6 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FrameBeast"))
                         }
                         .labelStyle(.titleAndIcon)
-                        // Deliberately untranslated, see WelcomeMoreFromLeanBytesView.
                         Text(.LeanBytes.frameBeast)
                     }
                 } label: {
