@@ -118,7 +118,7 @@ struct WelcomeMoreFromLeanBytesView: View {
 
             // Deliberately untranslated: FrameBeast is early access and its
             // pitch still changes, so it stays out of POEditor for now.
-            MoreFromLeanBytesProductView(logo: "AppIcon_FrameBeast", title: Constants.otherAppFrameBeast, description: LocalizedStringResource.LeanBytes.frameBeastShort, openSource: false, url: Constants.otherAppFrameBeastURL, pill: .earlyAccess, videoURL: Constants.otherAppFrameBeastVideoURL)
+            MoreFromLeanBytesProductView(logo: "AppIcon_FrameBeast", title: Constants.otherAppFrameBeast, description: LocalizedStringResource.LeanBytes.frameBeastShort, openSource: false, url: Constants.otherAppFrameBeastURL, pill: .none, videoURL: Constants.otherAppFrameBeastVideoURL)
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
