@@ -47,7 +47,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
     }
 
     private var moreAppsTitle: AttributedString {
-        var title = AttributedString(localized: LocalizedStringResource("More Apps", table: "LeanBytes", comment: "Hint to the user that the submenu contains links for more apps that they might like."))
+        var title = AttributedString(localized: .LeanBytes.moreApps)
         title.append(AttributedString(stringLiteral: " "))
         
 //        var dot = AttributedString(stringLiteral: "●")
@@ -270,7 +270,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FlowMoose"))
                         }
                         .labelStyle(.titleAndIcon)
-                        Text("Do more with your voice", tableName: "LeanBytes", comment: "Short description of the FlowMoose app")
+                        Text(.LeanBytes.flowMooseShort)
                     }
                     
                     Button {
@@ -282,7 +282,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FileFillet"))
                         }
                         .labelStyle(.titleAndIcon)
-                        Text("Organize files. Fast.", tableName: "LeanBytes", comment: "Short description of the FileFillet app")
+                        Text(.LeanBytes.fileFilletShort)
                     }
 
                     Button {
@@ -294,8 +294,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                             Image(nsImage: .menuIcon(named: "AppIcon_FrameBeast"))
                         }
                         .labelStyle(.titleAndIcon)
-                        // Deliberately untranslated, see WelcomeMoreFromLeanBytesView.
-                        Text("MacPackers app store & social media assets are made with this app", tableName: "LeanBytes", comment: "Short description of the FrameBeast app")
+                        Text(.LeanBytes.frameBeast)
                     }
                 } label: {
                     Label {

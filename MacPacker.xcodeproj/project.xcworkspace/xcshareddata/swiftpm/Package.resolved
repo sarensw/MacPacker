@@ -1,5 +1,5 @@
 {
-  "originHash" : "210d9d2d45edcc5ff2b24808daa04b4049779472562f1be1d45ba24656a9b75d",
+  "originHash" : "cf1954ad45bc887cf7cad7499ad4da215ff950bc2fab8537b18122ce7f3bc6b9",
   "pins" : [
     {
       "identity" : "bitbytedata",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/LeanBytes/SandboxPilotKit",
       "state" : {
-        "revision" : "5733ab7e8f234ff3fbfb926a229d8bd5e2c6c358",
-        "version" : "1.4.0"
+        "revision" : "8adcda254912964555f088308d6c82178c48eba3",
+        "version" : "1.4.1"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/sparkle-project/Sparkle",
       "state" : {
-        "revision" : "d46d456107feacc80711b21847b82b07bd9fb46e",
-        "version" : "2.9.3"
+        "revision" : "eef1a539a373c1f1a320624b1130fc5de7b2e100",
+        "version" : "2.10.0"
       }
     },
     {
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-system",
       "state" : {
-        "revision" : "7502b711c92a17741fa625d722b0ccbd595d8ed1",
-        "version" : "1.7.2"
+        "revision" : "869129b7bf4ecc57b97d0193ad29690ca2134750",
+        "version" : "1.8.1"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tailbeat/tailbeatkit",
       "state" : {
-        "revision" : "2eb4d2602ed9e40c58b2b6564f4c2806e369b880",
-        "version" : "0.13.0"
+        "revision" : "3b9d5070f821eb3eaee5153c001736642ddcd0a5",
+        "version" : "0.14.0"
       }
     },
     {

@@ -38,8 +38,9 @@ for entry in data["strings"].values():
     else:
         already += 1
 
-with open(path, "w", encoding="utf-8") as f:
-    json.dump(data, f, indent=2, sort_keys=True, ensure_ascii=False)
+if fixed:
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, sort_keys=True, ensure_ascii=False)
 
 total = len(data["strings"])
 print(f"{path}: restored extractionState on {fixed} entr{'y' if fixed == 1 else 'ies'} "

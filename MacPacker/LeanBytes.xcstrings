@@ -1,13 +1,14 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows." : {
+    "fileFillet" : {
       "comment" : "Description of the FileFillet app",
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kopiere oder verschiebe Dateien in deine bevorzugten Ordner und deren Unterordner. Ganz ohne zusätzliche Finder-Fenster."
+            "value" : "Kopiere oder verschiebe Dateien in deine Lieblingsordner und deren Unterordner. Ganz ohne neue Finder-Fenster."
           }
         },
         "en" : {
@@ -16,108 +17,605 @@
             "value" : "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows."
           }
         },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia o mueve archivos a tus carpetas favoritas y sus subcarpetas. Sin abrir nuevas ventanas del Finder."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فایل‌ها را به پوشه‌های دلخواه‌تان و زیرپوشه‌های آن‌ها کپی یا منتقل کنید. بدون نیاز به باز کردن پنجره‌های جدید Finder."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiez ou déplacez des fichiers vers vos dossiers favoris et leurs sous-dossiers. Sans ouvrir de nouvelles fenêtres Finder."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia o sposta i file nelle tue cartelle preferite e nelle loro sottocartelle. Senza aprire nuove finestre del Finder."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "よく使うフォルダとそのサブフォルダへファイルをコピー・移動。新しいFinderウインドウを開く必要はありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "즐겨찾는 폴더와 그 하위 폴더로 파일을 복사하거나 이동하세요. 새 Finder 윈도우를 열 필요가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopieer of verplaats bestanden naar je favoriete mappen en hun submappen. Zonder nieuwe Finder-vensters te openen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiuj lub przenoś pliki do ulubionych folderów i ich podfolderów. Bez otwierania nowych okien Findera."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copie ou mova arquivos para suas pastas favoritas e respectivas subpastas. Sem abrir novas janelas do Finder."
+          }
+        },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Копируйте или перемещайте файлы в ваши папки и их подпапки. Нет необходимости открывать новые окна Finder."
+            "value" : "Копируйте или перемещайте файлы в избранные папки и их подпапки. Без открытия новых окон Finder."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yeni Finder pencereleri açmadan dosyaları favori klasörlerinize ve alt klasörlerine kopyalayın veya taşıyın."
+            "value" : "Dosyaları favori klasörlerinize ve alt klasörlerine kopyalayın veya taşıyın. Yeni Finder pencereleri açmanıza gerek yok."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копіюйте або переміщуйте файли до улюблених папок та їхніх підпапок. Без відкриття нових вікон Finder."
           }
         },
         "vi" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Copy or move files to your favorite folders and their sub-folders. No need to open new Finder windows."
+            "state" : "translated",
+            "value" : "Sao chép hoặc di chuyển tệp vào các thư mục ưa thích và thư mục con của chúng. Không cần mở cửa sổ Finder mới."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将文件复制或移动到常用文件夹及其子文件夹，无需打开新的访达窗口。"
+            "value" : "将文件拷贝或移动到常用文件夹及其子文件夹，无需打开新的“访达”窗口。"
           }
         }
       }
     },
-    "Do more with your voice" : {
+    "fileFilletShort" : {
+      "comment" : "Short description of the FileFillet app",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dateien organisieren. Schnell."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organize files. Fast."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organiza archivos. Rápido."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سازمان‌دهی سریع فایل‌ها."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organisez vos fichiers. Vite."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organizza i file. In un attimo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイルをすばやく整理。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파일 정리, 빠르게."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestanden ordenen. Snel."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porządkuj pliki. Szybko."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organize arquivos. Rápido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Упорядочивайте файлы. Быстро."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dosyalarınızı hızla düzenleyin."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Упорядковуйте файли. Швидко."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sắp xếp tệp. Thật nhanh."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速整理文件。"
+          }
+        }
+      }
+    },
+    "flowMoose" : {
+      "comment" : "Description of the FlowMoose app",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private Spracheingabe, entwickelt für macOS 26 und 27"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private voice-2-text that is designed for macOS 26 & 27"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictado privado, diseñado para macOS 26 y 27"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تبدیل خصوصی گفتار به متن، طراحی‌شده برای macOS 26 و 27"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictée vocale privée, conçue pour macOS 26 et 27"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dettatura privata, progettata per macOS 26 e 27"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS 26と27向けに設計された、プライベートな音声入力"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS 26 및 27에 맞게 설계된, 개인정보를 지키는 받아쓰기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacyvriendelijke spraak-naar-tekst, ontworpen voor macOS 26 en 27"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prywatne dyktowanie, zaprojektowane dla macOS 26 i 27"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ditado privado, projetado para o macOS 26 e 27"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приватная диктовка, созданная для macOS 26 и 27"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS 26 ve 27 için tasarlanmış, gizlilik odaklı dikte"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приватне диктування, створене для macOS 26 і 27"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chuyển giọng nói thành văn bản riêng tư, thiết kế cho macOS 26 và 27"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "专为 macOS 26 和 27 设计的私密语音转文字"
+          }
+        }
+      }
+    },
+    "flowMooseShort" : {
       "comment" : "Short description of the FlowMoose app",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Do more with your voice"
-          }
-        }
-      }
-    },
-    "I made the App Store screenshots with this tool." : {
-      "comment" : "Description to the FrameBeast app",
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "I made the App Store screenshots with this tool."
-          }
-        }
-      }
-    },
-    "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool." : {
-      "comment" : "Explains that supporting the listed LeanBytes apps supports MacPacker",
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker wird durch meine eigene Arbeit bei LeanBytes finanziert. Wenn du die Apps unten unterstützt, unterstützt du damit direkt dieses Open-Source-Projekt."
+            "value" : "Private Spracheingabe"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
+            "value" : "Private voice-2-text"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictado privado"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تبدیل خصوصی گفتار به متن"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictée vocale privée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dettatura privata"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プライベートな音声入力"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개인정보를 지키는 받아쓰기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacyvriendelijke spraak-naar-tekst"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prywatne dyktowanie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ditado privado"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker создан благодаря моей работе в LeanBytes. Поддержка приложений, перечисленных ниже, напрямую способствует развитию этого инструмента с открытым исходным кодом."
+            "value" : "Приватная диктовка"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker, LeanBytes bünyesindeki çalışmalarım sayesinde desteklenmektedir. Aşağıdaki uygulamaları destekleyerek bu açık kaynak aracına doğrudan katkıda bulunabilirsiniz."
+            "value" : "Gizlilik odaklı dikte"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приватне диктування"
           }
         },
         "vi" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
+            "state" : "translated",
+            "value" : "Chuyển giọng nói thành văn bản riêng tư"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker 由我在 LeanBytes 的工作赞助。支持以下应用即直接支持此开源工具。"
+            "value" : "私密语音转文字"
           }
         }
       }
     },
-    "MacPackers app store & social media assets are made with this app" : {
+    "frameBeast" : {
       "comment" : "Short description of the FrameBeast app",
+      "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medien-Assets erstellen und automatisieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media asset creation & automation"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creación y automatización de recursos multimedia"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ساخت و خودکارسازی محتوای رسانه‌ای"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Création et automatisation de médias"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creazione e automazione di contenuti multimediali"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メディアアセットの作成と自動化"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미디어 에셋 제작 및 자동화"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media-assets maken en automatiseren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tworzenie i automatyzacja materiałów multimedialnych"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criação e automação de mídia"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создание и автоматизация медиаматериалов"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medya içeriği oluşturma ve otomasyon"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Створення та автоматизація медіаматеріалів"
+          }
+        },
         "vi" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "MacPackers app store & social media assets are made with this app"
+            "state" : "translated",
+            "value" : "Tạo và tự động hóa tài nguyên đa phương tiện"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "媒体素材创作与自动化"
           }
         }
       }
     },
-    "More Apps" : {
+    "frameBeastShort" : {
+      "comment" : "Description to the FrameBeast app",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medien-Assets erstellen und automatisieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media asset creation & automation"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creación y automatización de recursos multimedia"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ساخت و خودکارسازی محتوای رسانه‌ای"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Création et automatisation de médias"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creazione e automazione di contenuti multimediali"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メディアアセットの作成と自動化"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미디어 에셋 제작 및 자동화"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media-assets maken en automatiseren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tworzenie i automatyzacja materiałów multimedialnych"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criação e automação de mídia"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создание и автоматизация медиаматериалов"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medya içeriği oluşturma ve otomasyon"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Створення та автоматизація медіаматеріалів"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tạo và tự động hóa tài nguyên đa phương tiện"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "媒体素材创作与自动化"
+          }
+        }
+      }
+    },
+    "moreApps" : {
       "comment" : "Hint to the user that the submenu contains links for more apps that they might like.",
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -134,13 +632,13 @@
         "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Más Aplicaciones"
+            "value" : "Más apps"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "برنامه های بیشتر"
+            "value" : "برنامه‌های بیشتر"
           }
         },
         "fr" : {
@@ -155,16 +653,28 @@
             "value" : "Altre app"
           }
         },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その他のアプリ"
+          }
+        },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "더 많은 앱"
           }
         },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meer apps"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Może Cię zainteresować"
+            "value" : "Więcej aplikacji"
           }
         },
         "pt-BR" : {
@@ -176,7 +686,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Больше приложений"
+            "value" : "Другие приложения"
           }
         },
         "tr" : {
@@ -188,13 +698,13 @@
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Більше програм"
+            "value" : "Інші програми"
           }
         },
         "vi" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "More Apps"
+            "state" : "translated",
+            "value" : "Ứng dụng khác"
           }
         },
         "zh-Hans" : {
@@ -205,84 +715,104 @@
         }
       }
     },
-    "Organize files. Fast." : {
-      "comment" : "Short description of the FileFillet app",
+    "sponsoringInfo" : {
+      "comment" : "Explains that supporting the listed LeanBytes apps supports MacPacker",
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Organisiere Dateien. Schnell."
+            "value" : "MacPacker wird durch meine eigene Arbeit bei LeanBytes finanziert. Wenn du die Apps unten unterstützt, unterstützt du direkt dieses Open-Source-Tool."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Organize files. Fast."
+            "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker se financia con mi propio trabajo en LeanBytes. Al apoyar las apps de abajo, apoyas directamente esta herramienta de código abierto."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هزینه‌های MacPacker از کار خودم در LeanBytes تأمین می‌شود. حمایت از برنامه‌های زیر، مستقیماً از این ابزار متن‌باز حمایت می‌کند."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker est financé par mon propre travail chez LeanBytes. Soutenir les apps ci-dessous, c’est soutenir directement cet outil open source."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker è finanziato dal mio lavoro in LeanBytes. Sostenere le app qui sotto significa sostenere direttamente questo strumento open source."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPackerは、LeanBytesでの私自身の仕事によって支えられています。以下のアプリを応援していただくことが、このオープンソースツールへの直接の支援になります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker는 LeanBytes에서 제가 하는 일로 운영됩니다. 아래 앱을 응원해 주시면 이 오픈 소스 도구를 직접 후원하는 셈입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker wordt gefinancierd met mijn eigen werk bij LeanBytes. Door de apps hieronder te steunen, steun je deze opensourcetool direct."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker jest finansowany z mojej własnej pracy w LeanBytes. Wspierając poniższe aplikacje, bezpośrednio wspierasz to narzędzie open source."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O MacPacker é financiado pelo meu próprio trabalho na LeanBytes. Ao apoiar os apps abaixo, você apoia diretamente esta ferramenta de código aberto."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Организовать файлы. Быстро."
+            "value" : "MacPacker финансируется за счёт моей собственной работы в LeanBytes. Поддерживая приложения ниже, вы напрямую поддерживаете этот инструмент с открытым исходным кодом."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dosyalarınızı hızla düzenleyin."
+            "value" : "MacPacker, LeanBytes’taki kendi çalışmalarımla destekleniyor. Aşağıdaki uygulamaları destekleyerek bu açık kaynaklı aracı doğrudan desteklemiş olursunuz."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MacPacker фінансується завдяки моїй власній роботі в LeanBytes. Підтримуючи програми нижче, ви безпосередньо підтримуєте цей інструмент із відкритим кодом."
           }
         },
         "vi" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Organize files. Fast."
+            "state" : "translated",
+            "value" : "MacPacker được tài trợ bởi chính công việc của tôi tại LeanBytes. Ủng hộ các ứng dụng bên dưới là trực tiếp ủng hộ công cụ mã nguồn mở này."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "整理文件，快速高效。"
-          }
-        }
-      }
-    },
-    "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only." : {
-      "comment" : "Description of the FlowMoose app",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sprache-zu-Text zur Entlastung von Handgelenken und Armen im Zeitalter von KI-Chats. Offline und ausschließlich lokal."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Функция преобразования голоса в текст для снижения нагрузки на запястья и руки в эпоху чатов с использованием ИИ. Работает в автономном режиме, полностью локально."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yapay zekâ sohbetleri çağında bilek ve kol yorgunluğunu azaltan Sesten Metne özelliği. Çevrimdışı çalışır; veriler yalnızca aygıtınızda kalır."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Voice-2-Text to reduce stress on wrists and arms in the age of AI chats. Offline, local only."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "语音转文字，减轻 AI 聊天时代手腕和手臂的压力。离线，仅限本地。"
+            "value" : "MacPacker 由我在 LeanBytes 的工作提供资助。支持下方的应用，就是直接支持这款开源工具。"
           }
         }
       }
