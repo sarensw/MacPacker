@@ -68,7 +68,7 @@ struct WelcomeView: View {
                     .font(.system(size: 28, weight: .medium))
                     .foregroundStyle(.orange)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(.welcomeSupportTitle)
+                    Text(.welcomeSupportTitle(Constants.appName))
                         .font(.title3.weight(.semibold))
                     Text(.welcomeSupportSubtitle)
                         .foregroundStyle(.secondary)
@@ -77,7 +77,7 @@ struct WelcomeView: View {
                 Button {
                     openURL(URL(string: "https://www.buymeacoffee.com/sarensw")!)
                 } label: {
-                    Text(.welcomeSupportButton)
+                    Text(.welcomeSupportButton(Constants.appName))
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.orange)

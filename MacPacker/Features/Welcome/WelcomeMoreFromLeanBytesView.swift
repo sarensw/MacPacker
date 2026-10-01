@@ -27,7 +27,7 @@ struct WelcomeMoreFromLeanBytesView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(.LeanBytes.welcomeFromTheMaker)
+            Text(.LeanBytes.welcomeFromTheMaker(Constants.appName))
                 .font(.title2.bold())
             Text(.LeanBytes.welcomeOtherAppsFund)
                 .foregroundStyle(.secondary)

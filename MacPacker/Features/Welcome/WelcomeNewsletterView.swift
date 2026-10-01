@@ -20,20 +20,20 @@ struct WelcomeNewsletterView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(.welcomeNewsletterTitle)
+            Text(.LeanBytes.welcomeNewsletterTitle)
                 .font(.title2.bold())
-            Text(.welcomeNewsletterSubtitle)
+            Text(.LeanBytes.welcomeNewsletterSubtitle(Constants.appName))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 4)
 
             HStack {
-                TextField(String(localized: .welcomeNewsletterEmail), text: $email)
+                TextField(String(localized: .LeanBytes.welcomeNewsletterEmail), text: $email)
                     .textFieldStyle(.roundedBorder)
                     .textContentType(.emailAddress)
                     .onSubmit(subscribe)
                 Button(action: subscribe) {
-                    Text(.welcomeNewsletterSubscribe)
+                    Text(.LeanBytes.welcomeNewsletterSubscribe)
                 }
                 .disabled(NewsletterSignup.normalizedEmail(email) == nil)
             }
@@ -52,9 +52,9 @@ struct WelcomeNewsletterView: View {
 
     private var note: LocalizedStringResource {
         switch status {
-        case .sent: .welcomeNewsletterConfirm
-        case .failed: .welcomeNewsletterFailed
-        case .idle, .sending: .welcomeNewsletterUnsubscribe
+        case .sent: .LeanBytes.welcomeNewsletterConfirm
+        case .failed: .LeanBytes.welcomeNewsletterFailed
+        case .idle, .sending: .LeanBytes.welcomeNewsletterUnsubscribe
         }
     }
 
