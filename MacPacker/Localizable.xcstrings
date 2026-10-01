@@ -5424,7 +5424,7 @@
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "حدود ٪@"
+            "value": "دربارهٔ %@"
           }
         },
         "fr": {
@@ -12043,7 +12043,7 @@
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "... ایمیل بفرستید به ٪ @"
+            "value": "... ایمیل بفرستید به %@"
           }
         },
         "fr": {
@@ -20275,7 +20275,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "@ 후원하기"
+            "value": "%@ 후원하기"
           }
         },
         "nl": {
@@ -20575,7 +20575,7 @@
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "به ٪ خوش آمدید @"
+            "value": "به %@ خوش آمدید"
           }
         },
         "fr": {
@@ -20617,7 +20617,7 @@
         "pt-br": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bem Vindo "
+            "value": "Bem-vindo ao %@"
           }
         },
         "ru": {
