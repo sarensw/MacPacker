@@ -19014,104 +19014,134 @@
         }
       }
     },
-    "welcomeCreditsMessage": {
-      "comment": "Thanks shown to contributors, translators, and project sponsors on the welcome screen",
+    "welcomeNewsletterConfirm": {
+      "comment": "Shown after the newsletter signup: an email asking to confirm the subscription is on its way",
       "extractionState": "manual",
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "❤️ Vielen Dank an alle PR-Mitwirkenden, Übersetzer und Sponsoren dieses Projekts!"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "Check your inbox to confirm."
           }
-        },
-        "es-mx": {
+        }
+      }
+    },
+    "welcomeNewsletterEmail": {
+      "comment": "Placeholder of the email field of the newsletter signup on the welcome window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Muchas gracias a todas las personas que contribuyeron con PRs, traducciones y patrocinios en este proyecto!"
+            "value": "Email address"
           }
-        },
-        "fa": {
+        }
+      }
+    },
+    "welcomeNewsletterFailed": {
+      "comment": "Shown when the newsletter signup failed, for example without an internet connection",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "That did not work. Please try again later."
           }
-        },
-        "fr": {
+        }
+      }
+    },
+    "welcomeNewsletterSubscribe": {
+      "comment": "Button that signs the entered email address up for the newsletter",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ un grand merci à tous les contributeurs, traducteurs et sponsors de ce projet !"
+            "value": "Subscribe"
           }
-        },
-        "it": {
+        }
+      }
+    },
+    "welcomeNewsletterSubtitle": {
+      "comment": "Explains what the newsletter on the welcome window is about",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Grazie a tutti i collaboratori, traduttori e sponsor di questo progetto!"
+            "value": "Occasional updates about MacPacker and my other apps."
           }
-        },
-        "ja": {
+        }
+      }
+    },
+    "welcomeNewsletterTitle": {
+      "comment": "Heading of the newsletter signup on the welcome window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "Stay in the loop"
           }
-        },
-        "ko": {
+        }
+      }
+    },
+    "welcomeNewsletterUnsubscribe": {
+      "comment": "Note under the newsletter signup: every newsletter email has an unsubscribe link",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "Unsubscribe anytime."
           }
-        },
-        "nl": {
+        }
+      }
+    },
+    "welcomeReleaseHighlights": {
+      "comment": "Heading of the welcome window's list of the most important changes in this version",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "Release highlights"
           }
-        },
-        "pl": {
+        }
+      }
+    },
+    "welcomeSupportButton": {
+      "comment": "Button in the welcome window's donation banner that opens the donation page",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Wielkie podziękowania dla wszystkich specjalistów ds. PR, tłumaczy i sponsorów tego projektu!"
+            "value": "Support MacPacker"
           }
-        },
-        "pt-br": {
+        }
+      }
+    },
+    "welcomeSupportSubtitle": {
+      "comment": "Text of the donation banner on the welcome window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "Your donation supports ongoing development."
           }
-        },
-        "ru": {
+        }
+      }
+    },
+    "welcomeSupportTitle": {
+      "comment": "Heading of the donation banner on the welcome window",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Огромное спасибо всем, кто внес свой вклад посредством PR, переводчикам и спонсорам этого проекта!"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "❤️ Bu projeye katkıda bulunan, çeviri yapan ve sponsor olan herkese çok teşekkürler!"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "❤️ Щиро дякую всім піарникам, перекладачам та спонсорам цього проєкту!"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "❤️ Xin chân thành cảm ơn tất cả những người đóng góp về PR, dịch thuật và nhà tài trợ cho dự án này!"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "❤️ 衷心感谢本项目所有的 PR 贡献者、翻译人员和赞助商！"
+            "value": "Help keep MacPacker growing"
           }
         }
       }
@@ -19214,6 +19244,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "欢迎使用 %@"
+          }
+        }
+      }
+    },
+    "welcomeViewAllChanges": {
+      "comment": "Link on the welcome window that opens the changes of every version",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View all changes"
           }
         }
       }

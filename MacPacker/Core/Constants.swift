@@ -38,5 +38,6 @@ class Constants {
     /// The utm query has to sit before the fragment, otherwise it becomes part
     /// of the anchor and the section is not scrolled to.
     public static let otherAppFrameBeastURL: URL = URL(string: "https://leanbytes.io/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui#framebeast")!
-    public static let otherAppFrameBeastVideoURL: URL = URL(string: "https://youtu.be/v8MMui9zeoA")!
+    /// Every app, including the ones MacPacker itself does not name.
+    public static let otherAppsURL: URL = URL(string: "https://leanbytes.io/?utm_source=macpacker&utm_content=welcome&utm_medium=ui#products")!
 }

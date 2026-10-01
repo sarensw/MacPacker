@@ -715,104 +715,50 @@
         }
       }
     },
-    "sponsoringInfo" : {
-      "comment" : "Explains that supporting the listed LeanBytes apps supports MacPacker",
+    "welcomeExploreApp" : {
+      "comment" : "Link on the welcome window that opens the website of another app by the same developer. %@ is that app's name, e.g. FileFillet",
       "extractionState" : "manual",
       "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker wird durch meine eigene Arbeit bei LeanBytes finanziert. Wenn du die Apps unten unterstützt, unterstützt du direkt dieses Open-Source-Tool."
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
+            "value" : "Explore %@"
           }
-        },
-        "es-MX" : {
+        }
+      }
+    },
+    "welcomeFromTheMaker" : {
+      "comment" : "Heading of the welcome window column that presents another app by the same developer",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker se financia con mi propio trabajo en LeanBytes. Al apoyar las apps de abajo, apoyas directamente esta herramienta de código abierto."
+            "value" : "From the maker of MacPacker"
           }
-        },
-        "fa" : {
+        }
+      }
+    },
+    "welcomeOtherAppsFund" : {
+      "comment" : "Shown under 'From the maker of MacPacker' on the welcome window",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "هزینه‌های MacPacker از کار خودم در LeanBytes تأمین می‌شود. حمایت از برنامه‌های زیر، مستقیماً از این ابزار متن‌باز حمایت می‌کند."
+            "value" : "My other apps help fund this open-source project."
           }
-        },
-        "fr" : {
+        }
+      }
+    },
+    "welcomeSeeAllApps" : {
+      "comment" : "Link on the welcome window that opens a website listing every app by the same developer",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker est financé par mon propre travail chez LeanBytes. Soutenir les apps ci-dessous, c’est soutenir directement cet outil open source."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker è finanziato dal mio lavoro in LeanBytes. Sostenere le app qui sotto significa sostenere direttamente questo strumento open source."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPackerは、LeanBytesでの私自身の仕事によって支えられています。以下のアプリを応援していただくことが、このオープンソースツールへの直接の支援になります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker는 LeanBytes에서 제가 하는 일로 운영됩니다. 아래 앱을 응원해 주시면 이 오픈 소스 도구를 직접 후원하는 셈입니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker wordt gefinancierd met mijn eigen werk bij LeanBytes. Door de apps hieronder te steunen, steun je deze opensourcetool direct."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker jest finansowany z mojej własnej pracy w LeanBytes. Wspierając poniższe aplikacje, bezpośrednio wspierasz to narzędzie open source."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O MacPacker é financiado pelo meu próprio trabalho na LeanBytes. Ao apoiar os apps abaixo, você apoia diretamente esta ferramenta de código aberto."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker финансируется за счёт моей собственной работы в LeanBytes. Поддерживая приложения ниже, вы напрямую поддерживаете этот инструмент с открытым исходным кодом."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker, LeanBytes’taki kendi çalışmalarımla destekleniyor. Aşağıdaki uygulamaları destekleyerek bu açık kaynaklı aracı doğrudan desteklemiş olursunuz."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker фінансується завдяки моїй власній роботі в LeanBytes. Підтримуючи програми нижче, ви безпосередньо підтримуєте цей інструмент із відкритим кодом."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker được tài trợ bởi chính công việc của tôi tại LeanBytes. Ủng hộ các ứng dụng bên dưới là trực tiếp ủng hộ công cụ mã nguồn mở này."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MacPacker 由我在 LeanBytes 的工作提供资助。支持下方的应用，就是直接支持这款开源工具。"
+            "value" : "See all my apps"
           }
         }
       }

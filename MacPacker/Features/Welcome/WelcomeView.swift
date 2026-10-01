@@ -11,90 +11,91 @@ import SwiftUI
 
 struct WelcomeView: View {
     @Environment(\.openURL) private var openURL
-    
-    var styledString: AttributedString {
-        var string = AttributedString(
-            localized: .welcomeTitle(Bundle.main.displayName)
-        )
-        string.foregroundColor = .secondary
-        string.font = .system(size: 24, weight: .medium)
-        
-        if let range = string.range(of: Bundle.main.displayName) {
-            string[range].foregroundColor = .primary
-        }
-        
-        return string
+
+    /// The app's own icon at the size shown. The system renders it for exactly
+    /// that size, so it stays sharp; a scaled-down bitmap blurs the zipper teeth.
+    /// It carries the standard macOS margin (the body is 824 of 1024), so 60pt
+    /// draws a 48pt body, with the margin padded away.
+    private var appIcon: NSImage {
+        let icon = NSApp.applicationIconImage.copy() as! NSImage
+        icon.size = NSSize(width: 60, height: 60)
+        return icon
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack  {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Image("AppIcon_MacPacker")
-                            .resizable()
-                            .frame(width: 40, height: 40, alignment: .center)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(styledString)
-                        }
-                        
-                        Spacer()
-                    }
-                    
-                    WelcomeChangelogView()
+            HStack(spacing: 16) {
+                Image(nsImage: appIcon)
+                    .padding(-6)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(.welcomeTitle(Bundle.main.displayName))
+                        .font(.largeTitle.bold())
+                    Text(.commonWhatsNew)
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity)
-                
-                Divider()
-                
-                VStack(alignment: .leading) {
-                    WelcomeMoreFromLeanBytesView()
-                    
-                    Divider()
-                        .padding(.top, 22)
-                        .padding(.bottom, 22)
-                    
-                    Text(.welcomeCreditsMessage)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.horizontal, 16)
-                    
-                    #if !STORE
-                    HStack {
-                        Image("BuyMeCoffee")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(height: 32)
-                            .onTapGesture {
-                                openURL(URL(string: "https://www.buymeacoffee.com/sarensw")!)
-                            }
-                        Image("Paypal")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(height: 32)
-                            .onTapGesture {
-                                openURL(URL(string: "https://www.paypal.com/donate/?hosted_button_id=KM8GA7MJMYNQN")!)
-                            }
-                    }
-                    .padding(16)
-                    #else
-                    Spacer()
-                    #endif
-                }
-                .frame(maxWidth: .infinity)
             }
-            
+            .padding(.top, 4)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 16)
+
             Divider()
-                .padding(.top, 22)
-                .padding(.bottom, 0)
-            
+                .padding(.horizontal, 24)
+
+            HStack(spacing: 0) {
+                WelcomeChangelogView()
+                    .padding(24)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 0) {
+                    WelcomeMoreFromLeanBytesView()
+                    Divider()
+                        .padding(.vertical, 20)
+                    WelcomeNewsletterView()
+                }
+                .padding(24)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+            // both columns as tall as the taller one, so "Coming next" sits at the bottom
+            .fixedSize(horizontal: false, vertical: true)
+
+            #if !STORE
+            Divider()
+            HStack(spacing: 16) {
+                Image(systemName: "heart")
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(.orange)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(.welcomeSupportTitle)
+                        .font(.title3.weight(.semibold))
+                    Text(.welcomeSupportSubtitle)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button {
+                    openURL(URL(string: "https://www.buymeacoffee.com/sarensw")!)
+                } label: {
+                    Text(.welcomeSupportButton)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+                .controlSize(.large)
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .background(.orange.opacity(0.08))
+            #endif
+
+            Divider()
+
             WelcomeFooterView()
         }
-        .padding(0)
     }
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
     WelcomeView()
-        .frame(width: 900)
+        .frame(width: 800)
 }
