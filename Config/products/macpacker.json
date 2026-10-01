@@ -307,6 +307,30 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Simpler welcome window",
+                "zh-Hans": "更简洁的欢迎窗口",
+                "fr": "Fenêtre de bienvenue simplifiée",
+                "de": "Einfacheres Willkommensfenster",
+                "it": "Finestra di benvenuto più semplice",
+                "ja": "よりシンプルなウェルカムウインドウ",
+                "fa": "پنجرهٔ خوش‌آمدگویی ساده‌تر",
+                "pl": "Prostsze okno powitalne",
+                "pt-BR": "Janela de boas-vindas mais simples",
+                "ru": "Упрощённое окно приветствия",
+                "uk": "Простіше вікно привітання",
+                "es-MX": "Ventana de bienvenida más sencilla",
+                "ko": "더 간결해진 환영 창",
+                "nl": "Eenvoudiger welkomstvenster",
+                "tr": "Daha sade karşılama penceresi",
+                "vi": "Cửa sổ chào mừng gọn gàng hơn"
+            },
+            "issues": [
+                "273"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {
