@@ -715,104 +715,410 @@
         }
       }
     },
-    "sponsoringInfo" : {
-      "comment" : "Explains that supporting the listed LeanBytes apps supports MacPacker",
+    "welcomeExploreApp" : {
+      "comment" : "Link on the welcome window that opens the website of another app by the same developer. %@ is that app's name, e.g. FileFillet",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker wird durch meine eigene Arbeit bei LeanBytes finanziert. Wenn du die Apps unten unterstützt, unterstützt du direkt dieses Open-Source-Tool."
+            "value" : "%@ entdecken"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker is sponsored by my own work at LeanBytes. Supporting the apps below directly supports this open-source tool."
+            "value" : "Explore %@"
           }
         },
         "es-MX" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker se financia con mi propio trabajo en LeanBytes. Al apoyar las apps de abajo, apoyas directamente esta herramienta de código abierto."
+            "value" : "Conoce %@"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "هزینه‌های MacPacker از کار خودم در LeanBytes تأمین می‌شود. حمایت از برنامه‌های زیر، مستقیماً از این ابزار متن‌باز حمایت می‌کند."
+            "value" : "آشنایی با %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker est financé par mon propre travail chez LeanBytes. Soutenir les apps ci-dessous, c’est soutenir directement cet outil open source."
+            "value" : "Découvrir %@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker è finanziato dal mio lavoro in LeanBytes. Sostenere le app qui sotto significa sostenere direttamente questo strumento open source."
+            "value" : "Scopri %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPackerは、LeanBytesでの私自身の仕事によって支えられています。以下のアプリを応援していただくことが、このオープンソースツールへの直接の支援になります。"
+            "value" : "%@を詳しく見る"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker는 LeanBytes에서 제가 하는 일로 운영됩니다. 아래 앱을 응원해 주시면 이 오픈 소스 도구를 직접 후원하는 셈입니다."
+            "value" : "%@ 살펴보기"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker wordt gefinancierd met mijn eigen werk bij LeanBytes. Door de apps hieronder te steunen, steun je deze opensourcetool direct."
+            "value" : "Ontdek %@"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker jest finansowany z mojej własnej pracy w LeanBytes. Wspierając poniższe aplikacje, bezpośrednio wspierasz to narzędzie open source."
+            "value" : "Poznaj %@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O MacPacker é financiado pelo meu próprio trabalho na LeanBytes. Ao apoiar os apps abaixo, você apoia diretamente esta ferramenta de código aberto."
+            "value" : "Conheça o %@"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker финансируется за счёт моей собственной работы в LeanBytes. Поддерживая приложения ниже, вы напрямую поддерживаете этот инструмент с открытым исходным кодом."
+            "value" : "Подробнее о %@"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker, LeanBytes’taki kendi çalışmalarımla destekleniyor. Aşağıdaki uygulamaları destekleyerek bu açık kaynaklı aracı doğrudan desteklemiş olursunuz."
+            "value" : "%@ uygulamasını keşfet"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker фінансується завдяки моїй власній роботі в LeanBytes. Підтримуючи програми нижче, ви безпосередньо підтримуєте цей інструмент із відкритим кодом."
+            "value" : "Докладніше про %@"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker được tài trợ bởi chính công việc của tôi tại LeanBytes. Ủng hộ các ứng dụng bên dưới là trực tiếp ủng hộ công cụ mã nguồn mở này."
+            "value" : "Khám phá %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MacPacker 由我在 LeanBytes 的工作提供资助。支持下方的应用，就是直接支持这款开源工具。"
+            "value" : "了解 %@"
+          }
+        }
+      }
+    },
+    "welcomeFromTheMaker" : {
+      "comment" : "Heading of the welcome window column that presents another app by the same developer. %@ is the app name, MacPacker.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vom Entwickler von %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From the maker of %@"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del creador de %@"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "از سازندهٔ %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du créateur de %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dal creatore di %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@の開発者より"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 개발자의 다른 앱"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Van de maker van %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Od twórcy aplikacji %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do criador do %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "От создателя %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@’ın geliştiricisinden"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Від творця %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Từ nhà phát triển %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来自 %@ 开发者"
+          }
+        }
+      }
+    },
+    "welcomeOtherAppsFund" : {
+      "comment" : "Shown under 'From the maker of MacPacker' on the welcome window",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meine anderen Apps helfen, dieses Open-Source-Projekt zu finanzieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My other apps help fund this open-source project."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mis otras apps ayudan a financiar este proyecto de código abierto."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "برنامه‌های دیگرم به تأمین هزینه‌های این پروژهٔ متن‌باز کمک می‌کنند."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes autres apps aident à financer ce projet open source."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le mie altre app aiutano a finanziare questo progetto open source."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私のほかのアプリが、このオープンソースプロジェクトを資金面で支えています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제 다른 앱들이 이 오픈 소스 프로젝트에 자금을 보태고 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mijn andere apps helpen dit opensourceproject te financieren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moje inne aplikacje pomagają finansować ten projekt open source."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meus outros apps ajudam a financiar este projeto de código aberto."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мои другие приложения помогают финансировать этот проект с открытым исходным кодом."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diğer uygulamalarım bu açık kaynaklı projenin finansmanına katkı sağlıyor."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мої інші програми допомагають фінансувати цей проєкт із відкритим кодом."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các ứng dụng khác của tôi giúp tài trợ cho dự án mã nguồn mở này."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的其他应用为这个开源项目提供资金支持。"
+          }
+        }
+      }
+    },
+    "welcomeSeeAllApps" : {
+      "comment" : "Link on the welcome window that opens a website listing every app by the same developer",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle meine Apps ansehen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See all my apps"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver todas mis apps"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مشاهدهٔ همهٔ برنامه‌هایم"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir toutes mes apps"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vedi tutte le mie app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私のアプリをすべて見る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제 앱 모두 보기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekijk al mijn apps"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobacz wszystkie moje aplikacje"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver todos os meus apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все мои приложения"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tüm uygulamalarımı gör"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Усі мої програми"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem tất cả ứng dụng của tôi"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看我的所有应用"
           }
         }
       }

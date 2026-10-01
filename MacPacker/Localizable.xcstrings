@@ -100,6 +100,12 @@
             "state": "translated",
             "value": "解压正在进行中"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An extraction is still in progress"
+          }
         }
       }
     },
@@ -201,6 +207,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "仍要退出"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit Anyway"
           }
         }
       }
@@ -304,6 +316,12 @@
             "state": "translated",
             "value": "现在退出将停止解压，并可能在目标位置留下不完整的文件。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitting now stops the extraction and may leave incomplete files at the destination."
+          }
         }
       }
     },
@@ -404,6 +422,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "从压缩包中删除所选项目"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete the selected items from the archive"
           }
         }
       }
@@ -507,6 +531,12 @@
             "state": "translated",
             "value": "已修改"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modified"
+          }
         }
       }
     },
@@ -608,6 +638,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "上层文件夹"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enclosing Folder"
           }
         }
       }
@@ -711,6 +747,12 @@
             "state": "translated",
             "value": "在新窗口中打开"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另開新視窗"
+          }
         }
       }
     },
@@ -812,6 +854,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "快速查看"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速預覽"
           }
         }
       }
@@ -915,6 +963,12 @@
             "state": "translated",
             "value": "拖放至此处压缩"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop here to compress"
+          }
         }
       }
     },
@@ -1016,6 +1070,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "压缩至当前位置"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress here"
           }
         }
       }
@@ -1119,6 +1179,12 @@
             "state": "translated",
             "value": "保留在顶部"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep on Top"
+          }
         }
       }
     },
@@ -1219,6 +1285,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "将文件或文件夹添加到压缩包"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增檔案或資料夾至壓縮檔"
           }
         }
       }
@@ -1322,6 +1394,12 @@
             "state": "translated",
             "value": "压缩文件信息"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archive info"
+          }
         }
       }
     },
@@ -1423,6 +1501,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "自动"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic"
           }
         }
       }
@@ -1526,6 +1610,12 @@
             "state": "translated",
             "value": "在“选项”中更改密码…"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change the password under Options…"
+          }
         }
       }
     },
@@ -1627,6 +1717,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "zip 密码只能使用字母 A–Z、数字、空格和常见符号。7z 接受任意密码。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A zip password can only use letters A–Z, digits, spaces and common symbols. 7z takes any password."
           }
         }
       }
@@ -1730,6 +1826,12 @@
             "state": "translated",
             "value": "创建新压缩包"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "建立新的壓縮檔"
+          }
         }
       }
     },
@@ -1831,6 +1933,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "选择解压位置"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose where to extract"
           }
         }
       }
@@ -1934,6 +2042,12 @@
             "state": "translated",
             "value": "剩余 %@"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ left"
+          }
         }
       }
     },
@@ -2035,6 +2149,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "使用 AES-256 时，zip 密码最长为 %lld 个字符。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With AES-256, a zip password can be at most %lld characters long."
           }
         }
       }
@@ -2138,6 +2258,12 @@
             "state": "translated",
             "value": "ZipCrypto 很容易被破解。仅在工具无法打开 AES-256 压缩包时才选择它。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZipCrypto is easily broken. Pick it only for tools that cannot open AES-256."
+          }
         }
       }
     },
@@ -2239,6 +2365,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "压缩包"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the archive"
           }
         }
       }
@@ -2342,6 +2474,12 @@
             "state": "translated",
             "value": "字典大小(D)"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dictionary size"
+          }
         }
       }
     },
@@ -2443,6 +2581,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "不保存"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不要儲存"
           }
         }
       }
@@ -2546,6 +2690,12 @@
             "state": "translated",
             "value": "不拆分"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don't split"
+          }
         }
       }
     },
@@ -2586,7 +2736,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cifra anche il nome dei file"
+            "value": "Cifra i nomi dei file"
           }
         },
         "ja": {
@@ -2647,6 +2797,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "加密文件名"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encrypt file names"
           }
         }
       }
@@ -2750,6 +2906,12 @@
             "state": "translated",
             "value": "在 zip 压缩包中文件名保持可读。7z 也可以加密文件名。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File names stay readable in a zip archive. 7z can encrypt them too."
+          }
         }
       }
     },
@@ -2851,6 +3013,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "加密方式"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encryption method"
           }
         }
       }
@@ -2954,6 +3122,12 @@
             "state": "translated",
             "value": "排除 .DS_Store 文件"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exclude .DS_Store files"
+          }
         }
       }
     },
@@ -3052,6 +3226,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "格式"
+          }
+        },
+        "zh-TW": {
           "stringUnit": {
             "state": "translated",
             "value": "格式"
@@ -3158,6 +3338,12 @@
             "state": "translated",
             "value": "快速"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速"
+          }
         }
       }
     },
@@ -3259,6 +3445,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "极速压缩"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fastest"
           }
         }
       }
@@ -3362,6 +3554,12 @@
             "state": "translated",
             "value": "最大"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "極致"
+          }
         }
       }
     },
@@ -3463,6 +3661,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "标准"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一般"
           }
         }
       }
@@ -3566,6 +3770,12 @@
             "state": "translated",
             "value": "不压缩"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Store"
+          }
         }
       }
     },
@@ -3667,6 +3877,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "极限压缩"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultra"
           }
         }
       }
@@ -3770,6 +3986,12 @@
             "state": "translated",
             "value": "压缩方式"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Method"
+          }
         }
       }
     },
@@ -3871,6 +4093,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "非固实"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non-solid"
           }
         }
       }
@@ -3974,6 +4202,12 @@
             "state": "translated",
             "value": "重复"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat"
+          }
         }
       }
     },
@@ -4075,6 +4309,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "固实"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solid"
           }
         }
       }
@@ -4178,6 +4418,12 @@
             "state": "translated",
             "value": "固实数据大小"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solid block size"
+          }
         }
       }
     },
@@ -4279,6 +4525,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "分割为分卷"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Split into volumes"
           }
         }
       }
@@ -4382,6 +4634,12 @@
             "state": "translated",
             "value": "是否保存对“%@”所做的更改？"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do you want to save the changes you made to “%@”?"
+          }
         }
       }
     },
@@ -4483,6 +4741,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "如果不保存，您的更改将丢失。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your changes will be lost if you don’t save them."
           }
         }
       }
@@ -4586,6 +4850,12 @@
             "state": "translated",
             "value": "单词大小(W)"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Word size"
+          }
         }
       }
     },
@@ -4687,6 +4957,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "修改日期"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date Modified"
           }
         }
       }
@@ -4790,6 +5066,12 @@
             "state": "translated",
             "value": "名称"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名稱"
+          }
         }
       }
     },
@@ -4891,6 +5173,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "压缩后大小"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "壓縮檔大小"
           }
         }
       }
@@ -4994,6 +5282,12 @@
             "state": "translated",
             "value": "权限"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "權限"
+          }
         }
       }
     },
@@ -5096,6 +5390,12 @@
             "state": "translated",
             "value": "大小"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "大小"
+          }
         }
       }
     },
@@ -5124,7 +5424,7 @@
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "حدود ٪@"
+            "value": "دربارهٔ %@"
           }
         },
         "fr": {
@@ -5197,6 +5497,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "关于 %@"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About %@"
           }
         }
       }
@@ -5300,6 +5606,12 @@
             "state": "translated",
             "value": "致谢"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acknowledgements"
+          }
         }
       }
     },
@@ -5401,6 +5713,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "添加"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增"
           }
         }
       }
@@ -5504,6 +5822,12 @@
             "state": "translated",
             "value": "添加到压缩包..."
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to archive..."
+          }
         }
       }
     },
@@ -5606,6 +5930,12 @@
             "state": "translated",
             "value": "添加到“%@”"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to “%@”"
+          }
         }
       }
     },
@@ -5704,6 +6034,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "返回"
+          }
+        },
+        "zh-TW": {
           "stringUnit": {
             "state": "translated",
             "value": "返回"
@@ -5810,6 +6146,12 @@
             "state": "translated",
             "value": "底部"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "底部"
+          }
         }
       }
     },
@@ -5908,6 +6250,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消"
+          }
+        },
+        "zh-TW": {
           "stringUnit": {
             "state": "translated",
             "value": "取消"
@@ -6014,6 +6362,12 @@
             "state": "translated",
             "value": "清除"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除"
+          }
         }
       }
     },
@@ -6023,7 +6377,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compress Contents of \"%@\""
+            "value": "Inhalt von \"%@\" komprimieren"
           }
         },
         "en": {
@@ -6115,6 +6469,12 @@
             "state": "translated",
             "value": "压缩“%@”的内容"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress Contents of \"%@\""
+          }
         }
       }
     },
@@ -6124,7 +6484,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compress to \"%@\""
+            "value": "Komprimieren nach \"%@\""
           }
         },
         "en": {
@@ -6215,6 +6575,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "压缩为“%@”"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress to \"%@\""
           }
         }
       }
@@ -6318,6 +6684,12 @@
             "state": "translated",
             "value": "压缩"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compression"
+          }
         }
       }
     },
@@ -6419,6 +6791,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "继续"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "繼續"
           }
         }
       }
@@ -6522,6 +6900,12 @@
             "state": "translated",
             "value": "删除"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "刪除"
+          }
         }
       }
     },
@@ -6624,6 +7008,12 @@
             "state": "translated",
             "value": "已停用"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disabled"
+          }
         }
       }
     },
@@ -6664,7 +7054,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Fine"
+            "value": "Fatto"
           }
         },
         "ja": {
@@ -6725,6 +7115,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "完成"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
           }
         }
       }
@@ -6828,6 +7224,12 @@
             "state": "translated",
             "value": "已启用"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "enabled"
+          }
         }
       }
     },
@@ -6929,6 +7331,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "解压"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract"
           }
         }
       }
@@ -7032,6 +7440,12 @@
             "state": "translated",
             "value": "解压压缩包"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archive"
+          }
         }
       }
     },
@@ -7133,6 +7547,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "解压到当前位置"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract Here"
           }
         }
       }
@@ -7236,6 +7656,12 @@
             "state": "translated",
             "value": "解压选中项"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract selected"
+          }
         }
       }
     },
@@ -7245,7 +7671,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Extract to \"%@\""
+            "value": "Entpacken nach \"%@\""
           }
         },
         "en": {
@@ -7336,6 +7762,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "解压到“%@”"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract to \"%@\""
           }
         }
       }
@@ -7439,6 +7871,12 @@
             "state": "translated",
             "value": "正在解压"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extracting"
+          }
         }
       }
     },
@@ -7479,7 +7917,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Trova"
+            "value": "Cerca"
           }
         },
         "ja": {
@@ -7540,6 +7978,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "查找"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜尋"
           }
         }
       }
@@ -7643,6 +8087,12 @@
             "state": "translated",
             "value": "授予访问权限"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取得權限"
+          }
         }
       }
     },
@@ -7745,6 +8195,12 @@
             "state": "translated",
             "value": "帮助翻译"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "協助翻譯"
+          }
         }
       }
     },
@@ -7846,6 +8302,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "法律声明"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Legal Notice"
           }
         }
       }
@@ -8177,6 +8639,18 @@
               }
             }
           }
+        },
+        "zh-TW": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld item"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -8279,6 +8753,12 @@
             "state": "translated",
             "value": "进一步了解…"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learn more…"
+          }
         }
       }
     },
@@ -8377,6 +8857,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更多"
+          }
+        },
+        "zh-TW": {
           "stringUnit": {
             "state": "translated",
             "value": "更多"
@@ -8483,6 +8969,12 @@
             "state": "translated",
             "value": "新建压缩包"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Archive"
+          }
         }
       }
     },
@@ -8584,6 +9076,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "新 %@ 窗口"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New %@ Window"
           }
         }
       }
@@ -8687,6 +9185,12 @@
             "state": "translated",
             "value": "无"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無"
+          }
         }
       }
     },
@@ -8787,6 +9291,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "未选择任何内容"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing selected"
           }
         }
       }
@@ -8890,6 +9400,12 @@
             "state": "translated",
             "value": "确定"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認"
+          }
         }
       }
     },
@@ -8991,6 +9507,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "打开"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open"
           }
         }
       }
@@ -9094,6 +9616,12 @@
             "state": "translated",
             "value": "打开压缩包"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Archive"
+          }
         }
       }
     },
@@ -9103,7 +9631,7 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open %lld Archives"
+            "value": "Öffne %lld Archive"
           }
         },
         "en": {
@@ -9194,6 +9722,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "打开 %lld 个压缩包"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open %lld Archives"
           }
         }
       }
@@ -9297,6 +9831,12 @@
             "state": "translated",
             "value": "选项"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選項"
+          }
         }
       }
     },
@@ -9398,6 +9938,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "密码："
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼："
           }
         }
       }
@@ -9501,6 +10047,12 @@
             "state": "translated",
             "value": "“%@”受密码保护。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” is password protected."
+          }
         }
       }
     },
@@ -9602,6 +10154,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "预览"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "預覽"
           }
         }
       }
@@ -9705,6 +10263,12 @@
             "state": "translated",
             "value": "隐私"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隱私"
+          }
         }
       }
     },
@@ -9806,6 +10370,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "快速压缩"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "快速壓縮"
           }
         }
       }
@@ -9909,6 +10479,12 @@
             "state": "translated",
             "value": "快速压缩窗口"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Compress Window"
+          }
         }
       }
     },
@@ -10010,6 +10586,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "刷新"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新整理"
           }
         }
       }
@@ -10113,6 +10695,12 @@
             "state": "translated",
             "value": "保存"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "儲存"
+          }
         }
       }
     },
@@ -10214,6 +10802,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "保存为…"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "另存新檔"
           }
         }
       }
@@ -10545,6 +11139,18 @@
               }
             }
           }
+        },
+        "zh-TW": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld selected"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -10646,6 +11252,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "设置…"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "設定"
           }
         }
       }
@@ -10749,6 +11361,12 @@
             "state": "translated",
             "value": "开始"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開始"
+          }
         }
       }
     },
@@ -10789,7 +11407,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Termini e condizioni"
+            "value": "Termini e Condizioni"
           }
         },
         "ja": {
@@ -10850,6 +11468,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "条款与条件"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terms & Conditions"
           }
         }
       }
@@ -10953,6 +11577,12 @@
             "state": "translated",
             "value": "顶部"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "頂部"
+          }
         }
       }
     },
@@ -11054,6 +11684,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "网站"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "網站"
           }
         }
       }
@@ -11157,6 +11793,12 @@
             "state": "translated",
             "value": "版本新特性"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's new"
+          }
         }
       }
     },
@@ -11258,6 +11900,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "联系我们"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "聯絡開發者"
           }
         }
       }
@@ -11361,6 +12009,12 @@
             "state": "translated",
             "value": "… 报告错误"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "... raise a Bug"
+          }
         }
       }
     },
@@ -11389,7 +12043,7 @@
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "... ایمیل بفرستید به ٪ @"
+            "value": "... ایمیل بفرستید به %@"
           }
         },
         "fr": {
@@ -11462,6 +12116,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "… 发送邮件给 %@"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "... send a mail to %@"
           }
         }
       }
@@ -11565,6 +12225,12 @@
             "state": "translated",
             "value": "… 请求新功能"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "... request a Feature"
+          }
         }
       }
     },
@@ -11666,6 +12332,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "前往此处以…"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go here to ..."
           }
         }
       }
@@ -11769,6 +12441,12 @@
             "state": "translated",
             "value": "导出失败"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export failed"
+          }
         }
       }
     },
@@ -11870,6 +12548,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "无法打开压缩包"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "無法開啟壓縮檔"
           }
         }
       }
@@ -11973,6 +12657,12 @@
             "state": "translated",
             "value": "密码错误，请重试。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密碼有誤，請重試"
+          }
         }
       }
     },
@@ -12074,6 +12764,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "密码不匹配"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passwords do not match"
           }
         }
       }
@@ -12177,6 +12873,12 @@
             "state": "translated",
             "value": "无法保存压缩包"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not save archive"
+          }
         }
       }
     },
@@ -12278,6 +12980,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "已取消 — 无该文件夹的访问权限"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelled - no access to that folder"
           }
         }
       }
@@ -12381,6 +13089,12 @@
             "state": "translated",
             "value": "在 App Store 上留下评价"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave a review in the App Store"
+          }
         }
       }
     },
@@ -12482,6 +13196,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "关注"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Follow"
           }
         }
       }
@@ -12585,6 +13305,12 @@
             "state": "translated",
             "value": "评价"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review"
+          }
         }
       }
     },
@@ -12686,6 +13412,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "给我们鼓励"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send a smile"
           }
         }
       }
@@ -12789,6 +13521,12 @@
             "state": "translated",
             "value": "加星"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Star"
+          }
         }
       }
     },
@@ -12890,6 +13628,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "在 GitHub 上为仓库加星标"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Star the repository on GitHub"
           }
         }
       }
@@ -12993,6 +13737,12 @@
             "state": "translated",
             "value": "赞助我们..."
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support the development..."
+          }
         }
       }
     },
@@ -13094,6 +13844,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "翻译"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translate"
           }
         }
       }
@@ -13197,6 +13953,12 @@
             "state": "translated",
             "value": "指南与文档"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用指南"
+          }
         }
       }
     },
@@ -13298,6 +14060,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "学习使用 %@"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learn to use %@"
           }
         }
       }
@@ -13401,6 +14169,12 @@
             "state": "translated",
             "value": "没有最近的压缩包。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No recent archives."
+          }
         }
       }
     },
@@ -13502,6 +14276,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "最近使用"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent"
           }
         }
       }
@@ -13605,6 +14385,12 @@
             "state": "translated",
             "value": "发布说明"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Release Notes"
+          }
         }
       }
     },
@@ -13706,6 +14492,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ 需要访问 %@"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ needs access to %@"
           }
         }
       }
@@ -13809,6 +14601,12 @@
             "state": "translated",
             "value": "关于"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "關於"
+          }
         }
       }
     },
@@ -13910,6 +14708,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "已授权"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access granted"
           }
         }
       }
@@ -14013,6 +14817,12 @@
             "state": "translated",
             "value": "高级"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "進階設定"
+          }
         }
       }
     },
@@ -14114,6 +14924,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "压缩格式"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "壓縮格式"
           }
         }
       }
@@ -14217,6 +15033,12 @@
             "state": "translated",
             "value": "自动选择引擎"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic engine selection"
+          }
         }
       }
     },
@@ -14318,6 +15140,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "MacPacker 会为每个压缩包选择引擎，如果第一个无法读取，则会尝试另一个。关闭此选项可自行选择引擎。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself."
           }
         }
       }
@@ -14421,6 +15249,12 @@
             "state": "translated",
             "value": "自动检查更新"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatically check for updates"
+          }
         }
       }
     },
@@ -14522,6 +15356,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "当前路径"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breadcrumb position"
           }
         }
       }
@@ -14625,6 +15465,12 @@
             "state": "translated",
             "value": "缓存"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暫存資料"
+          }
         }
       }
     },
@@ -14726,6 +15572,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "清除缓存"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清空暫存資料"
           }
         }
       }
@@ -14829,6 +15681,12 @@
             "state": "translated",
             "value": "清除缓存中的所有内容。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clears all content from the cache"
+          }
         }
       }
     },
@@ -14930,6 +15788,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "列"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Columns"
           }
         }
       }
@@ -15033,6 +15897,12 @@
             "state": "translated",
             "value": "分别压缩每个项目"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress each item separately"
+          }
         }
       }
     },
@@ -15134,6 +16004,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "压缩文件夹的内容"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress a folder’s contents"
           }
         }
       }
@@ -15237,6 +16113,12 @@
             "state": "translated",
             "value": "压缩为 7z"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress to 7z"
+          }
         }
       }
     },
@@ -15338,6 +16220,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "压缩为 zip"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress to zip"
           }
         }
       }
@@ -15441,6 +16329,12 @@
             "state": "translated",
             "value": "压缩为带日期和时间的 zip"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress to zip with date and time"
+          }
         }
       }
     },
@@ -15542,6 +16436,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "关联菜单"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Context Menu"
           }
         }
       }
@@ -15645,6 +16545,12 @@
             "state": "translated",
             "value": "要将 MacPacker 设为某类文件的默认应用：右键点击文件 → “显示简介” → 在“打开方式”下选择 MacPacker → 点击“全部更改…”以应用于所有同类压缩包。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives."
+          }
         }
       }
     },
@@ -15746,6 +16652,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "默认状态 与 引擎设置"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Default status & engine settings"
           }
         }
       }
@@ -15849,6 +16761,12 @@
             "state": "translated",
             "value": "可编辑压缩包，而不只是打开"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edits archives, not only opens them"
+          }
         }
       }
     },
@@ -15947,6 +16865,12 @@
           }
         },
         "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "引擎"
+          }
+        },
+        "zh-TW": {
           "stringUnit": {
             "state": "translated",
             "value": "引擎"
@@ -16053,6 +16977,12 @@
             "state": "translated",
             "value": "MacPacker 包含数种压缩引擎。推荐使用默认引擎；如果你遇到特定格式的问题，可以尝试替代引擎。不过请注意，不同格式对引擎的支持可能有所不同。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format."
+          }
         }
       }
     },
@@ -16154,6 +17084,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "导出日志"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "匯出記錄"
           }
         }
       }
@@ -16257,6 +17193,12 @@
             "state": "translated",
             "value": "扩展"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "擴充功能"
+          }
         }
       }
     },
@@ -16358,6 +17300,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "外部卷"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "External volumes"
           }
         }
       }
@@ -16461,6 +17409,12 @@
             "state": "translated",
             "value": "包含 USB 驱动器、存储卡和网络共享，它们会出现在 /Volumes 中。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Covers USB drives, memory cards and network shares, which appear in /Volumes."
+          }
         }
       }
     },
@@ -16501,7 +17455,7 @@
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Estrai su…"
+            "value": "Estrai In…"
           }
         },
         "ja": {
@@ -16562,6 +17516,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "提取到…"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract To…"
           }
         }
       }
@@ -16665,6 +17625,12 @@
             "state": "translated",
             "value": "解压到文件夹"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract to folder"
+          }
         }
       }
     },
@@ -16766,6 +17732,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "文件格式"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檔案格式"
           }
         }
       }
@@ -16869,6 +17841,12 @@
             "state": "translated",
             "value": "文件提供程序扩展"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File provider extension"
+          }
         }
       }
     },
@@ -16970,6 +17948,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "macOS 只允许 %@ 在您授权的范围内打开和写入文件，因此偶尔会弹出文件夹访问面板。授权会涵盖您所选文件夹内的所有内容，所以允许这两个文件夹即可免除反复询问。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS lets %@ open and write files only where you allow it, which is why a folder-access panel shows up now and then. A grant covers everything inside the folder you pick, so allowing these two puts an end to the asking."
           }
         }
       }
@@ -17073,6 +18057,12 @@
             "state": "translated",
             "value": "通用"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一般設定"
+          }
         }
       }
     },
@@ -17174,6 +18164,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "主目录"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home folder"
           }
         }
       }
@@ -17277,6 +18273,12 @@
             "state": "translated",
             "value": "包含“桌面”、“文稿”、“下载”以及个人文件夹中的所有其他内容。"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Covers the Desktop, Documents, Downloads and everything else in your home folder."
+          }
         }
       }
     },
@@ -17378,6 +18380,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "如何将 %@ 设为默认？"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How to set %@ as default?"
           }
         }
       }
@@ -17481,6 +18489,12 @@
             "state": "translated",
             "value": "包含测试版更新"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接受Beta版更新"
+          }
         }
       }
     },
@@ -17582,6 +18596,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "引擎信息"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Info on Engines"
           }
         }
       }
@@ -17685,6 +18705,12 @@
             "state": "translated",
             "value": "日志"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記錄"
+          }
         }
       }
     },
@@ -17786,6 +18812,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "将 MacPacker 设为默认应用"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set MacPacker as the default app"
           }
         }
       }
@@ -17889,6 +18921,12 @@
             "state": "translated",
             "value": "在系统设置中管理"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage in System Settings"
+          }
         }
       }
     },
@@ -17990,6 +19028,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "将操作放入子菜单"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nest actions in a submenu"
           }
         }
       }
@@ -18093,6 +19137,12 @@
             "state": "translated",
             "value": "打开缓存目录"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "開啟暫存資料夾"
+          }
         }
       }
     },
@@ -18194,6 +19244,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "关闭最后一个窗口时退出"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit on last window closed"
           }
         }
       }
@@ -18297,6 +19353,12 @@
             "state": "translated",
             "value": "记住最近的压缩包"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remember recent archives"
+          }
         }
       }
     },
@@ -18398,6 +19460,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "显示 Application Support 文件夹"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show application support folder"
           }
         }
       }
@@ -18501,6 +19569,12 @@
             "state": "translated",
             "value": "在菜单栏显示"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show in Menu Bar"
+          }
         }
       }
     },
@@ -18602,6 +19676,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "显示父目录项（“..”）"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show parent folder entry (“..”)"
           }
         }
       }
@@ -18705,6 +19785,12 @@
             "state": "translated",
             "value": "智能解压"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smart extraction"
+          }
         }
       }
     },
@@ -18806,6 +19892,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "检查更新…"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檢查更新"
           }
         }
       }
@@ -18909,6 +20001,12 @@
             "state": "translated",
             "value": "更新日志"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新記錄"
+          }
         }
       }
     },
@@ -19011,107 +20109,443 @@
             "state": "translated",
             "value": "即将推出"
           }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "即將推出"
+          }
         }
       }
     },
-    "welcomeCreditsMessage": {
-      "comment": "Thanks shown to contributors, translators, and project sponsors on the welcome screen",
+    "welcomeReleaseHighlights": {
+      "comment": "Heading of the welcome window's list of the most important changes in this version",
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Vielen Dank an alle PR-Mitwirkenden, Übersetzer und Sponsoren dieses Projekts!"
+            "value": "Die wichtigsten Neuerungen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "Release highlights"
           }
         },
         "es-mx": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Muchas gracias a todas las personas que contribuyeron con PRs, traducciones y patrocinios en este proyecto!"
+            "value": "Novedades destacadas"
           }
         },
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "تازه‌های مهم این نسخه"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ un grand merci à tous les contributeurs, traducteurs et sponsors de ce projet !"
+            "value": "Nouveautés principales"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Grazie a tutti i collaboratori, traduttori e sponsor di questo progetto!"
+            "value": "Novità principali"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "主な新機能と改善"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "주요 업데이트"
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "Belangrijkste vernieuwingen"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Wielkie podziękowania dla wszystkich specjalistów ds. PR, tłumaczy i sponsorów tego projektu!"
+            "value": "Najważniejsze nowości"
           }
         },
         "pt-br": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Many thanks to all the PR contributors, translators and sponsors of this project!"
+            "value": "Destaques da versão"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Огромное спасибо всем, кто внес свой вклад посредством PR, переводчикам и спонсорам этого проекта!"
+            "value": "Главное в новой версии"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Bu projeye katkıda bulunan, çeviri yapan ve sponsor olan herkese çok teşekkürler!"
+            "value": "Sürümün öne çıkanları"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Щиро дякую всім піарникам, перекладачам та спонсорам цього проєкту!"
+            "value": "Головне в новій версії"
           }
         },
         "vi": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ Xin chân thành cảm ơn tất cả những người đóng góp về PR, dịch thuật và nhà tài trợ cho dự án này!"
+            "value": "Điểm nổi bật của phiên bản"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "❤️ 衷心感谢本项目所有的 PR 贡献者、翻译人员和赞助商！"
+            "value": "版本亮点"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Release highlights"
+          }
+        }
+      }
+    },
+    "welcomeSupportButton": {
+      "comment": "Button in the welcome window's donation banner that opens the donation page",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ unterstützen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support %@"
+          }
+        },
+        "es-mx": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apoya a %@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حمایت از %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soutenir %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sostieni %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ を支援"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 후원하기"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steun %@"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wesprzyj %@"
+          }
+        },
+        "pt-br": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apoie o %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поддержать %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ için destek olun"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Підтримати %@"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ủng hộ %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "支持 %@"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support %@"
+          }
+        }
+      }
+    },
+    "welcomeSupportSubtitle": {
+      "comment": "Text of the donation banner on the welcome window",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Spende unterstützt die Weiterentwicklung."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your donation supports ongoing development."
+          }
+        },
+        "es-mx": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu donación apoya el desarrollo continuo."
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "کمک مالی شما از ادامهٔ توسعه پشتیبانی می‌کند"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre don soutient le développement continu."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La tua donazione sostiene lo sviluppo continuo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "皆さまの寄付が継続的な開発を支えます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여러분의 후원이 지속적인 개발에 힘이 됩니다."
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je donatie ondersteunt de verdere ontwikkeling."
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twoja darowizna wspiera dalszy rozwój."
+          }
+        },
+        "pt-br": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sua doação apoia o desenvolvimento contínuo."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваше пожертвование помогает продолжать разработку."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bağışınız geliştirme çalışmalarının devamını destekler."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваша пожертва допомагає продовжувати розробку."
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Khoản đóng góp của bạn giúp duy trì việc phát triển."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "您的捐赠将支持持续开发。"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your donation supports ongoing development."
+          }
+        }
+      }
+    },
+    "welcomeSupportTitle": {
+      "comment": "Heading of the donation banner on the welcome window",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hilf mit, %@ weiterzuentwickeln"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help keep %@ growing"
+          }
+        },
+        "es-mx": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayuda a que %@ siga creciendo"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "به رشد %@ کمک کنید"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aidez %@ à évoluer"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aiuta %@ a crescere"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ のさらなる進化にご協力を"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@의 성장을 도와주세요"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help %@ verder te groeien"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomóż rozwijać %@"
+          }
+        },
+        "pt-br": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajude o %@ a crescer"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Помогите %@ развиваться"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ uygulamasının gelişmesine yardımcı olun"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Допоможіть %@ розвиватися"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giúp %@ tiếp tục phát triển"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "助力 %@ 不断成长"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Help keep %@ growing"
           }
         }
       }
@@ -19141,7 +20575,7 @@
         "fa": {
           "stringUnit": {
             "state": "translated",
-            "value": "به ٪ خوش آمدید @"
+            "value": "به %@ خوش آمدید"
           }
         },
         "fr": {
@@ -19183,7 +20617,7 @@
         "pt-br": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bem Vindo "
+            "value": "Bem-vindo ao %@"
           }
         },
         "ru": {
@@ -19214,6 +20648,120 @@
           "stringUnit": {
             "state": "translated",
             "value": "欢迎使用 %@"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome to %@"
+          }
+        }
+      }
+    },
+    "welcomeViewAllChanges": {
+      "comment": "Link on the welcome window that opens the changes of every version",
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Änderungen anzeigen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View all changes"
+          }
+        },
+        "es-mx": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver todos los cambios"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مشاهدهٔ همهٔ تغییرات"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voir tous les changements"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostra tutte le modifiche"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべての変更点を表示"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 변경 사항 보기"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bekijk alle wijzigingen"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zobacz wszystkie zmiany"
+          }
+        },
+        "pt-br": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver todas as alterações"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Посмотреть все изменения"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tüm değişiklikleri görüntüle"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переглянути всі зміни"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Xem tất cả thay đổi"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看所有更新"
+          }
+        },
+        "zh-TW": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View all changes"
           }
         }
       }

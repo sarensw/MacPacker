@@ -67,6 +67,7 @@ User-visible changes need an entry in `Config/products/macpacker.json` under
   "items": [
     {
       "type": "fix",              // feat | fix | core | lang
+      "highlight": true,          // optional: listed on the welcome window
       "title": { "en": "…", "de": "…", /* every language in the file */ },
       "issues": ["170"]           // the issue, or this PR's own number
     }

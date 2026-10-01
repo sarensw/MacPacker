@@ -41,7 +41,9 @@ public struct PillView: View {
             .foregroundStyle(foreground)
             .padding(.horizontal, 9)
             .padding(.vertical, 3)
-            .frame(minWidth: 62)
+            // ponytail: wide enough for "Language", the longest changelog label,
+            // so a list of pills lines up; measure the widest if labels grow
+            .frame(minWidth: 74)
             .background(background, in: Capsule())
     }
 }

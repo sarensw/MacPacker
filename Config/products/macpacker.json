@@ -64,6 +64,7 @@
           },
           {
             "type": "feat",
+            "highlight": true,
             "title": {
                 "en": "Encrypt archives with a password",
                 "zh-Hans": "用密码加密压缩包",
@@ -88,6 +89,7 @@
           },
           {
             "type": "feat",
+            "highlight": true,
             "title": {
                 "en": "Split archives into volumes",
                 "zh-Hans": "将压缩包拆分为分卷",
@@ -208,6 +210,7 @@
           },
           {
             "type": "feat",
+            "highlight": true,
             "title": {
                 "en": "Quick Look preview for cbz and cbr",
                 "zh-Hans": "cbz 和 cbr 的 Quick Look 预览",
@@ -256,6 +259,7 @@
           },
           {
             "type": "feat",
+            "highlight": true,
             "title": {
                 "en": "Open nested archives in Quick Look",
                 "zh-Hans": "在 Quick Look 中打开嵌套压缩包",
@@ -303,7 +307,32 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Simpler welcome window",
+                "zh-Hans": "更简洁的欢迎窗口",
+                "fr": "Fenêtre de bienvenue simplifiée",
+                "de": "Einfacheres Willkommensfenster",
+                "it": "Finestra di benvenuto più semplice",
+                "ja": "よりシンプルなウェルカムウインドウ",
+                "fa": "پنجرهٔ خوش‌آمدگویی ساده‌تر",
+                "pl": "Prostsze okno powitalne",
+                "pt-BR": "Janela de boas-vindas mais simples",
+                "ru": "Упрощённое окно приветствия",
+                "uk": "Простіше вікно привітання",
+                "es-MX": "Ventana de bienvenida más sencilla",
+                "ko": "더 간결해진 환영 창",
+                "nl": "Eenvoudiger welkomstvenster",
+                "tr": "Daha sade karşılama penceresi",
+                "vi": "Cửa sổ chào mừng gọn gàng hơn"
+            },
+            "issues": [
+                "273"
+            ]
+          },
+          {
             "type": "fix",
+            "highlight": true,
             "title": {
                 "en": "Fewer folder-access prompts",
                 "zh-Hans": "更少的文件夹访问询问",
@@ -449,6 +478,7 @@
           },
           {
             "type": "lang",
+            "highlight": true,
             "title": {
                 "en": "Now available in Vietnamese",
                 "zh-Hans": "现已支持越南语",

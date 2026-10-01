@@ -10,82 +10,54 @@ import SwiftUI
 struct WelcomeFooterView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.dismissWindow) private var dismissWindow
-    
+
     var body: some View {
-        HStack(alignment: .center, spacing: 20) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 16) {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
                     Button {
-                        openURL(URL(string: "https://macpacker.app")!)
+                        openURL(Constants.homepageURL)
                     } label: {
-                        HStack(spacing: 2) {
-                            Text(verbatim: "macpacker.app")
-                            Image(systemName: "link")
-                        }
+                        Text(.commonWebsite)
                     }
-                    .buttonStyle(.plain)
-                    
-                    Button {
-                        openURL(URL(string: "mailto:\(Constants.supportMail)")!)
-                    } label: {
-                        HStack(spacing: 2) {
-                            Image(systemName: "envelope")
-                            Text(verbatim: Constants.supportMail)
-                                .textSelection(.disabled)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-                
-                HStack(spacing: 16) {
+                    Text(verbatim: "·")
                     Button {
                         openURL(Constants.privacyURL)
                     } label: {
-                        HStack(spacing: 2) {
-                            Text(.commonPrivacy)
-                        }
+                        Text(.commonPrivacy)
                     }
-                    .buttonStyle(.plain)
-                    
-                    Button {
-                        openURL(Constants.termsURL)
-                    } label: {
-                        HStack(spacing: 2) {
-                            Text(.commonTerms)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    
+                    Text(verbatim: "·")
                     Button {
                         openURL(Constants.imprintURL)
                     } label: {
-                        HStack(spacing: 2) {
-                            Text(.commonImprint)
-                        }
+                        Text(.commonImprint)
                     }
-                    .buttonStyle(.plain)
+                    Text(verbatim: "·")
+                    Button {
+                        openURL(URL(string: "mailto:\(Constants.supportMail)")!)
+                    } label: {
+                        Text(verbatim: Constants.supportMail)
+                    }
                 }
-                
-                Text(verbatim: "@ 2026 Stephan Arenswald · Stuttgart, Germany")
+                Text(verbatim: "© 2026 Stephan Arenswald · Stuttgart, Germany")
                     .foregroundStyle(.tertiary)
             }
+            .buttonStyle(.plain)
             .font(.footnote)
             .foregroundStyle(.secondary)
-            
+
             Spacer()
-            
+
             Button {
                 dismissWindow()
-//                    StartupFlowCoordinator.shared.completed(.updateInfo)
             } label: {
                 Text(.commonContinue)
             }
             .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .controlSize(.extraLarge)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 14)
         .background(.regularMaterial)
     }
 }
