@@ -49,14 +49,9 @@ struct WelcomeView: View {
 
                 Divider()
 
-                VStack(alignment: .leading, spacing: 0) {
-                    WelcomeMoreFromLeanBytesView()
-                    Divider()
-                        .padding(.vertical, 20)
-                    WelcomeNewsletterView()
-                }
-                .padding(24)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                WelcomeMoreFromLeanBytesView()
+                    .padding(24)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
             // both columns as tall as the taller one, so "Coming next" sits at the bottom
             .fixedSize(horizontal: false, vertical: true)

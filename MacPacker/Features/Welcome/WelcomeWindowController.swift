@@ -42,8 +42,6 @@ class WelcomeWindowController {
     
     func show() {
         welcomeWindow?.makeKeyAndOrderFront(self)
-        // AppKit would focus the newsletter's email field, the first key view
-        welcomeWindow?.makeFirstResponder(nil)
         welcomeWindowController?.showWindow(self)
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
