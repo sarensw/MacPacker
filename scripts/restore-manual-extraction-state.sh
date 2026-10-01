@@ -7,6 +7,10 @@
 # Losing the field breaks symbol generation catalog-wide: dozens of unrelated
 # files fail to compile at once, even though every key is still present.
 #
+# It also writes the catalog back with its keys sorted, as on main. POEditor
+# exports them in its own order, so without this every download shows up as
+# thousands of moved lines, even when it carries the field already.
+#
 # Run this after every POEditor download, before building:
 #   scripts/restore-manual-extraction-state.sh
 #
@@ -38,9 +42,8 @@ for entry in data["strings"].values():
     else:
         already += 1
 
-if fixed:
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, sort_keys=True, ensure_ascii=False)
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2, sort_keys=True, ensure_ascii=False)
 
 total = len(data["strings"])
 print(f"{path}: restored extractionState on {fixed} entr{'y' if fixed == 1 else 'ies'} "
