@@ -108,11 +108,7 @@ public final class DropCompressor: ObservableObject {
             // after the grant: the panel may have been up a while
             let destination = CompressDestination.unique(named: name, in: folder)
 
-            state.create()
-            for file in files {
-                state.add(url: file)
-            }
-            await state.save(to: destination, options: options)?.value
+            await state.compress(files, to: destination, options: options)
 
             if let error = state.error {
                 log.error("Drop compress failed", context: ["error": error])

@@ -544,30 +544,56 @@ extension ArchiveState {
         loadChildren()
     }
     
-    public func add(url: URL) {
+    /// - Returns: whether all of `url` was added. A folder that can't be read
+    ///   is left out, with the reason in `error`, and so is one inside it.
+    @discardableResult
+    public func add(url: URL) -> Bool {
         guard !isSaving else {
             log.notice("Ignoring add — a save is in progress", context: ["file": url.lastPathComponent])
-            return
+            return false
         }
-        guard let selectedItem else { return }
+        guard let selectedItem else { return false }
         // A save writes only this archive. Added inside one opened within it,
         // the file would land in this one, in a folder named like that archive.
         guard !isWithinOpenedArchive(selectedItem) else {
             log.notice("Ignoring add — inside an archive opened within this one", context: ["file": url.lastPathComponent])
-            return
+            return false
         }
         let base = (selectedItem.virtualPath?.isEmpty == false && selectedItem.virtualPath != "/")
             ? selectedItem.virtualPath! + "/" : ""
 
+        let added: Bool
         if url.isDirectory {
-            // folders are added recursively so their contents end up in the archive
-            addFolder(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
+            // Folders are added recursively so their contents end up in the
+            // archive. Listing one needs a stored grant's scope held: unlike a
+            // drop or a panel, a grant reused from storage gives no access
+            // outside it (#278).
+            added = Sandbox.accessSync(url: url) {
+                addFolder(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
+            }
         } else {
             addFile(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
+            added = true
         }
 
         self.isReloadNeeded = true
         loadChildren()
+        return added
+    }
+
+    /// Makes this fresh state a new archive at `destination` holding `items`,
+    /// written in one go: Quick Compress and the Finder's compress entries.
+    /// When it fails, `error` says why.
+    ///
+    /// Writes nothing once an item can't be read in full. Left out, it would
+    /// leave an archive short of what was asked for that still reports done —
+    /// for a single folder, an empty one (#278).
+    public func compress(_ items: [URL], to destination: URL, options: CompressionOptions? = nil) async {
+        create()
+        for item in items {
+            guard add(url: item) else { return }
+        }
+        await save(to: destination, options: options)?.value
     }
 
     /// The item currently sitting under `name` in `parent` — a real archive
@@ -590,7 +616,8 @@ extension ArchiveState {
         entries[item.id] = item
     }
 
-    private func addFolder(url: URL, archivePath: String, under parent: ArchiveItem) {
+    /// - Returns: whether `url` and every folder below it could be read.
+    private func addFolder(url: URL, archivePath: String, under parent: ArchiveItem) -> Bool {
         // Read the contents first: if the folder can't be enumerated we must not
         // add it as an empty directory (that would silently drop its real
         // contents on save). Skip it and surface the error instead.
@@ -604,7 +631,7 @@ extension ArchiveState {
                 "error": String(describing: error)
             ])
             self.error = error.localizedDescription
-            return
+            return false
         }
 
         // A folder that is already there is merged into, not added a second
@@ -625,13 +652,16 @@ extension ArchiveState {
             entries[item.id] = item
         }
 
+        var complete = true
         for child in children.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
             if child.isDirectory {
-                addFolder(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
+                complete = addFolder(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
+                    && complete
             } else {
                 addFile(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
             }
         }
+        return complete
     }
 
     /// Removes the given items (files or folders, including everything below
