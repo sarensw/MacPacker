@@ -142,7 +142,15 @@
       }
     },
     "Open this archive in MacPacker to enter the password." : {
-      "comment" : "Shown in the Quick Look preview below the notice that an archive is password protected"
+      "comment" : "Shown in the Quick Look preview below the notice that an archive is password protected",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "افتح هذا الأرشيف في MacPacker لإدخال كلمة السر."
+          }
+        }
+      }
     },
     "Packed Size" : {
       "comment" : "Column that shows the packed size of the archive files",
@@ -215,7 +223,15 @@
       }
     },
     "This archive is password protected." : {
-      "comment" : "Shown in the Quick Look preview when an archive needs a password to be read"
+      "comment" : "Shown in the Quick Look preview when an archive needs a password to be read",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هذا الأرشيف محمي بكلمة سر."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
