@@ -5,6 +5,12 @@
       "comment" : "Description of the FileFillet app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انسخ الملفات أو انقلها إلى مجلداتك المفضلة ومجلداتها الفرعية دون الحاجة لفتح نوافذ Finder جديدة."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -107,6 +113,12 @@
       "comment" : "Short description of the FileFillet app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تنظيم الملفات. بسرعة."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -209,6 +221,12 @@
       "comment" : "Description of the FlowMoose app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحويل خاص للصوت إلى نص، مصمم لنظامي macOS 26 و27"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -311,6 +329,12 @@
       "comment" : "Short description of the FlowMoose app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحويل خاص للصوت إلى نص"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -413,6 +437,12 @@
       "comment" : "Short description of the FrameBeast app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء محتوى الوسائط وأتمتته"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -515,6 +545,12 @@
       "comment" : "Description to the FrameBeast app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء محتوى الوسائط وأتمتته"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -617,6 +653,12 @@
       "comment" : "Hint to the user that the submenu contains links for more apps that they might like.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المزيد من التطبيقات"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -719,6 +761,12 @@
       "comment" : "Link on the welcome window that opens the website of another app by the same developer. %@ is that app's name, e.g. FileFillet",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استكشاف %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -821,6 +869,12 @@
       "comment" : "Heading of the welcome window column that presents another app by the same developer. %@ is the app name, MacPacker.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "من مطور %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -923,6 +977,12 @@
       "comment" : "Shown under 'From the maker of MacPacker' on the welcome window",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تساعد تطبيقاتي الأخرى في تمويل هذا المشروع مفتوح المصدر."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1025,6 +1085,12 @@
       "comment" : "Link on the welcome window that opens a website listing every app by the same developer",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عرض جميع التطبيقات"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",

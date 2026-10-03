@@ -5,6 +5,12 @@
       "comment": "Title of the alert shown when the user quits while an extraction is running.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عملية فك الضغط لا تزال قيد التنفيذ"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -113,6 +119,12 @@
       "comment": "Alert button that quits the app even though an extraction is running.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إنهاء على أي حال"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -221,6 +233,12 @@
       "comment": "Body of the alert shown when the user quits while an extraction is running.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سيؤدي الإنهاء الآن إلى إيقاف فك الضغط وقد يترك ملفات غير مكتملة في الوجهة."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -328,6 +346,12 @@
     "archiveBrowseDeleteSelectedHint": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حذف العناصر المحددة من الأرشيف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -436,6 +460,12 @@
       "comment": "Window subtitle marker shown when the archive has unsaved changes",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مُعدَّل"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -544,6 +574,12 @@
       "comment": "Tooltip of the toolbar's back button: it shows the folder that contains the one being browsed.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المجلد الحاوي"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -652,6 +688,12 @@
       "comment": "Status-bar hint shown while holding Option during a file drag: releasing opens the file in a new window.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح في نافذة جديدة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -760,6 +802,12 @@
       "comment": "Context menu: preview the clicked item",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معاينة سريعة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -868,6 +916,12 @@
       "comment": "Caption of the Quick Compress window. Releasing files on the window creates an archive next to them.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أفلت هنا للضغط"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -976,6 +1030,12 @@
       "comment": "Drop zone shown while dragging files over the compress area: releasing here writes an archive next to those files, without opening a window.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ضغط هنا"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -1084,6 +1144,12 @@
       "comment": "Setting of the Quick Compress window: keeps it visible above other apps, so files can be dragged onto it from Finder.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إبقاء في المقدمة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -1191,6 +1257,12 @@
     "archiveContentViewerAddHint": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إضافة ملفات أو مجلدات إلى الأرشيف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -1299,6 +1371,12 @@
       "comment": "Used to open Quick Look feature for the current archive file",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معلومات الأرشيف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -1407,6 +1485,12 @@
       "comment": "Picker entry that leaves a compression setting to the archive format and level",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تلقائي"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -1515,6 +1599,12 @@
       "comment": "How to fix a password the save panel refused",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تغيير كلمة السر في الخيارات…"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -1623,6 +1713,12 @@
       "comment": "Save options: the zip password has characters zip encryption cannot take",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يمكن أن تتضمن كلمة سر zip الأحرف A–Z والأرقام والمسافات والرموز الشائعة فقط. بينما يقبل 7z أي كلمة سر."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -1731,6 +1827,12 @@
       "comment": "Drop zone shown while dragging a file that isn't an archive: releasing here starts a new archive containing that file.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إنشاء أرشيف جديد"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -1839,6 +1941,12 @@
       "comment": "Message of the panel that picks where to extract the archives selected in Finder",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختر مكان فك الضغط"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -1947,6 +2055,12 @@
       "comment": "Time remaining in the extraction row, e.g. '14 sec left'.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متبقٍ %@"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -2055,6 +2169,12 @@
       "comment": "Save options: the zip password is too long; the number is the limit",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "باستخدام AES-256، يمكن أن يصل الحد الأقصى لكلمة سر zip إلى %lld حرفًا."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -2163,6 +2283,12 @@
       "comment": "Footer under the archive password when the weak ZipCrypto is picked",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "من السهل كسر حماية ZipCrypto. اختره فقط للأدوات التي لا تدعم AES-256."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -2271,6 +2397,12 @@
       "comment": "Fallback name in the save-on-close prompt when the archive has no file name yet",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأرشيف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -2379,6 +2511,12 @@
       "comment": "Label of the compression dictionary size picker in the archive options",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حجم القاموس"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -2487,6 +2625,12 @@
       "comment": "Button in the save-on-close prompt that discards the changes",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عدم الحفظ"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -2595,6 +2739,12 @@
       "comment": "Split choice: write the archive as a single file",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عدم التقسيم"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -2703,6 +2853,12 @@
       "comment": "Toggle that hides a 7z archive's file list behind the password",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تشفير أسماء الملفات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -2811,6 +2967,12 @@
       "comment": "Footer under the archive password for zip archives",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تبقى أسماء الملفات قابلة للقراءة في أرشيف zip. بينما يمكن لـ 7z تشفيرها أيضًا."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -2919,6 +3081,12 @@
       "comment": "Label of the picker between AES-256 and ZipCrypto",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "طريقة التشفير"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3027,6 +3195,12 @@
       "comment": "Toggle that leaves Finder's hidden .DS_Store files out of the archive",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استبعاد ملفات ‎.DS_Store"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3135,6 +3309,12 @@
       "comment": "Label of the archive format picker in the save panel",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التنسيق"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3243,6 +3423,12 @@
       "comment": "Compression level: fast",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سريع"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3351,6 +3537,12 @@
       "comment": "Compression level: fastest",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأسرع"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3459,6 +3651,12 @@
       "comment": "Compression level: maximum",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أقصى"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3567,6 +3765,12 @@
       "comment": "Compression level: normal",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عادي"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3675,6 +3879,12 @@
       "comment": "Compression level: no compression",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تخزين"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3783,6 +3993,12 @@
       "comment": "Compression level: ultra, the strongest",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فائق"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3891,6 +4107,12 @@
       "comment": "Label of the compression method picker in the archive options",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأسلوب"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -3999,6 +4221,12 @@
       "comment": "Solid block choice: every file compressed on its own",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "غير مصمت"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -4107,6 +4335,12 @@
       "comment": "Label of the field that repeats the archive password",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تكرار"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -4215,6 +4449,12 @@
       "comment": "Solid block choice: all files compressed as one block",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مصمت"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -4323,6 +4563,12 @@
       "comment": "Label of the 7z solid block size picker in the archive options",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حجم الكتلة المصمتة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -4431,6 +4677,12 @@
       "comment": "Label of the picker that writes the archive as several files of a given size",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقسيم إلى أجزاء"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -4539,6 +4791,12 @@
       "comment": "Title of the prompt shown when closing an archive window with unsaved changes",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هل تريد حفظ التغييرات التي أجريتها على ”%@“؟"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -4647,6 +4905,12 @@
       "comment": "Explanation in the save-on-close prompt",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ستفقد تغييراتك إذا لم تقم بحفظها."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -4755,6 +5019,12 @@
       "comment": "Label of the compression word size picker in the archive options (7-Zip's term)",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حجم الكلمة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -4863,6 +5133,12 @@
       "comment": "Column that shows the date the file was modified",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تاريخ التعديل"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -4971,6 +5247,12 @@
       "comment": "Column that shows the name of the archive files",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الاسم"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -5079,6 +5361,12 @@
       "comment": "Column that shows the packed size of the archive files",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحجم بعد الضغط"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -5187,6 +5475,12 @@
       "comment": "Column that shows the file permissions",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأذونات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -5295,6 +5589,12 @@
       "comment": "Column that shows the unpacked size of the archive files",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحجم"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -5403,6 +5703,12 @@
       "comment": "Link to the About page of the app. The order depends on the language. For example: English: About MacPacker, Japanese: MacPackerについて",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حول %@"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -5511,6 +5817,12 @@
       "comment": "Button text to open the window with the list of attributions for other open-source libraries used for the app",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "شكر وتقدير"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -5619,6 +5931,12 @@
       "comment": "Button in the tooblar that allows the user to add a file to the current archive path.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إضافة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -5727,6 +6045,12 @@
       "comment": "Context menu entry in the settings list: opens a new-archive window for the selection",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إضافة إلى الأرشيف…"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -5835,6 +6159,12 @@
       "comment": "Drop zone shown while dragging a file over an editable archive: releasing here adds the file to that archive. The placeholder is the archive's file name.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إضافة إلى ”%@“"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -5943,6 +6273,12 @@
       "comment": "Button in the toolbar that leaves the current folder of the archive and shows the folder containing it.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "رجوع"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -6051,6 +6387,12 @@
       "comment": "Breadcrumb position at the bottom of the archive window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أسفل"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -6159,6 +6501,12 @@
       "comment": "Alert button that keeps the app running so the extraction can finish.\nButton in the save-on-close prompt that keeps the window open",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إلغاء"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -6267,6 +6615,12 @@
       "comment": "A button that clears the list of recently opened archives.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسح"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -6374,6 +6728,12 @@
     "commonCompressContentsTo": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ضغط محتويات ”%@“"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -6481,6 +6841,12 @@
     "commonCompressTo": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ضغط إلى ”%@“"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -6589,6 +6955,12 @@
       "comment": "Label of the compression level picker in the archive options",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الضغط"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -6697,6 +7069,12 @@
       "comment": "A button label that allows the user to continue to the next screen.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متابعة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -6805,6 +7183,12 @@
       "comment": "Button in the toolbar that deletes the selected files from the archive.\nContext menu: delete the selected items from the archive",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حذف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -6913,6 +7297,12 @@
       "comment": "The text displayed in the \"Enabled\" / \"Disabled\" toggle for the file provider extension.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معطل"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7021,6 +7411,12 @@
       "comment": "Button that closes the archive options sheet",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7129,6 +7525,12 @@
       "comment": "A label indicating that the file provider extension is enabled.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مفعل"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7237,6 +7639,12 @@
       "comment": "Prompt of the folder picker used to extract items",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فك الضغط"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7345,6 +7753,12 @@
       "comment": "Button in the toolbar that allows the user to extract the full archive to a target directory.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فك ضغط الأرشيف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7453,6 +7867,12 @@
       "comment": "Context menu entry in the settings list: extracts next to the archive",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فك الضغط هنا"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7561,6 +7981,12 @@
       "comment": "Button in the tooblar that allows the user to extract the selected files.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فك ضغط العناصر المحددة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7668,6 +8094,12 @@
     "commonExtractTo": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فك الضغط إلى ”%@“"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7776,6 +8208,12 @@
       "comment": "Title of the extraction progress window.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جارٍ فك الضغط"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7884,6 +8322,12 @@
       "comment": "Edit menu entry that moves the focus to the search field of the archive window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بحث"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -7992,6 +8436,12 @@
       "comment": "Confirmation button in the file- and folder-access panel",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "منح إذن الوصول"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -8100,6 +8550,12 @@
       "comment": "Menu item that opens the translation contribution page",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المساعدة في الترجمة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -8208,6 +8664,12 @@
       "comment": "Button that opens the imprint",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إشعار قانوني"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -8316,6 +8778,48 @@
       "comment": "A label displaying the number of items in the current archive. The argument is the count of items in the archive.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "variations": {
+            "plural": {
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld عناصر"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld عنصرًا"
+                }
+              },
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld عنصر"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld عنصر"
+                }
+              },
+              "two": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld عنصرين"
+                }
+              },
+              "zero": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld عنصر"
+                }
+              }
+            }
+          }
+        },
         "de": {
           "variations": {
             "plural": {
@@ -8658,6 +9162,12 @@
       "comment": "A section of the start page that links to documentation and release notes.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معرفة المزيد…"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -8766,6 +9276,12 @@
       "comment": "The 'More' menu in the archive window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المزيد"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -8874,6 +9390,12 @@
       "comment": "Default file name of a new archive\nFile menu entry that opens a window with a new, empty archive ready to be filled and saved\nTitle of the save panel used to create a new archive",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أرشيف جديد"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -8982,6 +9504,12 @@
       "comment": "A label for a button that opens a new window of the app. The placeholder will add the name MacPacker to it.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نافذة %@ جديدة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -9090,6 +9618,12 @@
       "comment": "Hide the breadcrumb in the archive window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بلا"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -9197,6 +9731,12 @@
     "commonNothingSelected": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لم يتم تحديد أي شيء"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -9305,6 +9845,12 @@
       "comment": "The label of a button that dismisses a dialog.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "موافق"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -9413,6 +9959,12 @@
       "comment": "A label for a button that allows the user to open an archive from disk. The order depends on the language.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -9521,6 +10073,12 @@
       "comment": "Context menu entry in the settings list: opens the selection in an archive window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح الأرشيف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -9628,6 +10186,12 @@
     "commonOpenArchives": {
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح %lld من الأرشيفات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -9736,6 +10300,12 @@
       "comment": "Shows or hides the compression settings of the Quick Compress window.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خيارات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -9844,6 +10414,12 @@
       "comment": "A text field for entering a password.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كلمة السر:"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -9952,6 +10528,12 @@
       "comment": "Explains that the named archive requires a password",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "”%@“ محمي بكلمة سر."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -10060,6 +10642,12 @@
       "comment": "Button in the tooblar that allows the user to preview the selected file.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معاينة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -10168,6 +10756,12 @@
       "comment": "Button that opens the privacy policy",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الخصوصية"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -10276,6 +10870,12 @@
       "comment": "Title of the quick-compress window, the small floating window that compresses whatever is dropped on it. Also the title of the compress section on the start page.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الضغط السريع"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -10384,6 +10984,12 @@
       "comment": "Opens the small floating window that compresses whatever is dropped on it. Used in the File menu and in the More menu of the archive window.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نافذة الضغط السريع"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -10492,6 +11098,12 @@
       "comment": "A button to refresh the list of supported file formats.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تحديث"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -10600,6 +11212,12 @@
       "comment": "Button in the tooblar that allows the user to save the current file after it was being edited.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حفظ"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -10708,6 +11326,12 @@
       "comment": "File menu entry that saves the front archive to a new location",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حفظ باسم…"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -10816,6 +11440,48 @@
       "comment": "A label at the bottom of the status bar view that shows how many items are currently selected. The argument is the number of selected items.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "variations": {
+            "plural": {
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld عناصر محددة"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld عنصرًا محددًا"
+                }
+              },
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld محدد"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld عنصر محدد"
+                }
+              },
+              "two": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld محددين"
+                }
+              },
+              "zero": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld محدد"
+                }
+              }
+            }
+          }
+        },
         "de": {
           "variations": {
             "plural": {
@@ -11158,6 +11824,12 @@
       "comment": "Used to open the settings/preferences window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الإعدادات…"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -11266,6 +11938,12 @@
       "comment": "A section of the start page of an empty window.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "البدء"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -11374,6 +12052,12 @@
       "comment": "Button that opens the terms of service",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الشروط والأحكام"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -11482,6 +12166,12 @@
       "comment": "Breadcrumb position at the top of the archive window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أعلى"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -11590,6 +12280,12 @@
       "comment": "Hint to the user that the button links to the app's website.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الموقع الإلكتروني"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -11698,6 +12394,12 @@
       "comment": "Title of the tab in the welcome screen that shows the user what's new in this version.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ما الجديد"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -11806,6 +12508,12 @@
       "comment": "A button label that links to the support email address.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اتصل بنا"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -11914,6 +12622,12 @@
       "comment": "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "… الإبلاغ عن خطأ"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12022,6 +12736,12 @@
       "comment": "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "… إرسال بريد إلكتروني إلى %@"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12130,6 +12850,12 @@
       "comment": "This is the second part of the text 'Go here to ...'. It is used in the archive window 'More' menu and shall give users a hint about the secondary options to reach out to the dev.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "… طلب ميزة جديدة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12238,6 +12964,12 @@
       "comment": "This is the menu in the 'More' menu of the archive window to give customers a hint what they can do to reach the dev. A submenu will open with links to GitHub, a bug report form, and a mail to the developer.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "انتقل هنا من أجل…"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12346,6 +13078,12 @@
       "comment": "Title of the alert shown when exporting logs fails",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فشل التصدير"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12454,6 +13192,12 @@
       "comment": "A title for an alert that a user can't open an archive.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذر فتح الأرشيف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12562,6 +13306,12 @@
       "comment": "Shown after an incorrect password is entered",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كلمة السر غير صحيحة. حاول مرة أخرى."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12670,6 +13420,12 @@
       "comment": "Save options: the password and its verification differ",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كلمتا السر غير متطابقتين"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12778,6 +13534,12 @@
       "comment": "Title of the alert shown when saving an archive failed or was refused; the reason follows below it",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعذر حفظ الأرشيف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12886,6 +13648,12 @@
       "comment": "Status shown in the drop window when the user declined the permission panel that grants MacPacker access to the folder the archive would be written to.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم الإلغاء - لا يوجد إذن وصول إلى ذلك المجلد"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -12994,6 +13762,12 @@
       "comment": "Opens the App Store review page for the MacPacker app for the user to write a review.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كتابة تقييم في App Store"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -13102,6 +13876,12 @@
       "comment": "A button label that says \"Follow\".",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متابعة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -13210,6 +13990,12 @@
       "comment": "A button label that translates to \"Review\" in different languages.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تقييم"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -13318,6 +14104,12 @@
       "comment": "This is the menu in the 'More' menu of the archive window to give customers a hint on how to support the developer. The user has the option to open the MacPacker repository on GitHub or leave a review in the App Store.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أرسل ابتسامة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -13426,6 +14218,12 @@
       "comment": "Encourage the user to star the repository on GitHub",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نجمة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -13534,6 +14332,12 @@
       "comment": "Opens the GitHub page of the MacPacker repository for the user to star it.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إضافة نجمة للمستودع على GitHub"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -13642,6 +14446,12 @@
       "comment": "Hint to the user to support the app's development via some donation",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دعم التطوير…"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -13750,6 +14560,12 @@
       "comment": "A button label that translates the app.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ترجمة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -13858,6 +14674,12 @@
       "comment": "Detail line of the documentation link on the start page",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأدلة والتوثيق"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -13966,6 +14788,12 @@
       "comment": "A link to the documentation. The argument is the name of the app.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعلّم كيفية استخدام %@"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -14074,6 +14902,12 @@
       "comment": "Shown in place of the recents list on the start page when nothing has been opened yet",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لا توجد ملفات أرشيف حديثة."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -14182,6 +15016,12 @@
       "comment": "Header of the list of recently opened archives on the home screen",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحديثة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -14290,6 +15130,12 @@
       "comment": "Detail line of the release-notes link on the start page",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ملاحظات الإصدار"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -14398,6 +15244,12 @@
       "comment": "Message in the file- and folder-access panel explaining why permission is required. The first placeholder is the app name MacPacker, the second is the name of the file or folder that needs access.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يحتاج %@ إلى إذن الوصول إلى %@"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -14506,6 +15358,12 @@
       "comment": "A tab in the settings view that takes users to information about the app.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "حول"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -14614,6 +15472,12 @@
       "comment": "Shown in the Permissions settings once the app has access to a folder",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تم منح إذن الوصول"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -14722,6 +15586,12 @@
       "comment": "Advanced settings",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "متقدم"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -14830,6 +15700,12 @@
       "comment": "Archive formats title in settings",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تنسيقات الأرشيف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -14938,6 +15814,12 @@
       "comment": "A toggle that lets users choose whether MacPacker should choose the archive engine automatically.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اختيار المحرك تلقائيًا"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -15046,6 +15928,12 @@
       "comment": "Explains the automatic engine selection toggle in the archive format settings",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يختار MacPacker المحرك المناسب لكل أرشيف، ويجرّب محركًا آخر إذا تعذرت قراءته بالمحرك الأول. أوقف تشغيل هذا الخيار لاختيار المحركات يدويًا."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -15154,6 +16042,12 @@
       "comment": "A toggle that lets the user choose whether FileFillet should automatically check for updates.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التحقق من وجود تحديثات تلقائيًا"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -15262,6 +16156,12 @@
       "comment": "Allows the user to change the breadcrumb position to either top or bottom of the archive window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "موضع مسار التنقل"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -15370,6 +16270,12 @@
       "comment": "Cache related settings",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ذاكرة التخزين المؤقت"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -15478,6 +16384,12 @@
       "comment": "Allows the user to clear the cache",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مسح ذاكرة التخزين المؤقت"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -15586,6 +16498,12 @@
       "comment": "Help text shown in a tool tip when hovering the \"Clear cache\" button",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يمسح كل المحتوى من ذاكرة التخزين المؤقت"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -15694,6 +16612,12 @@
       "comment": "Let's the user choose to show or hide columns in the archive window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الأعمدة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -15802,6 +16726,12 @@
       "comment": "Context menu entry in the settings list: compresses every selected item into its own zip",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ضغط كل عنصر على حدة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -15910,6 +16840,12 @@
       "comment": "Context menu entry in the settings list: compresses what is inside a folder, without the folder itself",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ضغط محتويات المجلد"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16018,6 +16954,12 @@
       "comment": "Context menu entry in the settings list: compresses the selection straight to a 7z file",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ضغط إلى 7z"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16126,6 +17068,12 @@
       "comment": "Context menu entry in the settings list: compresses the selection straight to a zip file",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ضغط إلى zip"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16234,6 +17182,12 @@
       "comment": "Context menu entry in the settings list: compresses the selection to a zip whose name carries the current date and time",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ضغط إلى zip مع التاريخ والوقت"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16342,6 +17296,12 @@
       "comment": "Settings label above the list of entries the MacPacker Finder context menu offers",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "قائمة السياق"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16450,6 +17410,12 @@
       "comment": "Instructions in the alert explaining how to set MacPacker as the default app for archive files in Finder.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "لجعل MacPacker التطبيق الافتراضي لنوع ملف: انقر بزر الماوس الأيمن على الملف ← ”إحضار المعلومات“ ← اختر MacPacker أسفل ”فتح باستخدام:“ ← انقر على ”تغيير الكل…“ لتطبيقه على كل ملفات الأرشيف المماثلة."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16558,6 +17524,12 @@
       "comment": "A heading for the section that lets users configure the default status and engine settings for MacPacker.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الحالة الافتراضية وإعدادات المحرك"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16666,6 +17638,12 @@
       "comment": "Legend in the engine info popover: the pencil next to an engine in the format table means that engine can also change archives of that format, where the others only open and extract them",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يعدل ملفات الأرشيف، وليس فتحها فقط"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16774,6 +17752,12 @@
       "comment": "The header for the \"Engine\" column in the format settings view.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المحرك"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16882,6 +17866,12 @@
       "comment": "Help text to let users understand what the engine selection for each archive format is about",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يتضمن MacPacker عدة محركات للأرشيف. يوصى بالمحرك الافتراضي؛ وقد تساعد المحركات البديلة في حل مشكلات تتعلق بتنسيقات معينة. تذكر أن دعم المحركات يختلف بحسب التنسيق."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -16990,6 +17980,12 @@
       "comment": "A button that allows the user to export the app's recent logs",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تصدير السجلات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -17098,6 +18094,12 @@
       "comment": "A label describing the file extensions supported by a particular archive format.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "الامتدادات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -17206,6 +18208,12 @@
       "comment": "Label of the external-volumes row in the Permissions settings",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "وحدات التخزين الخارجية"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -17314,6 +18322,12 @@
       "comment": "Explains what granting access to the /Volumes folder covers",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يشمل محركات أقراص USB وبطاقات الذاكرة والمشاركات الشبكية التي تظهر في ‎/Volumes."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -17422,6 +18436,12 @@
       "comment": "Context menu entry in the settings list: asks where to extract, then extracts there",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فك الضغط إلى…"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -17530,6 +18550,12 @@
       "comment": "Context menu entry in the settings list: extracts into a new folder named after the archive",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فك الضغط في مجلد"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -17638,6 +18664,12 @@
       "comment": "A column header in the format settings view.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تنسيق الملف"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -17746,6 +18778,12 @@
       "comment": "The title of a section in the settings view related to the file provider extension.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ملحق موفر الملفات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -17854,6 +18892,12 @@
       "comment": "Explains, in the Permissions settings, why the app asks for folder access and what granting these two folders achieves",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يسمح macOS لـ %@ بفتح الملفات وكتابتها فقط في المواقع التي تسمح له بها، ولهذا السبب تظهر نافذة طلب إذن الوصول إلى المجلد من حين لآخر. يشمل منح الإذن كل ما بداخل المجلد الذي تختاره، لذا فإن السماح لهذين المجلدين سيوقف المطالبات المستمرة."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -17962,6 +19006,12 @@
       "comment": "General settings",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عام"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -18070,6 +19120,12 @@
       "comment": "Label of the home-folder row in the Permissions settings",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "المجلد الرئيسي"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -18178,6 +19234,12 @@
       "comment": "Explains what granting access to the home folder covers",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "يشمل سطح المكتب، والمستندات، والتنزيلات، وكل شيء آخر في مجلدك الرئيسي."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -18286,6 +19348,12 @@
       "comment": "A button that shows a popover explaining how to set MacPacker as the default file opener.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "كيفية تعيين %@ كتطبيق افتراضي؟"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -18394,6 +19462,12 @@
       "comment": "A toggle that lets users choose whether to include beta updates when checking for new versions of the app.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تضمين التحديثات التجريبية (Beta)"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -18502,6 +19576,12 @@
       "comment": "A label displayed below a button that shows more information about the different archive engines.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "معلومات حول المحركات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -18610,6 +19690,12 @@
       "comment": "A label for the log related section in the advanced settings",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "السجلات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -18718,6 +19804,12 @@
       "comment": "Title of the alert that explains how to set MacPacker as the default app for archive files.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تعيين MacPacker كتطبيق افتراضي"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -18826,6 +19918,12 @@
       "comment": "A button label that, when tapped, shows the user how to manage the file provider extension in System Settings.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إدارة في إعدادات النظام"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -18934,6 +20032,12 @@
       "comment": "Setting that puts the MacPacker Finder entries into a MacPacker submenu instead of directly into the Finder context menu",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تضمين الإجراءات في قائمة فرعية"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -19042,6 +20146,12 @@
       "comment": "Allows the user to open the application support folder that holds the cache for temporarly extracted archive files",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فتح دليل التخزين المؤقت"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -19150,6 +20260,12 @@
       "comment": "Quit the app when the last archive window is closed",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إنهاء التطبيق عند إغلاق آخر نافذة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -19258,6 +20374,12 @@
       "comment": "Setting that keeps a list of the archives that were opened, shown under Recent on the start page",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تذكر ملفات الأرشيف الحديثة"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -19366,6 +20488,12 @@
       "comment": "Help text shown in a tooltip when hovering the \"Open cache directory\" button",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إظهار مجلد دعم التطبيقات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -19474,6 +20602,12 @@
       "comment": "Setting that adds a MacPacker icon to the menu bar, which opens the Quick Compress window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إظهار في شريط القوائم"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -19582,6 +20716,12 @@
       "comment": "Setting that shows or hides the \"..\" row at the top of the archive window that leads back to the containing folder",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "إظهار عنصر المجلد الأصلي (”..“)"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -19690,6 +20830,12 @@
       "comment": "When extracting an archive, automatically decide whether to extract into a folder named after the archive. Files are extracted into that folder unless the archive already has a single top-level folder.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "فك الضغط الذكي"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -19798,6 +20944,12 @@
       "comment": "Allow the user to check for updates",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "التحقق من وجود تحديثات…"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -19906,6 +21058,12 @@
       "comment": "A label displayed above a grid of pill buttons.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سجل التغييرات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -20014,6 +21172,12 @@
       "comment": "Header of the upcoming big changes shown in the welcome page",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "قريبًا"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -20122,6 +21286,12 @@
       "comment": "Heading of the welcome window's list of the most important changes in this version",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "أبرز ميزات الإصدار"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -20230,6 +21400,12 @@
       "comment": "Button in the welcome window's donation banner that opens the donation page",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "دعم %@"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -20338,6 +21514,12 @@
       "comment": "Text of the donation banner on the welcome window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تبرعك يدعم استمرار التطوير."
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -20446,6 +21628,12 @@
       "comment": "Heading of the donation banner on the welcome window",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ساعد في استمرار نمو %@"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -20554,6 +21742,12 @@
       "comment": "'Welcome to <app name>'. The order of the greeting might be different in different languages. For example: English: Welcome to MacPacker, Japanese: MacPackerへようこそ. This is up to the translator to decide.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "مرحبًا بك في %@"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",
@@ -20662,6 +21856,12 @@
       "comment": "Link on the welcome window that opens the changes of every version",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "عرض جميع التغييرات"
+          }
+        },
         "de": {
           "stringUnit": {
             "state": "translated",

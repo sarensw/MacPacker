@@ -4,6 +4,12 @@
     "Date Modified" : {
       "comment" : "Column that shows the date the file was modified",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تاريخ التعديل"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33,6 +39,12 @@
     "Extract archive" : {
       "comment" : "Button in the toolbar that allows the user to extract the full archive to a target directory.",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فك ضغط الأرشيف"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -62,6 +74,12 @@
     "Extract selected" : {
       "comment" : "Button in the tooblar that allows the user to extract the selected files.",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فك ضغط العناصر المحددة"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -91,6 +109,12 @@
     "Name" : {
       "comment" : "Column that shows the name of the archive files",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الاسم"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -118,11 +142,25 @@
       }
     },
     "Open this archive in MacPacker to enter the password." : {
-      "comment" : "Shown in the Quick Look preview below the notice that an archive is password protected"
+      "comment" : "Shown in the Quick Look preview below the notice that an archive is password protected",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "افتح هذا الأرشيف في MacPacker لإدخال كلمة السر."
+          }
+        }
+      }
     },
     "Packed Size" : {
       "comment" : "Column that shows the packed size of the archive files",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحجم بعد الضغط"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -152,6 +190,12 @@
     "Size" : {
       "comment" : "Column that shows the unpacked size of the archive files",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الحجم"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -179,7 +223,15 @@
       }
     },
     "This archive is password protected." : {
-      "comment" : "Shown in the Quick Look preview when an archive needs a password to be read"
+      "comment" : "Shown in the Quick Look preview when an archive needs a password to be read",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هذا الأرشيف محمي بكلمة سر."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
