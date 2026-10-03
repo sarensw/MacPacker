@@ -8,6 +8,8 @@
 import Foundation
 
 public enum Keys {
+    public static let archiveOpenBehavior = "archiveOpenBehavior"
+
     // general settings
     public static let settingBreadcrumbPosition = "settingBreadcrumbPosition"
     public static let quitOnLastWindowClosed = "quitOnLastWindowClosed"

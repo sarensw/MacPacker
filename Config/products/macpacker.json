@@ -39,6 +39,30 @@
         "version": "1.0.1",
         "items": [
           {
+            "type": "feat",
+            "title": {
+              "en": "Extract archives when opening from Finder",
+              "zh-Hans": "从 Finder 打开时解压归档",
+              "fr": "Extraire les archives ouvertes depuis Finder",
+              "de": "Archive beim Öffnen im Finder entpacken",
+              "it": "Estrai gli archivi aperti dal Finder",
+              "ja": "Finder から開いたアーカイブを展開",
+              "fa": "استخراج بایگانی هنگام باز کردن از Finder",
+              "pl": "Rozpakowuj archiwa otwierane z Finder",
+              "pt-BR": "Extrair arquivos ao abrir pelo Finder",
+              "ru": "Распаковка архивов при открытии из Finder",
+              "uk": "Розпакування архівів при відкритті з Finder",
+              "es-MX": "Extraer archivos al abrirlos desde Finder",
+              "ko": "Finder에서 열 때 압축 풀기",
+              "nl": "Archieven uitpakken bij openen vanuit Finder",
+              "vi": "Giải nén khi mở tệp lưu trữ từ Finder",
+              "tr": "Finder’dan açarken arşivleri çıkart"
+            },
+            "issues": [
+              "280"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

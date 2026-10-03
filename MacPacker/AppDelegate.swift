@@ -32,6 +32,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var dropCompressor: DropCompressor? = nil
     private var dropWindowController: DropWindowController? = nil
     private var pendingOpenURLs: [URL] = []
+    private var requestedUntitledWindow = false
+    private lazy var archiveOpenExtractor = ArchiveOpenExtractor(
+        catalog: appState.catalog, engineSelector: appState.engineSelector,
+        didFinish: { [weak self] in
+            guard let self, self.quitOnLastWindowClosed,
+                  !ExtractionProgressCenter.shared.hasActiveJobs,
+                  !NSApp.windows.contains(where: { $0.isVisible }) else { return }
+            NSApp.terminate(nil)
+        })
+
+    private func shouldExtractOnOpen(_ url: URL) -> Bool {
+        ArchiveOpenBehavior.current().shouldExtract(
+            url,
+            isArchive: ArchiveTypeDetector(catalog: appState.catalog).detect(for: url) != nil,
+            isDirectory: (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true)
+    }
 
     private static var isRunningInPreview: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
@@ -129,7 +145,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // was opened via Finder > right click > Open with...
         for url in urls {
             log.notice("Open-with: opening \(url.lastPathComponent)")
-            archiveWindowManager?.openArchiveWindow(for: url)
+            if shouldExtractOnOpen(url) {
+                archiveOpenExtractor.enqueue(url)
+            } else {
+                archiveWindowManager?.openArchiveWindow(for: url)
+            }
         }
     }
     
@@ -187,7 +207,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 #else
         let showsExtractionDemo = false
 #endif
-        let launchedToOpenSomething = opensWindow || showsExtractionDemo
+        let extractsOnLaunch = ArchiveOpenBehavior.current().suppressesLaunchWindows(
+            hasRequestedBrowser: requestedUntitledWindow)
+        let launchedToOpenSomething = opensWindow || showsExtractionDemo || extractsOnLaunch
 
         // make sure that at least one window will be shown even if it is empty
         if !launchedToOpenSomething {
@@ -253,6 +275,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 #endif
     }
     
+    // AppKit's untitled-document request distinguishes explicitly launching the
+    // app from launching it to open a file, regardless of event delivery order.
+    public func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
+        guard !Self.isRunningInPreview else { return false }
+        requestedUntitledWindow = true
+        archiveWindowManager?.openLaunchArchiveWindow()
+        return false
+    }
+
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         guard !Self.isRunningInPreview else { return true }
         log.notice("applicationShouldHandleReopen (hasVisibleWindows: \(hasVisibleWindows))")
@@ -264,6 +295,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     public func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        // A password or folder panel may close before extraction creates its
+        // progress job. Keep the queued operation alive through that gap.
+        if archiveOpenExtractor.isBusy { return false }
         if quitOnLastWindowClosed {
             return true
         }
