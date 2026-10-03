@@ -70,6 +70,17 @@ extension AllCoreTests {
             ])
         }
 
+        @Test("Checksum actions are opt-in and only appear for files")
+        func checksumActions() {
+            #expect(!FinderMenuItem.checksums.isEnabledByDefault)
+            #expect(!FinderMenuItem.verifyChecksum.isEnabledByDefault)
+            let files = FinderMenuSettings.visibleItems(files: 1, folders: 0, in: everythingOn())
+            #expect(files.suffix(2) == [.checksums, .verifyChecksum])
+            let folders = FinderMenuSettings.visibleItems(files: 0, folders: 1, in: everythingOn())
+            #expect(!folders.contains(.checksums))
+            #expect(!folders.contains(.verifyChecksum))
+        }
+
         @Test("Several items get Compress Each, but not a folder's contents")
         func severalItems() {
             let visible = FinderMenuSettings.visibleItems(files: 2, folders: 1, in: everythingOn())
@@ -104,7 +115,7 @@ extension AllCoreTests {
             }
         }
 
-        @Test("Archive entries send only the files of a mixed selection; compress entries send all of it")
+        @Test("File-only entries omit folders of a mixed selection; compress entries include them")
         func mixedSelection() {
             let archive = URL(fileURLWithPath: "/Users/me/a.zip")
             let folder = URL(fileURLWithPath: "/Users/me/photos")
@@ -112,7 +123,8 @@ extension AllCoreTests {
             let selection = [archive, folder, other]
             let isDirectory: (URL) -> Bool = { $0 == folder }
 
-            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder] {
+            for item in [FinderMenuItem.open, .extractHere, .extractToFolder,
+                         .extractToChosenFolder, .checksums, .verifyChecksum] {
                 #expect(item.items(from: selection, isDirectory: isDirectory) == [archive, other])
             }
             for item in [FinderMenuItem.addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z, .compressEachSeparately] {
@@ -125,7 +137,8 @@ extension AllCoreTests {
             #expect(FinderMenuItem.compressToZip.archiveExtension == "zip")
             #expect(FinderMenuItem.compressToDatedZip.archiveExtension == "zip")
             #expect(FinderMenuItem.compressTo7z.archiveExtension == "7z")
-            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive] {
+            for item in [FinderMenuItem.open, .extractHere, .extractToFolder,
+                         .extractToChosenFolder, .addToArchive, .checksums, .verifyChecksum] {
                 #expect(item.archiveExtension == nil)
             }
         }

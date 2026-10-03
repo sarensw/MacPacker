@@ -133,6 +133,10 @@ private struct FinderMenuItemToggle: View {
             Text(.settingsCompressEachItemSeparately)
         case .compressFolderContents:
             Text(.settingsCompressFolderContents)
+        case .checksums:
+            Text("Checksums…", comment: "Optional Finder entry for calculating checksums of selected files")
+        case .verifyChecksum:
+            Text("Verify Checksum from Clipboard", comment: "Optional Finder entry for checking selected files against a copied checksum")
         }
     }
 }

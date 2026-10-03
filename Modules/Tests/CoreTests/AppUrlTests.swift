@@ -52,6 +52,18 @@ extension AllCoreTests {
             #expect(try AppUrl(url: url, scheme: scheme) == request)
         }
 
+        @Test("Both checksum actions survive the Finder-to-app URL handoff")
+        func checksumRoundTrip() throws {
+            for action in [AppUrlAction.checksums, .verifyChecksum] {
+                let request = AppUrl(
+                    action: action,
+                    files: [URL(fileURLWithPath: "/Users/me/a.bin")],
+                    target: URL(fileURLWithPath: "/Users/me")
+                )
+                #expect(try AppUrl(url: #require(request.url(scheme: scheme)), scheme: scheme) == request)
+            }
+        }
+
         @Test("The dated archive gets the name the menu showed, even after a minute boundary")
         func datedNameMatchesTheMenu() throws {
             // the menu opens a second before the minute turns; the archive is
@@ -159,7 +171,8 @@ extension AllCoreTests {
             #expect(AppUrlAction.extractTo.honorsSmartExtraction)
 
             // nothing that does not extract gets a say either
-            for action in [AppUrlAction.open, .compress, .compressEach, .compressContents, .addToArchive] {
+            for action in [AppUrlAction.open, .compress, .compressEach, .compressContents,
+                           .addToArchive, .checksums, .verifyChecksum] {
                 #expect(!action.honorsSmartExtraction, "\(action) does not extract")
             }
         }

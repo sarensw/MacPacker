@@ -107,6 +107,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 handler = AppUrlCompressEachHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .compressContents:
                 handler = AppUrlCompressContentsHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+            case .checksums, .verifyChecksum:
+                handler = AppUrlChecksumHandler()
             }
 
             guard let handler else {
@@ -184,10 +186,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         let opensWindow = LaunchParameters.opensWindow
 #if DEBUG
         let showsExtractionDemo = ExtractionDemo.isRequested
+        let showsChecksumDemo = ProcessInfo.processInfo.environment["MACPACKER_DEBUG_CHECKSUM_FILE"] != nil
 #else
         let showsExtractionDemo = false
+        let showsChecksumDemo = false
 #endif
-        let launchedToOpenSomething = opensWindow || showsExtractionDemo
+        let launchedForChecksums = pendingOpenURLs.contains { url in
+            guard url.scheme == UrlParser.appScheme,
+                  let action = UrlParser().parse(appUrl: url)?.action else { return false }
+            return action == .checksums || action == .verifyChecksum
+        }
+        let launchedToOpenSomething = opensWindow || showsExtractionDemo || launchedForChecksums || showsChecksumDemo
 
         // make sure that at least one window will be shown even if it is empty
         if !launchedToOpenSomething {
@@ -219,6 +228,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         log.notice("applicationDidFinishLaunching done")
 
 #if DEBUG
+        // Repeatable UI check with a disposable file, without enabling a Finder
+        // extension or granting access to a personal folder.
+        if let path = ProcessInfo.processInfo.environment["MACPACKER_DEBUG_CHECKSUM_FILE"] {
+            ChecksumWindowController.show(files: [URL(fileURLWithPath: path)], verifyFromClipboard: false)
+        }
+
         // Debug-only end-to-end hook: MACPACKER_DEBUG_EXTRACT="<archive>|<destDir>"
         // opens the archive headless and extracts it fully — lets the
         // extraction progress window be exercised without UI scripting.

@@ -17,6 +17,8 @@ public enum AppUrlAction: String, Sendable {
     case compressEach
     case compressContents
     case addToArchive
+    case checksums
+    case verifyChecksum
 }
 
 public extension AppUrlAction {
@@ -34,7 +36,7 @@ public extension AppUrlAction {
         case .extractHere, .extractTo:
             true
         case .extractToFolder, .open, .compress, .compressEach,
-             .compressContents, .addToArchive:
+             .compressContents, .addToArchive, .checksums, .verifyChecksum:
             false
         }
     }

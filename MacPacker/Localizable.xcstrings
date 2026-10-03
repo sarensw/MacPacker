@@ -1,6 +1,54 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%lld files": {
+      "comment": "Number of files being checked",
+      "extractionState": "manual"
+    },
+    "1 file": {
+      "comment": "One file being checked",
+      "extractionState": "manual"
+    },
+    "Checksum does not match": {
+      "comment": "File differs from copied checksum",
+      "extractionState": "manual"
+    },
+    "Checksum matches": {
+      "comment": "File matches copied checksum",
+      "extractionState": "manual"
+    },
+    "Checksums…": {
+      "comment": "Finder action and setting for calculating file checksums",
+      "extractionState": "manual"
+    },
+    "Copy": {
+      "comment": "Copy this file checksum to the clipboard",
+      "extractionState": "manual"
+    },
+    "Copy one complete checksum to compare it with the selected files.": {
+      "comment": "Shown when clipboard text is not one recognizable checksum",
+      "extractionState": "manual"
+    },
+    "File Checksums": {
+      "comment": "Window title and heading for calculating and verifying file checksums",
+      "extractionState": "manual"
+    },
+    "Paste": {
+      "comment": "Paste an expected checksum from the clipboard",
+      "extractionState": "manual"
+    },
+    "Paste a CRC-32, MD5, SHA-1 or SHA-256 checksum": {
+      "comment": "Placeholder for an expected file checksum to compare",
+      "extractionState": "manual"
+    },
+    "Save .sha256…": {
+      "comment": "Write this file's SHA-256 checksum to a checksum file",
+      "extractionState": "manual"
+    },
+    "Verify Checksum from Clipboard": {
+      "comment": "Finder action and setting for comparing files with a copied checksum",
+      "extractionState": "manual"
+    },
     "appExtractionInProgress": {
       "comment": "Title of the alert shown when the user quits while an extraction is running.",
       "extractionState": "manual",
