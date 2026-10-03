@@ -1,10 +1,11 @@
 import Foundation
+import CryptoKit
 
 /// Captures the source set before extraction, then refuses cleanup if any part
 /// changed. Only a caller that successfully extracted the whole archive may use it.
 struct ExtractionSourceCleanup {
     let sources: [URL]
-    private let stamps: [FileStamp]
+    private let stamps: [SourceIdentity]
 
     init(source: URL, catalog: ArchiveTypeCatalog) throws {
         let directory = source.deletingLastPathComponent()
@@ -25,18 +26,68 @@ struct ExtractionSourceCleanup {
             }
         }
         sources = Array(Set(candidates)).sorted { $0.path < $1.path }
-        stamps = try sources.map { url in
-            guard let stamp = FileStamp(url) else { throw ArchiveError.extractionFailed("Cannot verify the source archive before extraction.") }
-            return stamp
-        }
+        stamps = try sources.map(SourceIdentity.init)
+
     }
 
-    func perform(trash: (URL) throws -> Void = { url in
-        try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+    /// Validates all sources before removal and restores prior moves if one fails.
+    func perform(trash: (URL) throws -> URL = { url in
+        var result: NSURL?
+        try FileManager.default.trashItem(at: url, resultingItemURL: &result)
+        guard let result else { throw ArchiveError.extractionFailed("Trash did not report the recovery location.") }
+        return result as URL
     }) throws {
-        guard !sources.isEmpty, sources.map({ FileStamp($0) }) == stamps.map({ Optional($0) }) else {
+        guard !sources.isEmpty, try sources.map(SourceIdentity.init) == stamps else {
             throw ArchiveError.extractionFailed("Extraction finished, but the source changed. The archive was kept.")
         }
-        for source in sources { try trash(source) }
+        var moved: [(original: URL, trashed: URL)] = []
+        do {
+            for (source, stamp) in zip(sources, stamps) {
+                guard try SourceIdentity(source) == stamp else {
+                    throw ArchiveError.extractionFailed("The source archive changed during cleanup.")
+                }
+                moved.append((source, try trash(source)))
+            }
+        } catch {
+            var recovery: [String] = []
+            for item in moved.reversed() {
+                do { try FileManager.default.moveItem(at: item.trashed, to: item.original) }
+                catch { recovery.append(item.trashed.path) }
+            }
+            if !recovery.isEmpty {
+                throw ArchiveError.extractionFailed("Source cleanup was incomplete. Recover remaining files from: " + recovery.joined(separator: ", "))
+            }
+            throw error
+        }
+    }
+}
+
+/// File identity plus streaming content verification, including unchanged-size edits.
+private struct SourceIdentity: Equatable {
+    let device: UInt64
+    let inode: UInt64
+    let digest: Data
+
+    init(_ url: URL) throws {
+        let fm = FileManager.default
+        let before = try fm.attributesOfItem(atPath: url.path)
+        guard before[.type] as? FileAttributeType == .typeRegular,
+              let device = before[.systemNumber] as? NSNumber,
+              let inode = before[.systemFileNumber] as? NSNumber else {
+            throw ArchiveError.extractionFailed("Cannot verify the source archive identity.")
+        }
+        self.device = device.uint64Value
+        self.inode = inode.uint64Value
+        let handle = try FileHandle(forReadingFrom: url)
+        defer { try? handle.close() }
+        var hash = SHA256()
+        while let data = try handle.read(upToCount: 1024 * 1024), !data.isEmpty { hash.update(data: data) }
+        digest = Data(hash.finalize())
+        let after = try fm.attributesOfItem(atPath: url.path)
+        for key: FileAttributeKey in [.systemNumber, .systemFileNumber, .size, .modificationDate] {
+            guard (before[key] as? NSObject) == (after[key] as? NSObject) else {
+                throw ArchiveError.extractionFailed("The source archive changed while verifying it.")
+            }
+        }
     }
 }

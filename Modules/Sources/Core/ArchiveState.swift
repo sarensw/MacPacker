@@ -32,7 +32,10 @@ public enum ArchiveSortOrder: String {
 @MainActor
 public class ArchiveState: ObservableObject {
     public private(set) var extractionOutput: URL?
+    /// Public URL requests require fresh consent before optional source cleanup.
+    public var sourceCleanupAuthorizationProvider: (@MainActor ([URL]) async -> Bool)?
     public var extractionDestinationIsArchiveFolder = false
+    public var extractionBackupWarningProvider: (@MainActor (URL) async -> Void)?
     public var extractionConflictProvider: (@MainActor (ExtractionConflict) async -> ExtractionConflictChoice)?
     @Published private(set) public var hasArchive: Bool = false
     @Published private(set) public var canBeEdited: Bool = false
@@ -1595,10 +1598,17 @@ extension ArchiveState {
                     target = destination.appendingPathComponent(archiveTypeDetector.getNameWithoutExtension(for: archiveUrl))
                 }
                 let installed = try ExtractionDestination.install(staged: staging, target: target, choice: choice, folderIsOutput: target != destination || extractionDestinationIsArchiveFolder)
-                if let cleanup, !installed.skippedExisting {
-                    try await Sandbox.access(url: archiveUrl) { try cleanup.perform() }
-                }
                 extractionOutput = installed.destination
+                if let backup = installed.retainedBackup {
+                    await extractionBackupWarningProvider?(backup)
+                }
+                if let cleanup, !installed.skippedExisting, installed.retainedBackup == nil {
+                    let authorized = await sourceCleanupAuthorizationProvider?(cleanup.sources) ?? true
+                    if authorized {
+                        try Task.checkCancellation()
+                        try await Sandbox.access(url: archiveUrl) { try cleanup.perform() }
+                    }
+                }
                 progressCenter.finish(jobId, .done)
             } catch is CancellationError {
                 progressCenter.finish(jobId, .cancelled)

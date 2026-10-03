@@ -572,6 +572,17 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     fullPath += FCHAR_PATH_SEPARATOR;
     fullPath += us2fs(safePath);
 
+    // Archive-created or existing symlinks must never become write parents.
+    const std::string outputPath(fullPath.Ptr());
+    for (size_t end = (size_t)_destDir.Len() + 1; end <= outputPath.size(); ++end) {
+        if (end != outputPath.size() && outputPath[end] != '/') continue;
+        struct stat info;
+        if (lstat(outputPath.substr(0, end).c_str(), &info) == 0 && S_ISLNK(info.st_mode)) {
+            errorMessage = "Refusing to extract through a symbolic link";
+            return E_FAIL;
+        }
+    }
+
     if (isDir) {
         createDirsRecordingNew(fullPath);
 
@@ -826,6 +837,22 @@ static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars,
 // that the plain file-write above drops: the execute bit (chmod) and symbolic
 // links (recreated from the target bytes 7-Zip wrote). Single choke point for all
 // three sz_extract_* paths. macOS-only bridge, so FChar == char (UTF-8 paths).
+bool sz_is_safe_symlink_target(const char *entry, const char *target) {
+    if (!entry || !target || !*target || target[0] == '/') return false;
+    int depth = 0;
+    for (const char *p = entry; *p; ++p) if (*p == '/') ++depth;
+    std::string value(target);
+    for (size_t start = 0; start <= value.size();) {
+        const size_t end = value.find('/', start);
+        const std::string part = value.substr(start, end == std::string::npos ? end : end - start);
+        if (part == "..") { if (--depth < 0) return false; }
+        else if (!part.empty() && part != ".") ++depth;
+        if (end == std::string::npos) break;
+        start = end + 1;
+    }
+    return true;
+}
+
 Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
 {
     // Drop our stream reference so the file is closed/flushed before we read it
@@ -885,7 +912,11 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
                (target.back() == '\0' || target.back() == '\n' || target.back() == '\r'))
             target.pop_back();
 
-        if (!target.empty()) {
+        const std::string relativePath = std::string(path).substr((size_t)_destDir.Len() + 1);
+        if (!sz_is_safe_symlink_target(relativePath.c_str(), target.c_str())) {
+            unlink(path);
+            errorMessage = "Symbolic link target escapes extraction directory";
+        } else {
             unlink(path);
             if (symlink(target.c_str(), path) != 0)
                 errorMessage = "Failed to create symbolic link";

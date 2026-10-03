@@ -14,6 +14,7 @@ enum ExtractionDestination {
     struct Result {
         let destination: URL
         let skippedExisting: Bool
+        let retainedBackup: URL?
     }
 
     static func exists(_ url: URL) -> Bool {
@@ -102,7 +103,11 @@ enum ExtractionDestination {
             if (try? fm.contentsOfDirectory(atPath: backup.path).isEmpty) == true { try? fm.removeItem(at: backup) }
             throw error
         }
-        if exists(backup) { try trash(backup) }
-        return Result(destination: output, skippedExisting: skipped)
+        var retainedBackup: URL?
+        if exists(backup) {
+            do { try trash(backup) }
+            catch { retainedBackup = backup }
+        }
+        return Result(destination: output, skippedExisting: skipped, retainedBackup: retainedBackup)
     }
 }

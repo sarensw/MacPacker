@@ -206,6 +206,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         )
         finderSession = FinderOperationSession(isTransient: progressOnlyLaunch)
         observeFinderSession()
+        if progressOnlyLaunch {
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(5))
+                guard let self, self.finderSession.needsLaunchFallback else { return }
+                self.finderSession.keepRunning()
+                self.archiveWindowManager?.openLaunchArchiveWindow()
+            }
+        }
         let launchedToOpenSomething = opensWindow || showsExtractionDemo || progressOnlyLaunch
 
         // make sure that at least one window will be shown even if it is empty

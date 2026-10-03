@@ -6,6 +6,9 @@
 extern "C" {
 #endif
 
+/// True only for relative link targets that remain inside the extraction root.
+bool sz_is_safe_symlink_target(const char *entry, const char *target);
+
 // Opaque archive handle.
 // Not thread-safe -- must only be used from the thread that called sz_open().
 typedef void* SZArchiveRef;

@@ -13,13 +13,8 @@ struct DefaultArchiveAppView: View {
     @State private var result = ""
     @State private var cancelled = false
 
-    private var formats: [ArchiveTypeDto] {
-        // Installer, executable and disk-image associations belong to their
-        // normal apps even though an archive engine can inspect their contents.
-        catalog.getAllTypes().filter {
-            ["archive", "compression"].contains($0.kind)
-                && !["ar", "chm", "msapp", "msi", "pkg", "rpm", "sea"].contains($0.id)
-        }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    private var formats: [DefaultArchiveAssociations.Choice] {
+        DefaultArchiveAssociations.choices(catalog: catalog)
     }
 
     var body: some View {
@@ -35,7 +30,7 @@ struct DefaultArchiveAppView: View {
                 Toggle(isOn: Binding(get: { selected.contains(format.id) }, set: { value in
                     if value { selected.insert(format.id) } else { selected.remove(format.id) }
                 })) {
-                    Text(verbatim: "\(format.name) (\(DefaultArchiveAssociations.extensions(for: format).joined(separator: ", ")))")
+                    Text(verbatim: "\(format.name) (\(format.extensions.joined(separator: ", ")))")
                 }.disabled(busy)
             }.frame(height: 260)
             if busy {
@@ -62,7 +57,7 @@ struct DefaultArchiveAppView: View {
         result = ""
         defer { busy = false }
         let extensions = Set(formats.filter { selected.contains($0.id) }
-            .flatMap { DefaultArchiveAssociations.extensions(for: $0) })
+            .flatMap { $0.extensions })
         var visited: Set<String> = []
         for ext in extensions.sorted() {
             guard !cancelled else { break }

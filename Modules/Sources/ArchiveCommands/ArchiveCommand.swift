@@ -48,6 +48,9 @@ public struct ArchiveCommand: Sendable {
         guard let path = positional.first else { throw CommandError("An archive path is required.") }
         archive = URL(fileURLWithPath: path)
         operands = Array(positional.dropFirst())
+        if let formatName, CompressionOptions.Format(rawValue: formatName) == nil {
+            throw CommandError("Unsupported output format. Choose 7z, zip, or tar.")
+        }
         guard let format = CompressionOptions.Format(rawValue: formatName ?? archive.pathExtension.lowercased()) ?? (action == .list || action == .extract ? .sevenZ : nil) else {
             throw CommandError("Unsupported output format. Choose 7z, zip, or tar.")
         }

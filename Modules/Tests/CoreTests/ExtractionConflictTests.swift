@@ -4,6 +4,20 @@ import Testing
 
 extension AllCoreTests {
     struct ExtractionConflictTests {
+        @Test func failedBackupTrashStillReportsInstalledOutput() throws {
+            let root = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: root) }
+            let staged = root.appendingPathComponent("staged")
+            let target = root.appendingPathComponent("target")
+            for folder in [staged, target] { try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false) }
+            try Data("old".utf8).write(to: target.appendingPathComponent("file"))
+            try Data("new".utf8).write(to: staged.appendingPathComponent("file"))
+            let result = try ExtractionDestination.install(staged: staged, target: target, choice: .replaceAll, folderIsOutput: true) { _ in throw CocoaError(.fileWriteNoPermission) }
+            #expect(result.destination == target)
+            #expect(try String(contentsOf: target.appendingPathComponent("file"), encoding: .utf8) == "new")
+            let backup = try #require(result.retainedBackup)
+            #expect(try String(contentsOf: backup.appendingPathComponent("target/file"), encoding: .utf8) == "old")
+        }
         @Test func conflictChoicesPreserveExistingData() throws {
             let root = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: root) }

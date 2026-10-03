@@ -29,6 +29,9 @@ public struct FinderOperationSession {
         isTransient = false
     }
 
+    /// A bounded launch timer may reveal the app only if no URL ever arrived.
+    public var needsLaunchFallback: Bool { isTransient && !hasReceivedRequest }
+
     public var hasPendingRequests: Bool { !requests.isEmpty }
 
     public func shouldTerminate(hasProgress: Bool, hasWindows: Bool) -> Bool {

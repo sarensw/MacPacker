@@ -6,7 +6,7 @@ import ArchiveCommands
 extension AllCoreTests {
     struct ArchiveCommandTests {
         @Test func rejectsUnsafeOrAmbiguousOptions() {
-            for arguments in [["create", "x.7z"], ["extract", "x.rar"], ["rename", "x.7z", "one"], ["list", "x.rar", "--password", "secret"], ["create", "x.tar", "file", "--encrypt-names"], ["update", "x.7z", "file", "--volume-size", "10m"], ["list", "x.rar", "--ask-password", "--password-stdin"]] {
+            for arguments in [["list", "x.rar", "--format", "bogus"], ["extract", "x.rar", "--output", "out", "--format", "bogus"], ["create", "x.7z"], ["extract", "x.rar"], ["rename", "x.7z", "one"], ["list", "x.rar", "--password", "secret"], ["create", "x.tar", "file", "--encrypt-names"], ["update", "x.7z", "file", "--volume-size", "10m"], ["list", "x.rar", "--ask-password", "--password-stdin"]] {
                 #expect(throws: (any Error).self) { try ArchiveCommand(arguments: arguments) }
             }
         }
@@ -32,7 +32,7 @@ extension AllCoreTests {
             let cleanup = try ExtractionSourceCleanup(source: source, catalog: ArchiveTypeCatalog())
             try FileManager.default.removeItem(at: source)
             var removed = false
-            #expect(throws: (any Error).self) { try cleanup.perform { _ in removed = true } }
+            #expect(throws: (any Error).self) { try cleanup.perform { _ in removed = true; return source } }
             #expect(!removed)
         }
         @Test func cleanupOnlySelectsItsOwnLegacyVolumes() throws {
@@ -46,7 +46,7 @@ extension AllCoreTests {
             let cleanup = try ExtractionSourceCleanup(source: directory.appendingPathComponent("one.rar"), catalog: ArchiveTypeCatalog())
             #expect(Set(cleanup.sources.map(\.lastPathComponent)) == ["one.rar", "one.r00", "one.r01"])
             var moved: [URL] = []
-            try cleanup.perform { moved.append($0) }
+            try cleanup.perform { moved.append($0); return $0 }
             #expect(moved.count == 3)
         }
     }
