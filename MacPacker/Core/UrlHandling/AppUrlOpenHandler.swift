@@ -14,7 +14,7 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 class AppUrlOpenHandler: AppUrlHandler {
 
-    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
+    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.notice("Open handler: \(appUrl.files.count) file(s) to open")
         // Nothing arrives with ambient access on the Finder-extension path: the
         // extension hands over paths, not a grant. Ask for the archive's *folder*
@@ -26,14 +26,12 @@ class AppUrlOpenHandler: AppUrlHandler {
         // usually in the same folder, and asked for in parallel each would put
         // up its own panel before any of them had stored the grant. Serialized,
         // the first answer covers the rest. A refused one skips only itself.
-        Task { @MainActor in
-            for fileUrl in appUrl.files {
-                guard await FolderAccessStore.shared.ensureAccess(forFileIn: fileUrl) else {
-                    log.error("No access to \(fileUrl.lastPathComponent) — archive cannot be read")
-                    continue
-                }
-                archiveWindowManager.openArchiveWindow(for: fileUrl)
+        for fileUrl in appUrl.files {
+            guard await FolderAccessStore.shared.ensureAccess(forFileIn: fileUrl) else {
+                log.error("No access to \(fileUrl.lastPathComponent) — archive cannot be read")
+                continue
             }
+            archiveWindowManager.openArchiveWindow(for: fileUrl)
         }
     }
 }

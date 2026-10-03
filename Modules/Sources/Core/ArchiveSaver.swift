@@ -45,6 +45,7 @@ final actor ArchiveSaver {
     private let folderAccessProvider: ArchiveFolderAccessUserProvider?
     /// Percent written, on the main actor.
     private let onProgress: @MainActor @Sendable (Int) -> Void
+    private let onByteProgress: @MainActor @Sendable (Int64, Int64, Date) -> Void
 
     /// How often the source's password is asked for before the save gives up.
     static let passwordPrompts = 5
@@ -60,7 +61,8 @@ final actor ArchiveSaver {
         sourcePassword: String?,
         passwordResolver: @escaping ArchivePasswordResolver,
         folderAccessProvider: ArchiveFolderAccessUserProvider?,
-        onProgress: @escaping @MainActor @Sendable (Int) -> Void
+        onProgress: @escaping @MainActor @Sendable (Int) -> Void,
+        onByteProgress: @escaping @MainActor @Sendable (Int64, Int64, Date) -> Void = { _, _, _ in }
     ) {
         self.source = source
         self.splitArchiveName = splitArchiveName
@@ -73,6 +75,7 @@ final actor ArchiveSaver {
         self.passwordResolver = passwordResolver
         self.folderAccessProvider = folderAccessProvider
         self.onProgress = onProgress
+        self.onByteProgress = onByteProgress
     }
 
     func save() async throws -> Saved {
@@ -183,12 +186,15 @@ final actor ArchiveSaver {
     private func progressHandler() -> @Sendable (UInt64, UInt64) -> Bool {
         let throttle = ProgressThrottle()
         let onProgress = onProgress
+        let onByteProgress = onByteProgress
         return { completed, total in
-            guard total > 0 else { return true }
-            let percent = Int((completed * 100) / total)
-            if throttle.shouldEmit(at: Date()) {
+            let date = Date()
+            if throttle.shouldEmit(at: date) {
                 DispatchQueue.main.async {
-                    MainActor.assumeIsolated { onProgress(percent) }
+                    MainActor.assumeIsolated {
+                        if total > 0 { onProgress(Int(min(100, Double(completed) / Double(total) * 100))) }
+                        onByteProgress(Int64(clamping: completed), Int64(clamping: total), date)
+                    }
                 }
             }
             return true

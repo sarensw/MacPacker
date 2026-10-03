@@ -49,6 +49,9 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public let startedAt: Date
     public internal(set) var finishedAt: Date?
     public internal(set) var state: State = .running
+    /// Saving cannot yet be cancelled safely; only offer a button when the
+    /// owner installed a cancellation handler.
+    public internal(set) var isCancellable = false
 
     /// Speed points for the details graph: the transfer is divided into
     /// `maxSpeedSamples` uniform slots, and crossing a slot boundary records
@@ -197,12 +200,18 @@ public final class ExtractionProgressCenter: ObservableObject {
     public func setOnCancel(_ id: UUID, _ handler: @escaping () -> Void) {
         guard let job = jobs.first(where: { $0.id == id }), !job.isFinished else { return }
         cancelHandlers[id] = handler
+        if let index = jobs.firstIndex(where: { $0.id == id }) {
+            jobs[index].isCancellable = true
+        }
     }
 
     /// Called by the UI. Fires the cancel handler once; the job itself stays
     /// running until the extraction task acknowledges with `finish(_, .cancelled)`.
     public func requestCancel(_ id: UUID) {
         guard let handler = cancelHandlers.removeValue(forKey: id) else { return }
+        if let index = jobs.firstIndex(where: { $0.id == id }) {
+            jobs[index].isCancellable = false
+        }
         log.notice("Extraction cancel requested", context: ["job": id.uuidString])
         handler()
     }

@@ -258,7 +258,7 @@ extension AllCoreTests {
             try SevenZipArchive.writeArchive(
                 destination: archive,
                 items: [.addData(archivePath: "a.txt", data: sampleText(bytes: 20_000, seed: 9))],
-                options: .init(format: format, password: "password", encryptFileNames: format == .sevenZ))
+                options: .init(format: format, password: format == .tar ? nil : "password", encryptFileNames: format == .sevenZ))
             try sevenZip(sevenZipTool(), ["t", "-ppassword", archive.path])
         }
     }
@@ -768,7 +768,7 @@ extension AllCoreTests {
             }
         }
 
-        @Test(arguments: CompressionOptions.Format.allCases)
+        @Test(arguments: [CompressionOptions.Format.sevenZ, .zip])
         func encryptedVolumesNeedThePassword(_ format: CompressionOptions.Format) throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }

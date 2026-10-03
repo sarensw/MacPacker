@@ -465,12 +465,12 @@ extension AllCoreTests {
 
         /// What the window and the Settings pencil go by: only 7-Zip edits, and
         /// only zip. A format gaining an editor shows up here first (#265).
-        @Test func onlySevenZipEditsAndOnlyZip() {
+        @Test func sevenZipEditsSupportedOutputFormats() {
             let catalog = ArchiveTypeCatalog()
             let editors = catalog.allFormatIds().flatMap { format in
                 catalog.engineOptions(for: format).filter(\.canEdit).map { "\(format)/\($0.id)" }
             }
-            #expect(editors == ["zip/7zip"])
+            #expect(Set(editors) == ["zip/7zip", "7zip/7zip", "tar/7zip"])
         }
     }
 

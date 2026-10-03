@@ -701,7 +701,7 @@ extension AllCoreTests {
             try await state.openTask?.value
             #expect(state.canBeEdited)
 
-            state.open(url: sevenZ)
+            state.open(url: Bundle.module.resourceURL!.appendingPathComponent("defaultArchives/defaultArchive.rar"))
             try await state.openTask?.value
             #expect(!state.canBeEdited)
         }
@@ -1188,9 +1188,10 @@ extension AllCoreTests {
 func archiveFormat(of url: URL) throws -> String {
     let handle = try FileHandle(forReadingFrom: url)
     defer { try? handle.close() }
-    let head = try handle.read(upToCount: 6) ?? Data()
+    let head = try handle.read(upToCount: 512) ?? Data()
     if head.starts(with: [0x50, 0x4B, 0x03, 0x04]) { return "zip" }
     if head.starts(with: [0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C]) { return "7z" }
+    if head.count >= 262, String(data: head[257..<262], encoding: .ascii) == "ustar" { return "tar" }
     return head.map { String(format: "%02x", $0) }.joined(separator: " ")
 }
 
@@ -1603,6 +1604,7 @@ struct WriteCase: Sendable, CustomTestStringConvertible {
     /// What 7-Zip records for this combination: the part of `kpidMethod` before
     /// its first colon.
     var recordedName: String {
+        if format == .tar { return "nothing" }
         if level == 0 { return format == .zip ? "Store" : "Copy" }
         switch method {
         case nil: return format == .zip ? "Deflate" : "LZMA2"
@@ -1615,7 +1617,7 @@ struct WriteCase: Sendable, CustomTestStringConvertible {
         }
     }
 
-    var stores: Bool { recordedName == "Store" || recordedName == "Copy" }
+    var stores: Bool { recordedName == "Store" || recordedName == "Copy" || format == .tar }
 
     /// Each format, Automatic plus each method it offers, each of 7-Zip's levels —
     /// built from the same list the panel reads, so a method added there is under

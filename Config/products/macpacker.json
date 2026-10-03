@@ -39,6 +39,31 @@
         "version": "1.0.1",
         "items": [
           {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+              "en": "Progress-only Finder actions",
+              "de": "Finder-Aktionen nur mit Fortschrittsanzeige",
+              "es-MX": "Acciones de Finder solo con progreso",
+              "fa": "نمایش فقط پیشرفت عملیات Finder",
+              "fr": "Actions Finder avec progression seule",
+              "it": "Azioni Finder con solo avanzamento",
+              "ja": "Finder操作で進行状況のみ表示",
+              "ko": "Finder 작업 진행 상황만 표시",
+              "nl": "Alleen voortgang bij Finder-acties",
+              "pl": "Tylko postęp operacji Findera",
+              "pt-BR": "Ações do Finder só com progresso",
+              "ru": "Только прогресс действий Finder",
+              "tr": "Finder işlemlerinde yalnızca ilerleme",
+              "uk": "Лише перебіг дій Finder",
+              "vi": "Chỉ hiện tiến trình thao tác Finder",
+              "zh-Hans": "Finder 操作仅显示进度"
+            },
+            "issues": [
+              "279"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

@@ -657,7 +657,7 @@ int sz_update_archive(
         }
 
         // 4. Set compression properties
-        if (options) {
+        if (options && (!options->format || strcasecmp(options->format, "tar") != 0)) {
             CMyComPtr<ISetProperties> setProps;
             outArchive->QueryInterface(IID_ISetProperties_Local, (void **)&setProps);
             if (setProps) {

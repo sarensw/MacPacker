@@ -32,7 +32,8 @@ enum SmartExtraction {
     static func containerFolder(
         for entries: [UUID: ArchiveItem],
         archiveName: String,
-        destination: URL
+        destination: URL,
+        useUniqueName: Bool = true
     ) -> URL? {
         let root = entries.values.first { $0.type == .root }
         // Top-level: linked to the synthetic root (zips after buildTree), or
@@ -45,7 +46,7 @@ enum SmartExtraction {
         let needsContainer = topLevel.count != 1
         guard needsContainer else { return nil }
 
-        return destination.appendingPathComponent(uniqueName(for: archiveName, in: destination))
+        return destination.appendingPathComponent(useUniqueName ? uniqueName(for: archiveName, in: destination) : archiveName)
     }
 
     /// `name` made unique inside `directory` the way Finder does: when a folder

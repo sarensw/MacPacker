@@ -12,7 +12,7 @@
       ],
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "splitVolumes"], "default": true },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "edit", "splitVolumes"], "default": true },
         { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
       ]
     },
@@ -301,7 +301,7 @@
       ],
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "splitVolumes"], "default": true }
       ]
     },
     {
@@ -390,7 +390,7 @@
       ],
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "edit", "splitVolumes"], "default": true },
         { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
       ]
     },
@@ -587,6 +587,14 @@
     }
   ],
   "splits": [
+    {"id": "tar-numeric", "name": "Split TAR", "format": "tar", "scheme": "numeric", "pattern": "\\.tar\\.[0-9]{3,}$", "firstVolume": {"pattern": "\\.[0-9]{3,}$", "replacement": ".001"}, "label": ".tar.001"},
+    {"id": "rar-legacy", "name": "Split RAR", "format": "rar", "scheme": "rar-legacy", "pattern": "\\.r[0-9]{2}$", "firstVolume": {"pattern": "\\.r[0-9]{2}$", "replacement": ".rar"}, "label": ".rar"},
+    {"id": "rar-part-1", "name": "Split RAR", "format": "rar", "scheme": "rar-parts", "pattern": "\\.part[0-9]{1}\\.rar$", "firstVolume": {"pattern": "\\.part[0-9]{1}\\.rar$", "replacement": ".part1.rar"}, "label": ".rar"},
+    {"id": "rar-part-2", "name": "Split RAR", "format": "rar", "scheme": "rar-parts", "pattern": "\\.part[0-9]{2}\\.rar$", "firstVolume": {"pattern": "\\.part[0-9]{2}\\.rar$", "replacement": ".part01.rar"}, "label": ".rar"},
+    {"id": "rar-part-3", "name": "Split RAR", "format": "rar", "scheme": "rar-parts", "pattern": "\\.part[0-9]{3}\\.rar$", "firstVolume": {"pattern": "\\.part[0-9]{3}\\.rar$", "replacement": ".part001.rar"}, "label": ".rar"},
+    {"id": "rar-part-4", "name": "Split RAR", "format": "rar", "scheme": "rar-parts", "pattern": "\\.part[0-9]{4}\\.rar$", "firstVolume": {"pattern": "\\.part[0-9]{4}\\.rar$", "replacement": ".part0001.rar"}, "label": ".rar"},
+    {"id": "rar-part-5", "name": "Split RAR", "format": "rar", "scheme": "rar-parts", "pattern": "\\.part[0-9]{5}\\.rar$", "firstVolume": {"pattern": "\\.part[0-9]{5}\\.rar$", "replacement": ".part00001.rar"}, "label": ".rar"},
+    {"id": "rar-part-6", "name": "Split RAR", "format": "rar", "scheme": "rar-parts", "pattern": "\\.part[0-9]{6}\\.rar$", "firstVolume": {"pattern": "\\.part[0-9]{6}\\.rar$", "replacement": ".part000001.rar"}, "label": ".rar"},
     { "id": "zip-spanned", "name": "Spanned ZIP", "format": "zip", "scheme": "spanned",
       "pattern": "\\.z[0-9]{2,}$",
       "marker": { "bytes": "50 4B 05 06", "field": { "offset": 4, "length": 2, "match": "nonzero" } },
