@@ -39,11 +39,14 @@ extension Array where Element == ArchiveUpdateItem {
 /// to each added item. Rules closer to the item take precedence. An ignored
 /// directory cannot be re-included by a rule about a file inside it, as in Git.
 public final class GitIgnoreFilter {
-    private let root: [String]
+    private let root: [String]?
     private var cachedRules: [String: [Rule]] = [:]
 
     public init(paths: [URL]) {
-        let first = paths[0].standardizedFileURL
+        guard let first = paths.first?.standardizedFileURL else {
+            root = nil
+            return
+        }
         var isDirectory: ObjCBool = false
         let singleDirectory = paths.count == 1
             && FileManager.default.fileExists(atPath: first.path, isDirectory: &isDirectory)
@@ -59,7 +62,7 @@ public final class GitIgnoreFilter {
 
     public func isIgnored(_ url: URL, directory: Bool) throws -> Bool {
         let parts = url.standardizedFileURL.pathComponents
-        guard parts.starts(with: root) else { return false }
+        guard let root, parts.starts(with: root) else { return false }
         var active: [(depth: Int, rule: Rule)] = []
         for depth in root.count..<parts.count {
             let parent = URL(fileURLWithPath: NSString.path(withComponents: Array(parts.prefix(depth))), isDirectory: true)

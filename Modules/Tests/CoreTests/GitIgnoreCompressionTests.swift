@@ -5,6 +5,11 @@ import Testing
 
 extension AllCoreTests {
     @MainActor struct GitIgnoreCompressionTests {
+        @Test func emptySelectionDoesNotCrash() throws {
+            let filter = GitIgnoreFilter(paths: [])
+            #expect(try !filter.isIgnored(FileManager.default.temporaryDirectory, directory: true))
+        }
+
         private func fixture() throws -> (folder: URL, project: URL) {
             let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             let project = folder.appendingPathComponent("Project")
