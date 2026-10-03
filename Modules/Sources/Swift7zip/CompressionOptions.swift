@@ -154,6 +154,13 @@ public struct CompressionOptions: Sendable {
     /// anyone means to archive. Entries the archive holds already stay.
     public var excludeDSStore: Bool
 
+    /// Omit Mac metadata when writing, including existing sidecars on an update.
+    /// Resource forks, Finder tags, hidden flags and custom folder icons are lost.
+    public var excludeMacMetadata: Bool
+
+    /// Refuse invalid or colliding Windows filenames before writing any output.
+    public var requireWindowsCompatibleNames: Bool
+
     /// Whether this writes an encrypted archive.
     public var encrypts: Bool { !(password ?? "").isEmpty }
 
@@ -170,7 +177,9 @@ public struct CompressionOptions: Sendable {
         wordSize: UInt32? = nil,
         solidBlockSize: UInt64? = nil,
         volumeSize: UInt64? = nil,
-        excludeDSStore: Bool = false
+        excludeDSStore: Bool = false,
+        excludeMacMetadata: Bool = false,
+        requireWindowsCompatibleNames: Bool = false
     ) {
         self.format = format
         self.level = level
@@ -184,5 +193,7 @@ public struct CompressionOptions: Sendable {
         self.solidBlockSize = solidBlockSize
         self.volumeSize = volumeSize
         self.excludeDSStore = excludeDSStore
+        self.excludeMacMetadata = excludeMacMetadata
+        self.requireWindowsCompatibleNames = requireWindowsCompatibleNames
     }
 }

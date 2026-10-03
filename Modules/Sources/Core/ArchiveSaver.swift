@@ -67,7 +67,7 @@ final actor ArchiveSaver {
         self.sourceAsOpened = sourceAsOpened
         self.target = target
         self.items = items
-        self.options = options
+        self.options = ArchiveSaveOptions.applyingFilePreferences(to: options)
         self.isSaveAs = isSaveAs
         self.sourcePassword = sourcePassword
         self.passwordResolver = passwordResolver
