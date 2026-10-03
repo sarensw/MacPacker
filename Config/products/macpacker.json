@@ -40,6 +40,30 @@
         "items": [
           {
             "type": "fix",
+            "title": {
+              "en": "Finder actions on external drives",
+              "zh-Hans": "外置驱动器上的 Finder 操作",
+              "fr": "Actions Finder sur les disques externes",
+              "de": "Finder-Aktionen auf externen Laufwerken",
+              "it": "Azioni Finder sui dischi esterni",
+              "ja": "外付けドライブでの Finder アクション",
+              "fa": "عملیات Finder در درایوهای خارجی",
+              "pl": "Akcje Finder na dyskach zewnętrznych",
+              "pt-BR": "Ações do Finder em unidades externas",
+              "ru": "Действия Finder на внешних дисках",
+              "uk": "Дії Finder на зовнішніх дисках",
+              "es-MX": "Acciones de Finder en discos externos",
+              "ko": "외장 드라이브의 Finder 동작",
+              "nl": "Finder-acties op externe schijven",
+              "vi": "Thao tác Finder trên ổ đĩa ngoài",
+              "tr": "Harici sürücülerde Finder işlemleri"
+            },
+            "issues": [
+              "275"
+            ]
+          },
+          {
+            "type": "fix",
             "highlight": true,
             "title": {
                 "en": "Compressing a folder from Finder gives an empty zip",
