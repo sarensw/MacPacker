@@ -20,6 +20,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
+    @AppStorage(Keys.respectGitIgnore) var respectGitIgnore: Bool = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -115,6 +116,21 @@ struct GeneralSettingsView: View {
 
                 HStack {
                     Toggle(isOn: $smartExtraction) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+            HStack(alignment: .top) {
+                Text("Skip Git-ignored project files", comment: "Setting to omit files matched by a folder's .gitignore when compressing")
+                    .frame(width: 200, alignment: .trailing)
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle(isOn: $respectGitIgnore) { EmptyView() }
+                        .labelsHidden()
+                        .accessibilityIdentifier("settings.respectGitIgnore")
+                    Text("If a folder has a .gitignore file, skip the files and folders it says to ignore.", comment: "Explains the Git-ignored project files setting")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)

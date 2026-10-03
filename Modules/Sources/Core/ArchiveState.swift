@@ -548,6 +548,11 @@ extension ArchiveState {
     ///   is left out, with the reason in `error`, and so is one inside it.
     @discardableResult
     public func add(url: URL) -> Bool {
+        add(url: url, ignoring: nil)
+    }
+
+    @discardableResult
+    private func add(url: URL, ignoring gitIgnore: GitIgnoreFilter?) -> Bool {
         guard !isSaving else {
             log.notice("Ignoring add — a save is in progress", context: ["file": url.lastPathComponent])
             return false
@@ -569,7 +574,8 @@ extension ArchiveState {
             // drop or a panel, a grant reused from storage gives no access
             // outside it (#278).
             added = Sandbox.accessSync(url: url) {
-                addFolder(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
+                addFolder(url: url, archivePath: base + url.lastPathComponent,
+                          under: selectedItem, ignoring: gitIgnore)
             }
         } else {
             addFile(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
@@ -590,8 +596,9 @@ extension ArchiveState {
     /// for a single folder, an empty one (#278).
     public func compress(_ items: [URL], to destination: URL, options: CompressionOptions? = nil) async {
         create()
+        let gitIgnore = options?.respectGitIgnore == true ? GitIgnoreFilter(paths: items) : nil
         for item in items {
-            guard add(url: item) else { return }
+            guard add(url: item, ignoring: gitIgnore) else { return }
         }
         await save(to: destination, options: options)?.value
     }
@@ -617,7 +624,8 @@ extension ArchiveState {
     }
 
     /// - Returns: whether `url` and every folder below it could be read.
-    private func addFolder(url: URL, archivePath: String, under parent: ArchiveItem) -> Bool {
+    private func addFolder(url: URL, archivePath: String, under parent: ArchiveItem,
+                           ignoring gitIgnore: GitIgnoreFilter? = nil) -> Bool {
         // Read the contents first: if the folder can't be enumerated we must not
         // add it as an empty directory (that would silently drop its real
         // contents on save). Skip it and surface the error instead.
@@ -654,8 +662,15 @@ extension ArchiveState {
 
         var complete = true
         for child in children.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+            do {
+                if try gitIgnore?.isIgnored(child, directory: child.isDirectory) == true { continue }
+            } catch {
+                self.error = error.localizedDescription
+                return false
+            }
             if child.isDirectory {
-                complete = addFolder(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
+                complete = addFolder(url: child, archivePath: archivePath + "/" + child.lastPathComponent,
+                                     under: item, ignoring: gitIgnore)
                     && complete
             } else {
                 addFile(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
@@ -1710,4 +1725,3 @@ extension ArchiveState {
         return adjustedSelection
     }
 }
-

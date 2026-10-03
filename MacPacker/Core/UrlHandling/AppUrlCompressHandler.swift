@@ -9,6 +9,7 @@ import AppKit
 import Core
 import FinderMenu
 import Foundation
+import Swift7zip
 import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
@@ -25,7 +26,11 @@ private func writeArchive(
 ) async -> Bool {
     log.notice("Compressing \(items.count) item(s) to \(destination.lastPathComponent)")
     let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
-    await state.compress(items, to: destination)
+    let options = CompressionOptions(
+        format: destination.pathExtension.lowercased() == "7z" ? .sevenZ : .zip,
+        respectGitIgnore: UserDefaults.standard.bool(forKey: Keys.respectGitIgnore)
+    )
+    await state.compress(items, to: destination, options: options)
 
     if let error = state.error {
         log.error("Compress failed", context: ["error": error])

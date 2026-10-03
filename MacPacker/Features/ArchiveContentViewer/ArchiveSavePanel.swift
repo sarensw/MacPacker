@@ -179,6 +179,12 @@ struct SaveOptionsRows: View {
                     .labelsHidden()
                     .accessibilityIdentifier("saveOptions.excludeDSStore")
             }
+            row(Text("Skip Git-ignored project files", comment: "Setting to omit files matched by a folder's .gitignore when compressing")) {
+                Toggle(isOn: $options.respectGitIgnore) { EmptyView() }
+                    .labelsHidden()
+                    .accessibilityIdentifier("saveOptions.respectGitIgnore")
+                    .help(Text("If a folder has a .gitignore file, skip the files and folders it says to ignore.", comment: "Explains the Git-ignored project files setting"))
+            }
         }
     }
 
