@@ -53,18 +53,36 @@ class FinderSync: FIFinderSync {
         tb.start()
         log.debug("FinderSync() launched from \(Bundle.main.bundlePath as NSString)")
         
-        // Set up the directory we are syncing.
-        let syncUrls: Set<URL> = [
-            self.baseFolderUrl,
-            URL(fileURLWithPath: "/Users/\(ProcessInfo.processInfo.userName)")
-        ]
-        FIFinderSyncController.default().directoryURLs = syncUrls
-        log.debug("Initializing on...")
-        for syncUrl in syncUrls {
-            log.debug("\t\(syncUrl.path)")
+        let notifications = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.didMountNotification, NSWorkspace.didUnmountNotification,
+                     NSWorkspace.didRenameVolumeNotification] {
+            notifications.addObserver(self, selector: #selector(volumesDidChange(_:)), name: name, object: nil)
         }
+        refreshObservedDirectories()
     }
-    
+
+    deinit {
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
+    }
+
+    @objc private func volumesDidChange(_ notification: Notification) {
+        refreshObservedDirectories()
+    }
+
+    private func refreshObservedDirectories() {
+        // Finder needs each mounted volume's root, not just its /Volumes parent.
+        // This only controls menu availability; file access still goes through
+        // the main app's existing folder permission flow.
+        let volumes = FileManager.default.mountedVolumeURLs(
+            includingResourceValuesForKeys: nil, options: [.skipHiddenVolumes]) ?? []
+        let roots = FinderObservedDirectories.urls(
+            homeDirectory: baseFolderUrl,
+            userName: ProcessInfo.processInfo.userName,
+            mountedVolumes: volumes)
+        FIFinderSyncController.default().directoryURLs = roots
+        log.debug("Observing Finder directories: \(roots.map(\.path).sorted())")
+    }
+
     // MARK: - Primary Finder Sync protocol methods
     
     override func beginObservingDirectory(at url: URL) {
