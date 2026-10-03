@@ -1,0 +1,26 @@
+{
+  "libgcrypt": {
+    "url": "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.12.4.tar.bz2",
+    "sha256": "d77f68f48879510e79a2f65977ccc68981781ea0923e5bdffac2a193ea3d660e"
+  },
+  "libgpg-error": {
+    "url": "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.61.tar.bz2",
+    "sha256": "7a85413f2bc354f4f8aa832b718af122e48965e9e0eb9012ee659c13c6385c93"
+  },
+  "xz": {
+    "url": "https://github.com/tukaani-project/xz/releases/download/v5.8.4/xz-5.8.4.tar.gz",
+    "sha256": "0014c7886930454fe8bd4228665b51af55eeae560ea135c9c4cd33f55b2591d9"
+  },
+  "lz4": {
+    "url": "https://github.com/lz4/lz4/archive/refs/tags/v1.10.0.tar.gz",
+    "sha256": "537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b"
+  },
+  "zstd": {
+    "url": "https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz",
+    "sha256": "37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3"
+  },
+  "dar": {
+    "url": "https://downloads.sourceforge.net/project/dar/dar/2.8.6/dar-2.8.6.tar.gz",
+    "sha256": "d56caeb6c86f751cb454d8fef45f3daecc508f208290d9f51e8c75bba5dc46c5"
+  }
+}

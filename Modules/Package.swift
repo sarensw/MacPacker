@@ -2,6 +2,11 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
+import Foundation
+
+// Prepared by scripts/build-dar.py before SwiftPM or Xcode builds.
+let darPrefix = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+    .appendingPathComponent(".build/dar-dependencies/universal").path
 
 // Source files curated from the 7zip submodule.
 // Derived from Sources/CSevenZip/SOURCES.md -- update both together.
@@ -360,6 +365,21 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "CDar",
+            publicHeadersPath: "include",
+            cxxSettings: [
+                .define("LIBDAR_MODE", to: "64"),
+                .unsafeFlags(["-I" + darPrefix + "/include", "-std=c++14"])
+            ],
+            linkerSettings: [
+                .unsafeFlags(["-L" + darPrefix + "/lib"]),
+                .linkedLibrary("dar64"), .linkedLibrary("gcrypt"), .linkedLibrary("gpg-error"),
+                .linkedLibrary("lzma"), .linkedLibrary("lz4"), .linkedLibrary("zstd"),
+                .linkedLibrary("z"), .linkedLibrary("bz2"), .linkedLibrary("c++"),
+                .linkedFramework("CoreFoundation")
+            ]
+        ),
+        .target(
             name: "Core",
             dependencies: [
                 .product(name: "Subprocess", package: "swift-subprocess"),
@@ -367,7 +387,8 @@ let package = Package(
                 "BitByteData",
                 "SWCompression",
                 .product(name: "tb", package: "TailBeatKit"),
-                "Swift7zip"
+                "Swift7zip",
+                "CDar"
             ],
             resources: [
                 .copy("Formats/Catalog.json"),
@@ -461,6 +482,7 @@ let package = Package(
                 .copy("TestArchives/defaultArchives"),
                 .copy("TestArchives/lha_lzh"),
                 .copy("TestArchives/lzx"),
+                .copy("TestArchives/dar"),
                 .copy("TestArchives/stuffit"),
                 .copy("TestArchives/zip"),
                 .copy("TestArchives/sevenzip"),

@@ -736,6 +736,7 @@ extension AllCoreTests {
             case .`7zip`: ArchiveEngineSelector7zip()
             case .xad:    ArchiveEngineSelectorXad()
             case .swc:    ArchiveEngineSelectorSwc()
+            case .dar:    ArchiveEngineSelectorDar()
             }
             return ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: selector)
         }

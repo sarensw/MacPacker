@@ -10,6 +10,7 @@ a Finder and a Quick Look extension.
 
 ```bash
 git submodule update --init --recursive   # required — the build fails without it
+python3 scripts/build-dar.py             # native DAR libraries (both architectures)
 swift test --package-path Modules         # unit tests
 xcodebuild -scheme MacPacker build        # app build; also extracts new UI strings
 ```

@@ -24,3 +24,6 @@ fi
 
 # Says which build verified the run, in the log where the tests are.
 7zz i | head -2
+
+# Native DAR and its pinned static dependencies, shared by tests and both apps.
+python3 "$(dirname "$0")/../scripts/build-dar.py"

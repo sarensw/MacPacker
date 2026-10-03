@@ -5,6 +5,18 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array><string>dar</string></array>
+			<key>CFBundleTypeName</key>
+			<string>DAR Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array><string>net.sf.dar.archive</string></array>
+		</dict>
+		<dict>
 			<key>CFBundleShortVersionString</key>
 			<string>0.0</string>
 			<key>CFBundleTypeExtensions</key>
@@ -928,6 +940,21 @@
 	</array>
 	<key>UTImportedTypeDeclarations</key>
 	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array><string>public.archive</string><string>public.data</string></array>
+			<key>UTTypeDescription</key>
+			<string>DAR Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>net.sf.dar.archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array><string>dar</string></array>
+				<key>public.mime-type</key>
+				<string>application/x-dar</string>
+			</dict>
+		</dict>
 		<dict>
 			<key>UTTypeConformsTo</key>
 			<array>

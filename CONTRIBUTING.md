@@ -28,3 +28,14 @@ Localization (translation of all strings to specific languages) is done using [P
 ## Note
 
 POEditor only supports standard string catalog key value pairs. Symbols are not supported yet!
+# Native DAR dependencies
+
+After initializing submodules, run `python3 scripts/build-dar.py` before building
+with SwiftPM or Xcode. It builds checksum-pinned static libraries for Apple silicon
+and Intel under `Modules/.build/dar-dependencies`; it does not install system tools
+or require Homebrew or Rosetta. A local single-architecture build can use
+`--arch arm64` or `--arch x86_64`. Run the default command before a universal release.
+The CI pre-build hook prepares these libraries for tests and both app flavors.
+
+See [DAR integration](docs/DAR.md) for supported archives, dependency versions,
+and the small cross-compilation adjustment to DAR's configure probe.

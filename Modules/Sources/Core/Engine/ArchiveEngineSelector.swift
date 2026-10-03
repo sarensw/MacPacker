@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 25.11.25.
 //
 
+import CDar
 import Foundation
 import Swift7zip
 import XADMaster
@@ -16,6 +17,7 @@ public enum ArchiveEngineType: String, CaseIterable, Identifiable, Sendable, Cod
     case xad = "XAD (The Unarchiver)"
     case `7zip` = "7-Zip"
     case swc = "SWCompression"
+    case dar = "DAR"
     
     public var id: Self { self }
 }
@@ -26,24 +28,28 @@ extension ArchiveEngineType {
         case "xad":  self = .xad
         case "7zip": self = .`7zip`
         case "swc":  self = .swc
+        case "dar":  self = .dar
         default:     return nil
         }
     }
 
-    /// The catalog `EngineDto.id` for this engine ("xad" | "7zip" | "swc").
+    /// The catalog `EngineDto.id` for this engine ("xad" | "7zip" | "swc" | "dar").
     public var configId: String {
         switch self {
         case .xad:  "xad"
         case .`7zip`: "7zip"
         case .swc:  "swc"
+        case .dar:  "dar"
         }
     }
 
     /// Version of the underlying library, for display in the engine info popover.
     ///
-    /// All three values are kept honest by `EngineVersionTests`.
+    /// These values are kept honest by `EngineVersionTests`.
     public var libraryVersion: String {
         switch self {
+        case .dar:
+            String(cString: mp_dar_version())
         case .`7zip`:
             // Compiled in from the vendored 7-Zip sources.
             SevenZipArchive.libraryVersion
@@ -104,6 +110,7 @@ public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
             case .`7zip`:   return Archive7ZipEngine()
             case .swc:      return ArchiveSwcEngine()
             case .xad:      return ArchiveXadEngine()
+            case .dar:      return ArchiveDarEngine()
             }
         }
         
@@ -113,6 +120,7 @@ public struct ArchiveEngineSelector: ArchiveEngineSelectorProtocol {
     public func engine(for type: ArchiveEngineType) -> ArchiveEngine {
         switch type {
         case .xad:      return ArchiveXadEngine()
+        case .dar:      return ArchiveDarEngine()
         case .swc:      return ArchiveSwcEngine()
         case .`7zip`:     return Archive7ZipEngine()
         }
