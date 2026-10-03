@@ -228,9 +228,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             application(NSApp, open: queued)
         }
 
-        // opens the welcome window
+        // Show onboarding only once, including in development builds.
         if !launchedToOpenSomething,
-           welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") {
+           WelcomePresentation.shouldShow(defaults: .standard) {
             log.notice("Showing welcome window")
             WelcomeWindowController().show()
             welcomeScreenShownInVersion = Bundle.main.appVersionLong
