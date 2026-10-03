@@ -42,6 +42,8 @@ enum ExtractionDestination {
         if choice == .cancel { throw CancellationError() }
         let fm = FileManager.default
         let output = choice == .newFolder ? uniqueFolder(target) : target
+        try ExtractionLinkSafety.validate(staged: staged, output: output, merge: choice == .merge,
+                                          discardExisting: choice == .newFolder || (choice == .replaceAll && folderIsOutput))
         let backup = staged.deletingLastPathComponent().appendingPathComponent("MacPacker replaced items \(UUID().uuidString)")
         var moved: [(URL, URL)] = []
         var saved: [(URL, URL)] = []

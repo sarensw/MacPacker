@@ -7,6 +7,63 @@ import FinderMenu
 
 extension AllCoreTests {
     struct ReviewSafetyTests {
+        @Test func mergeRejectsLinksThroughExistingExternalTargets() throws {
+            let root = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: root) }
+            let staged = root.appendingPathComponent("staged")
+            let target = root.appendingPathComponent("target")
+            let outside = root.appendingPathComponent("outside")
+            for folder in [staged, target, outside] { try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false) }
+            try FileManager.default.createSymbolicLink(at: target.appendingPathComponent("external"), withDestinationURL: outside)
+            try FileManager.default.createSymbolicLink(atPath: staged.appendingPathComponent("alias").path, withDestinationPath: "external/file")
+            #expect(throws: (any Error).self) { try ExtractionDestination.install(staged: staged, target: target, choice: .merge) }
+            #expect(try FileManager.default.contentsOfDirectory(atPath: target.path) == ["external"])
+        }
+        @Test func chainedParentLinksCannotEscapeButSafeChainsWork() throws {
+            let root = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: root) }
+            let staged = root.appendingPathComponent("staged")
+            let target = root.appendingPathComponent("target")
+            try FileManager.default.createDirectory(at: staged.appendingPathComponent("x"), withIntermediateDirectories: true)
+            try FileManager.default.createSymbolicLink(atPath: staged.appendingPathComponent("x/l").path, withDestinationPath: "..")
+            try FileManager.default.createSymbolicLink(atPath: staged.appendingPathComponent("y").path, withDestinationPath: "x/l/..")
+            #expect(!sz_is_safe_resolved_symlink(staged.path, "y"))
+            #expect(throws: (any Error).self) { try ExtractionDestination.install(staged: staged, target: target, choice: .merge) }
+            #expect(!FileManager.default.fileExists(atPath: target.path))
+            try FileManager.default.removeItem(at: staged.appendingPathComponent("y"))
+            try FileManager.default.createSymbolicLink(atPath: staged.appendingPathComponent("y").path, withDestinationPath: "x/l/x")
+            #expect(sz_is_safe_resolved_symlink(staged.path, "y"))
+            _ = try ExtractionDestination.install(staged: staged, target: target, choice: .merge)
+            #expect(try FileManager.default.destinationOfSymbolicLink(atPath: target.appendingPathComponent("y").path) == "x/l/x")
+        }
+        @Test func resolvedLinksRejectCyclesAndUseTheReplacementTree() throws {
+            let root = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: root) }
+            let staged = root.appendingPathComponent("staged")
+            let target = root.appendingPathComponent("target")
+            for folder in [staged, target] { try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false) }
+            try FileManager.default.createSymbolicLink(atPath: staged.appendingPathComponent("a").path, withDestinationPath: "b")
+            try FileManager.default.createSymbolicLink(atPath: staged.appendingPathComponent("b").path, withDestinationPath: "a")
+            #expect(!sz_is_safe_resolved_symlink(staged.path, "a"))
+            #expect(throws: (any Error).self) { try ExtractionDestination.install(staged: staged, target: target, choice: .replaceAll) }
+            try FileManager.default.removeItem(at: staged.appendingPathComponent("b"))
+            try Data("inside".utf8).write(to: staged.appendingPathComponent("b"))
+            try FileManager.default.createSymbolicLink(atPath: target.appendingPathComponent("b").path, withDestinationPath: "/outside")
+            _ = try ExtractionDestination.install(staged: staged, target: target, choice: .replaceAll, trash: { try FileManager.default.removeItem(at: $0) })
+            #expect(try String(contentsOf: target.appendingPathComponent("a"), encoding: .utf8) == "inside")
+        }
+        @Test func mergedLinkChecksHonorReplacedAndSkippedEntries() throws {
+            let root = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: root) }
+            let staged = root.appendingPathComponent("staged")
+            let target = root.appendingPathComponent("target")
+            for folder in [staged, target] { try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: false) }
+            try Data("kept".utf8).write(to: target.appendingPathComponent("alias"))
+            try FileManager.default.createSymbolicLink(atPath: staged.appendingPathComponent("alias").path, withDestinationPath: "../outside")
+            let merged = try ExtractionDestination.install(staged: staged, target: target, choice: .merge)
+            #expect(merged.skippedExisting)
+            #expect(try String(contentsOf: target.appendingPathComponent("alias"), encoding: .utf8) == "kept")
+        }
         @Test func cleanupDetectsChangesWithPreservedMetadata() throws {
             let root = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: root) }

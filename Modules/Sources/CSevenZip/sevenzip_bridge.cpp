@@ -837,6 +837,37 @@ static void unpackAppleDoubleSidecars(const std::vector<std::string> &sidecars,
 // that the plain file-write above drops: the execute bit (chmod) and symbolic
 // links (recreated from the target bytes 7-Zip wrote). Single choke point for all
 // three sz_extract_* paths. macOS-only bridge, so FChar == char (UTF-8 paths).
+bool sz_is_safe_resolved_symlink(const char *root, const char *entry) {
+    if (!root || !entry || entry[0] == '/') return false;
+    std::vector<std::string> resolved;
+    std::string pending(entry);
+    unsigned expansions = 0;
+    while (!pending.empty()) {
+        const size_t slash = pending.find('/');
+        const std::string part = pending.substr(0, slash);
+        pending = slash == std::string::npos ? "" : pending.substr(slash + 1);
+        if (part.empty() || part == ".") continue;
+        if (part == "..") {
+            if (resolved.empty()) return false;
+            resolved.pop_back();
+            continue;
+        }
+        std::string path(root);
+        for (const auto &component : resolved) path += "/" + component;
+        path += "/" + part;
+        struct stat info;
+        if (lstat(path.c_str(), &info) == 0 && S_ISLNK(info.st_mode)) {
+            if (++expansions > 40) return false;
+            std::vector<char> buffer(65536);
+            const ssize_t length = readlink(path.c_str(), buffer.data(), buffer.size());
+            if (length <= 0 || (size_t)length == buffer.size() || buffer[0] == '/') return false;
+            const std::string target(buffer.data(), (size_t)length);
+            pending = target + (pending.empty() ? "" : "/" + pending);
+        } else resolved.push_back(part);
+    }
+    return true;
+}
+
 bool sz_is_safe_symlink_target(const char *entry, const char *target) {
     if (!entry || !target || !*target || target[0] == '/') return false;
     int depth = 0;
@@ -984,6 +1015,20 @@ static const char *describeOpResult(Int32 opRes) {
 static int finishExtract(CExtractCallback *callback, HRESULT hr, char **error_out) {
     if (callback->aborted || hr == E_ABORT)
         return SZ_EXTRACT_ABORTED;
+
+    // Validate after all entries arrive: a later link can change an earlier
+    // link's resolution. Collect failures before removing any links, so their
+    // disappearance cannot disguise another invalid chain.
+    std::vector<std::string> unsafeLinks;
+    const std::string root = callback->destDir();
+    for (const auto &path : callback->extractedPaths) {
+        struct stat info;
+        if (lstat(path.c_str(), &info) == 0 && S_ISLNK(info.st_mode) &&
+            !sz_is_safe_resolved_symlink(root.c_str(), path.substr(root.size() + 1).c_str()))
+            unsafeLinks.push_back(path);
+    }
+    for (const auto &path : unsafeLinks) unlink(path.c_str());
+    if (!unsafeLinks.empty()) callback->errorMessage = "Symbolic link resolves outside extraction directory or forms a cycle";
 
     // Every entry is on disk now, so a sidecar and the file it describes have
     // both landed whichever order the archive stored them in. Runs even when an
