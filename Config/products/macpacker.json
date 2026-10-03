@@ -36,6 +36,36 @@
     },
     "versions": [
       {
+        "version": "1.0.1",
+        "items": [
+          {
+            "type": "fix",
+            "highlight": true,
+            "title": {
+                "en": "Compressing a folder from Finder gives an empty zip",
+                "zh-Hans": "在 Finder 中压缩文件夹会生成空的 zip",
+                "fr": "Compresser un dossier depuis le Finder donne un zip vide",
+                "de": "Ordner im Finder komprimieren ergibt leeres zip-Archiv",
+                "it": "Comprimere una cartella dal Finder crea uno zip vuoto",
+                "ja": "Finder でフォルダを圧縮すると空の zip になる",
+                "fa": "فشرده‌سازی پوشه از Finder یک zip خالی می‌سازد",
+                "pl": "Kompresowanie folderu z Findera tworzy pusty plik zip",
+                "pt-BR": "Comprimir uma pasta no Finder gera um zip vazio",
+                "ru": "Сжатие папки из Finder создаёт пустой zip-архив",
+                "uk": "Стиснення папки з Finder створює порожній zip-архів",
+                "es-MX": "Comprimir una carpeta desde el Finder genera un zip vacío",
+                "ko": "Finder에서 폴더를 압축하면 빈 zip이 만들어짐",
+                "nl": "Een map comprimeren in de Finder geeft een lege zip",
+                "tr": "Finder’dan klasör sıkıştırmak boş zip oluşturuyor",
+                "vi": "Nén thư mục từ Finder tạo ra tệp zip trống"
+            },
+            "issues": [
+                "278"
+            ]
+          }
+        ]
+      },
+      {
         "version": "1.0.0",
         "items": [
           {

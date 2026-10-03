@@ -38,5 +38,43 @@ extension AllCoreTests {
             #expect(written.lastPathComponent == (volumeSize == nil ? "noise.zip" : "noise.zip.001"))
             #expect(FileManager.default.fileExists(atPath: written.path), "\(written.lastPathComponent) is not there")
         }
+
+        /// A folder that can't be read fails the job, and nothing is written.
+        /// It used to be skipped: the save went ahead without it and reported
+        /// done, which for a single selected folder meant an empty 22-byte zip
+        /// passing for its archive (#278). Locked by permissions here; under
+        /// the sandbox the refusal is the same error.
+        @Test(arguments: ["FileApex", "FileApex/build"])
+        func aFolderThatCannotBeReadFailsTheJob(locked lockedPath: String) async throws {
+            let dir = try makeTempDir()
+            let project = dir.appendingPathComponent("FileApex")
+            let build = project.appendingPathComponent("build")
+            try FileManager.default.createDirectory(at: build, withIntermediateDirectories: true)
+            try "fun main() {}".write(to: project.appendingPathComponent("Main.kt"), atomically: true, encoding: .utf8)
+            try "output".write(to: build.appendingPathComponent("app.jar"), atomically: true, encoding: .utf8)
+            let locked = dir.appendingPathComponent(lockedPath)
+
+            // Restored before the directory is removed, or the cleanup cannot
+            // descend into it either.
+            defer {
+                chmod(locked.path, 0o755)
+                try? FileManager.default.removeItem(at: dir)
+            }
+            #expect(chmod(locked.path, 0o000) == 0, "could not make the folder unreadable")
+            let compressor = DropCompressor(
+                catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip(),
+                folderAccess: { _ in true })
+
+            let job = try #require(compressor.compress(files: [project], options: .init(format: .zip)))
+            await job.task?.value
+
+            guard case .failed = job.outcome else {
+                Issue.record("the job passed for done: \(job.outcome)")
+                return
+            }
+            let archive = dir.appendingPathComponent("FileApex.zip")
+            #expect(!FileManager.default.fileExists(atPath: archive.path),
+                    "an archive without \(locked.lastPathComponent) was written")
+        }
     }
 }

@@ -25,11 +25,7 @@ private func writeArchive(
 ) async -> Bool {
     log.notice("Compressing \(items.count) item(s) to \(destination.lastPathComponent)")
     let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
-    state.create()
-    for item in items {
-        state.add(url: item)
-    }
-    await state.save(to: destination)?.value
+    await state.compress(items, to: destination)
 
     if let error = state.error {
         log.error("Compress failed", context: ["error": error])
@@ -133,7 +129,10 @@ class AppUrlCompressContentsHandler: AppUrlHandler {
             }
             let contents: [URL]
             do {
-                contents = try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
+                // the stored grant found above gives access only inside its scope (#278)
+                contents = try Sandbox.accessSync(url: folder) {
+                    try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
+                }
             } catch {
                 log.error("Could not list the folder", context: ["error": error.localizedDescription])
                 return
