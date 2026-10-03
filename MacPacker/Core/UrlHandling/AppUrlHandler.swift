@@ -34,12 +34,15 @@ extension AppUrlHandler {
         _ archive: URL,
         into destination: URL,
         smart: Bool,
+        destinationIsArchiveFolder: Bool = false,
         catalog: ArchiveTypeCatalog,
         engineSelector: ArchiveEngineSelectorProtocol
     ) async -> [URL] {
         // The loader resolves a split to its first volume and asks for
         // source-folder access itself, via the provider — like a password.
         let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
+        state.extractionDestinationIsArchiveFolder = destinationIsArchiveFolder
+        state.extractionConflictProvider = { await ExtractionConflictPrompt.request($0) }
         state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
         let passwords = FinderPasswordPrompt()
         state.passwordProvider = { await passwords.request($0) }
@@ -69,6 +72,8 @@ extension AppUrlHandler {
             break
         }
 
+        guard let output = state.extractionOutput else { return [] }
+        if output != destination { return [output] }
         let added = folderContents(destination).filter { !before.contains($0) }
         if !added.isEmpty {
             return added

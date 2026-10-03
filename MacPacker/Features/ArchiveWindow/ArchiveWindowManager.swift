@@ -55,6 +55,7 @@ class ArchiveWindowManager {
         )
         // The loader asks for folder access through this when it hits a split
         // archive — exactly like it asks for a password. The app fulfills it.
+        archiveState.extractionConflictProvider = { await ExtractionConflictPrompt.request($0) }
         archiveState.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
         // Opening a plain (non-archive) entry hands it to the system editor.
         archiveState.openFileExternally = { NSWorkspace.shared.open($0) }

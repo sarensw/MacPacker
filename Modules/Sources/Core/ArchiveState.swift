@@ -31,6 +31,9 @@ public enum ArchiveSortOrder: String {
 
 @MainActor
 public class ArchiveState: ObservableObject {
+    public private(set) var extractionOutput: URL?
+    public var extractionDestinationIsArchiveFolder = false
+    public var extractionConflictProvider: (@MainActor (ExtractionConflict) async -> ExtractionConflictChoice)?
     @Published private(set) public var hasArchive: Bool = false
     @Published private(set) public var canBeEdited: Bool = false
     /// True from the moment a save starts until the archive has been rewritten
@@ -1519,6 +1522,7 @@ extension ArchiveState {
     ///   - destination: destination folder
     ///   - smart: see `extract(items:to:smart:)`
     public func extract(to destination: URL, smart: Bool) {
+        extractionOutput = nil
         isBusy = true
         updateStatus(.processing)
 
@@ -1543,8 +1547,10 @@ extension ArchiveState {
                 // access on it — so the user-picked destination has to be held
                 // accessible from here on, or the directory creation fails for
                 // sandboxed destinations.
-                let didAccessDestination = destination.startAccessingSecurityScopedResource()
-                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
+                let stagingBase = extractionDestinationIsArchiveFolder ? destination.deletingLastPathComponent() : destination
+                let accessURL = Sandbox.securityScopedURL(for: stagingBase) ?? stagingBase
+                let didAccessDestination = accessURL.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { accessURL.stopAccessingSecurityScopedResource() } }
 
                 var target = destination
                 if smart {
@@ -1554,11 +1560,9 @@ extension ArchiveState {
                     target = SmartExtraction.containerFolder(
                         for: entries,
                         archiveName: archiveTypeDetector.getNameWithoutExtension(for: archiveUrl),
-                        destination: destination
+                        destination: destination,
+                        useUniqueName: false
                     ) ?? destination
-                    if target != destination {
-                        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
-                    }
                 }
 
                 // Nested archives are temporary working files, not source archives
@@ -1571,16 +1575,30 @@ extension ArchiveState {
                     archiveEngineSelector: effectiveEngineSelector,
                     passwordResolver: makePasswordResolver()
                 )
+                let staging = stagingBase.appendingPathComponent(".MacPacker-extract-" + UUID().uuidString)
+                try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: false)
+                defer { try? FileManager.default.removeItem(at: staging) }
                 try await extractor.extractAll(
                     archiveUrl,
                     archiveTypeId: archiveTypeId,
-                    to: target,
+                    to: staging,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 try Task.checkCancellation()
-                if let cleanup {
+                let conflicts = try ExtractionDestination.conflicts(staged: staging, target: target, folderIsOutput: target != destination || extractionDestinationIsArchiveFolder)
+                var choice: ExtractionConflictChoice = .merge
+                if !conflicts.isEmpty {
+                    choice = await extractionConflictProvider?(ExtractionConflict(destination: target, names: conflicts)) ?? .cancel
+                }
+                try Task.checkCancellation()
+                if choice == .newFolder && target == destination && !extractionDestinationIsArchiveFolder {
+                    target = destination.appendingPathComponent(archiveTypeDetector.getNameWithoutExtension(for: archiveUrl))
+                }
+                let installed = try ExtractionDestination.install(staged: staging, target: target, choice: choice, folderIsOutput: target != destination || extractionDestinationIsArchiveFolder)
+                if let cleanup, !installed.skippedExisting {
                     try await Sandbox.access(url: archiveUrl) { try cleanup.perform() }
                 }
+                extractionOutput = installed.destination
                 progressCenter.finish(jobId, .done)
             } catch is CancellationError {
                 progressCenter.finish(jobId, .cancelled)
