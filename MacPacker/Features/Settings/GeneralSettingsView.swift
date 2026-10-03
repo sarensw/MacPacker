@@ -21,6 +21,9 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
 
+    @AppStorage(Keys.excludeMacMetadata) var excludeMacMetadata = false
+    @AppStorage(Keys.requireWindowsCompatibleNames) var requireWindowsCompatibleNames = false
+
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
@@ -115,6 +118,27 @@ struct GeneralSettingsView: View {
 
                 HStack {
                     Toggle(isOn: $smartExtraction) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+            HStack(alignment: .top) {
+                Text("Exclude Mac-specific metadata", comment: "Global compression setting label")
+                    .frame(width: 200, alignment: .trailing)
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle(isOn: $excludeMacMetadata) { EmptyView() }
+                        .labelsHidden()
+                        .accessibilityIdentifier("settings.excludeMacMetadata")
+                    Toggle(isOn: $requireWindowsCompatibleNames) {
+                        Text("Windows-compatible filenames", comment: "Optional filename validation under the metadata exclusion setting")
+                    }
+                        .accessibilityIdentifier("settings.windowsCompatibleNames")
+                        .help(Text("Stops before saving and lists incompatible or conflicting filenames. Files are never renamed.", comment: "Help for the Windows-compatible filename validation setting"))
+                        .disabled(!excludeMacMetadata)
+                    Text("Leaves out .DS_Store, resource forks and Finder metadata when compressing or saving. Hidden flags and custom folder icons are not preserved.", comment: "Consequences of excluding Mac metadata from archives")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)

@@ -169,6 +169,18 @@ public final class ArchiveSaveOptions: ObservableObject {
     /// for Quick Compress may reach it.
     public var startPageOptions: CompressionOptions { .init(format: format) }
 
+    /// Apply file preferences at the write boundary, including Finder requests
+    /// that do not open a save panel. Never weaken an explicit caller's choice.
+    nonisolated public static func applyingFilePreferences(
+        to options: CompressionOptions, in defaults: UserDefaults = .standard
+    ) -> CompressionOptions {
+        var result = options
+        result.excludeMacMetadata = options.excludeMacMetadata || defaults.bool(forKey: Keys.excludeMacMetadata)
+        result.requireWindowsCompatibleNames = options.requireWindowsCompatibleNames
+            || (result.excludeMacMetadata && defaults.bool(forKey: Keys.requireWindowsCompatibleNames))
+        return result
+    }
+
     // MARK: Memory
 
     /// Stores the settings for the next save — every format's, the format
