@@ -34,6 +34,8 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
     case addToArchive
     /// Straight to `<name>.zip`, no questions.
     case compressToZip
+    /// Make a zip, then offer the new archive to macOS sharing services.
+    case compressAndShare
     /// `<name> 2026-09-10 14.30.zip` — a quick snapshot before an edit.
     case compressToDatedZip
     /// Straight to `<name>.7z`, no questions.
@@ -51,7 +53,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         case .extractHere, .extractToChosenFolder, .compressToZip, .compressToDatedZip:
             true
         case .open, .extractToFolder, .addToArchive, .compressTo7z,
-             .compressEachSeparately, .compressFolderContents:
+             .compressAndShare, .compressEachSeparately, .compressFolderContents:
             false
         }
     }
@@ -68,7 +70,8 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
             files + folders > 1
         case .compressFolderContents:
             files == 0 && folders == 1
-        case .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z:
+        case .addToArchive, .compressToZip, .compressAndShare,
+             .compressToDatedZip, .compressTo7z:
             true
         }
     }
@@ -78,8 +81,9 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         switch self {
         case .open, .extractHere, .extractToFolder, .extractToChosenFolder:
             true
-        case .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z,
-             .compressEachSeparately, .compressFolderContents:
+        case .addToArchive, .compressToZip, .compressAndShare,
+             .compressToDatedZip, .compressTo7z, .compressEachSeparately,
+             .compressFolderContents:
             false
         }
     }
@@ -100,6 +104,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         case .extractToChosenFolder: .extractTo
         case .addToArchive: .addToArchive
         case .compressToZip, .compressToDatedZip, .compressTo7z: .compress
+        case .compressAndShare: .compressAndShare
         case .compressEachSeparately: .compressEach
         case .compressFolderContents: .compressContents
         }
@@ -109,7 +114,8 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
     /// produce one directly. The writer picks the format from it.
     public var archiveExtension: String? {
         switch self {
-        case .compressToZip, .compressToDatedZip, .compressEachSeparately, .compressFolderContents: "zip"
+        case .compressToZip, .compressAndShare, .compressToDatedZip,
+             .compressEachSeparately, .compressFolderContents: "zip"
         case .compressTo7z: "7z"
         case .open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive: nil
         }

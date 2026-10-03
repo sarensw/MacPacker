@@ -14,6 +14,7 @@ public enum AppUrlAction: String, Sendable {
     case extractToFolder
     case extractTo
     case compress
+    case compressAndShare
     case compressEach
     case compressContents
     case addToArchive
@@ -33,8 +34,8 @@ public extension AppUrlAction {
         switch self {
         case .extractHere, .extractTo:
             true
-        case .extractToFolder, .open, .compress, .compressEach,
-             .compressContents, .addToArchive:
+        case .extractToFolder, .open, .compress, .compressAndShare,
+             .compressEach, .compressContents, .addToArchive:
             false
         }
     }

@@ -52,6 +52,14 @@ extension AllCoreTests {
             #expect(try AppUrl(url: url, scheme: scheme) == request)
         }
 
+        @Test("Compress and Share survives the Finder-to-app URL handoff")
+        func compressAndShareRoundTrip() throws {
+            let request = AppUrl(action: .compressAndShare,
+                                 files: [URL(fileURLWithPath: "/Users/me/photos")],
+                                 target: URL(fileURLWithPath: "/Users/me"), format: "zip")
+            #expect(try AppUrl(url: #require(request.url(scheme: scheme)), scheme: scheme) == request)
+        }
+
         @Test("The dated archive gets the name the menu showed, even after a minute boundary")
         func datedNameMatchesTheMenu() throws {
             // the menu opens a second before the minute turns; the archive is

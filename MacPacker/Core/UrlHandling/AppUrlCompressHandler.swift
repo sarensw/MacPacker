@@ -64,7 +64,11 @@ class AppUrlCompressHandler: AppUrlHandler {
             )
             let dest = CompressDestination.unique(named: name, in: appUrl.target)
             if await writeArchive(appUrl.files, to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
-                NSWorkspace.shared.activateFileViewerSelecting([dest])
+                if appUrl.action == .compressAndShare {
+                    ArchiveSharePresenter.shared.present(dest)
+                } else {
+                    NSWorkspace.shared.activateFileViewerSelecting([dest])
+                }
             }
         }
     }

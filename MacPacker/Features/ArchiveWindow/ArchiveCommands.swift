@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 16.07.26.
 //
 
+import AppKit
 import Core
 import SwiftUI
 
@@ -53,6 +54,15 @@ struct ArchiveCommands: Commands {
                 Text(.commonSaveAs)
             }
             .keyboardShortcut("s", modifiers: [.command, .shift])
+
+            Button {
+                guard let state = Self.frontArchiveState(),
+                      let url = state.url, !state.isSaving,
+                      !state.hasPendingChanges else { return }
+                ArchiveSharePresenter.shared.present(url, from: NSApp.keyWindow?.contentView)
+            } label: {
+                Text("Share Archive…", comment: "File menu command for sharing the saved archive")
+            }
 
             // Deletion is the standard Edit ▸ Delete menu item, handled by the
             // archive table (ArchiveTableView.delete(_:)) — not a File command.
