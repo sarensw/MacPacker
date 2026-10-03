@@ -39,6 +39,30 @@
         "version": "1.0.1",
         "items": [
           {
+            "type": "feat",
+            "title": {
+              "en": "Share a newly compressed archive",
+              "zh-Hans": "分享刚压缩的归档文件",
+              "fr": "Partager une archive nouvellement compressée",
+              "de": "Neu erstelltes Archiv teilen",
+              "it": "Condividi un archivio appena compresso",
+              "ja": "圧縮したアーカイブを共有",
+              "fa": "اشتراک‌گذاری بایگانی تازه فشرده‌شده",
+              "pl": "Udostępnij nowo spakowane archiwum",
+              "pt-BR": "Compartilhar um arquivo recém-compactado",
+              "ru": "Поделиться только что созданным архивом",
+              "uk": "Поділитися щойно стисненим архівом",
+              "es-MX": "Compartir un archivo recién comprimido",
+              "ko": "새로 압축한 아카이브 공유",
+              "nl": "Nieuw gecomprimeerd archief delen",
+              "vi": "Chia sẻ kho lưu trữ vừa nén",
+              "tr": "Yeni sıkıştırılan arşivi paylaş"
+            },
+            "issues": [
+              "234"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

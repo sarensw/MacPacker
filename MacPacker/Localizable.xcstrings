@@ -1,6 +1,18 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Compress and Share…": {
+      "comment": "Finder menu action that creates a zip and opens macOS sharing for it; Optional Finder menu entry for sharing a newly compressed zip",
+      "extractionState": "manual"
+    },
+    "Share Archive…": {
+      "comment": "File menu command and small window title for sharing an archive",
+      "extractionState": "manual"
+    },
+    "Share…": {
+      "comment": "Button that opens macOS sharing services for the finished archive",
+      "extractionState": "manual"
+    },
     "appExtractionInProgress": {
       "comment": "Title of the alert shown when the user quits while an extraction is running.",
       "extractionState": "manual",

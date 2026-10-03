@@ -66,7 +66,8 @@ extension AllCoreTests {
         @Test("A single folder gets the compress entries and its contents, no extract entries")
         func singleFolder() {
             #expect(FinderMenuSettings.visibleItems(files: 0, folders: 1, in: everythingOn()) == [
-                .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z, .compressFolderContents
+                .addToArchive, .compressToZip, .compressAndShare,
+                .compressToDatedZip, .compressTo7z, .compressFolderContents
             ])
         }
 
@@ -115,7 +116,8 @@ extension AllCoreTests {
             for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder] {
                 #expect(item.items(from: selection, isDirectory: isDirectory) == [archive, other])
             }
-            for item in [FinderMenuItem.addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z, .compressEachSeparately] {
+            for item in [FinderMenuItem.addToArchive, .compressToZip, .compressAndShare,
+                         .compressToDatedZip, .compressTo7z, .compressEachSeparately] {
                 #expect(item.items(from: selection, isDirectory: isDirectory) == selection)
             }
         }
@@ -123,6 +125,9 @@ extension AllCoreTests {
         @Test("Only the compress entries name an output format")
         func onlyCompressItemsCarryAnExtension() {
             #expect(FinderMenuItem.compressToZip.archiveExtension == "zip")
+            #expect(FinderMenuItem.compressAndShare.archiveExtension == "zip")
+            #expect(FinderMenuItem.compressAndShare.action == .compressAndShare)
+            #expect(!FinderMenuItem.compressAndShare.isEnabledByDefault)
             #expect(FinderMenuItem.compressToDatedZip.archiveExtension == "zip")
             #expect(FinderMenuItem.compressTo7z.archiveExtension == "7z")
             for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive] {

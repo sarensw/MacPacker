@@ -97,7 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .extractToFolder:
                 handler = AppUrlExtractToFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .compress:
+            case .compress, .compressAndShare:
                 handler = AppUrlCompressHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .addToArchive:
                 handler = AppUrlAddToArchiveHandler()
@@ -187,7 +187,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 #else
         let showsExtractionDemo = false
 #endif
-        let launchedToOpenSomething = opensWindow || showsExtractionDemo
+        let launchedToShare = pendingOpenURLs.contains { url in
+            url.scheme == UrlParser.appScheme
+                && UrlParser().parse(appUrl: url)?.action == .compressAndShare
+        }
+        let launchedToOpenSomething = opensWindow || showsExtractionDemo || launchedToShare
 
         // make sure that at least one window will be shown even if it is empty
         if !launchedToOpenSomething {

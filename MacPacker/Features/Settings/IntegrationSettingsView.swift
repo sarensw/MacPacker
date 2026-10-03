@@ -123,6 +123,8 @@ private struct FinderMenuItemToggle: View {
             Text(.commonAddToArchive)
         case .compressToZip:
             Text(.settingsCompressToZip)
+        case .compressAndShare:
+            Text("Compress and Share…", comment: "Optional Finder menu entry for sharing a newly compressed zip")
         case .compressTo7z:
             Text(.settingsCompressTo7Z)
         case .extractToChosenFolder:

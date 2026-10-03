@@ -182,6 +182,7 @@ class FinderSync: FIFinderSync {
         case .extractToChosenFolder: #selector(extractToChosenFolder(_:))
         case .addToArchive: #selector(addToArchive(_:))
         case .compressToZip: #selector(compressToZip(_:))
+        case .compressAndShare: #selector(compressAndShare(_:))
         case .compressToDatedZip: #selector(compressToDatedZip(_:))
         case .compressTo7z: #selector(compressTo7z(_:))
         case .compressEachSeparately: #selector(compressEachSeparately(_:))
@@ -229,6 +230,9 @@ class FinderSync: FIFinderSync {
                 name = FinderMenuItem.datedName(name, extension: ext, at: Self.menuShownAt)
             }
             return String(localized: .commonCompressTo(name))
+
+        case .compressAndShare:
+            return String(localized: "Compress and Share…", comment: "Finder menu action that creates a zip and opens macOS sharing for it")
 
         case .compressEachSeparately:
             return String(localized: .settingsCompressEachItemSeparately)
@@ -330,6 +334,11 @@ class FinderSync: FIFinderSync {
     @objc func compressToZip(_ sender: Any?) {
         log.notice("Finder menu: Compress to zip")
         communicateWithMainApp(item: .compressToZip)
+    }
+
+    @objc func compressAndShare(_ sender: Any?) {
+        log.notice("Finder menu: Compress and Share")
+        communicateWithMainApp(item: .compressAndShare)
     }
 
     @objc func compressTo7z(_ sender: Any?) {
