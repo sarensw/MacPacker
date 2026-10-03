@@ -186,6 +186,8 @@ class FinderSync: FIFinderSync {
         case .compressTo7z: #selector(compressTo7z(_:))
         case .compressEachSeparately: #selector(compressEachSeparately(_:))
         case .compressFolderContents: #selector(compressFolderContents(_:))
+        case .checksums: #selector(checksums(_:))
+        case .verifyChecksum: #selector(verifyChecksum(_:))
         }
     }
 
@@ -236,6 +238,12 @@ class FinderSync: FIFinderSync {
         case .compressFolderContents:
             let folder = allItems.first?.lastPathComponent ?? ""
             return String(localized: .commonCompressContentsTo(folder))
+
+        case .checksums:
+            return String(localized: "Checksums…", comment: "Finder action to calculate file checksums")
+
+        case .verifyChecksum:
+            return String(localized: "Verify Checksum from Clipboard", comment: "Finder action to compare selected files with a copied checksum")
         }
     }
 
@@ -357,5 +365,13 @@ class FinderSync: FIFinderSync {
         communicateWithMainApp(item: .compressFolderContents)
     }
 
-}
+    @objc func checksums(_ sender: Any?) {
+        log.notice("Finder menu: Checksums")
+        communicateWithMainApp(item: .checksums)
+    }
 
+    @objc func verifyChecksum(_ sender: Any?) {
+        log.notice("Finder menu: Verify Checksum from Clipboard")
+        communicateWithMainApp(item: .verifyChecksum)
+    }
+}

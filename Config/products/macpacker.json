@@ -39,6 +39,30 @@
         "version": "1.0.1",
         "items": [
           {
+            "type": "feat",
+            "title": {
+              "en": "Calculate and verify file checksums",
+              "zh-Hans": "计算并验证文件校验和",
+              "fr": "Calculer et vérifier les sommes de contrôle des fichiers",
+              "de": "Dateiprüfsummen berechnen und überprüfen",
+              "it": "Calcola e verifica i checksum dei file",
+              "ja": "ファイルのチェックサムを計算して検証",
+              "fa": "محاسبه و بررسی جمع‌های کنترلی فایل‌ها",
+              "pl": "Obliczanie i weryfikacja sum kontrolnych plików",
+              "pt-BR": "Calcular e verificar somas de verificação de arquivos",
+              "ru": "Вычисление и проверка контрольных сумм файлов",
+              "uk": "Обчислення та перевірка контрольних сум файлів",
+              "es-MX": "Calcular y verificar sumas de comprobación de archivos",
+              "ko": "파일 체크섬 계산 및 검증",
+              "nl": "Bestandscontrolesommen berekenen en verifiëren",
+              "vi": "Tính và xác minh tổng kiểm tra tệp",
+              "tr": "Dosya sağlama toplamlarını hesapla ve doğrula"
+            },
+            "issues": [
+              "233"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

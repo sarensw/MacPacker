@@ -42,6 +42,10 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
     case compressEachSeparately
     /// A zip of what is inside a folder, without the folder itself.
     case compressFolderContents
+    /// Show the selected files' CRC-32, MD5, SHA-1 and SHA-256 values.
+    case checksums
+    /// Compare selected files with a checksum copied to the clipboard.
+    case verifyChecksum
 
     /// A lean default: extracting in place or to a chosen folder, and zip —
     /// plain and dated. Everything else is opt-in, the way 7-Zip and NanaZip
@@ -51,7 +55,8 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         case .extractHere, .extractToChosenFolder, .compressToZip, .compressToDatedZip:
             true
         case .open, .extractToFolder, .addToArchive, .compressTo7z,
-             .compressEachSeparately, .compressFolderContents:
+             .compressEachSeparately, .compressFolderContents,
+             .checksums, .verifyChecksum:
             false
         }
     }
@@ -60,8 +65,9 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
     /// `folders` folders.
     public func applies(toFiles files: Int, folders: Int) -> Bool {
         switch self {
-        case .open, .extractHere, .extractToFolder, .extractToChosenFolder:
-            // archives are files; extracting a folder is meaningless
+        case .open, .extractHere, .extractToFolder, .extractToChosenFolder,
+             .checksums, .verifyChecksum:
+            // extracting or hashing a folder is meaningless
             files > 0
         case .compressEachSeparately:
             // with a single item this is just "Compress to"
@@ -73,10 +79,11 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         }
     }
 
-    /// Whether the entry works on archives, which are files.
-    public var actsOnArchives: Bool {
+    /// Whether the entry takes only files from a mixed Finder selection.
+    public var actsOnFilesOnly: Bool {
         switch self {
-        case .open, .extractHere, .extractToFolder, .extractToChosenFolder:
+        case .open, .extractHere, .extractToFolder, .extractToChosenFolder,
+             .checksums, .verifyChecksum:
             true
         case .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z,
              .compressEachSeparately, .compressFolderContents:
@@ -84,11 +91,10 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         }
     }
 
-    /// The part of a Finder selection this entry sends to the app: archive
-    /// entries leave out the folders of a mixed selection, the compress entries
-    /// take all of it.
+    /// File-only entries leave out the folders of a mixed selection; compress
+    /// entries take all of it.
     public func items(from selection: [URL], isDirectory: (URL) -> Bool) -> [URL] {
-        actsOnArchives ? selection.filter { !isDirectory($0) } : selection
+        actsOnFilesOnly ? selection.filter { !isDirectory($0) } : selection
     }
 
     /// What this item asks the main app to do.
@@ -102,6 +108,8 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         case .compressToZip, .compressToDatedZip, .compressTo7z: .compress
         case .compressEachSeparately: .compressEach
         case .compressFolderContents: .compressContents
+        case .checksums: .checksums
+        case .verifyChecksum: .verifyChecksum
         }
     }
 
@@ -111,7 +119,8 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         switch self {
         case .compressToZip, .compressToDatedZip, .compressEachSeparately, .compressFolderContents: "zip"
         case .compressTo7z: "7z"
-        case .open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive: nil
+        case .open, .extractHere, .extractToFolder, .extractToChosenFolder,
+             .addToArchive, .checksums, .verifyChecksum: nil
         }
     }
 
