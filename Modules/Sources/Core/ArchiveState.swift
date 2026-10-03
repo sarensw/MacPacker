@@ -792,6 +792,10 @@ extension ArchiveState {
         // format follows the target extension; zip is the default
         let format: CompressionOptions.Format =
             target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
+        let center = progressCenter
+        let job = center.begin(archiveName: target.lastPathComponent,
+                               destination: target.deletingLastPathComponent(),
+                               itemCount: diff.count, totalBytes: nil)
         let saver = ArchiveSaver(
             source: url,
             // From the file's name, by the catalog's split patterns — not by
@@ -809,7 +813,10 @@ extension ArchiveState {
             sourcePassword: url.flatMap { passwords[$0] },
             passwordResolver: makePasswordResolver(),
             folderAccessProvider: folderAccessProvider,
-            onProgress: { [weak self] percent in self?.progress = percent })
+            onProgress: { [weak self] percent in self?.progress = percent },
+            onByteProgress: { completed, total, date in
+                center.reportEngineProgress(job, completed: completed, total: total, at: date)
+            })
 
         isSaving = true
         isBusy = true
@@ -843,6 +850,11 @@ extension ArchiveState {
                 pinnedEngines = engines
                 _ = try? await openTask?.value
                 self.isSaving = false
+                if let error = self.error {
+                    center.finish(job, .failed(error))
+                } else {
+                    center.finish(job, .done)
+                }
             } catch {
                 log.error("Archive save failed", context: [
                     "target": target.lastPathComponent,
@@ -850,6 +862,7 @@ extension ArchiveState {
                 ])
                 self.error = error.localizedDescription
                 self.saveError = error.localizedDescription
+                center.finish(job, .failed(error.localizedDescription))
                 self.isBusy = false
                 self.isSaving = false
                 self.progress = nil
@@ -1680,4 +1693,3 @@ extension ArchiveState {
         return adjustedSelection
     }
 }
-

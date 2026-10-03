@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import Combine
 import Core
 import FinderMenu
 import Foundation
@@ -32,6 +33,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var dropCompressor: DropCompressor? = nil
     private var dropWindowController: DropWindowController? = nil
     private var pendingOpenURLs: [URL] = []
+    private var finderSession = FinderOperationSession()
+    private var finderSessionSubscriptions: Set<AnyCancellable> = []
 
     private static var isRunningInPreview: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
@@ -119,7 +122,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
 
             // we have all the url info, start the handlers now
-            handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
+            if !appUrl.action.supportsProgressOnly { finderSession.keepRunning() }
+            let request = finderSession.begin()
+            Task {
+                await handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
+                finderSession.finish(request)
+                finishFinderSessionIfNeeded()
+            }
 
             // no need to move further here as it was an app url
             return
@@ -127,6 +136,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
         // it is not an app url, therefore the assumption is that the app
         // was opened via Finder > right click > Open with...
+        finderSession.keepRunning()
         for url in urls {
             log.notice("Open-with: opening \(url.lastPathComponent)")
             archiveWindowManager?.openArchiveWindow(for: url)
@@ -187,7 +197,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 #else
         let showsExtractionDemo = false
 #endif
-        let launchedToOpenSomething = opensWindow || showsExtractionDemo
+        let queuedFinderWork = !pendingOpenURLs.isEmpty && pendingOpenURLs.allSatisfy {
+            UrlParser().parse(appUrl: $0)?.action.supportsProgressOnly == true
+        }
+        let progressOnlyLaunch = !opensWindow && !showsExtractionDemo && (
+            UserDefaults.standard.launchArgument(FinderOperationSession.launchArgument) == "YES"
+            || (FinderMenuSettings.isProgressOnly() && queuedFinderWork)
+        )
+        finderSession = FinderOperationSession(isTransient: progressOnlyLaunch)
+        observeFinderSession()
+        let launchedToOpenSomething = opensWindow || showsExtractionDemo || progressOnlyLaunch
 
         // make sure that at least one window will be shown even if it is empty
         if !launchedToOpenSomething {
@@ -256,6 +275,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         guard !Self.isRunningInPreview else { return true }
         log.notice("applicationShouldHandleReopen (hasVisibleWindows: \(hasVisibleWindows))")
+        finderSession.keepRunning()
         if !hasVisibleWindows {
             archiveWindowManager?.openArchiveWindow()
             NSApp.activate(ignoringOtherApps: true)
@@ -264,6 +284,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     public func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        // A permission/password panel or a progress window can close between
+        // files in a batch. The request's async lifetime owns this decision.
+        if finderSession.hasPendingRequests || ExtractionProgressCenter.shared.hasActiveJobs {
+            return false
+        }
         if quitOnLastWindowClosed {
             return true
         }
@@ -285,8 +310,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         log.notice("Quit requested while extraction is running — asking user")
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = String(localized: .appExtractionInProgress)
-        alert.informativeText = String(localized: .appQuitDuringExtractionWarning)
+        alert.messageText = String(localized: "Archive operation in progress", comment: "Quit confirmation title while extracting or compressing")
+        alert.informativeText = String(localized: "Quitting now will interrupt extraction or compression. Do you want to quit anyway?", comment: "Quit confirmation while an archive operation is running")
         alert.addButton(withTitle: String(localized: .commonCancel))
         alert.addButton(withTitle: String(localized: .appQuitAnyway))
 
@@ -305,6 +330,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     func openArchiveUsingOpenPanel() {
+        finderSession.keepRunning()
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [
             .data
@@ -321,14 +347,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     func openNewArchiveWindow() {
+        finderSession.keepRunning()
         self.archiveWindowManager?.openNewArchiveWindow()
     }
 
     func openCreateArchiveWindow() {
+        finderSession.keepRunning()
         self.archiveWindowManager?.openCreateArchiveWindow()
     }
 
     func showDropWindow() {
+        finderSession.keepRunning()
         dropWindowController?.show()
+    }
+
+    /// Settings is an explicit use of the app, just like opening an archive.
+    func keepRunning() {
+        finderSession.keepRunning()
+    }
+
+    private func observeFinderSession() {
+        ExtractionProgressCenter.shared.$jobs
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.finishFinderSessionIfNeeded() }
+            .store(in: &finderSessionSubscriptions)
+        NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.finishFinderSessionIfNeeded() }
+            .store(in: &finderSessionSubscriptions)
+    }
+
+    private func finishFinderSessionIfNeeded() {
+        // Finished errors stay in the progress center until the user closes
+        // their window. Minimized windows also count as deliberate app use.
+        guard finderSession.shouldTerminate(
+            hasProgress: !ExtractionProgressCenter.shared.jobs.isEmpty,
+            hasWindows: NSApp.windows.contains { $0.isVisible || $0.isMiniaturized }
+        ) else { return }
+        log.notice("Finder-only session finished — quitting")
+        NSApp.terminate(nil)
     }
 }

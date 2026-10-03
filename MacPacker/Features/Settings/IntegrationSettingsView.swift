@@ -14,6 +14,8 @@ struct IntegrationSettingsView: View {
     private let applicationSupportDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
 
     @State var isFinderSyncEnabled: Bool = false
+    @AppStorage(FinderMenuSettings.progressOnlyKey, store: FinderMenuSettings.defaults)
+    private var progressOnly = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -49,6 +51,26 @@ struct IntegrationSettingsView: View {
                         .foregroundStyle(.secondary)
                     }
                 }
+                .frame(width: 240, alignment: .leading)
+            }
+
+            Divider()
+
+            HStack(alignment: .top) {
+                Text("Finder actions", comment: "Settings: heading for Finder extraction and compression behavior")
+                    .frame(width: 160, alignment: .trailing)
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle(isOn: $progressOnly) {
+                        Text("Show only progress for Finder actions", comment: "Settings checkbox: extract and compress from Finder without opening the main app window")
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .accessibilityIdentifier("finderProgressOnly")
+                    Text("Extract and compress without opening the main window. MacPacker quits when finished if it was launched only for this action.", comment: "Help below the Finder progress-only setting")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .toggleStyle(.checkbox)
                 .frame(width: 240, alignment: .leading)
             }
 

@@ -237,11 +237,13 @@ private struct ExtractionProgressRowView: View {
     private var trailingControl: some View {
         switch job.state {
         case .running:
-            Button(action: onCancel) {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.secondary)
+            if job.isCancellable {
+                Button(action: onCancel) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         case .done:
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(.green)
