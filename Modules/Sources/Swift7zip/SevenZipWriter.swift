@@ -92,6 +92,7 @@ extension SevenZipArchive {
         // method, whatever `options` say. An encrypted source only when the copy
         // gets a password too — rebuilt without one, it would come out in plain.
         var resolved: [ResolvedItem]
+        var checkedNames: [(String, Bool)] = []
         let rebuild: Bool
         do {
             // scoped, so the handle is closed again before anything is written
@@ -152,7 +153,8 @@ extension SevenZipArchive {
             // Resolve the diff into a full item list for the C bridge.
             resolved = try resolveDiff(sourceArchive: sourceArchive, items: items, excludeMacMetadata: options.excludeMacMetadata, scratch: scratch)
             if options.requireWindowsCompatibleNames {
-                try validateWindowsNames(resolved, source: sourceArchive)
+                checkedNames = try windowsNames(resolved, source: sourceArchive)
+                try validateWindowsNames(checkedNames)
             }
             if rebuild, let sourceArchive {
                 // extracting is the first half of the work, writing the second
@@ -164,7 +166,11 @@ extension SevenZipArchive {
             }
         }
         if !options.excludeMacMetadata {
-            resolved.append(contentsOf: try metadataSidecars(for: resolved, scratch: scratch))
+            let sidecars = try metadataSidecars(for: resolved, scratch: scratch)
+            if options.requireWindowsCompatibleNames {
+                try validateWindowsNames(checkedNames + windowsNames(sidecars, source: nil))
+            }
+            resolved.append(contentsOf: sidecars)
         }
 
         let writeProgress = rebuild
@@ -217,11 +223,10 @@ extension SevenZipArchive {
                           modificationDate: Date?, posixPermissions: UInt16?)
     }
 
-    /// Validate the final diff, including kept entries and renames. It runs
-    /// before materializing a Save As or opening the destination for writing.
-    private static func validateWindowsNames(_ items: [ResolvedItem], source: SevenZipArchive?) throws {
+    /// Capture names while the source is open, including kept entries and renames.
+    private static func windowsNames(_ items: [ResolvedItem], source: SevenZipArchive?) throws -> [(String, Bool)] {
         let existing = Dictionary(uniqueKeysWithValues: try (source?.entries ?? []).map { ($0.index, $0) })
-        let names: [(String, Bool)] = try items.map { item in
+        return try items.map { item in
             switch item {
             case .keep(let index), .move(let index, _):
                 guard let source, let raw = sz_entry_path(source.handle.ref, index) else {
@@ -237,6 +242,10 @@ extension SevenZipArchive {
                 return (path, true)
             }
         }
+    }
+
+    /// Reject conflicts before opening output, including generated metadata paths.
+    private static func validateWindowsNames(_ names: [(String, Bool)]) throws {
         let conflicts = WindowsArchiveNames.conflicts(in: names)
         guard conflicts.isEmpty else {
             throw SevenZipError.writeFailed("These archive names are not Windows-compatible. Rename them or turn off Windows-compatible filenames:\n"

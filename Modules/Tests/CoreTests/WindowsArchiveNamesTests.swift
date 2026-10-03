@@ -65,6 +65,26 @@ extension AllCoreTests {
             #expect(try SevenZipArchive(url: target).entries.map(\.path) == ["safe.txt"])
         }
 
+        /// Generated metadata participates in the final namespace before output is opened.
+        @Test(arguments: ["__MACOSX/._file", "__macosx/._FILE"])
+        func generatedSidecarCollisionPreservesDestination(_ path: String) throws {
+            let root = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: root) }
+            let input = root.appendingPathComponent("file")
+            try Data("contents".utf8).write(to: input)
+            setExtendedAttribute("com.apple.ResourceFork", Data("resource".utf8), at: input)
+            let target = root.appendingPathComponent("out.zip")
+            let original = Data("existing destination".utf8)
+            try original.write(to: target)
+            #expect(throws: (any Error).self) {
+                try SevenZipArchive.writeArchive(destination: target, items: [
+                    .addFile(archivePath: "file", diskPath: input),
+                    .addData(archivePath: path, data: Data("ordinary user data".utf8))
+                ], options: .init(format: .zip, requireWindowsCompatibleNames: true))
+            }
+            #expect(try Data(contentsOf: target) == original)
+        }
+
         @Test func optionIsOffByDefaultAndFollowsItsParent() {
             let defaults = isolatedDefaults()
             let options = CompressionOptions(format: .zip)

@@ -129,9 +129,11 @@ struct GeneralSettingsView: View {
                     Toggle(isOn: $excludeMacMetadata) { EmptyView() }
                         .labelsHidden()
                         .accessibilityIdentifier("settings.excludeMacMetadata")
-                    Toggle("Windows-compatible filenames", isOn: $requireWindowsCompatibleNames)
+                    Toggle(isOn: $requireWindowsCompatibleNames) {
+                        Text("Windows-compatible filenames", comment: "Optional filename validation under the metadata exclusion setting")
+                    }
                         .accessibilityIdentifier("settings.windowsCompatibleNames")
-                        .help("Stops before saving and lists incompatible or conflicting filenames. Files are never renamed.")
+                        .help(Text("Stops before saving and lists incompatible or conflicting filenames. Files are never renamed.", comment: "Help for the Windows-compatible filename validation setting"))
                         .disabled(!excludeMacMetadata)
                     Text("Leaves out .DS_Store, resource forks and Finder metadata when compressing or saving. Hidden flags and custom folder icons are not preserved.", comment: "Consequences of excluding Mac metadata from archives")
                         .font(.caption)
