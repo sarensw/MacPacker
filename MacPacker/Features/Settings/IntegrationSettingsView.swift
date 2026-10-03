@@ -65,7 +65,7 @@ struct IntegrationSettingsView: View {
                 }
                 .padding(.leading, 8)
                 .toggleStyle(.checkbox)
-                .frame(width: 240, alignment: .leading)
+                .frame(width: 320, alignment: .leading)
             }
 
             HStack(alignment: .top) {
@@ -125,6 +125,10 @@ private struct FinderMenuItemToggle: View {
             Text(.settingsCompressToZip)
         case .compressTo7z:
             Text(.settingsCompressTo7Z)
+        case .compressWithPassword:
+            Text("Compress with Password…", comment: "Finder action and setting to ask for a password and create an encrypted 7z archive")
+        case .encryptWithNewPassword:
+            Text("Encrypt with a New Password…", comment: "Finder action and setting to generate and copy a password for a new encrypted 7z archive")
         case .extractToChosenFolder:
             Text(.settingsExtractToChosenFolder)
         case .compressToDatedZip:

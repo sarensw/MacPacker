@@ -184,6 +184,8 @@ class FinderSync: FIFinderSync {
         case .compressToZip: #selector(compressToZip(_:))
         case .compressToDatedZip: #selector(compressToDatedZip(_:))
         case .compressTo7z: #selector(compressTo7z(_:))
+        case .compressWithPassword: #selector(compressWithPassword(_:))
+        case .encryptWithNewPassword: #selector(encryptWithNewPassword(_:))
         case .compressEachSeparately: #selector(compressEachSeparately(_:))
         case .compressFolderContents: #selector(compressFolderContents(_:))
         }
@@ -229,6 +231,12 @@ class FinderSync: FIFinderSync {
                 name = FinderMenuItem.datedName(name, extension: ext, at: Self.menuShownAt)
             }
             return String(localized: .commonCompressTo(name))
+
+        case .compressWithPassword:
+            return String(localized: "Compress with Password…", comment: "Finder action and setting to ask for a password and create an encrypted 7z archive")
+
+        case .encryptWithNewPassword:
+            return String(localized: "Encrypt with a New Password…", comment: "Finder action and setting to generate and copy a password for a new encrypted 7z archive")
 
         case .compressEachSeparately:
             return String(localized: .settingsCompressEachItemSeparately)
@@ -337,6 +345,16 @@ class FinderSync: FIFinderSync {
         communicateWithMainApp(item: .compressTo7z)
     }
 
+    @objc func compressWithPassword(_ sender: Any?) {
+        log.notice("Finder menu: Compress with Password")
+        communicateWithMainApp(item: .compressWithPassword)
+    }
+
+    @objc func encryptWithNewPassword(_ sender: Any?) {
+        log.notice("Finder menu: Encrypt with a New Password")
+        communicateWithMainApp(item: .encryptWithNewPassword)
+    }
+
     @objc func extractToChosenFolder(_ sender: Any?) {
         log.notice("Finder menu: Extract to…")
         communicateWithMainApp(item: .extractToChosenFolder)
@@ -358,4 +376,3 @@ class FinderSync: FIFinderSync {
     }
 
 }
-

@@ -38,6 +38,10 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
     case compressToDatedZip
     /// Straight to `<name>.7z`, no questions.
     case compressTo7z
+    /// Ask for a password, then write an encrypted 7z archive.
+    case compressWithPassword
+    /// Generate a password, copy it, then write an encrypted 7z archive.
+    case encryptWithNewPassword
     /// One zip per selected item.
     case compressEachSeparately
     /// A zip of what is inside a folder, without the folder itself.
@@ -51,6 +55,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         case .extractHere, .extractToChosenFolder, .compressToZip, .compressToDatedZip:
             true
         case .open, .extractToFolder, .addToArchive, .compressTo7z,
+             .compressWithPassword, .encryptWithNewPassword,
              .compressEachSeparately, .compressFolderContents:
             false
         }
@@ -68,7 +73,8 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
             files + folders > 1
         case .compressFolderContents:
             files == 0 && folders == 1
-        case .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z:
+        case .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z,
+             .compressWithPassword, .encryptWithNewPassword:
             true
         }
     }
@@ -79,6 +85,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         case .open, .extractHere, .extractToFolder, .extractToChosenFolder:
             true
         case .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z,
+             .compressWithPassword, .encryptWithNewPassword,
              .compressEachSeparately, .compressFolderContents:
             false
         }
@@ -100,6 +107,8 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         case .extractToChosenFolder: .extractTo
         case .addToArchive: .addToArchive
         case .compressToZip, .compressToDatedZip, .compressTo7z: .compress
+        case .compressWithPassword: .compressWithPassword
+        case .encryptWithNewPassword: .encryptWithNewPassword
         case .compressEachSeparately: .compressEach
         case .compressFolderContents: .compressContents
         }
@@ -110,7 +119,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
     public var archiveExtension: String? {
         switch self {
         case .compressToZip, .compressToDatedZip, .compressEachSeparately, .compressFolderContents: "zip"
-        case .compressTo7z: "7z"
+        case .compressTo7z, .compressWithPassword, .encryptWithNewPassword: "7z"
         case .open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive: nil
         }
     }

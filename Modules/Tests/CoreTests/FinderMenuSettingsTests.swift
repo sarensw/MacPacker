@@ -48,6 +48,8 @@ extension AllCoreTests {
             #expect(FinderMenuSettings.visibleItems(files: 1, folders: 0, in: scratchDefaults()) == [
                 .extractHere, .extractToChosenFolder, .compressToZip, .compressToDatedZip
             ])
+            #expect(!FinderMenuItem.compressWithPassword.isEnabledByDefault)
+            #expect(!FinderMenuItem.encryptWithNewPassword.isEnabledByDefault)
         }
 
         @Test("A written key wins over the default, in both directions")
@@ -66,7 +68,8 @@ extension AllCoreTests {
         @Test("A single folder gets the compress entries and its contents, no extract entries")
         func singleFolder() {
             #expect(FinderMenuSettings.visibleItems(files: 0, folders: 1, in: everythingOn()) == [
-                .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z, .compressFolderContents
+                .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z,
+                .compressWithPassword, .encryptWithNewPassword, .compressFolderContents
             ])
         }
 
@@ -115,7 +118,8 @@ extension AllCoreTests {
             for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder] {
                 #expect(item.items(from: selection, isDirectory: isDirectory) == [archive, other])
             }
-            for item in [FinderMenuItem.addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z, .compressEachSeparately] {
+            for item in [FinderMenuItem.addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z,
+                         .compressWithPassword, .encryptWithNewPassword, .compressEachSeparately] {
                 #expect(item.items(from: selection, isDirectory: isDirectory) == selection)
             }
         }
@@ -125,6 +129,8 @@ extension AllCoreTests {
             #expect(FinderMenuItem.compressToZip.archiveExtension == "zip")
             #expect(FinderMenuItem.compressToDatedZip.archiveExtension == "zip")
             #expect(FinderMenuItem.compressTo7z.archiveExtension == "7z")
+            #expect(FinderMenuItem.compressWithPassword.archiveExtension == "7z")
+            #expect(FinderMenuItem.encryptWithNewPassword.archiveExtension == "7z")
             for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive] {
                 #expect(item.archiveExtension == nil)
             }
