@@ -52,7 +52,7 @@ extension SevenZipArchive {
         progress: WriteProgressHandler? = nil
     ) throws {
         var options = options
-        let items = options.excludeDSStore ? items.excludingDSStore() : items
+        let items = (options.excludeDSStore || options.excludeMacMetadata) ? items.excludingDSStore() : items
         let inPlace = source != nil
             && source!.standardizedFileURL == destination.standardizedFileURL
         if inPlace && (options.volumeSize ?? 0) > 0 {
@@ -150,7 +150,10 @@ extension SevenZipArchive {
             }
 
             // Resolve the diff into a full item list for the C bridge.
-            resolved = try resolveDiff(sourceArchive: sourceArchive, items: items)
+            resolved = try resolveDiff(sourceArchive: sourceArchive, items: items, excludeMacMetadata: options.excludeMacMetadata, scratch: scratch)
+            if options.requireWindowsCompatibleNames {
+                try validateWindowsNames(resolved, source: sourceArchive)
+            }
             if rebuild, let sourceArchive {
                 // extracting is the first half of the work, writing the second
                 let firstHalf = progress.map { report in
@@ -160,7 +163,9 @@ extension SevenZipArchive {
                     resolved, from: sourceArchive, into: scratch, progress: firstHalf)
             }
         }
-        resolved.append(contentsOf: try metadataSidecars(for: resolved, scratch: scratch))
+        if !options.excludeMacMetadata {
+            resolved.append(contentsOf: try metadataSidecars(for: resolved, scratch: scratch))
+        }
 
         let writeProgress = rebuild
             ? progress.map { report in
@@ -212,11 +217,40 @@ extension SevenZipArchive {
                           modificationDate: Date?, posixPermissions: UInt16?)
     }
 
+    /// Validate the final diff, including kept entries and renames. It runs
+    /// before materializing a Save As or opening the destination for writing.
+    private static func validateWindowsNames(_ items: [ResolvedItem], source: SevenZipArchive?) throws {
+        let existing = Dictionary(uniqueKeysWithValues: try (source?.entries ?? []).map { ($0.index, $0) })
+        let names: [(String, Bool)] = try items.map { item in
+            switch item {
+            case .keep(let index), .move(let index, _):
+                guard let source, let raw = sz_entry_path(source.handle.ref, index) else {
+                    throw SevenZipError.writeFailed("Cannot verify an existing archive entry's name")
+                }
+                let path: String
+                if case .move(_, let newPath) = item { path = newPath }
+                else { path = String(cString: raw) }
+                return (path, existing[index]?.isDirectory ?? path.hasSuffix("/"))
+            case .addFile(let path, _, _, _), .addData(let path, _, _, _):
+                return (path, false)
+            case .addDirectory(let path, _, _, _):
+                return (path, true)
+            }
+        }
+        let conflicts = WindowsArchiveNames.conflicts(in: names)
+        guard conflicts.isEmpty else {
+            throw SevenZipError.writeFailed("These archive names are not Windows-compatible. Rename them or turn off Windows-compatible filenames:\n"
+                + conflicts.map(\.debugDescription).joined(separator: "\n"))
+        }
+    }
+
     /// Resolves a user-facing diff into the full list the C bridge expects.
     /// All source entries are kept unless explicitly removed or moved.
     private static func resolveDiff(
         sourceArchive: SevenZipArchive?,
-        items: [ArchiveUpdateItem]
+        items: [ArchiveUpdateItem],
+        excludeMacMetadata: Bool,
+        scratch: URL
     ) throws -> [ResolvedItem] {
         // Collect removals and moves from the diff.
         var removedIndices: Set<UInt32> = []
@@ -253,6 +287,11 @@ extension SevenZipArchive {
                 throw SevenZipError.writeFailed(
                     "Could not read entry count from source")
             }
+            // The existing reader identifies sidecars; a filename prefix alone
+            // must never turn an ordinary user's file into disposable metadata.
+            let finderFiles = excludeMacMetadata ? Set(try archive.entries.filter {
+                !$0.isDirectory && ((movedIndices[$0.index] ?? $0.path) as NSString).lastPathComponent == ".DS_Store"
+            }.map(\.index)) : Set<UInt32>()
             for i in 0..<UInt32(entryCount) {
                 if removedIndices.contains(i) { continue }
                 // A sidecar is its file's extended attributes and resource fork,
@@ -261,6 +300,11 @@ extension SevenZipArchive {
                 // archive keeps metadata describing something it no longer holds —
                 // which then shows up as a stray `._name` entry.
                 let sidecarTarget = sz_sidecar_target(archive.handle.ref, i)
+                if excludeMacMetadata {
+                    if finderFiles.contains(i) { continue }
+                    if sidecarTarget >= 0,
+                       try isStoredAppleDouble(i, in: archive, scratch: scratch) { continue }
+                }
                 if sidecarTarget >= 0 && removedIndices.contains(UInt32(sidecarTarget)) { continue }
                 if let newPath = movedIndices[i] {
                     result.append(.move(sourceIndex: i, newPath: newPath))
@@ -272,6 +316,46 @@ extension SevenZipArchive {
 
         result.append(contentsOf: additions)
         return result
+    }
+
+    /// A sidecar-shaped name alone is not enough: users can have an ordinary
+    /// `._notes` beside `notes`. Read its header before removing stored data.
+    private static func isStoredAppleDouble(_ index: UInt32, in archive: SevenZipArchive, scratch: URL) throws -> Bool {
+        guard let rawPath = sz_entry_path(archive.handle.ref, index) else { return false }
+        let relative = String(cString: rawPath).split(separator: "/")
+            .filter { $0 != "." && $0 != ".." }.joined(separator: "/")
+        let folder = scratch.appendingPathComponent("metadata-check-" + String(index))
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        var error: UnsafeMutablePointer<CChar>?
+        let target = sz_sidecar_target(archive.handle.ref, index)
+        guard target >= 0, let targetPath = sz_entry_path(archive.handle.ref, UInt32(target)) else { return false }
+        if !archive.hasPassword,
+           try archive.entries.contains(where: { $0.index == UInt32(target) && $0.isEncrypted }) {
+            throw SevenZipError.passwordMissing
+        }
+        let targetRelative = String(cString: targetPath).split(separator: "/")
+            .filter { $0 != "." && $0 != ".." }.joined(separator: "/")
+        let indices = [UInt32(target), index].sorted()
+        let result = indices.withUnsafeBufferPointer {
+            sz_extract_entries(archive.handle.ref, $0.baseAddress, UInt32($0.count), folder.path, nil, nil, &error)
+        }
+        defer { if let error { free(error) } }
+        if result != SZ_EXTRACT_OK {
+            if result == SZ_EXTRACT_WRONG_PASSWORD { throw SevenZipError.passwordWrong }
+            throw SevenZipError.writeFailed(error.map { String(cString: $0) } ?? "Could not verify stored metadata")
+        }
+        let file = folder.appendingPathComponent(relative)
+        let attributes = try? FileManager.default.attributesOfItem(atPath: file.path)
+        if attributes == nil {
+            // A valid sidecar is consumed when the extractor folds it onto its
+            // target. A lookalike stays on disk and must be kept as user data.
+            return FileManager.default.fileExists(atPath: folder.appendingPathComponent(targetRelative).path)
+        }
+        guard attributes?[.type] as? FileAttributeType == .typeRegular else { return false }
+        let handle = try FileHandle(forReadingFrom: file)
+        defer { try? handle.close() }
+        let header = try handle.read(upToCount: 26) ?? Data()
+        return header.count == 26 && header.prefix(8) == Data([0, 5, 0x16, 7, 0, 2, 0, 0])
     }
 
     // MARK: - Save As

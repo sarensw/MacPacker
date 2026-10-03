@@ -69,6 +69,9 @@ public enum Keys {
     public static func saveOptionsSettings(_ format: String) -> String { "saveOptionsSettings.\(format)" }
     /// Leave `.DS_Store` files out of archives. Off by default, as in Finder's
     /// own Compress.
+    /// Global compression choice, shared by saves, Quick Compress and Finder actions.
+    public static let excludeMacMetadata = "excludeMacMetadata"
+    public static let requireWindowsCompatibleNames = "requireWindowsCompatibleNames"
     public static let saveOptionsExcludeDSStore = "saveOptionsExcludeDSStore"
 
     // register defaults upon app start so that the archive table has a default it
