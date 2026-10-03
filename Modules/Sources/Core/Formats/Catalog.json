@@ -95,6 +95,18 @@
       ]
     },
     {
+      "id": "dar",
+      "name": "DAR Archive",
+      "kind": "archive",
+      "uti": ["net.sf.dar.archive"],
+      "extensions": ["dar"],
+      "mime": ["application/x-dar"],
+      "rules": [],
+      "engines": [
+        { "id": "dar", "capabilities": ["listContents", "extractFiles", "splitVolumes"], "default": true }
+      ]
+    },
+    {
       "id": "dmg",
       "name": "Apple Disk Image",
       "kind": "image",
@@ -587,6 +599,11 @@
     }
   ],
   "splits": [
+    { "id": "dar-slices", "name": "DAR slices", "format": "dar", "scheme": "dar",
+      "pattern": "\\.[0-9]+\\.dar$",
+      "firstVolume": { "pattern": "\\.[0-9]+\\.dar$", "replacement": ".1.dar" },
+      "label": ".dar" },
+
     { "id": "zip-spanned", "name": "Spanned ZIP", "format": "zip", "scheme": "spanned",
       "pattern": "\\.z[0-9]{2,}$",
       "marker": { "bytes": "50 4B 05 06", "field": { "offset": 4, "length": 2, "match": "nonzero" } },

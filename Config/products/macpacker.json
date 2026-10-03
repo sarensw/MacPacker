@@ -39,6 +39,30 @@
         "version": "1.0.1",
         "items": [
           {
+            "type": "feat",
+            "title": {
+              "en": "Open and extract DAR archives",
+              "de": "DAR-Archive öffnen und entpacken",
+              "es-MX": "Abre y extrae archivos DAR",
+              "fa": "باز کردن و استخراج آرشیوهای DAR",
+              "fr": "Ouvrir et extraire les archives DAR",
+              "it": "Apri ed estrai archivi DAR",
+              "ja": "DAR アーカイブを開いて展開",
+              "ko": "DAR 아카이브 열기 및 추출",
+              "nl": "DAR-archieven openen en uitpakken",
+              "pl": "Otwieranie i rozpakowywanie archiwów DAR",
+              "pt-BR": "Abra e extraia arquivos DAR",
+              "ru": "Открытие и распаковка архивов DAR",
+              "tr": "DAR arşivlerini açın ve çıkarın",
+              "uk": "Відкриття та розпакування архівів DAR",
+              "vi": "Mở và giải nén tệp lưu trữ DAR",
+              "zh-Hans": "打开和解压 DAR 归档"
+            },
+            "issues": [
+              "276"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

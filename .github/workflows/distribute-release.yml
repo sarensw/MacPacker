@@ -59,6 +59,7 @@ jobs:
       # The store leg MUST archive "Release Store" — the orchestrator default is
       # "Release", which would build the wrong flavor.
       configuration-app-store: Release Store
+      pre-build-script: .ci/build-dar.sh
 
       # ── Discussion configuration ──
       create-discussion: true

@@ -187,9 +187,12 @@ final actor ArchiveLoader {
             guard engineDeclares("splitVolumes", for: detectorResult.type) else {
                 throw ArchiveError.invalidArchive("The engine selected for \(detectorResult.type.name) can't read split archives. Switch to 7-Zip in Settings.")
             }
-            let firstVolume = SplitVolumeResolver.firstVolume(for: url, split: split)
+            var firstVolume = SplitVolumeResolver.firstVolume(for: url, split: split)
             guard await folderAccessResolver(firstVolume) else {
                 throw ArchiveError.invalidArchive("Access to the folder of \(firstVolume.lastPathComponent) was declined; the other volumes can't be read.")
+            }
+            if split.scheme == "dar" {
+                firstVolume = try Sandbox.accessSync(url: url) { try DarVolume(url: url).firstURL }
             }
             archiveUrl = firstVolume
             firstVolumeURL = firstVolume

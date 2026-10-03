@@ -203,12 +203,18 @@ extension AllCoreTests {
             #expect(folderName("photo.7z") == "photo")
         }
 
+        @Test func darSliceSuffixStripped() {
+            for file in ["Backup.1.dar", "Backup.004.dar", "Backup.1234.DAR"] {
+                #expect(folderName(file) == "Backup")
+            }
+        }
+
         // MARK: - Tripwire
 
         /// Naming samples above are hand-written per scheme (a regex gives no
         /// sample name). A new split entry must arrive with its own cases.
         @Test func everySplitSchemeHasNamingSamples() {
-            #expect(Set(catalog.allSplits().map(\.id)) == ["zip-spanned", "zip-numeric", "7z-numeric"])
+            #expect(Set(catalog.allSplits().map(\.id)) == ["zip-spanned", "zip-numeric", "7z-numeric", "dar-slices"])
         }
     }
 }
