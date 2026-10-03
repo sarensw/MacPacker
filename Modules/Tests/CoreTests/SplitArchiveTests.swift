@@ -103,7 +103,7 @@ extension AllCoreTests {
             // parts to `<base>.zip.001`), so it isn't a Core method.
             let catalog = ArchiveTypeCatalog()
             let spanned = try #require(catalog.allSplits().first { $0.scheme == "spanned" })
-            let numeric = try #require(catalog.allSplits().first { $0.scheme == "numeric" })
+            let numeric = try #require(catalog.allSplits().first { $0.format == "zip" && $0.scheme == "numeric" })
             #expect(spanned.label == ".zip")
             #expect(numeric.label == ".zip.001")
         }
@@ -122,7 +122,7 @@ extension AllCoreTests {
 
         @Test func numericResolvesToFirstVolume() throws {
             let dir = zipDir()
-            let split = try #require(ArchiveTypeCatalog().allSplits().first { $0.scheme == "numeric" })
+            let split = try #require(ArchiveTypeCatalog().allSplits().first { $0.format == "zip" && $0.scheme == "numeric" })
             for part in ["split_7zz.zip.001", "split_7zz.zip.003"] {
                 let entry = SplitVolumeResolver.firstVolume(
                     for: dir.appendingPathComponent(part), split: split)

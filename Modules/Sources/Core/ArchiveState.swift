@@ -791,7 +791,7 @@ extension ArchiveState {
         guard !diff.isEmpty || destination != nil else { return nil }
         // format follows the target extension; zip is the default
         let format: CompressionOptions.Format =
-            target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
+            CompressionOptions.Format(rawValue: target.pathExtension.lowercased()) ?? .zip
         let center = progressCenter
         let job = center.begin(archiveName: target.lastPathComponent,
                                destination: target.deletingLastPathComponent(),
@@ -1561,6 +1561,12 @@ extension ArchiveState {
                     }
                 }
 
+                // Nested archives are temporary working files, not source archives
+                // the user asked to remove. Snapshot before any extraction writes.
+                let cleanup: ExtractionSourceCleanup?
+                if UserDefaults.standard.bool(forKey: Keys.trashAfterExtraction), archiveUrl == self.url {
+                    cleanup = try ExtractionSourceCleanup(source: archiveUrl, catalog: catalog)
+                } else { cleanup = nil }
                 let extractor = ArchiveExtractor(
                     archiveEngineSelector: effectiveEngineSelector,
                     passwordResolver: makePasswordResolver()
@@ -1571,6 +1577,10 @@ extension ArchiveState {
                     to: target,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
+                try Task.checkCancellation()
+                if let cleanup {
+                    try await Sandbox.access(url: archiveUrl) { try cleanup.perform() }
+                }
                 progressCenter.finish(jobId, .done)
             } catch is CancellationError {
                 progressCenter.finish(jobId, .cancelled)

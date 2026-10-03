@@ -111,6 +111,7 @@ struct SaveOptionsRows: View {
 
             Divider()
 
+            if options.canEncrypt {
             row(Text(.commonPassword)) {
                 SecureField(text: $options.password) { EmptyView() }
                     .labelsHidden()
@@ -140,6 +141,7 @@ struct SaveOptionsRows: View {
                 }
             }
             encryptionNote
+            }
 
             Divider()
 

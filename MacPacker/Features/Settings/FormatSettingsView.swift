@@ -27,6 +27,7 @@ struct FormatSettingsView: View {
     @State private var selection: ArchiveFormatSettings.ID?
     
     @State private var showEngineInfo: Bool = false
+    @State private var showDefaultChooser = false
     /// Mirrors the store so the toggle and the picker enablement update together.
     @State private var isAutomatic: Bool = true
     
@@ -86,14 +87,7 @@ struct FormatSettingsView: View {
 
 
     
-    func showInfoToSetAsDefault() {
-        let alert = NSAlert()
-        alert.icon = NSImage(named: "AppIcon")
-        alert.messageText = String(localized: .settingsMacpackerAsDefault)
-        alert.informativeText = String(localized: .settingsDefaultAppHint)
-        alert.alertStyle = .informational
-        alert.runModal()
-    }
+    func showInfoToSetAsDefault() { showDefaultChooser = true }
     
     /// Automatic engine selection. Most people neither know nor care which
     /// engine opens their archive, so MacPacker picks — and can switch to
@@ -154,7 +148,7 @@ struct FormatSettingsView: View {
                     showInfoToSetAsDefault()
                 } label: {
                     Label {
-                        Text(.settingsHowToSetAsDefault(Bundle.main.displayName))
+                        Text("Choose default formats…", comment: "Open the file association chooser")
                     } icon: {
                         Image(systemName: "info.circle")
                     }
@@ -205,6 +199,7 @@ struct FormatSettingsView: View {
                 }
             }
         }
+        .sheet(isPresented: $showDefaultChooser, onDismiss: refreshFormatConfig) { DefaultArchiveAppView(catalog: appState.catalog) }
         .padding()
         .frame(minHeight: 400)
         .onAppear {

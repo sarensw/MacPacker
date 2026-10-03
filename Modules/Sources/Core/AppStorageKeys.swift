@@ -18,6 +18,8 @@ public enum Keys {
     public static let rememberRecentArchives = "rememberRecentArchives"
     /// Whether extraction decides on its own that the result needs a container
     /// folder named after the archive. On by default.
+    public static let trashAfterExtraction = "trashAfterSuccessfulExtraction"
+
     public static let smartExtraction = "smartExtraction"
 
     /// `smartExtraction`, read from the app group so the Quick Look extension —

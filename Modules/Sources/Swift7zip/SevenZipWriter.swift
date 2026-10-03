@@ -52,6 +52,9 @@ extension SevenZipArchive {
         progress: WriteProgressHandler? = nil
     ) throws {
         var options = options
+        if options.format == .tar && options.encrypts {
+            throw SevenZipError.writeFailed("TAR does not support encryption. Choose 7z instead.")
+        }
         let items = options.excludeDSStore ? items.excludingDSStore() : items
         let inPlace = source != nil
             && source!.standardizedFileURL == destination.standardizedFileURL
@@ -396,9 +399,10 @@ extension SevenZipArchive {
     private static func writableFormat(of url: URL) -> CompressionOptions.Format? {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { try? handle.close() }
-        let head = (try? handle.read(upToCount: 6)) ?? Data()
+        let head = (try? handle.read(upToCount: 512)) ?? Data()
         if head.starts(with: [0x50, 0x4B]) { return .zip }
         if head.starts(with: [0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C]) { return .sevenZ }
+        if head.count >= 262, String(data: head[257..<262], encoding: .ascii) == "ustar" { return .tar }
         return nil
     }
 
