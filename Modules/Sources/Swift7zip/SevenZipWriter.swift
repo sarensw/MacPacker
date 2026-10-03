@@ -52,7 +52,8 @@ extension SevenZipArchive {
         progress: WriteProgressHandler? = nil
     ) throws {
         var options = options
-        let items = options.excludeDSStore ? items.excludingDSStore() : items
+        let selectedItems = options.excludeDSStore ? items.excludingDSStore() : items
+        let items = options.respectGitIgnore ? try selectedItems.excludingGitIgnoredFiles() : selectedItems
         let inPlace = source != nil
             && source!.standardizedFileURL == destination.standardizedFileURL
         if inPlace && (options.volumeSize ?? 0) > 0 {

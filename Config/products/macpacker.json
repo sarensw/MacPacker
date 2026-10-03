@@ -39,6 +39,30 @@
         "version": "1.0.1",
         "items": [
           {
+            "type": "feat",
+            "title": {
+                "en": "Skip gitignored files when compressing folders",
+                "zh-Hans": "压缩文件夹时跳过 .gitignore 忽略的文件",
+                "fr": "Ignorer les fichiers exclus par .gitignore lors de la compression",
+                "de": "Beim Komprimieren von .gitignore ignorierte Dateien auslassen",
+                "it": "Salta i file ignorati da .gitignore comprimendo cartelle",
+                "ja": "フォルダ圧縮時に .gitignore 対象ファイルを除外",
+                "fa": "نادیده گرفتن فایل‌های مستثناشده با .gitignore هنگام فشرده‌سازی پوشه‌ها",
+                "pl": "Pomijaj pliki ignorowane przez .gitignore przy kompresji",
+                "pt-BR": "Ignorar arquivos indicados pelo .gitignore ao compactar pastas",
+                "ru": "Пропускать файлы, игнорируемые .gitignore, при сжатии папок",
+                "uk": "Пропускати файли, ігноровані .gitignore, під час стиснення тек",
+                "es-MX": "Omitir archivos ignorados por .gitignore al comprimir carpetas",
+                "ko": "폴더 압축 시 .gitignore에서 무시한 파일 제외",
+                "nl": "Door .gitignore genegeerde bestanden overslaan bij comprimeren",
+                "tr": "Klasör sıkıştırırken .gitignore'ın yok saydığı dosyaları atla",
+                "vi": "Bỏ qua tệp bị .gitignore loại trừ khi nén thư mục"
+            },
+            "issues": [
+                "237"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

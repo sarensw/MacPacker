@@ -87,9 +87,25 @@ public final class ArchiveSaveOptions: ObservableObject {
     /// Leave `.DS_Store` files out. Not per format: it is about the files, not
     /// the archive.
     @Published public var excludeDSStore: Bool { didSet { autosave() } }
+    /// Shared with Finder compression and General Settings, rather than per
+    /// format: the same folder should package the same way as zip or 7z.
+    public var respectGitIgnore: Bool {
+        get { pendingRespectGitIgnore ?? defaults.bool(forKey: Keys.respectGitIgnore) }
+        set {
+            objectWillChange.send()
+            if storage == .quickCompress {
+                defaults.set(newValue, forKey: Keys.respectGitIgnore)
+            } else {
+                // A save panel's choices take effect only when Save goes ahead.
+                // Cancel must not alter the global Finder preference.
+                pendingRespectGitIgnore = newValue
+            }
+        }
+    }
 
     private let defaults: UserDefaults
     private let storage: Storage
+    private var pendingRespectGitIgnore: Bool?
     private var remembered: [Format: Remembered] = [:]
     /// Set while a format's settings are taken over, which changes one property
     /// after the other: storing each step would store half of one format.
@@ -161,13 +177,14 @@ public final class ArchiveSaveOptions: ObservableObject {
             wordSize: compresses ? wordSize : nil,
             solidBlockSize: compresses && hasSolidBlocks && (solidBlockSize ?? 0) > 0 ? solidBlockSize : nil,
             volumeSize: volumeSize,
-            excludeDSStore: excludeDSStore)
+            excludeDSStore: excludeDSStore,
+            respectGitIgnore: respectGitIgnore)
     }
 
     /// What the start page's drop area writes: the format picked there, defaults
     /// for the rest. It shows no other option, so no password or volume size set
     /// for Quick Compress may reach it.
-    public var startPageOptions: CompressionOptions { .init(format: format) }
+    public var startPageOptions: CompressionOptions { .init(format: format, respectGitIgnore: respectGitIgnore) }
 
     // MARK: Memory
 
@@ -183,6 +200,8 @@ public final class ArchiveSaveOptions: ObservableObject {
         }
         defaults.set(format.rawValue, forKey: storage.formatKey)
         defaults.set(excludeDSStore, forKey: storage.excludeDSStoreKey)
+        defaults.set(respectGitIgnore, forKey: Keys.respectGitIgnore)
+        pendingRespectGitIgnore = nil
     }
 
     private func autosave() {

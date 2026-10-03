@@ -154,6 +154,10 @@ public struct CompressionOptions: Sendable {
     /// anyone means to archive. Entries the archive holds already stay.
     public var excludeDSStore: Bool
 
+    /// Leave out files matched by a folder's `.gitignore` when adding files
+    /// from disk. Entries already in an archive are not changed.
+    public var respectGitIgnore: Bool
+
     /// Whether this writes an encrypted archive.
     public var encrypts: Bool { !(password ?? "").isEmpty }
 
@@ -170,7 +174,8 @@ public struct CompressionOptions: Sendable {
         wordSize: UInt32? = nil,
         solidBlockSize: UInt64? = nil,
         volumeSize: UInt64? = nil,
-        excludeDSStore: Bool = false
+        excludeDSStore: Bool = false,
+        respectGitIgnore: Bool = false
     ) {
         self.format = format
         self.level = level
@@ -184,5 +189,6 @@ public struct CompressionOptions: Sendable {
         self.solidBlockSize = solidBlockSize
         self.volumeSize = volumeSize
         self.excludeDSStore = excludeDSStore
+        self.respectGitIgnore = respectGitIgnore
     }
 }

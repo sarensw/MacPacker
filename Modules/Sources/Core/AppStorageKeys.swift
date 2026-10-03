@@ -70,6 +70,8 @@ public enum Keys {
     /// Leave `.DS_Store` files out of archives. Off by default, as in Finder's
     /// own Compress.
     public static let saveOptionsExcludeDSStore = "saveOptionsExcludeDSStore"
+    /// Skip additions matched by `.gitignore` when compressing folders.
+    public static let respectGitIgnore = "respectGitIgnore"
 
     // register defaults upon app start so that the archive table has a default it
     // can use when showing the table for the first time
