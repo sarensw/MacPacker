@@ -1,6 +1,22 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Extract immediately": {
+      "comment": "Archive-open behavior: extract next to the archive",
+      "extractionState": "manual"
+    },
+    "File → Open always opens an archive for browsing.": {
+      "comment": "How to browse archives when immediate extraction is enabled",
+      "extractionState": "manual"
+    },
+    "Open in MacPacker": {
+      "comment": "Archive-open behavior: browse the archive",
+      "extractionState": "manual"
+    },
+    "When opening an archive": {
+      "comment": "General settings: behavior for archives opened from Finder",
+      "extractionState": "manual"
+    },
     "appExtractionInProgress": {
       "comment": "Title of the alert shown when the user quits while an extraction is running.",
       "extractionState": "manual",

@@ -21,8 +21,27 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
 
+    @AppStorage(Keys.archiveOpenBehavior) var archiveOpenBehavior: ArchiveOpenBehavior = .browse
+
     var body: some View {
         VStack(spacing: 8) {
+            HStack(alignment: .top) {
+                Text("When opening an archive", comment: "General settings: behavior for archives opened from Finder")
+                    .frame(width: 200, alignment: .trailing)
+                Picker(String(""), selection: $archiveOpenBehavior) {
+                    Text("Open in MacPacker", comment: "Archive-open behavior: browse the archive")
+                        .tag(ArchiveOpenBehavior.browse)
+                    Text("Extract immediately", comment: "Archive-open behavior: extract next to the archive")
+                        .tag(ArchiveOpenBehavior.extractImmediately)
+                }
+                .frame(width: 240, alignment: .leading)
+                .accessibilityIdentifier("archiveOpenBehavior")
+            }
+            Text("File → Open always opens an archive for browsing.", comment: "How to browse archives when immediate extraction is enabled")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Divider()
+
             HStack(alignment: .top) {
                 Text(.settingsColumns)
                     .frame(width: 200, alignment: .trailing)
