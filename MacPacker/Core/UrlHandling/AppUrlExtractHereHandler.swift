@@ -14,7 +14,7 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Finder action "Extract Here": extracts every selected archive next to it,
-/// then selects what came out in Finder.
+/// optionally selects what came out in Finder.
 class AppUrlExtractHereHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
@@ -39,7 +39,7 @@ class AppUrlExtractHereHandler: AppUrlHandler {
             for fileUrl in appUrl.files {
                 extracted += await self.extractArchive(fileUrl, into: appUrl.target, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
             }
-            if !extracted.isEmpty {
+            if !extracted.isEmpty, Keys.revealsExtractedFilesInFinder() {
                 NSWorkspace.shared.activateFileViewerSelecting(extracted)
             }
         }
