@@ -42,16 +42,18 @@ extension AppUrlHandler {
         // source-folder access itself, via the provider — like a password.
         let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
         // The public URL scheme cannot authenticate Finder as the caller.
-        // A saved preference alone must not authorize source deletion here.
-        state.sourceCleanupAuthorizationProvider = { sources in
-            let alert = NSAlert()
-            alert.alertStyle = .warning
-            alert.messageText = String(localized: "Move extracted archives to Trash?", comment: "Confirm source cleanup for a public URL extraction request")
-            alert.informativeText = sources.map(\.lastPathComponent).joined(separator: "\n")
-            alert.addButton(withTitle: String(localized: "Keep Archives", comment: "Keep source archives after extraction"))
-            alert.addButton(withTitle: String(localized: "Move to Trash", comment: "Confirm moving extracted source archives to Trash"))
-            NSApp.activate(ignoringOtherApps: true)
-            return alert.runModal() == .alertSecondButtonReturn
+        // Keep confirmation on unless the user explicitly disables it.
+        if Keys.confirmsTrashAfterExtraction() {
+            state.sourceCleanupAuthorizationProvider = { sources in
+                let alert = NSAlert()
+                alert.alertStyle = .warning
+                alert.messageText = String(localized: "Move extracted archives to Trash?", comment: "Confirm source cleanup for a public URL extraction request")
+                alert.informativeText = sources.map(\.lastPathComponent).joined(separator: "\n")
+                alert.addButton(withTitle: String(localized: "Keep Archives", comment: "Keep source archives after extraction"))
+                alert.addButton(withTitle: String(localized: "Move to Trash", comment: "Confirm moving extracted source archives to Trash"))
+                NSApp.activate(ignoringOtherApps: true)
+                return alert.runModal() == .alertSecondButtonReturn
+            }
         }
         state.extractionDestinationIsArchiveFolder = destinationIsArchiveFolder
         state.extractionBackupWarningProvider = { ExtractionConflictPrompt.showRetainedBackup($0) }

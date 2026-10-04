@@ -16,9 +16,15 @@ public enum Keys {
     /// empties what was already collected — a history you can no longer see is one
     /// you should no longer keep.
     public static let rememberRecentArchives = "rememberRecentArchives"
-    /// Whether extraction decides on its own that the result needs a container
-    /// folder named after the archive. On by default.
+    /// Move whole source archives to Trash after successful extraction.
     public static let trashAfterExtraction = "trashAfterSuccessfulExtraction"
+    /// Public app URLs cannot prove that they came from Finder. Confirm source
+    /// cleanup by default unless the user explicitly opts out in Settings.
+    public static let confirmTrashAfterExtraction = "confirmTrashAfterExtraction"
+
+    public static func confirmsTrashAfterExtraction(in defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: confirmTrashAfterExtraction) as? Bool ?? true
+    }
 
     public static let smartExtraction = "smartExtraction"
 

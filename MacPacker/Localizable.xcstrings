@@ -9,6 +9,10 @@
       "comment": "Accessibility title of the extraction and compression progress window",
       "extractionState": "manual"
     },
+    "Ask before moving archives to Trash": {
+      "comment": "Optional confirmation before removing successfully extracted source archives",
+      "extractionState": "manual"
+    },
     "Cancel": {
       "comment": "Cancel extraction without changing the destination",
       "extractionState": "manual"

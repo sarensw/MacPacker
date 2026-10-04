@@ -7,6 +7,17 @@ import FinderMenu
 
 extension AllCoreTests {
     struct ReviewSafetyTests {
+        @Test func sourceCleanupConfirmationDefaultsOnUntilExplicitlyDisabled() {
+            let name = "MacPacker-SourceCleanupConfirmation-\(UUID().uuidString)"
+            let defaults = UserDefaults(suiteName: name)!
+            defer { defaults.removePersistentDomain(forName: name) }
+            #expect(Keys.confirmsTrashAfterExtraction(in: defaults))
+            defaults.set(false, forKey: Keys.confirmTrashAfterExtraction)
+            #expect(!Keys.confirmsTrashAfterExtraction(in: defaults))
+            defaults.set(true, forKey: Keys.confirmTrashAfterExtraction)
+            #expect(Keys.confirmsTrashAfterExtraction(in: defaults))
+        }
+
         @Test func mergeRejectsLinksThroughExistingExternalTargets() throws {
             let root = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: root) }
