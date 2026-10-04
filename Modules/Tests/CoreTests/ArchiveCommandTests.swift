@@ -6,9 +6,36 @@ import ArchiveCommands
 extension AllCoreTests {
     struct ArchiveCommandTests {
         @Test func rejectsUnsafeOrAmbiguousOptions() {
-            for arguments in [["list", "x.rar", "--format", "bogus"], ["extract", "x.rar", "--output", "out", "--format", "bogus"], ["create", "x.7z"], ["extract", "x.rar"], ["rename", "x.7z", "one"], ["list", "x.rar", "--password", "secret"], ["create", "x.tar", "file", "--encrypt-names"], ["update", "x.7z", "file", "--volume-size", "10m"], ["list", "x.rar", "--ask-password", "--password-stdin"]] {
+            for arguments in [["list", "x.rar", "--format", "bogus"], ["extract", "x.rar", "--output", "out", "--format", "bogus"], ["create", "x.7z"], ["extract", "x.rar"], ["rename", "x.7z", "one"], ["list", "x.rar", "--password", "secret"], ["create", "x.tar", "file", "--encrypt-names"], ["update", "x.7z", "file", "--volume-size", "10m"], ["list", "x.rar", "--ask-password", "--password-stdin"], ["update", "x.7z", "file", "--encrypt-names", "--ask-password"]] {
                 #expect(throws: (any Error).self) { try ArchiveCommand(arguments: arguments) }
             }
+        }
+        @Test func explicitCreationPasswordCannotBeEmpty() throws {
+            for method in ["--ask-password", "--password-stdin"] {
+                let command = try ArchiveCommand(arguments: ["create", "out.7z", "file", method])
+                #expect(throws: (any Error).self) { try command.validatePassword("") }
+                try command.validatePassword("secret")
+            }
+            try ArchiveCommand(arguments: ["create", "out.7z", "file"]).validatePassword(nil)
+        }
+
+        @Test func failedExtractionRemovesOnlyItsNewDestination() throws {
+            let directory = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: directory) }
+            let archive = passwordFixture("zip_aes256.zip")
+            let output = directory.appendingPathComponent("retry")
+            #expect(throws: (any Error).self) {
+                try ArchiveExtraction.extract(archive, to: output, password: nil)
+            }
+            #expect(!FileManager.default.fileExists(atPath: output.path))
+
+            try FileManager.default.createDirectory(at: output, withIntermediateDirectories: false)
+            let existing = output.appendingPathComponent("keep.txt")
+            try Data("keep".utf8).write(to: existing)
+            #expect(throws: (any Error).self) {
+                try ArchiveExtraction.extract(archive, to: output, password: nil)
+            }
+            #expect(try Data(contentsOf: existing) == Data("keep".utf8))
         }
         @Test func parsesVolumesAndLiteralPaths() throws {
             let command = try ArchiveCommand(arguments: ["create", "out.7z", "--volume-size", "100m", "--", "-input"])

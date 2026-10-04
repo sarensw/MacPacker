@@ -58,11 +58,22 @@ public struct ArchiveCommand: Sendable {
         guard !(askPassword && passwordStdin) else { throw CommandError("Choose one password input method.") }
         guard action == .create || volumeSize == nil else { throw CommandError("Volumes can only be created as a new archive.") }
         guard !encryptNames || format == .sevenZ else { throw CommandError("Encrypted names require 7z.") }
+        guard !encryptNames || action == .create else { throw CommandError("Encrypted names are only supported when creating a new archive.") }
         if action == .extract && output == nil { throw CommandError("Extraction requires --output DIRECTORY.") }
         if [.create, .update, .delete].contains(action) && operands.isEmpty { throw CommandError("This command requires input paths or entry names.") }
         if action == .rename && operands.count != 2 { throw CommandError("Rename requires the old and new entry paths.") }
         if [.list, .extract].contains(action) && !operands.isEmpty { throw CommandError("Unexpected extra arguments.") }
         if action != .extract && output != nil { throw CommandError("--output is only for extraction.") }
+    }
+
+    /// Refuses a plaintext archive when creation explicitly requested a password.
+    public func validatePassword(_ password: String?) throws {
+        if action == .create && (askPassword || passwordStdin) && (password?.isEmpty ?? true) {
+            throw CommandError("A nonempty password is required to create an encrypted archive.")
+        }
+        if encryptNames && (password?.isEmpty ?? true) {
+            throw CommandError("Encrypted names require a nonempty password.")
+        }
     }
 
     public static func bytes(_ text: String) throws -> UInt64 {

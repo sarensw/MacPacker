@@ -3,6 +3,11 @@ import Testing
 
 extension AllCoreTests {
     struct DefaultArchiveAssociationsTests {
+        @Test func includesRegisteredTarballCompositions() {
+            let ids = Set(DefaultArchiveAssociations.choices(catalog: ArchiveTypeCatalog()).map(\.id))
+            #expect(ids.isSuperset(of: ["tar.bz2", "tar.gz", "tar.lz4", "tar.xz", "tar.z"]))
+        }
+
         @Test func neverRequestsIndividualVolumeAssociations() {
             let catalog = ArchiveTypeCatalog()
             for (id, expected) in [("rar", ["cbr", "rar"]), ("7zip", ["7z"])] {

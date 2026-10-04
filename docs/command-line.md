@@ -33,7 +33,9 @@ still affect speed. A missing/corrupt volume reports failure.
 
 New archive paths and extraction directories must not already exist. Use `--`
 before filenames starting with a dash. `--password-stdin` reads one line from
-standard input for scripts; never put passwords in command arguments. Exit status
+standard input for scripts; never put passwords in command arguments. An empty
+password is rejected when creating an encrypted archive. `--encrypt-names` is
+available only when creating a new 7z archive, not when editing one. Exit status
 is 0 on success, 1 on an operation failure, and 2 for invalid arguments.
 
 Output formats are 7z, ZIP and TAR. TAR has no encryption/compression; choose 7z

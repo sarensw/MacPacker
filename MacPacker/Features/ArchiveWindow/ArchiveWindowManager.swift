@@ -57,6 +57,7 @@ class ArchiveWindowManager {
         // archive — exactly like it asks for a password. The app fulfills it.
         archiveState.extractionBackupWarningProvider = { ExtractionConflictPrompt.showRetainedBackup($0) }
         archiveState.extractionConflictProvider = { await ExtractionConflictPrompt.request($0) }
+        archiveState.sourceCleanupAuthorizationProvider = { ExtractionSourceCleanupPrompt.request($0) }
         archiveState.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
         // Opening a plain (non-archive) entry hands it to the system editor.
         archiveState.openFileExternally = { NSWorkspace.shared.open($0) }

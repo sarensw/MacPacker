@@ -1633,7 +1633,10 @@ extension ArchiveState {
                     await extractionBackupWarningProvider?(backup)
                 }
                 if let cleanup, !installed.skippedExisting, installed.retainedBackup == nil {
-                    let authorized = await sourceCleanupAuthorizationProvider?(cleanup.sources) ?? true
+                    let needsConfirmation = Keys.confirmsTrashAfterExtraction()
+                    let response = needsConfirmation ? await sourceCleanupAuthorizationProvider?(cleanup.sources) : nil
+                    let authorized = ExtractionSourceCleanupAuthorization.isAuthorized(
+                        requiresConfirmation: needsConfirmation, response: response)
                     if authorized {
                         try Task.checkCancellation()
                         try await Sandbox.access(url: archiveUrl) { try cleanup.perform() }

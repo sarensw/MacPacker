@@ -36,18 +36,14 @@ do {
         guard let line = readLine() else { throw CommandError("No password received on standard input.") }
         password = line
     } else { password = nil }
-    if command.encryptNames && (password?.isEmpty ?? true) { throw CommandError("Encrypted names require a nonempty password.") }
+    try command.validatePassword(password)
     let manager = FileManager.default
     switch command.action {
     case .list:
         let archive = try SevenZipArchive(url: VolumePath.first(command.archive), password: password)
         for entry in try archive.entries { print("\(entry.size)\t\(entry.path)") }
     case .extract:
-        let destination = command.output!
-        guard !manager.fileExists(atPath: destination.path) else { throw CommandError("The extraction destination already exists.") }
-        let archive = try SevenZipArchive(url: VolumePath.first(command.archive), password: password)
-        try manager.createDirectory(at: destination, withIntermediateDirectories: true)
-        try archive.extractAll(to: destination)
+        try ArchiveExtraction.extract(command.archive, to: command.output!, password: password)
     case .create, .update, .delete, .rename:
         let creating = command.action == .create
         if !creating && VolumePath.first(command.archive) != command.archive { throw CommandError("Split archives cannot be edited in place.") }

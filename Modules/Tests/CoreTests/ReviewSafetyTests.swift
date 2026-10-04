@@ -18,6 +18,13 @@ extension AllCoreTests {
             #expect(!Keys.confirmsTrashAfterExtraction(in: defaults))
         }
 
+        @Test func requestedCleanupConfirmationFailsClosedWithoutAResponse() {
+            #expect(ExtractionSourceCleanupAuthorization.isAuthorized(requiresConfirmation: false, response: nil))
+            #expect(!ExtractionSourceCleanupAuthorization.isAuthorized(requiresConfirmation: true, response: nil))
+            #expect(!ExtractionSourceCleanupAuthorization.isAuthorized(requiresConfirmation: true, response: false))
+            #expect(ExtractionSourceCleanupAuthorization.isAuthorized(requiresConfirmation: true, response: true))
+        }
+
         @Test func mergeRejectsLinksThroughExistingExternalTargets() throws {
             let root = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: root) }

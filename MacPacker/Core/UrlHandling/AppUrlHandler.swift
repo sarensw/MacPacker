@@ -41,20 +41,7 @@ extension AppUrlHandler {
         // The loader resolves a split to its first volume and asks for
         // source-folder access itself, via the provider — like a password.
         let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
-        // The user opts into source cleanup in Settings. A second confirmation
-        // is available for those who want it, but is off by default.
-        if Keys.confirmsTrashAfterExtraction() {
-            state.sourceCleanupAuthorizationProvider = { sources in
-                let alert = NSAlert()
-                alert.alertStyle = .warning
-                alert.messageText = String(localized: "Move extracted archives to Trash?", comment: "Confirm source cleanup for a public URL extraction request")
-                alert.informativeText = sources.map(\.lastPathComponent).joined(separator: "\n")
-                alert.addButton(withTitle: String(localized: "Keep Archives", comment: "Keep source archives after extraction"))
-                alert.addButton(withTitle: String(localized: "Move to Trash", comment: "Confirm moving extracted source archives to Trash"))
-                NSApp.activate(ignoringOtherApps: true)
-                return alert.runModal() == .alertSecondButtonReturn
-            }
-        }
+        state.sourceCleanupAuthorizationProvider = { ExtractionSourceCleanupPrompt.request($0) }
         state.extractionDestinationIsArchiveFolder = destinationIsArchiveFolder
         state.extractionBackupWarningProvider = { ExtractionConflictPrompt.showRetainedBackup($0) }
         state.extractionConflictProvider = { await ExtractionConflictPrompt.request($0) }

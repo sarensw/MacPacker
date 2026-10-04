@@ -14,7 +14,7 @@ public enum DefaultArchiveAssociations {
             ["archive", "compression"].contains($0.kind)
                 && !["ar", "chm", "msapp", "msi", "pkg", "rpm", "sea"].contains($0.id)
         }.map { Choice(id: $0.id, name: $0.name, extensions: extensions(for: $0)) }
-        let tarballs = catalog.allCompositions().filter { ["tar.bz2", "tar.gz", "tar.xz"].contains($0.id) }
+        let tarballs = catalog.allCompositions().filter { ["tar.bz2", "tar.gz", "tar.lz4", "tar.xz", "tar.z"].contains($0.id) }
             .map { Choice(id: $0.id, name: $0.name, extensions: $0.extensions) }
         return (base + tarballs).filter { !$0.extensions.isEmpty }
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
