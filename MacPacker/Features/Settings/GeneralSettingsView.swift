@@ -22,7 +22,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
 
     @AppStorage(Keys.trashAfterExtraction) private var trashAfterExtraction = false
-    @AppStorage(Keys.confirmTrashAfterExtraction) private var confirmTrashAfterExtraction = true
+    @AppStorage(Keys.confirmTrashAfterExtraction) private var confirmTrashAfterExtraction = false
 
     var body: some View {
         VStack(spacing: 8) {
