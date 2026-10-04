@@ -41,8 +41,8 @@ extension AppUrlHandler {
         // The loader resolves a split to its first volume and asks for
         // source-folder access itself, via the provider — like a password.
         let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
-        // The public URL scheme cannot authenticate Finder as the caller.
-        // Keep confirmation on unless the user explicitly disables it.
+        // The user opts into source cleanup in Settings. A second confirmation
+        // is available for those who want it, but is off by default.
         if Keys.confirmsTrashAfterExtraction() {
             state.sourceCleanupAuthorizationProvider = { sources in
                 let alert = NSAlert()
