@@ -13,6 +13,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>7Z Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleVersion</key>
@@ -33,6 +35,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>LZ4 Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -52,6 +56,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>LZ4 Tarball Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -70,6 +76,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>ZIP Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -90,6 +98,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>ZIPX Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -108,6 +118,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Android Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -122,6 +134,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Android Package</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -140,6 +154,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Comic Book ZIP Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -158,6 +174,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Comic Book RAR Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -172,6 +190,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>XZ Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -192,6 +212,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>XZ Tarball Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -212,6 +234,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>RAR Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -231,6 +255,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>StuffIt Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -251,6 +277,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Self-Extracting Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -269,6 +297,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Amiga LZX Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -289,6 +319,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>BZIP2 Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -314,6 +346,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>BZIP2 Tarball Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -334,6 +368,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>GZIP Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -354,6 +390,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>GZIP Tarball Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -372,6 +410,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>TAR Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -391,6 +431,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>CPIO Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -409,6 +451,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>ISO Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -428,6 +472,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>LHA Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -446,6 +492,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Windows Cabinet File</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -465,6 +513,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Unix Compress File</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -484,6 +534,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Z Tarball Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -503,6 +555,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Archiver Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -519,6 +573,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>ARJ Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -539,6 +595,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Apple Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -558,6 +616,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>FAT Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -572,6 +632,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Microsoft Compiled HTML Help</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -591,6 +653,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>NTFS Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -605,6 +669,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Apple Software Package</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -623,6 +689,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>QCOW2 Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -637,6 +705,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Linux RPM archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -655,6 +725,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>SquashFS Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -673,6 +745,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>VDI Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -687,6 +761,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>VMDK Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -701,6 +777,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>VHD Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -715,6 +793,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>VHDX Disk Image</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -729,6 +809,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>XAR Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -747,6 +829,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Microsoft Windows application</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -765,6 +849,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Microsoft MSI Installer</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
@@ -882,6 +968,8 @@
 			</array>
 			<key>CFBundleTypeName</key>
 			<string>Split Archive</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>ArchiveDocument.icns</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
