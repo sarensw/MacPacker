@@ -97,7 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .extractToFolder:
                 handler = AppUrlExtractToFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .compress:
+            case .compress, .compressWithPassword, .encryptWithNewPassword:
                 handler = AppUrlCompressHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .addToArchive:
                 handler = AppUrlAddToArchiveHandler()

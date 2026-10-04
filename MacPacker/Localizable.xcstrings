@@ -1,6 +1,42 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Compress": {
+      "comment": "Confirm button in the Finder password compression dialog",
+      "extractionState": "manual"
+    },
+    "Compress with Password…": {
+      "comment": "Finder action and setting to ask for a password and create an encrypted 7z archive",
+      "extractionState": "manual"
+    },
+    "Copy Password & Compress": {
+      "comment": "Confirm button for generated-password Finder compression",
+      "extractionState": "manual"
+    },
+    "Could not copy the password": {
+      "comment": "Error before generating an encrypted archive from Finder",
+      "extractionState": "manual"
+    },
+    "Create an encrypted 7z archive with hidden file names.": {
+      "comment": "Explains the Finder password compression dialog",
+      "extractionState": "manual"
+    },
+    "Encrypt with a New Password…": {
+      "comment": "Finder action and setting to generate and copy a password for a new encrypted 7z archive",
+      "extractionState": "manual"
+    },
+    "Enter a password before compressing.": {
+      "comment": "Validation in the Finder password compression dialog",
+      "extractionState": "manual"
+    },
+    "No archive was created. Try again so you can keep the password.": {
+      "comment": "Explains why generated-password compression was stopped",
+      "extractionState": "manual"
+    },
+    "Save this password. MacPacker will copy it before creating the encrypted 7z archive, and you will need it to extract the files.": {
+      "comment": "Warns the user to retain the generated archive password",
+      "extractionState": "manual"
+    },
     "appExtractionInProgress": {
       "comment": "Title of the alert shown when the user quits while an extraction is running.",
       "extractionState": "manual",

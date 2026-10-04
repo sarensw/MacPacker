@@ -52,6 +52,19 @@ extension AllCoreTests {
             #expect(try AppUrl(url: url, scheme: scheme) == request)
         }
 
+        @Test("Password actions carry no secret through the Finder URL",
+              arguments: [FinderMenuItem.compressWithPassword, .encryptWithNewPassword])
+        func passwordActionRoundTrip(_ item: FinderMenuItem) throws {
+            let request = AppUrl(action: item.action,
+                                 files: [URL(fileURLWithPath: "/Users/me/photos")],
+                                 target: URL(fileURLWithPath: "/Users/me"),
+                                 format: item.archiveExtension)
+            let encoded = try #require(request.url(scheme: scheme))
+            #expect(try AppUrl(url: encoded, scheme: scheme) == request)
+            #expect(encoded.absoluteString.contains("format=7z"))
+            #expect(!encoded.absoluteString.localizedCaseInsensitiveContains("password="))
+        }
+
         @Test("The dated archive gets the name the menu showed, even after a minute boundary")
         func datedNameMatchesTheMenu() throws {
             // the menu opens a second before the minute turns; the archive is
@@ -159,7 +172,8 @@ extension AllCoreTests {
             #expect(AppUrlAction.extractTo.honorsSmartExtraction)
 
             // nothing that does not extract gets a say either
-            for action in [AppUrlAction.open, .compress, .compressEach, .compressContents, .addToArchive] {
+            for action in [AppUrlAction.open, .compress, .compressWithPassword,
+                           .encryptWithNewPassword, .compressEach, .compressContents, .addToArchive] {
                 #expect(!action.honorsSmartExtraction, "\(action) does not extract")
             }
         }
