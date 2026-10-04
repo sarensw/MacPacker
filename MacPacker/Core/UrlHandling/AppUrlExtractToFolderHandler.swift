@@ -14,7 +14,7 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Finder action "Extract to "<name>"": extracts each selected archive into a
-/// new folder named after it, then selects those folders in Finder.
+/// new folder named after it, then optionally selects those folders in Finder.
 class AppUrlExtractToFolderHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
@@ -52,7 +52,7 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
                 _ = await self.extractArchive(fileUrl, into: folderUrl, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
                 folders.append(folderUrl)
             }
-            if !folders.isEmpty {
+            if !folders.isEmpty, Keys.revealsExtractedFilesInFinder() {
                 NSWorkspace.shared.activateFileViewerSelecting(folders)
             }
         }

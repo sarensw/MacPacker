@@ -1,6 +1,14 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "After extraction": {
+      "comment": "Settings section for Finder extraction actions",
+      "extractionState": "manual"
+    },
+    "Show extracted files in Finder": {
+      "comment": "Reveal the results of a Finder extraction action",
+      "extractionState": "manual"
+    },
     "appExtractionInProgress": {
       "comment": "Title of the alert shown when the user quits while an extraction is running.",
       "extractionState": "manual",

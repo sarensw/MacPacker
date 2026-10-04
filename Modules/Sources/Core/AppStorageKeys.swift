@@ -16,6 +16,12 @@ public enum Keys {
     /// empties what was already collected — a history you can no longer see is one
     /// you should no longer keep.
     public static let rememberRecentArchives = "rememberRecentArchives"
+    /// Whether a Finder extraction action selects its result in a Finder window.
+    public static let revealExtractedFilesInFinder = "revealExtractedFilesInFinder"
+
+    public static func revealsExtractedFilesInFinder(in defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: revealExtractedFilesInFinder) as? Bool ?? true
+    }
     /// Whether extraction decides on its own that the result needs a container
     /// folder named after the archive. On by default.
     public static let smartExtraction = "smartExtraction"
