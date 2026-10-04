@@ -62,6 +62,30 @@
             "issues": [
                 "278"
             ]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Password-protect archives from Finder",
+                "zh-Hans": "在 Finder 中为压缩包设置密码",
+                "fr": "Protéger les archives par mot de passe depuis le Finder",
+                "de": "Archive im Finder mit Passwort schützen",
+                "it": "Proteggere gli archivi con password dal Finder",
+                "ja": "Finder からアーカイブをパスワードで保護",
+                "fa": "محافظت از بایگانی‌ها با گذرواژه از Finder",
+                "pl": "Chroń archiwa hasłem z Findera",
+                "pt-BR": "Proteger arquivos com senha pelo Finder",
+                "ru": "Защита архивов паролем из Finder",
+                "uk": "Захист архівів паролем із Finder",
+                "es-MX": "Proteger archivos con contraseña desde Finder",
+                "ko": "Finder에서 압축 파일을 암호로 보호",
+                "nl": "Archieven met een wachtwoord beveiligen vanuit Finder",
+                "tr": "Finder’dan arşivleri parolayla koruma",
+                "vi": "Bảo vệ tệp nén bằng mật khẩu từ Finder"
+            },
+            "issues": [
+                "231"
+            ]
           }
         ]
       },
