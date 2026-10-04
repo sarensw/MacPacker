@@ -39,6 +39,30 @@
         "version": "1.0.1",
         "items": [
           {
+            "type": "feat",
+            "title": {
+              "en": "Keep Finder closed after extraction",
+              "zh-Hans": "解压后不打开 Finder",
+              "fr": "Garder Finder fermé après l’extraction",
+              "de": "Finder nach dem Entpacken geschlossen lassen",
+              "it": "Non aprire Finder dopo l’estrazione",
+              "ja": "展開後に Finder を開かない",
+              "fa": "پس از استخراج Finder را باز نکنید",
+              "pl": "Nie otwieraj Findera po rozpakowaniu",
+              "pt-BR": "Não abrir o Finder após a extração",
+              "ru": "Не открывать Finder после распаковки",
+              "uk": "Не відкривати Finder після розпакування",
+              "es-MX": "No abrir Finder después de extraer",
+              "ko": "압축 해제 후 Finder 열지 않기",
+              "nl": "Finder na uitpakken gesloten houden",
+              "tr": "Çıkardıktan sonra Finder’ı açma",
+              "vi": "Không mở Finder sau khi giải nén"
+            },
+            "issues": [
+              "299"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {
