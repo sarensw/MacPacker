@@ -39,6 +39,30 @@
         "version": "1.0.1",
         "items": [
           {
+            "type": "feat",
+            "title": {
+              "en": "Show MacPacker icons for archive files",
+              "zh-Hans": "显示 MacPacker 的压缩文件图标",
+              "fr": "Afficher les icônes MacPacker pour les archives",
+              "de": "MacPacker-Symbole für Archivdateien anzeigen",
+              "it": "Mostra le icone MacPacker per gli archivi",
+              "ja": "アーカイブに MacPacker のアイコンを表示",
+              "fa": "نمایش نمادهای MacPacker برای فایل‌های بایگانی",
+              "pl": "Pokazuj ikony MacPacker dla archiwów",
+              "pt-BR": "Mostrar ícones do MacPacker para arquivos compactados",
+              "ru": "Показывать значки MacPacker для архивов",
+              "uk": "Показувати значки MacPacker для архівів",
+              "es-MX": "Mostrar íconos de MacPacker para archivos comprimidos",
+              "ko": "압축 파일에 MacPacker 아이콘 표시",
+              "nl": "MacPacker-pictogrammen voor archieven tonen",
+              "tr": "Arşiv dosyaları için MacPacker simgelerini göster",
+              "vi": "Hiển thị biểu tượng MacPacker cho tệp nén"
+            },
+            "issues": [
+              "297"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {
