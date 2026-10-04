@@ -27,6 +27,12 @@
             "state" : "translated",
             "value" : "修改日期"
           }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ημερομηνία τροποποίησης"
+          }
         }
       }
     },
@@ -55,6 +61,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "解压存档"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αποσυμπίεση αρχείου"
           }
         }
       }
@@ -85,6 +97,12 @@
             "state" : "translated",
             "value" : "解压所选"
           }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Εξαγωγή επιλεγμένων"
+          }
         }
       }
     },
@@ -114,11 +132,25 @@
             "state" : "translated",
             "value" : "姓名"
           }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Όνομα"
+          }
         }
       }
     },
     "Open this archive in MacPacker to enter the password." : {
-      "comment" : "Shown in the Quick Look preview below the notice that an archive is password protected"
+      "comment" : "Shown in the Quick Look preview below the notice that an archive is password protected",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ανοίξτε αυτό το αρχείο στο MacPacker για να εισαγάγετε τον κωδικό."
+          }
+        }
+      }
     },
     "Packed Size" : {
       "comment" : "Column that shows the packed size of the archive files",
@@ -145,6 +177,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "压缩后大小"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Συμπιεσμένο μέγεθος"
           }
         }
       }
@@ -175,11 +213,25 @@
             "state" : "translated",
             "value" : "大小"
           }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Μέγεθος"
+          }
         }
       }
     },
     "This archive is password protected." : {
-      "comment" : "Shown in the Quick Look preview when an archive needs a password to be read"
+      "comment" : "Shown in the Quick Look preview when an archive needs a password to be read",
+      "localizations" : {
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αυτό το αρχείο προστατεύεται με κωδικό."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

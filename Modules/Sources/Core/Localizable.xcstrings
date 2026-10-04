@@ -9,6 +9,12 @@
             "state" : "translated",
             "value" : "%@ is password protected. Open it in MacPacker to enter the password."
           }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το %@ προστατεύεται με κωδικό. Ανοίξτε το στο MacPacker για να εισαγάγετε τον κωδικό."
+          }
         }
       }
     },
@@ -19,6 +25,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The archive"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το συμπιεσμένο αρχείο"
           }
         }
       }
@@ -31,6 +43,12 @@
             "state" : "translated",
             "value" : "building tree..."
           }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "δημιουργία δομής..."
+          }
         }
       }
     },
@@ -41,6 +59,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "done"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ολοκληρώθηκε"
           }
         }
       }
@@ -53,6 +77,12 @@
             "state" : "translated",
             "value" : "error: %@"
           }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "σφάλμα: %@"
+          }
         }
       }
     },
@@ -63,6 +93,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "extracting..."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "εξαγωγή..."
           }
         }
       }
@@ -75,6 +111,12 @@
             "state" : "translated",
             "value" : "failed to load"
           }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "αποτυχία φόρτωσης"
+          }
         }
       }
     },
@@ -86,6 +128,12 @@
             "state" : "translated",
             "value" : "loading..."
           }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "φόρτωση..."
+          }
         }
       }
     },
@@ -96,6 +144,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "saving..."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "αποθήκευση..."
           }
         }
       }

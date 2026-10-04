@@ -11,6 +11,12 @@
             "value": "Eine Entpackung läuft noch."
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μια εξαγωγή βρίσκεται ακόμη σε εξέλιξη"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -117,6 +123,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Trotzdem beenden"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Έξοδος ούτως ή άλλως"
           }
         },
         "en": {
@@ -227,6 +239,12 @@
             "value": "Wenn du jetzt beendest, wird die Entpackung abgebrochen. Am Zielort können unvollständige Dateien zurückbleiben."
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αν τερματίσετε τώρα την εφαρμογή, η εξαγωγή θα διακοπεί και ενδέχεται να παραμείνουν ημιτελή αρχεία στον προορισμό."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -332,6 +350,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ausgewählte Elemente aus dem Archiv löschen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Διαγραφή των επιλεγμένων στοιχείων από το συμπιεσμένο αρχείο"
           }
         },
         "en": {
@@ -442,6 +466,12 @@
             "value": "Geändert"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Τροποποιημένο"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -548,6 +578,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Übergeordneter Ordner"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Περιέχων φάκελος"
           }
         },
         "en": {
@@ -658,6 +694,12 @@
             "value": "In neuem Fenster öffnen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Άνοιγμα σε νέο παράθυρο"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -764,6 +806,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Übersicht"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Άμεση προβολή"
           }
         },
         "en": {
@@ -874,6 +922,12 @@
             "value": "Zum Komprimieren hier ablegen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αποθέστε εδώ για συμπίεση"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -980,6 +1034,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hier komprimieren"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπίεση εδώ"
           }
         },
         "en": {
@@ -1090,6 +1150,12 @@
             "value": "Oben behalten"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Διατήρηση στο προσκήνιο"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1195,6 +1261,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dateien oder Ordner zum Archiv hinzufügen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προσθήκη αρχείων ή φακέλων στο συμπιεσμένο αρχείο"
           }
         },
         "en": {
@@ -1305,6 +1377,12 @@
             "value": "Archivinformationen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πληροφορίες συμπιεσμένου αρχείου"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1411,6 +1489,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Automatisch"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αυτόματο"
           }
         },
         "en": {
@@ -1521,6 +1605,12 @@
             "value": "Ändere das Passwort in den Optionen..."
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αλλάξτε τον κωδικό στις Επιλογές…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1627,6 +1717,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ein Zip-Passwort darf nur Buchstaben (A–Z), Ziffern, Leerzeichen und gängige Symbole enthalten. 7z akzeptiert jedes beliebige Passwort."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ο κωδικός ενός αρχείου zip μπορεί να περιέχει μόνο γράμματα A–Z, ψηφία, κενά και κοινά σύμβολα. Το 7z δέχεται οποιονδήποτε κωδικό."
           }
         },
         "en": {
@@ -1737,6 +1833,12 @@
             "value": "Neues Archiv erstellen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δημιουργία νέου συμπιεσμένου αρχείου"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -1843,6 +1945,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Wähle wo entpackt werden soll"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επιλέξτε πού θα γίνει η εξαγωγή"
           }
         },
         "en": {
@@ -1953,6 +2061,12 @@
             "value": "%@ übrig"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ακόμη"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2059,6 +2173,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bei AES-256 darf ein ZIP-Passwort höchstens %lld Zeichen lang sein."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Με AES-256, ο κωδικός ενός αρχείου zip μπορεί να έχει έως %lld χαρακτήρες."
           }
         },
         "en": {
@@ -2169,6 +2289,12 @@
             "value": "ZipCrypto ist leicht zu knacken. Verwenden Sie es nur für Tools, die AES-256 nicht öffnen können."
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το ZipCrypto παραβιάζεται εύκολα. Επιλέξτε το μόνο για εργαλεία που δεν μπορούν να ανοίξουν AES-256."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2275,6 +2401,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "das Archiv"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "το συμπιεσμένο αρχείο"
           }
         },
         "en": {
@@ -2385,6 +2517,12 @@
             "value": "Wörterbuchgröße"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μέγεθος λεξικού"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2491,6 +2629,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nicht sichern"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Να μη γίνει αποθήκευση"
           }
         },
         "en": {
@@ -2601,6 +2745,12 @@
             "value": "Nicht teilen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Χωρίς διαχωρισμό"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2707,6 +2857,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dateinamen verschlüsseln"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κρυπτογράφηση ονομάτων αρχείων"
           }
         },
         "en": {
@@ -2817,6 +2973,12 @@
             "value": "Dateinamen bleiben in einem ZIP-Archiv lesbar. 7z kann diese auch verschlüsseln."
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Τα ονόματα αρχείων παραμένουν αναγνώσιμα σε ένα αρχείο zip. Το 7z μπορεί να τα κρυπτογραφήσει επίσης."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -2923,6 +3085,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verschlüsselungsmethode"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μέθοδος κρυπτογράφησης"
           }
         },
         "en": {
@@ -3033,6 +3201,12 @@
             "value": ".DS_Store ausschließen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξαίρεση αρχείων .DS_Store"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3139,6 +3313,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Format"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μορφή"
           }
         },
         "en": {
@@ -3249,6 +3429,12 @@
             "value": "Schnell"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Γρήγορη"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3355,6 +3541,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Schnellste"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ταχύτερη"
           }
         },
         "en": {
@@ -3465,6 +3657,12 @@
             "value": "Maximum"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μέγιστη"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3571,6 +3769,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Normal"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κανονική"
           }
         },
         "en": {
@@ -3681,6 +3885,12 @@
             "value": "Ohne Komprimierung"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Χωρίς συμπίεση"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -3784,6 +3994,12 @@
       "extractionState": "manual",
       "localizations": {
         "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ultra"
+          }
+        },
+        "el": {
           "stringUnit": {
             "state": "translated",
             "value": "Ultra"
@@ -3897,6 +4113,12 @@
             "value": "Methode"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μέθοδος"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4003,6 +4225,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nicht solide"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μη συμπαγές"
           }
         },
         "en": {
@@ -4113,6 +4341,12 @@
             "value": "Wiederholen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επανάληψη"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4219,6 +4453,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kompakt (solid)"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπαγές"
           }
         },
         "en": {
@@ -4329,6 +4569,12 @@
             "value": "Größe solider Blöcke"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μέγεθος συμπαγούς μπλοκ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4435,6 +4681,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Split into volumes"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Διαχωρισμός σε τόμους"
           }
         },
         "en": {
@@ -4545,6 +4797,12 @@
             "value": "Möchtest du die Änderungen an \"%@\" speichern?"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Θέλετε να αποθηκεύσετε τις αλλαγές που κάνατε στο «%@»;"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4651,6 +4909,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deine Änderungen gehen verloren, wenn du sie nicht speicherst."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Οι αλλαγές σας θα χαθούν αν δεν τις αποθηκεύσετε."
           }
         },
         "en": {
@@ -4761,6 +5025,12 @@
             "value": "Wortgröße"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μέγεθος λέξης"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -4867,6 +5137,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Änderungsdatum"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ημερομηνία τροποποίησης"
           }
         },
         "en": {
@@ -4977,6 +5253,12 @@
             "value": "Name"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Όνομα"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5083,6 +5365,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Komprimierte Größe"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπιεσμένο μέγεθος"
           }
         },
         "en": {
@@ -5193,6 +5481,12 @@
             "value": "Berechtigungen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δικαιώματα"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5299,6 +5593,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Größe"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μέγεθος"
           }
         },
         "en": {
@@ -5409,6 +5709,12 @@
             "value": "Über %@"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πληροφορίες για το %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5515,6 +5821,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anmerkungen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ευχαριστίες"
           }
         },
         "en": {
@@ -5625,6 +5937,12 @@
             "value": "Hinzufügen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προσθήκη"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5731,6 +6049,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zu einem Archiv hinzufügen..."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προσθήκη σε συμπιεσμένο αρχείο..."
           }
         },
         "en": {
@@ -5841,6 +6165,12 @@
             "value": "Zu „%@“ hinzufügen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προσθήκη στο «%@»"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -5947,6 +6277,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zurück"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πίσω"
           }
         },
         "en": {
@@ -6057,6 +6393,12 @@
             "value": "Unten"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κάτω"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6163,6 +6505,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abbrechen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ακύρωση"
           }
         },
         "en": {
@@ -6273,6 +6621,12 @@
             "value": "Löschen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εκκαθάριση"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6380,6 +6734,12 @@
             "value": "Inhalt von \"%@\" komprimieren"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπίεση περιεχομένων του «%@»"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6485,6 +6845,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Komprimieren nach \"%@\""
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπίεση σε «%@»"
           }
         },
         "en": {
@@ -6595,6 +6961,12 @@
             "value": "Komprimierung"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπίεση"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6701,6 +7073,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fortfahren"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συνέχεια"
           }
         },
         "en": {
@@ -6811,6 +7189,12 @@
             "value": "Löschen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Διαγραφή"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -6917,6 +7301,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deaktiviert"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Απενεργοποιημένο"
           }
         },
         "en": {
@@ -7027,6 +7417,12 @@
             "value": "Fertig"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Τέλος"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -7133,6 +7529,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "aktiviert"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ενεργοποιημένο"
           }
         },
         "en": {
@@ -7243,6 +7645,12 @@
             "value": "Extrahieren"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξαγωγή"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -7349,6 +7757,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Archive entpacken"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αποσυμπίεση αρχείου"
           }
         },
         "en": {
@@ -7459,6 +7873,12 @@
             "value": "Hier entpacken"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξαγωγή εδώ"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -7567,6 +7987,12 @@
             "value": "Auswahl entpacken"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξαγωγή επιλεγμένων"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -7672,6 +8098,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Entpacken nach \"%@\""
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξαγωγή σε «%@»"
           }
         },
         "en": {
@@ -7782,6 +8214,12 @@
             "value": "Entpacken"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξαγωγή"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -7888,6 +8326,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Suchen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εύρεση"
           }
         },
         "en": {
@@ -7998,6 +8442,12 @@
             "value": "Zugriff erlauben"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Παραχώρηση πρόσβασης"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -8106,6 +8556,12 @@
             "value": "Bei der Übersetzung helfen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Βοήθεια με τη μετάφραση"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -8212,6 +8668,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Impressum"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Νομικές πληροφορίες"
           }
         },
         "en": {
@@ -8329,6 +8791,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld Objekte"
+                }
+              }
+            }
+          }
+        },
+        "el": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld στοιχείο"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld στοιχεία"
                 }
               }
             }
@@ -8664,6 +9144,12 @@
             "value": "Weitere Infos …"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μάθετε περισσότερα…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -8770,6 +9256,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mehr"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Περισσότερα"
           }
         },
         "en": {
@@ -8880,6 +9372,12 @@
             "value": "Neues Archiv"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Νέο συμπιεσμένο αρχείο"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -8986,6 +9484,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Neues %@ Fenster"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Νέο παράθυρο %@"
           }
         },
         "en": {
@@ -9096,6 +9600,12 @@
             "value": "Ohne"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κανένα"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -9203,6 +9713,12 @@
             "value": "Keine Auswahl"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δεν έχει επιλεγεί τίποτα"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -9306,6 +9822,12 @@
       "extractionState": "manual",
       "localizations": {
         "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "el": {
           "stringUnit": {
             "state": "translated",
             "value": "OK"
@@ -9419,6 +9941,12 @@
             "value": "Öffnen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Άνοιγμα"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -9527,6 +10055,12 @@
             "value": "Archiv öffnen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Άνοιγμα συμπιεσμένου αρχείου"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -9632,6 +10166,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Öffne %lld Archive"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Άνοιγμα %lld συμπιεσμένων αρχείων"
           }
         },
         "en": {
@@ -9742,6 +10282,12 @@
             "value": "Optionen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επιλογές"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -9848,6 +10394,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Passwort:"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κωδικός:"
           }
         },
         "en": {
@@ -9958,6 +10510,12 @@
             "value": "“%@” ist passwortgeschützt."
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το «%@» προστατεύεται με κωδικό."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -10064,6 +10622,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vorschau"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προεπισκόπηση"
           }
         },
         "en": {
@@ -10174,6 +10738,12 @@
             "value": "Datenschutz"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Απόρρητο"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -10280,6 +10850,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Express-Komprimierung"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Γρήγορη συμπίεση"
           }
         },
         "en": {
@@ -10390,6 +10966,12 @@
             "value": "Express-Komprimierungsfenster"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Παράθυρο γρήγορης συμπίεσης"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -10496,6 +11078,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aktualisieren"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ανανέωση"
           }
         },
         "en": {
@@ -10606,6 +11194,12 @@
             "value": "sichern"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "αποθήκευση"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -10712,6 +11306,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sichern unter …"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αποθήκευση ως…"
           }
         },
         "en": {
@@ -10829,6 +11429,24 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld ausgewählt"
+                }
+              }
+            }
+          }
+        },
+        "el": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld επιλεγμένο"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld επιλεγμένα"
                 }
               }
             }
@@ -11164,6 +11782,12 @@
             "value": "Einstellungen…"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ρυθμίσεις..."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -11270,6 +11894,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Starten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Έναρξη"
           }
         },
         "en": {
@@ -11380,6 +12010,12 @@
             "value": "Nutzungsbedingungen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Όροι και προϋποθέσεις"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -11486,6 +12122,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Oben"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πάνω"
           }
         },
         "en": {
@@ -11596,6 +12238,12 @@
             "value": "Webseite"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ιστότοπος"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -11702,6 +12350,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Neuigkeiten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Τι νέο υπάρχει"
           }
         },
         "en": {
@@ -11812,6 +12466,12 @@
             "value": "Kontaktiere uns"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επικοινωνήστε μαζί μας"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -11918,6 +12578,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "… einen Fehler zu melden"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "... αναφέρετε ένα σφάλμα"
           }
         },
         "en": {
@@ -12028,6 +12694,12 @@
             "value": "… eine E-Mail an %@ senden"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "... στείλετε email στο %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -12134,6 +12806,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "… eine Funktion vorzuschlagen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "... ζητήσετε μια λειτουργία"
           }
         },
         "en": {
@@ -12244,6 +12922,12 @@
             "value": "Gehe hierhin, um …"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μεταβείτε εδώ για να ..."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -12350,6 +13034,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Export fehlgeschlagen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Η εξαγωγή απέτυχε"
           }
         },
         "en": {
@@ -12460,6 +13150,12 @@
             "value": "Archiv konnte nicht geöffnet werden"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δεν ήταν δυνατό το άνοιγμα του συμπιεσμένου αρχείου"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -12566,6 +13262,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Das Passwort ist falsch. Versuche es erneut."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ο κωδικός είναι λανθασμένος. Δοκιμάστε ξανά."
           }
         },
         "en": {
@@ -12676,6 +13378,12 @@
             "value": "Die Passwörter stimmen nicht überein."
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Οι κωδικοί δεν ταιριάζουν"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -12782,6 +13490,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Archive konnte nicht gespeichert werden"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δεν ήταν δυνατή η αποθήκευση του συμπιεσμένου αρχείου"
           }
         },
         "en": {
@@ -12892,6 +13606,12 @@
             "value": "Abgebrochen - kein Zugriff auf den Ordner"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ακυρώθηκε - δεν υπάρχει πρόσβαση σε αυτόν τον φάκελο"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -12998,6 +13718,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bewerte die App im App Store"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αφήστε μια κριτική στο App Store"
           }
         },
         "en": {
@@ -13108,6 +13834,12 @@
             "value": "Folgen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ακολούθηση"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -13214,6 +13946,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bewerten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κριτική"
           }
         },
         "en": {
@@ -13324,6 +14062,12 @@
             "value": "Schenke ein Lächeln"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Στείλτε ένα χαμόγελο"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -13430,6 +14174,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Stern geben"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προσθήκη αστεριού"
           }
         },
         "en": {
@@ -13540,6 +14290,12 @@
             "value": "Repository auf GitHub mit einem Stern markieren"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προσθέστε αστέρι στο αποθετήριο στο GitHub"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -13646,6 +14402,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Entwicklung unterstützen…"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Υποστήριξη της ανάπτυξης..."
           }
         },
         "en": {
@@ -13756,6 +14518,12 @@
             "value": "Übersetzen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μετάφραση"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -13862,6 +14630,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anleitungen & Dokumentation"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Οδηγοί και τεκμηρίωση"
           }
         },
         "en": {
@@ -13972,6 +14746,12 @@
             "value": "%@ kennenlernen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μάθετε να χρησιμοποιείτε το %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -14078,6 +14858,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Keine zuletzt verwendeten Archive."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δεν υπάρχουν πρόσφατα συμπιεσμένα αρχεία."
           }
         },
         "en": {
@@ -14188,6 +14974,12 @@
             "value": "Zuletzt"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πρόσφατα"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -14294,6 +15086,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Versionshinweise"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σημειώσεις έκδοσης"
           }
         },
         "en": {
@@ -14404,6 +15202,12 @@
             "value": "%@ benötigt Zugriff auf %@"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το %@ χρειάζεται πρόσβαση στο %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -14510,6 +15314,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Info"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πληροφορίες"
           }
         },
         "en": {
@@ -14620,6 +15430,12 @@
             "value": "Zugriff erteilt"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Η πρόσβαση παραχωρήθηκε"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -14726,6 +15542,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Erweitert"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προηγμένα"
           }
         },
         "en": {
@@ -14836,6 +15658,12 @@
             "value": "Archivformate"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μορφές συμπιεσμένων αρχείων"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -14942,6 +15770,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Automatische Engine-Auswahl"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αυτόματη επιλογή μηχανής"
           }
         },
         "en": {
@@ -15052,6 +15886,12 @@
             "value": "MacPacker wählt für jedes Archiv automatisch die passende Engine aus und versucht bei Bedarf eine andere, falls die erste das Archiv nicht lesen kann. Deaktiviere diese Option, um die Engine selbst auszuwählen."
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το MacPacker επιλέγει τη μηχανή για κάθε συμπιεσμένο αρχείο και δοκιμάζει άλλη αν η πρώτη δεν μπορεί να το διαβάσει. Απενεργοποιήστε αυτήν την επιλογή για να επιλέγετε εσείς τις μηχανές."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -15158,6 +15998,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Automatisch nach Updates suchen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αυτόματος έλεγχος για ενημερώσεις"
           }
         },
         "en": {
@@ -15268,6 +16114,12 @@
             "value": "Breadcrumb-Position"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Θέση γραμμής διαδρομής"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -15374,6 +16226,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cache"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προσωρινή μνήμη"
           }
         },
         "en": {
@@ -15484,6 +16342,12 @@
             "value": "Cache leeren"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εκκαθάριση προσωρινής μνήμης"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -15590,6 +16454,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Löscht den gesamten Inhalt des Caches"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Διαγράφει όλο το περιεχόμενο της προσωρινής μνήμης"
           }
         },
         "en": {
@@ -15700,6 +16570,12 @@
             "value": "Spalten"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Στήλες"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -15806,6 +16682,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Komprimiere jedes Item einzeln"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπίεση κάθε στοιχείου ξεχωριστά"
           }
         },
         "en": {
@@ -15916,6 +16798,12 @@
             "value": "Komprimiere den Inhalt des Ordners"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπίεση των περιεχομένων ενός φακέλου"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -16022,6 +16910,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Komprimiere nach 7z"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπίεση σε 7z"
           }
         },
         "en": {
@@ -16132,6 +17026,12 @@
             "value": "Komprimiere nach ZIP"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπίεση σε zip"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -16238,6 +17138,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Komprimiere nach ZIP mit Datum und Uhrzeit"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπίεση σε zip με ημερομηνία και ώρα"
           }
         },
         "en": {
@@ -16348,6 +17254,12 @@
             "value": "Kontextmenü"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μενού περιβάλλοντος"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -16454,6 +17366,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Um MacPacker als Standard-App für einen Datei-Typen zu setzen: Rechts-klick auf eine Datei → 'Info Über' → MacPacker auswählen unter 'Öffnen mit:'→ 'Alle ändern'"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Για να ορίσετε το MacPacker ως προεπιλεγμένη εφαρμογή για έναν τύπο αρχείου: κάντε δεξί κλικ σε ένα αρχείο → «Λήψη πληροφοριών» → επιλέξτε MacPacker στο «Άνοιγμα με:» → κάντε κλικ στο «Αλλαγή όλων…» για να εφαρμοστεί σε όλα τα παρόμοια αρχεία."
           }
         },
         "en": {
@@ -16564,6 +17482,12 @@
             "value": "Standard-App-Status und Engine-Einstellungen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προεπιλεγμένες ρυθμίσεις κατάστασης και μηχανής"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -16670,6 +17594,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bearbeitet Archive, öffnet sie nicht nur."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επεξεργάζεται συμπιεσμένα αρχεία, δεν τα ανοίγει μόνο"
           }
         },
         "en": {
@@ -16780,6 +17710,12 @@
             "value": "Engine"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μηχανή"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -16886,6 +17822,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "MacPacker enthält mehrere Archivierungs-Engines. Die Standard-Engine wird empfohlen; alternative Engines können bei formatspezifischen Problemen helfen. Beachte dass die Engine-Unterstützung je nach Format variiert."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το MacPacker περιλαμβάνει πολλές μηχανές διαχείρισης συμπιεσμένων αρχείων. Συνιστάται η προεπιλεγμένη· οι εναλλακτικές μηχανές μπορούν να βοηθήσουν σε προβλήματα συγκεκριμένων μορφών. Λάβετε υπόψη ότι η υποστήριξη των μηχανών διαφέρει ανά μορφή."
           }
         },
         "en": {
@@ -16996,6 +17938,12 @@
             "value": "Protokolle exportieren"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξαγωγή αρχείων καταγραφής"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -17102,6 +18050,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Erweiterungen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επεκτάσεις"
           }
         },
         "en": {
@@ -17212,6 +18166,12 @@
             "value": "Externe Volumes"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξωτερικοί τόμοι"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -17318,6 +18278,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Beinhaltet USB-Laufwerke, Speicherkarten und Netzwerkfreigaben, die im Verzeichnis /Volumes angezeigt werden."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Περιλαμβάνει μονάδες USB, κάρτες μνήμης και κοινόχρηστους πόρους δικτύου που εμφανίζονται στο /Volumes."
           }
         },
         "en": {
@@ -17428,6 +18394,12 @@
             "value": "Entpacken nach …"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξαγωγή σε…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -17534,6 +18506,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Extrahiere in einen Ordner"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εξαγωγή σε φάκελο"
           }
         },
         "en": {
@@ -17644,6 +18622,12 @@
             "value": "Dateiformat"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μορφή αρχείου"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -17750,6 +18734,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dateianbieter-Erweiterungen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Επέκταση παρόχου αρχείων"
           }
         },
         "en": {
@@ -17860,6 +18850,12 @@
             "value": "macOS erlaubt %@ nur dort das Öffnen und Schreiben von Dateien, wo Sie es zulassen. Deshalb erscheint gelegentlich ein Fenster zur Ordnerzugriffskontrolle. Eine Berechtigung umfasst alles innerhalb des ausgewählten Ordners. Wenn Sie diese beiden Berechtigungen erteilen, erübrigt sich die Rückfrage."
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το macOS επιτρέπει στο %@ να ανοίγει και να γράφει αρχεία μόνο εκεί όπου του δίνετε άδεια, γι’ αυτό εμφανίζεται κατά διαστήματα ένα παράθυρο πρόσβασης σε φάκελο. Η άδεια καλύπτει όλα όσα βρίσκονται μέσα στον φάκελο που επιλέγετε, οπότε επιτρέποντας την πρόσβαση σε αυτούς τους δύο φακέλους δεν θα χρειάζεται να σας ξαναρωτά."
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -17966,6 +18962,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allgemein"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Γενικά"
           }
         },
         "en": {
@@ -18076,6 +19078,12 @@
             "value": "Benutzer:innenordner"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προσωπικός φάκελος"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -18182,6 +19190,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Beinhaltet den Desktop, Dokumente, Downloads und alles andere in Ihrem Benutzerordner."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Περιλαμβάνει την Επιφάνεια εργασίας, τα Έγγραφα, τις Λήψεις και οτιδήποτε άλλο βρίσκεται στον προσωπικό σας φάκελο."
           }
         },
         "en": {
@@ -18292,6 +19306,12 @@
             "value": "Wie lege ich %@ als Standard-App fest?"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πώς ορίζεται το %@ ως προεπιλεγμένο;"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -18398,6 +19418,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Inklusive Beta updates"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συμπερίληψη ενημερώσεων beta"
           }
         },
         "en": {
@@ -18508,6 +19534,12 @@
             "value": "Info über Engines"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πληροφορίες για τις μηχανές"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -18614,6 +19646,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Protokolle"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αρχεία καταγραφής"
           }
         },
         "en": {
@@ -18724,6 +19762,12 @@
             "value": "MacPacker als Standard setzen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ορισμός του MacPacker ως προεπιλεγμένης εφαρμογής"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -18830,6 +19874,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verwalten in den System­einstellungen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Διαχείριση στις Ρυθμίσεις συστήματος"
           }
         },
         "en": {
@@ -18940,6 +19990,12 @@
             "value": "Aktionen in Untermenü anzeigen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Τοποθέτηση ενεργειών σε υπομενού"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -19046,6 +20102,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cache-Ordner öffnen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Άνοιγμα καταλόγου προσωρινής μνήμης"
           }
         },
         "en": {
@@ -19156,6 +20218,12 @@
             "value": "Beenden beim letzten Fenster"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Έξοδος με το κλείσιμο του τελευταίου παραθύρου"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -19262,6 +20330,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Remember recent archives"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Απομνημόνευση πρόσφατων συμπιεσμένων αρχείων"
           }
         },
         "en": {
@@ -19372,6 +20446,12 @@
             "value": "Ordner “Application Support” anzeigen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εμφάνιση φακέλου Application Support"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -19478,6 +20558,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "In Menüleiste anzeigen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εμφάνιση στη γραμμή μενού"
           }
         },
         "en": {
@@ -19588,6 +20674,12 @@
             "value": "Eintrag für übergeordneten Ordner („..“) anzeigen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Εμφάνιση καταχώρισης γονικού φακέλου («..»)"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -19694,6 +20786,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "intelligente Extraktion"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Έξυπνη εξαγωγή"
           }
         },
         "en": {
@@ -19804,6 +20902,12 @@
             "value": "Nach Updates suchen…"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Έλεγχος για ενημερώσεις…"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -19910,6 +21014,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Änderungsprotokoll"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ιστορικό αλλαγών"
           }
         },
         "en": {
@@ -20020,6 +21130,12 @@
             "value": "Als Nächstes"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Τι ακολουθεί"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -20126,6 +21242,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Die wichtigsten Neuerungen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κυριότερα σημεία της έκδοσης"
           }
         },
         "en": {
@@ -20236,6 +21358,12 @@
             "value": "%@ unterstützen"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Υποστήριξη του %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -20342,6 +21470,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deine Spende unterstützt die Weiterentwicklung."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Η δωρεά σας υποστηρίζει τη συνεχή ανάπτυξη."
           }
         },
         "en": {
@@ -20452,6 +21586,12 @@
             "value": "Hilf mit, %@ weiterzuentwickeln"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Βοηθήστε το %@ να συνεχίσει να εξελίσσεται"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -20560,6 +21700,12 @@
             "value": "Willkommen bei %@"
           }
         },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Καλώς ορίσατε στο %@"
+          }
+        },
         "en": {
           "stringUnit": {
             "state": "translated",
@@ -20666,6 +21812,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Alle Änderungen anzeigen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προβολή όλων των αλλαγών"
           }
         },
         "en": {
