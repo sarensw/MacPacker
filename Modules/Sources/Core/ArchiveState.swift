@@ -29,6 +29,16 @@ public enum ArchiveSortOrder: String {
     case posixPermissions
 }
 
+private extension ArchiveUpdateItem {
+    /// Where an addition goes in the archive; `nil` for a removal or a move.
+    var addedPath: String? {
+        switch self {
+        case .addFile(let path, _, _, _), .addDirectory(let path, _, _, _), .addData(let path, _, _, _): path
+        case .remove, .move: nil
+        }
+    }
+}
+
 @MainActor
 public class ArchiveState: ObservableObject {
     @Published private(set) public var hasArchive: Bool = false
@@ -157,6 +167,20 @@ public class ArchiveState: ObservableObject {
     private var openedFile: FileStamp?
 
     public private(set) var openTask: Task<Void, any Error>?
+    /// The add started last. What it adds is read off the main actor, so it is
+    /// there once this ends.
+    public private(set) var addTask: Task<Bool, Never>?
+    /// Adds started and not yet done. Nothing is saved before what they are
+    /// reading is in the archive.
+    private var pendingAdds = 0
+    /// Stops the add that is reading right now.
+    private var addCancel: ExtractionCancelFlag?
+    /// Bumped by a cancel, so the adds waiting their turn go with the one that
+    /// was reading: several files dropped together are one add each.
+    private var addCancellations = 0
+    /// Bumped whenever the archive in the window is replaced or closed, so an
+    /// add that was reading for the one before can tell.
+    private var contentGeneration = 0
     private var archiveLoader: ArchiveLoader?
     
     public init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
@@ -237,6 +261,11 @@ extension ArchiveState {
     
     /// Resets the state of the archive
     private func reset() {
+        // whatever is still being read for an add was meant for what goes now
+        contentGeneration += 1
+        addCancel?.cancel()
+        addCancel = nil
+
         self.hasArchive = false
         self.canBeEdited = false
         // A failed open sets its reason after this, so its alert still shows.
@@ -298,6 +327,14 @@ extension ArchiveState {
     /// Cancels the current operation which can be either loading the archive or extracting
     /// anything from the archive
     public func cancelCurrentOperation() {
+        // Files being read for an add: stop reading, and leave the archive as
+        // it is. Below is for a load, and ends in a reset.
+        if let addCancel {
+            addCancellations += 1
+            addCancel.cancel()
+            return
+        }
+
         openTask?.cancel()
 
         // Capture what is being cancelled before suspending. Awaiting the loader
@@ -544,124 +581,226 @@ extension ArchiveState {
         loadChildren()
     }
     
-    /// - Returns: whether all of `url` was added. A folder that can't be read
-    ///   is left out, with the reason in `error`, and so is one inside it.
+    /// Adds files and folders from disk where the window is; a folder goes in
+    /// with everything it holds.
+    ///
+    /// They are read off the main actor, by `ArchiveScanner`, so what was added
+    /// is there once the returned task ends. An add started meanwhile waits its
+    /// turn, and what it adds comes after.
+    ///
+    /// - Returns: the add. Its value is whether all of `urls` was added: a
+    ///   folder that can't be read is left out, with the reason in `error`, and
+    ///   so is one inside it.
     @discardableResult
-    public func add(url: URL) -> Bool {
+    public func add(urls: [URL]) -> Task<Bool, Never> {
+        add(urls: urls, cancel: ExtractionCancelFlag())
+    }
+
+    @discardableResult
+    public func add(url: URL) -> Task<Bool, Never> {
+        add(urls: [url])
+    }
+
+    private func add(urls: [URL], cancel: ExtractionCancelFlag) -> Task<Bool, Never> {
+        // Where the window is now is where it goes, wherever the window is by
+        // the time it has been read.
+        let target = selectedItem
+        let generation = contentGeneration
+        let cancellations = addCancellations
+        let previous = addTask
+        pendingAdds += 1
+        let task = Task {
+            _ = await previous?.value
+            var added = false
+            // unless it was cancelled while it waited its turn
+            if cancellations == addCancellations {
+                added = await scanAndAdd(urls, under: target, of: generation, cancel: cancel)
+            }
+            pendingAdds -= 1
+            return added
+        }
+        addTask = task
+        return task
+    }
+
+    /// - Parameters:
+    ///   - target: the folder shown when the add was asked for
+    ///   - generation: the archive the window held then
+    private func scanAndAdd(
+        _ urls: [URL],
+        under target: ArchiveItem?,
+        of generation: Int,
+        cancel: ExtractionCancelFlag
+    ) async -> Bool {
         guard !isSaving else {
-            log.notice("Ignoring add — a save is in progress", context: ["file": url.lastPathComponent])
+            log.notice("Ignoring add — a save is in progress", context: ["files": "\(urls.count)"])
             return false
         }
-        guard let selectedItem else { return false }
+        // `create`, `open` or closing the window replaced the archive this was
+        // for: whatever the window shows now is not where it goes.
+        guard let target, generation == contentGeneration else { return false }
         // A save writes only this archive. Added inside one opened within it,
         // the file would land in this one, in a folder named like that archive.
-        guard !isWithinOpenedArchive(selectedItem) else {
-            log.notice("Ignoring add — inside an archive opened within this one", context: ["file": url.lastPathComponent])
+        guard !isWithinOpenedArchive(target) else {
+            log.notice("Ignoring add — inside an archive opened within this one", context: ["files": "\(urls.count)"])
             return false
         }
-        let base = (selectedItem.virtualPath?.isEmpty == false && selectedItem.virtualPath != "/")
-            ? selectedItem.virtualPath! + "/" : ""
+        let base = (target.virtualPath?.isEmpty == false && target.virtualPath != "/")
+            ? target.virtualPath! + "/" : ""
 
-        let added: Bool
-        if url.isDirectory {
-            // Folders are added recursively so their contents end up in the
-            // archive. Listing one needs a stored grant's scope held: unlike a
-            // drop or a panel, a grant reused from storage gives no access
-            // outside it (#278).
-            added = Sandbox.accessSync(url: url) {
-                addFolder(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
-            }
-        } else {
-            addFile(url: url, archivePath: base + url.lastPathComponent, under: selectedItem)
-            added = true
+        isBusy = true
+        addCancel = cancel
+        updateStatus(.processing)
+        updateStatusText(String(localized: "loading...", bundle: .module, comment: "Archive operation status"))
+        let scan = try? await ArchiveScanner().scan(urls, under: base, cancel: cancel)
+
+        // replaced while it was read: the same, and the busy state is no longer
+        // this add's to clear
+        guard generation == contentGeneration else { return false }
+        isBusy = false
+        addCancel = nil
+        updateStatusText(nil)
+        updateStatus(.done)
+        // cancelled, or the folder it was going into was removed meanwhile
+        guard let scan, target === root || entries[target.id] != nil else { return false }
+
+        put(scan, under: target)
+        if let unreadable = scan.unreadable {
+            self.error = unreadable
         }
-
         self.isReloadNeeded = true
         loadChildren()
-        return added
+        return scan.unreadable == nil
+    }
+
+    /// Puts what a scan read under `target`, in one change to `entries` and one
+    /// to `diff`. Both are published: changed entry by entry, every change
+    /// copies the whole collection, and with 20,000 files that alone took most
+    /// of 11 seconds (#278).
+    ///
+    /// A name the archive already holds is replaced, or the file the user meant
+    /// to replace would still be in there next to its replacement. Except a
+    /// folder over a folder: that one is merged into, so only the files that
+    /// collide inside it are replaced and the rest of what it holds stays.
+    private func put(_ scan: ArchiveScan, under target: ArchiveItem) {
+        var entries = self.entries
+        var replaced = Removal()
+        var additions: [ArchiveUpdateItem] = []
+        additions.reserveCapacity(scan.entries.count)
+        // What each scanned entry ended up as: itself, or the folder already
+        // there that it was merged into.
+        var placed: [ArchiveItem] = []
+        placed.reserveCapacity(scan.entries.count)
+        // The names taken in the folders that were there before this add. Only
+        // there can anything collide: below a folder the add brought itself,
+        // the disk has kept the names apart already.
+        var taken: [UUID: [String: ArchiveItem]] = [:]
+
+        for entry in scan.entries {
+            let item = entry.item
+            let parent = entry.parent.map { placed[$0] } ?? target
+            let broughtWithItsFolder = entry.parent.map { placed[$0] === scan.entries[$0].item } ?? false
+            if !broughtWithItsFolder {
+                // taken out and put back, so that it is changed in place
+                var names = taken.removeValue(forKey: parent.id) ?? Dictionary(
+                    (parent.children ?? []).compactMap { entries[$0] }.map { ($0.name, $0) },
+                    uniquingKeysWith: { first, _ in first })
+                defer { taken[parent.id] = names }
+
+                let existing = names[item.name]
+                if let existing, existing.isFolder, item.isFolder {
+                    placed.append(existing)
+                    continue
+                }
+                if let existing {
+                    var gone = Removal()
+                    take(existing, outOf: &entries, into: &gone)
+                    parent.removeChild(existing.id)
+                    // Brought by this very add, by an earlier one of its files
+                    // with the same name: not in `diff` yet for `drop` to find.
+                    if self.entries[existing.id] == nil {
+                        additions.removeAll { $0.addedPath.map(gone.pendingPaths.contains) ?? false }
+                    }
+                    replaced.formUnion(gone)
+                }
+                names[item.name] = item
+                item.parent = parent.id
+                parent.addChild(item.id)
+            }
+            entries[item.id] = item
+            additions.append(entry.update)
+            placed.append(item)
+        }
+
+        var diff = self.diff
+        drop(replaced, from: &diff)
+        diff.append(contentsOf: additions)
+        self.entries = entries
+        self.diff = diff
+        if !replaced.isEmpty {
+            // a replaced item must not stay selected — it is gone from `entries`
+            selectedItems = selectedItems.filter { entries[$0.id] != nil }
+        }
+    }
+
+    /// How a save ended.
+    private enum SaveOutcome {
+        case written
+        case failed
+        case cancelled
     }
 
     /// Makes this fresh state a new archive at `destination` holding `items`,
     /// written in one go: Quick Compress and the Finder's compress entries.
-    /// When it fails, `error` says why.
     ///
     /// Writes nothing once an item can't be read in full. Left out, it would
     /// leave an archive short of what was asked for that still reports done —
     /// for a single folder, an empty one (#278).
-    public func compress(_ items: [URL], to destination: URL, options: CompressionOptions? = nil) async {
+    ///
+    /// - Parameter showingProgress: for a compress with no window of its own to
+    ///   show its progress in — the Finder's entries. It is reported to the
+    ///   progress center like an extraction: the progress window comes up once
+    ///   it takes long enough, can cancel it, and stays up to say why it failed;
+    ///   and the app asks before it quits in the middle of it.
+    /// - Returns: whether the archive was written. When it was not, `error` says
+    ///   why — unless it was cancelled.
+    @discardableResult
+    public func compress(
+        _ items: [URL],
+        to destination: URL,
+        options: CompressionOptions? = nil,
+        showingProgress: Bool = false
+    ) async -> Bool {
         create()
-        for item in items {
-            guard add(url: item) else { return }
-        }
-        await save(to: destination, options: options)?.value
-    }
 
-    /// The item currently sitting under `name` in `parent` — a real archive
-    /// entry or a pending addition — if there is one.
-    private func child(named name: String, under parent: ArchiveItem) -> ArchiveItem? {
-        parent.children?.lazy.compactMap { self.entries[$0] }.first { $0.name == name }
-    }
-
-    private func addFile(url: URL, archivePath: String, under parent: ArchiveItem) {
-        // Adding over a name the archive already holds replaces it. Without
-        // dropping the old entry the archive keeps both, so the file the user
-        // meant to replace is still in there next to its replacement.
-        if let existing = child(named: url.lastPathComponent, under: parent) {
-            discard(items: [existing])
-        }
-        diff.append(.addFile(archivePath: archivePath, diskPath: url))
-        let item = ArchiveItem(url: url, archivePath: archivePath)
-        item.parent = parent.id
-        parent.addChild(item.id)
-        entries[item.id] = item
-    }
-
-    /// - Returns: whether `url` and every folder below it could be read.
-    private func addFolder(url: URL, archivePath: String, under parent: ArchiveItem) -> Bool {
-        // Read the contents first: if the folder can't be enumerated we must not
-        // add it as an empty directory (that would silently drop its real
-        // contents on save). Skip it and surface the error instead.
-        let children: [URL]
-        do {
-            children = try FileManager.default.contentsOfDirectory(
-                at: url, includingPropertiesForKeys: nil)
-        } catch {
-            log.error("Failed to read folder for add — skipping", context: [
-                "path": url.path,
-                "error": String(describing: error)
-            ])
-            self.error = error.localizedDescription
-            return false
+        let cancel = ExtractionCancelFlag()
+        // Before anything is read: reading a large folder is part of the wait.
+        let job = showingProgress ? progressCenter.begin(
+            kind: .compression,
+            archiveName: destination.lastPathComponent,
+            destination: destination.deletingLastPathComponent(),
+            itemCount: items.count,
+            totalBytes: nil
+        ) : nil
+        if let job {
+            progressCenter.setOnCancel(job) { cancel.cancel() }
         }
 
-        // A folder that is already there is merged into, not added a second
-        // time: only the files that collide inside it are replaced, the rest
-        // of what it holds stays. Anything else drops the whole folder.
-        let existing = child(named: url.lastPathComponent, under: parent)
-        let item: ArchiveItem
-        if let existing, existing.isFolder {
-            item = existing
-        } else {
-            if let existing { discard(items: [existing]) }
-            // The folder's own URL travels with the entry: a custom folder icon
-            // is a flag on the folder itself, not only the hidden file inside it.
-            diff.append(.addDirectory(archivePath: archivePath, diskPath: url))
-            item = ArchiveItem(url: url, archivePath: archivePath)
-            item.parent = parent.id
-            parent.addChild(item.id)
-            entries[item.id] = item
+        var outcome = SaveOutcome.failed
+        if await add(urls: items, cancel: cancel).value {
+            outcome = await startSave(to: destination, options: options, job: job, cancel: cancel)?.value ?? .failed
+        } else if cancel.isCancelled {
+            outcome = .cancelled
         }
 
-        var complete = true
-        for child in children.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
-            if child.isDirectory {
-                complete = addFolder(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
-                    && complete
-            } else {
-                addFile(url: child, archivePath: archivePath + "/" + child.lastPathComponent, under: item)
+        if let job {
+            switch outcome {
+            case .written: progressCenter.finish(job, .done)
+            case .cancelled: progressCenter.finish(job, .cancelled)
+            case .failed: progressCenter.finish(job, .failed(error ?? ""))
             }
         }
-        return complete
+        return outcome == .written
     }
 
     /// Removes the given items (files or folders, including everything below
@@ -678,12 +817,24 @@ extension ArchiveState {
             return
         }
 
-        let dropped = discard(items: items)
+        // One change to `entries` and one to `diff`, as for an add: see `put`.
+        var entries = self.entries
+        var removal = Removal()
+        for item in items {
+            take(item, outOf: &entries, into: &removal)
+            if let parentId = item.parent {
+                entries[parentId]?.removeChild(item.id)
+            }
+        }
+        var diff = self.diff
+        drop(removal, from: &diff)
+        self.entries = entries
+        self.diff = diff
 
         log.notice("Marked items for removal", context: [
             "items": "\(items.count)",
-            "archiveEntries": "\(dropped.archiveEntries)",
-            "pendingAdds": "\(dropped.pendingAdds)"
+            "archiveEntries": "\(removal.indices.count)",
+            "pendingAdds": "\(removal.pendingPaths.count)"
         ])
 
         selectedItems = []
@@ -691,66 +842,55 @@ extension ArchiveState {
         loadChildren()
     }
 
-    /// Takes the given items (and everything below them) out of the tree and
-    /// records that in the diff: entries that exist in the archive on disk
-    /// become removals, pending (unsaved) additions are dropped from the diff
-    /// again. Used both by delete and by an add that replaces an existing item.
-    @discardableResult
-    private func discard(items: [ArchiveItem]) -> (archiveEntries: Int, pendingAdds: Int) {
-        var removedIndices: Set<UInt32> = []
-        var droppedAddPaths: Set<String> = []
-        for item in items {
-            collectRemovals(item, indices: &removedIndices, pendingPaths: &droppedAddPaths)
-            if let parentId = item.parent {
-                entries[parentId]?.removeChild(item.id)
-            }
+    /// What taking items out of the tree comes to in the diff.
+    private struct Removal {
+        /// Entries the archive on disk has: a save removes them.
+        var indices: Set<UInt32> = []
+        /// Additions not saved yet: dropped from the diff again.
+        var pendingPaths: Set<String> = []
+
+        var isEmpty: Bool { indices.isEmpty && pendingPaths.isEmpty }
+
+        mutating func formUnion(_ other: Removal) {
+            indices.formUnion(other.indices)
+            pendingPaths.formUnion(other.pendingPaths)
         }
-
-        // pending (unsaved) additions are simply dropped from the diff
-        if !droppedAddPaths.isEmpty {
-            diff.removeAll { entry in
-                switch entry {
-                case .addFile(let p, _, _, _), .addDirectory(let p, _, _, _), .addData(let p, _, _, _):
-                    return droppedAddPaths.contains(p)
-                default:
-                    return false
-                }
-            }
-        }
-        // entries that exist in the archive on disk are removed on save
-        diff.append(contentsOf: removedIndices.sorted().map { .remove(sourceIndex: $0) })
-
-        // a discarded item must not stay selected — it is gone from `entries`
-        selectedItems = selectedItems.filter { entries[$0.id] != nil }
-
-        return (removedIndices.count, droppedAddPaths.count)
     }
 
-    /// Depth-first: collects the source indices (real archive entries) and
-    /// pending-addition paths of the item and all of its descendants, and
-    /// drops them from `entries`. An archive opened within this one goes as the
-    /// entry it is: what it holds leaves the tree with it, but belongs to that
-    /// archive, numbered as that one's entries.
-    private func collectRemovals(
+    /// Depth-first: takes `item` and all of its descendants out of `entries`,
+    /// and notes what that comes to in the diff. An archive opened within this
+    /// one goes as the entry it is: what it holds leaves the tree with it, but
+    /// belongs to that archive, numbered as that one's entries.
+    private func take(
         _ item: ArchiveItem,
-        indices: inout Set<UInt32>,
-        pendingPaths: inout Set<String>,
+        outOf entries: inout [UUID: ArchiveItem],
+        into removal: inout Removal,
         inThisArchive: Bool = true
     ) {
         for childId in item.children ?? [] {
             if let child = entries[childId] {
-                collectRemovals(child, indices: &indices, pendingPaths: &pendingPaths,
-                                inThisArchive: inThisArchive && item.archiveTypeId == nil)
+                take(child, outOf: &entries, into: &removal,
+                     inThisArchive: inThisArchive && item.archiveTypeId == nil)
             }
         }
         if inThisArchive {
             if let index = item.index {
-                indices.insert(index)
+                removal.indices.insert(index)
             } else if let path = item.virtualPath, path != "/" {
-                pendingPaths.insert(path)
+                removal.pendingPaths.insert(path)
             }
         }
         entries.removeValue(forKey: item.id)
+    }
+
+    /// Records in `diff` that what `removal` names is gone.
+    private func drop(_ removal: Removal, from diff: inout [ArchiveUpdateItem]) {
+        // pending (unsaved) additions are simply dropped from the diff
+        if !removal.pendingPaths.isEmpty {
+            diff.removeAll { $0.addedPath.map(removal.pendingPaths.contains) ?? false }
+        }
+        // entries that exist in the archive on disk are removed on save
+        diff.append(contentsOf: removal.indices.sorted().map { .remove(sourceIndex: $0) })
     }
 
     /// Whether `item` is an archive opened within this one, or inside one: what
@@ -811,8 +951,27 @@ extension ArchiveState {
         to destination: URL? = nil,
         options: CompressionOptions? = nil
     ) -> Task<Void, Never>? {
+        guard let saving = startSave(to: destination, options: options, job: nil, cancel: nil) else { return nil }
+        return Task { _ = await saving.value }
+    }
+
+    /// - Parameters:
+    ///   - job: the progress center's job the write reports its bytes to, if it has one
+    ///   - cancel: set to stop the write; what it had written by then is removed
+    private func startSave(
+        to destination: URL?,
+        options: CompressionOptions?,
+        job: UUID?,
+        cancel: ExtractionCancelFlag?
+    ) -> Task<SaveOutcome, Never>? {
         guard !isSaving else {
             log.notice("Ignoring save — a save is already in progress")
+            return nil
+        }
+        // What is still being read is not in `diff` yet: saved now, the archive
+        // would be written without it.
+        guard pendingAdds == 0 else {
+            log.notice("Ignoring save — files are still being added")
             return nil
         }
         guard let target = destination ?? url else { return nil }
@@ -839,7 +998,14 @@ extension ArchiveState {
             sourcePassword: url.flatMap { passwords[$0] },
             passwordResolver: makePasswordResolver(),
             folderAccessProvider: folderAccessProvider,
-            onProgress: { [weak self] percent in self?.progress = percent })
+            onProgress: { [weak self, progressCenter] completed, total, date in
+                self?.progress = Int((completed * 100) / total)
+                if let job {
+                    progressCenter.reportEngineProgress(
+                        job, completed: Int64(completed), total: Int64(total), at: date)
+                }
+            },
+            cancel: cancel)
 
         isSaving = true
         isBusy = true
@@ -873,6 +1039,17 @@ extension ArchiveState {
                 pinnedEngines = engines
                 _ = try? await openTask?.value
                 self.isSaving = false
+                return .written
+            } catch SevenZipError.cancelled {
+                // Stopped on request, and nothing half-written is left behind:
+                // not a failure, and what was pending still is.
+                log.notice("Archive save cancelled", context: ["target": target.lastPathComponent])
+                self.isBusy = false
+                self.isSaving = false
+                self.progress = nil
+                updateStatusText(nil)
+                updateStatus(.done)
+                return .cancelled
             } catch {
                 log.error("Archive save failed", context: [
                     "target": target.lastPathComponent,
@@ -885,6 +1062,7 @@ extension ArchiveState {
                 self.progress = nil
                 updateStatusText(nil)
                 updateStatus(.done)
+                return .failed
             }
         }
     }

@@ -1,6 +1,18 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "appCompressionInProgress": {
+      "comment": "Title of the alert shown when the user quits while Finder's \"Compress to …\" is still writing an archive.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A compression is still in progress"
+          }
+        }
+      }
+    },
     "appExtractionInProgress": {
       "comment": "Title of the alert shown when the user quits while an extraction is running.",
       "extractionState": "manual",
@@ -213,6 +225,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quit Anyway"
+          }
+        }
+      }
+    },
+    "appQuitDuringCompressionWarning": {
+      "comment": "Body of the alert shown when the user quits while Finder's \"Compress to …\" is still writing an archive.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitting now stops the compression and may leave an incomplete archive at the destination."
           }
         }
       }
@@ -6581,6 +6605,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Compress to \"%@\""
+          }
+        }
+      }
+    },
+    "commonCompressing": {
+      "comment": "Name of the progress window while it shows an archive being written from Finder's \"Compress to …\". The title bar shows no text; VoiceOver and Mission Control read it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compressing"
           }
         }
       }

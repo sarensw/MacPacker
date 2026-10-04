@@ -342,8 +342,8 @@ extension AllCoreTests {
             let state = makeState()
             state.create()
             #expect(state.canBeEdited)
-            state.add(url: fileA)
-            state.add(url: folder)
+            #expect(await state.add(url: fileA).value)
+            #expect(await state.add(url: folder).value)
             #expect(state.hasPendingChanges)
 
             let dest = dir.appendingPathComponent("created.zip")
@@ -445,7 +445,7 @@ extension AllCoreTests {
             for name in ["a.txt", "b.txt"] {
                 let file = dir.appendingPathComponent(name)
                 try name.write(to: file, atomically: true, encoding: .utf8)
-                state.add(url: file)
+                #expect(await state.add(url: file).value)
                 await state.save()?.value
                 #expect(state.saveError == nil, "\(state.saveError ?? "")")
             }
@@ -460,7 +460,7 @@ extension AllCoreTests {
             case .saveAsOverIt:
                 let other = makeState()
                 other.create()
-                other.add(url: dir.appendingPathComponent("src/other"))
+                #expect(await other.add(url: dir.appendingPathComponent("src/other")).value)
                 await other.save(to: zip)?.value
             case .anotherApp:
                 try run("/usr/bin/zip", ["-d", zip.path, "root.txt"])
@@ -491,7 +491,7 @@ extension AllCoreTests {
 
             let state = makeState()
             state.create()
-            state.add(url: fileA)
+            #expect(await state.add(url: fileA).value)
             let pendingBefore = state.diff.count
 
             // save() flips isSaving synchronously before handing back its Task,
@@ -501,7 +501,7 @@ extension AllCoreTests {
             #expect(state.isSaving)
 
             // every mutating entry point must refuse while a save is running
-            state.add(url: extra)
+            #expect(await !state.add(url: extra).value)
             #expect(state.diff.count == pendingBefore, "add slipped in during save")
 
             if let victim = state.entries.values.first(where: { $0.name == "a.txt" }) {
@@ -531,7 +531,7 @@ extension AllCoreTests {
             try await state.openTask?.value
 
             // add a file, then remove it again before saving — no net change
-            state.add(url: extra)
+            #expect(await state.add(url: extra).value)
             let pending = try #require(item("extra.txt", in: state))
             state.remove(items: [pending])
             #expect(!state.hasPendingChanges)
@@ -556,7 +556,7 @@ extension AllCoreTests {
             try await state.openTask?.value
             #expect(state.canBeEdited)
 
-            state.add(url: replacement)
+            #expect(await state.add(url: replacement).value)
             let saveTask = try #require(state.save())
             await saveTask.value
             #expect(state.error == nil)
@@ -594,7 +594,7 @@ extension AllCoreTests {
             state.open(url: zip)
             try await state.openTask?.value
 
-            state.add(url: newFolder)
+            #expect(await state.add(url: newFolder).value)
             let saveTask = try #require(state.save())
             await saveTask.value
             #expect(state.error == nil)
@@ -737,7 +737,7 @@ extension AllCoreTests {
             #expect(!state.canRemove([x]))
             state.remove(items: [x])
             #expect(!state.canAddHere)
-            state.add(url: inner)
+            #expect(await !state.add(url: inner).value)
             #expect(!state.hasPendingChanges)
 
             state.openParent()
@@ -870,7 +870,7 @@ extension AllCoreTests {
 
             let state = makeState()
             state.create()
-            state.add(url: folder)
+            #expect(await state.add(url: folder).value)
 
             let dest = dir.appendingPathComponent("created.zip")
             let saveTask = try #require(state.save(to: dest))
@@ -1167,8 +1167,8 @@ extension AllCoreTests {
 
             let state = makeState()
             state.create()
-            state.add(url: file)
-            state.add(url: folder)
+            #expect(await state.add(url: file).value)
+            #expect(await state.add(url: folder).value)
 
             let dest = dir.appendingPathComponent("created.zip")
             let saveTask = try #require(state.save(to: dest))
