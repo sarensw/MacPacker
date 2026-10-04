@@ -10,6 +10,8 @@ public struct CompressionOptions: Sendable {
         case sevenZ = "7z"
         /// Zip format (Deflate by default).
         case zip = "zip"
+        /// Uncompressed POSIX tar; no encryption.
+        case tar = "tar"
     }
 
     /// Compression method.
@@ -45,7 +47,7 @@ public struct CompressionOptions: Sendable {
 
     /// What `method` stands for in `format`: the format's default for `nil`.
     public static func effectiveMethod(_ method: Method?, in format: Format) -> Method {
-        method ?? (format == .zip ? .deflate : .lzma2)
+        method ?? (format == .tar ? .copy : (format == .zip ? .deflate : .lzma2))
     }
 
     /// Dictionary sizes worth offering, in bytes: the model's memory for PPMd,
@@ -108,6 +110,7 @@ public struct CompressionOptions: Sendable {
     /// one outside this list makes the write fail, so the UI offers only these.
     public static func methods(for format: Format) -> [Method] {
         switch format {
+        case .tar:    return [.copy]
         case .zip:    return [.deflate, .bzip2, .lzma, .ppmd]
         case .sevenZ: return [.lzma2, .lzma, .ppmd, .bzip2, .copy]
         }

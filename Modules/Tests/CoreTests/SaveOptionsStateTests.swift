@@ -135,7 +135,7 @@ extension AllCoreTests {
             try SevenZipArchive.writeArchive(
                 destination: url, items: [.addData(archivePath: "a.txt", data: sampleText(bytes: 20_000))],
                 options: .init(format: format, level: 0, method: .lzma, dictionarySize: 1 << 20, wordSize: 64))
-            #expect(try recordedMethod(of: url).name == (format == .zip ? "Store" : "Copy"))
+            #expect(try recordedMethod(of: url).name == (format == .tar ? "nothing" : (format == .zip ? "Store" : "Copy")))
         }
 
         @Test func settingsSurviveARelaunch() {

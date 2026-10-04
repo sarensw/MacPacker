@@ -16,7 +16,7 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 @MainActor
 protocol AppUrlHandler {
-    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager)
+    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async
 }
 
 extension AppUrlHandler {
@@ -34,18 +34,33 @@ extension AppUrlHandler {
         _ archive: URL,
         into destination: URL,
         smart: Bool,
+        destinationIsArchiveFolder: Bool = false,
         catalog: ArchiveTypeCatalog,
         engineSelector: ArchiveEngineSelectorProtocol
     ) async -> [URL] {
         // The loader resolves a split to its first volume and asks for
         // source-folder access itself, via the provider — like a password.
         let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
+        state.sourceCleanupAuthorizationProvider = { ExtractionSourceCleanupPrompt.request($0) }
+        state.extractionDestinationIsArchiveFolder = destinationIsArchiveFolder
+        state.extractionBackupWarningProvider = { ExtractionConflictPrompt.showRetainedBackup($0) }
+        state.extractionConflictProvider = { await ExtractionConflictPrompt.request($0) }
         state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
+        let passwords = FinderPasswordPrompt()
+        state.passwordProvider = { await passwords.request($0) }
         state.open(url: archive)
         do {
             try await state.openTask?.value
         } catch {
             log.error("Could not open \(archive.lastPathComponent)", context: ["error": error.localizedDescription])
+            if !passwords.wasCancelled {
+                reportFailure(error.localizedDescription, archive: archive, destination: destination)
+            }
+            return []
+        }
+        guard !passwords.wasCancelled else { return [] }
+        if let error = state.error {
+            reportFailure(error, archive: archive, destination: destination)
             return []
         }
 
@@ -59,6 +74,8 @@ extension AppUrlHandler {
             break
         }
 
+        guard let output = state.extractionOutput else { return [] }
+        if output != destination { return [output] }
         let added = folderContents(destination).filter { !before.contains($0) }
         if !added.isEmpty {
             return added
@@ -68,6 +85,15 @@ extension AppUrlHandler {
         return topLevel
             .map { destination.appendingPathComponent($0) }
             .filter { FileManager.default.fileExists(atPath: $0.path) }
+    }
+
+    /// Loading and destination errors happen before extraction has a job of
+    /// its own. Keep them visible even when there is no main archive window.
+    func reportFailure(_ message: String, archive: URL, destination: URL?) {
+        let center = ExtractionProgressCenter.shared
+        let job = center.begin(archiveName: archive.lastPathComponent, destination: destination,
+                               itemCount: 0, totalBytes: nil)
+        center.finish(job, .failed(message))
     }
 }
 

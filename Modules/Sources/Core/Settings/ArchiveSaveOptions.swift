@@ -60,6 +60,7 @@ public final class ArchiveSaveOptions: ObservableObject {
             // The split size belongs to the save, like the password, and stays —
             // unless the new format does not offer it.
             if let size = volumeSize, !volumeSizes.contains(size) { volumeSize = nil }
+            if format == .tar { level = 0 }
             autosave()
         }
     }
@@ -116,7 +117,8 @@ public final class ArchiveSaveOptions: ObservableObject {
 
     // MARK: What the current format and method offer
 
-    public var levels: [UInt32] { CompressionOptions.levels }
+    public var levels: [UInt32] { format == .tar ? [0] : CompressionOptions.levels }
+    public var canEncrypt: Bool { format != .tar }
     public var methods: [Method] { CompressionOptions.methods(for: format) }
     public var dictionarySizes: [UInt64] { CompressionOptions.dictionarySizes(for: format, method: method) }
     public var wordSizes: [UInt32] { CompressionOptions.wordSizes(for: format, method: method) }
@@ -128,11 +130,12 @@ public final class ArchiveSaveOptions: ObservableObject {
 
     /// At Store nothing is compressed, so method, dictionary, word size and solid
     /// blocks do nothing.
-    public var compresses: Bool { level != 0 }
+    public var compresses: Bool { format != .tar && level != 0 }
 
     // MARK: Checks
 
     public var passwordProblem: PasswordProblem? {
+        guard canEncrypt else { return nil }
         if password.isEmpty && passwordConfirmation.isEmpty { return nil }
         if password != passwordConfirmation { return .mismatch }
         guard format == .zip,
@@ -151,10 +154,10 @@ public final class ArchiveSaveOptions: ObservableObject {
         guard canSave else { return nil }
         return CompressionOptions(
             format: format,
-            level: level,
+            level: format == .tar ? 0 : level,
             method: compresses ? method : nil,
             solidMode: compresses && hasSolidBlocks && solidBlockSize == 0 ? false : nil,
-            password: password.isEmpty ? nil : password,
+            password: canEncrypt && !password.isEmpty ? password : nil,
             encryption: format == .zip ? encryption : nil,
             encryptFileNames: canEncryptFileNames && encryptFileNames,
             dictionarySize: compresses ? dictionarySize : nil,
@@ -213,7 +216,7 @@ public final class ArchiveSaveOptions: ObservableObject {
     private func apply(_ settings: Remembered) {
         applying = true
         defer { applying = false }
-        level = levels.contains(settings.level) ? settings.level : 5
+        level = format == .tar ? 0 : (levels.contains(settings.level) ? settings.level : 5)
         method = settings.method.flatMap(Method.init(rawValue:)).flatMap { methods.contains($0) ? $0 : nil }
         dictionarySize = settings.dictionarySize.flatMap { dictionarySizes.contains($0) ? $0 : nil }
         wordSize = settings.wordSize.flatMap { wordSizes.contains($0) ? $0 : nil }

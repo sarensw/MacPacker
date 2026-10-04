@@ -20,6 +20,16 @@ public enum AppUrlAction: String, Sendable {
 }
 
 public extension AppUrlAction {
+    /// These actions finish without an archive browser or save-options window.
+    var supportsProgressOnly: Bool {
+        switch self {
+        case .extractHere, .extractToFolder, .extractTo, .compress, .compressEach, .compressContents:
+            true
+        case .open, .addToArchive:
+            false
+        }
+    }
+
     /// Whether the smart-extraction setting gets a say in where this action's
     /// output lands.
     ///

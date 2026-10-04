@@ -37,6 +37,7 @@ struct MacPackerApp: App {
         Settings {
             SettingsView()
                 .environmentObject(appDelegate.appState)
+                .onAppear { appDelegate.keepRunning() }
         }
         .commands {
             CommandGroup(replacing: .appInfo) {
@@ -105,4 +106,3 @@ struct MacPackerApp: App {
         }
     }
 }
-

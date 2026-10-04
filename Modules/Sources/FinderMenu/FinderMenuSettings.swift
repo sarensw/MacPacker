@@ -44,6 +44,12 @@ public enum FinderMenuSettings {
     /// Nest the items under a "MacPacker" submenu (7-Zip's "Cascaded context
     /// menu"). Off puts them straight into Finder's context menu.
     public static let cascadedKey = "finderMenu.cascaded"
+    public static let progressOnlyKey = "finderMenu.progressOnly"
+
+    /// Opt-in: a normal launch and existing preferences keep their behavior.
+    public static func isProgressOnly(in defaults: UserDefaults = defaults) -> Bool {
+        defaults.bool(forKey: progressOnlyKey)
+    }
 
     public static func isEnabled(_ item: FinderMenuItem, in defaults: UserDefaults = defaults) -> Bool {
         defaults.object(forKey: key(for: item)) as? Bool ?? item.isEnabledByDefault

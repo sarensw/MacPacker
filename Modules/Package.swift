@@ -346,6 +346,9 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [ .macOS(.v14) ],
     products: [
+        .library(name: "ArchiveCommands", targets: ["ArchiveCommands"]),
+        .library(name: "Swift7zip", targets: ["Swift7zip"]),
+        .executable(name: "macpacker", targets: ["MacPackerCLI"]),
         .library(name: "Core", targets: ["Core"]),
         .library(name: "ArchivePreviewUI", targets: ["ArchivePreviewUI"]),
         .library(name: "FinderMenu", targets: ["FinderMenu"]),
@@ -359,6 +362,8 @@ let package = Package(
         .package(url: "https://github.com/tailbeat/TailBeatKit.git", from: "0.13.0")
     ],
     targets: [
+        .target(name: "ArchiveCommands", dependencies: ["Swift7zip"]),
+        .executableTarget(name: "MacPackerCLI", dependencies: ["ArchiveCommands", "Swift7zip"]),
         .target(
             name: "Core",
             dependencies: [
@@ -450,6 +455,7 @@ let package = Package(
         .testTarget(
             name: "CoreTests",
             dependencies: [
+                "ArchiveCommands",
                 "Core",
                 "FinderMenu",
                 .product(name: "tb", package: "TailBeatKit")

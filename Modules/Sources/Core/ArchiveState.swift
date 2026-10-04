@@ -31,6 +31,12 @@ public enum ArchiveSortOrder: String {
 
 @MainActor
 public class ArchiveState: ObservableObject {
+    public private(set) var extractionOutput: URL?
+    /// Public URL requests require fresh consent before optional source cleanup.
+    public var sourceCleanupAuthorizationProvider: (@MainActor ([URL]) async -> Bool)?
+    public var extractionDestinationIsArchiveFolder = false
+    public var extractionBackupWarningProvider: (@MainActor (URL) async -> Void)?
+    public var extractionConflictProvider: (@MainActor (ExtractionConflict) async -> ExtractionConflictChoice)?
     @Published private(set) public var hasArchive: Bool = false
     @Published private(set) public var canBeEdited: Bool = false
     /// True from the moment a save starts until the archive has been rewritten
@@ -821,7 +827,11 @@ extension ArchiveState {
         guard !diff.isEmpty || destination != nil else { return nil }
         // format follows the target extension; zip is the default
         let format: CompressionOptions.Format =
-            target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
+            CompressionOptions.Format(rawValue: target.pathExtension.lowercased()) ?? .zip
+        let center = progressCenter
+        let job = center.begin(archiveName: target.lastPathComponent,
+                               destination: target.deletingLastPathComponent(),
+                               itemCount: diff.count, totalBytes: nil)
         let saver = ArchiveSaver(
             source: url,
             // From the file's name, by the catalog's split patterns — not by
@@ -839,7 +849,10 @@ extension ArchiveState {
             sourcePassword: url.flatMap { passwords[$0] },
             passwordResolver: makePasswordResolver(),
             folderAccessProvider: folderAccessProvider,
-            onProgress: { [weak self] percent in self?.progress = percent })
+            onProgress: { [weak self] percent in self?.progress = percent },
+            onByteProgress: { completed, total, date in
+                center.reportEngineProgress(job, completed: completed, total: total, at: date)
+            })
 
         isSaving = true
         isBusy = true
@@ -873,6 +886,11 @@ extension ArchiveState {
                 pinnedEngines = engines
                 _ = try? await openTask?.value
                 self.isSaving = false
+                if let error = self.error {
+                    center.finish(job, .failed(error))
+                } else {
+                    center.finish(job, .done)
+                }
             } catch {
                 log.error("Archive save failed", context: [
                     "target": target.lastPathComponent,
@@ -880,6 +898,7 @@ extension ArchiveState {
                 ])
                 self.error = error.localizedDescription
                 self.saveError = error.localizedDescription
+                center.finish(job, .failed(error.localizedDescription))
                 self.isBusy = false
                 self.isSaving = false
                 self.progress = nil
@@ -1536,6 +1555,7 @@ extension ArchiveState {
     ///   - destination: destination folder
     ///   - smart: see `extract(items:to:smart:)`
     public func extract(to destination: URL, smart: Bool) {
+        extractionOutput = nil
         isBusy = true
         updateStatus(.processing)
 
@@ -1560,8 +1580,10 @@ extension ArchiveState {
                 // access on it — so the user-picked destination has to be held
                 // accessible from here on, or the directory creation fails for
                 // sandboxed destinations.
-                let didAccessDestination = destination.startAccessingSecurityScopedResource()
-                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
+                let stagingBase = extractionDestinationIsArchiveFolder ? destination.deletingLastPathComponent() : destination
+                let accessURL = Sandbox.securityScopedURL(for: stagingBase) ?? stagingBase
+                let didAccessDestination = accessURL.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { accessURL.stopAccessingSecurityScopedResource() } }
 
                 var target = destination
                 if smart {
@@ -1571,23 +1593,55 @@ extension ArchiveState {
                     target = SmartExtraction.containerFolder(
                         for: entries,
                         archiveName: archiveTypeDetector.getNameWithoutExtension(for: archiveUrl),
-                        destination: destination
+                        destination: destination,
+                        useUniqueName: false
                     ) ?? destination
-                    if target != destination {
-                        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
-                    }
                 }
 
+                // Nested archives are temporary working files, not source archives
+                // the user asked to remove. Snapshot before any extraction writes.
+                let cleanup: ExtractionSourceCleanup?
+                if UserDefaults.standard.bool(forKey: Keys.trashAfterExtraction), archiveUrl == self.url {
+                    cleanup = try ExtractionSourceCleanup(source: archiveUrl, catalog: catalog)
+                } else { cleanup = nil }
                 let extractor = ArchiveExtractor(
                     archiveEngineSelector: effectiveEngineSelector,
                     passwordResolver: makePasswordResolver()
                 )
+                let staging = stagingBase.appendingPathComponent(".MacPacker-extract-" + UUID().uuidString)
+                try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: false)
+                defer { try? FileManager.default.removeItem(at: staging) }
                 try await extractor.extractAll(
                     archiveUrl,
                     archiveTypeId: archiveTypeId,
-                    to: target,
+                    to: staging,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
+                try Task.checkCancellation()
+                let conflicts = try ExtractionDestination.conflicts(staged: staging, target: target, folderIsOutput: target != destination || extractionDestinationIsArchiveFolder)
+                var choice: ExtractionConflictChoice = .merge
+                if !conflicts.isEmpty {
+                    choice = await extractionConflictProvider?(ExtractionConflict(destination: target, names: conflicts)) ?? .cancel
+                }
+                try Task.checkCancellation()
+                if choice == .newFolder && target == destination && !extractionDestinationIsArchiveFolder {
+                    target = destination.appendingPathComponent(archiveTypeDetector.getNameWithoutExtension(for: archiveUrl))
+                }
+                let installed = try ExtractionDestination.install(staged: staging, target: target, choice: choice, folderIsOutput: target != destination || extractionDestinationIsArchiveFolder)
+                extractionOutput = installed.destination
+                if let backup = installed.retainedBackup {
+                    await extractionBackupWarningProvider?(backup)
+                }
+                if let cleanup, !installed.skippedExisting, installed.retainedBackup == nil {
+                    let needsConfirmation = Keys.confirmsTrashAfterExtraction()
+                    let response = needsConfirmation ? await sourceCleanupAuthorizationProvider?(cleanup.sources) : nil
+                    let authorized = ExtractionSourceCleanupAuthorization.isAuthorized(
+                        requiresConfirmation: needsConfirmation, response: response)
+                    if authorized {
+                        try Task.checkCancellation()
+                        try await Sandbox.access(url: archiveUrl) { try cleanup.perform() }
+                    }
+                }
                 progressCenter.finish(jobId, .done)
             } catch is CancellationError {
                 progressCenter.finish(jobId, .cancelled)
@@ -1710,4 +1764,3 @@ extension ArchiveState {
         return adjustedSelection
     }
 }
-

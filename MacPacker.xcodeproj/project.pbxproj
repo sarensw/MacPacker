@@ -33,6 +33,9 @@
 		25D80C9E2E80204A00A55040 /* FinderExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 252F12022E7ABDD9004CCEBE /* FinderExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		25E426CA2E6BEB3800F10BE5 /* XADMasterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 25E426C92E6BEB3800F10BE5 /* XADMasterSwift */; };
 		25E6DA782FE5A6FC00AD47BB /* ArchivePreviewUI in Frameworks */ = {isa = PBXBuildFile; productRef = 25E6DA772FE5A6FC00AD47BB /* ArchivePreviewUI */; };
+		C0DECA110000000000000001 = {isa = PBXBuildFile; productRef = C0DECA110000000000000002; };
+		C0DECA110000000000000003 = {isa = PBXBuildFile; productRef = C0DECA110000000000000004; };
+		C0DECA110000000000000005 = {isa = PBXBuildFile; fileRef = C0DECA110000000000000006; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +74,7 @@
 			remoteGlobalIDString = 25C0A8A32A78DE5F002C1C2A;
 			remoteInfo = MacPacker;
 		};
+		C0DECA11000000000000000B = {isa = PBXContainerItemProxy; containerPortal = 25C0A89C2A78DE5F002C1C2A; proxyType = 1; remoteGlobalIDString = C0DECA11000000000000000C; remoteInfo = MacPackerCLI; };
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -98,6 +102,7 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C0DECA11000000000000000A = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 6; files = (C0DECA110000000000000005, ); name = "Embed command-line tool"; runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -115,6 +120,7 @@
 		25CFF88F2F98BF5B003F064E /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		25D7B4F02FBFB82E00021B10 /* products/macpacker.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = products/macpacker.json; sourceTree = "<group>"; };
 		25D7B5BC2FBFCCF000021B10 /* Release_Store.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release_Store.xcconfig; sourceTree = "<group>"; };
+		C0DECA110000000000000006 = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = "macpacker-cli"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -162,6 +168,7 @@
 		252F12032E7ABDD9004CCEBE /* FinderExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (252F120E2E7ABDD9004CCEBE /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = FinderExtension; sourceTree = "<group>"; };
 		2567C8322E8FB75F008E1BD8 /* QuickLookExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (2567C8412E8FB75F008E1BD8 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = QuickLookExtension; sourceTree = "<group>"; };
 		25B7C0DE2F0000000000A002 /* MacPackerUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = MacPackerUITests; sourceTree = "<group>"; };
+		C0DECA110000000000000007 = {isa = PBXFileSystemSynchronizedRootGroup; path = Modules/Sources/MacPackerCLI; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -220,6 +227,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C0DECA110000000000000008 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (C0DECA110000000000000001, C0DECA110000000000000003, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -246,6 +254,7 @@
 				252F12032E7ABDD9004CCEBE /* FinderExtension */,
 				2567C8322E8FB75F008E1BD8 /* QuickLookExtension */,
 				25B7C0DE2F0000000000A002 /* MacPackerUITests */,
+				C0DECA110000000000000007,
 				25C0A8A52A78DE5F002C1C2A /* Products */,
 				25C0A8DF2A7B5569002C1C2A /* Frameworks */,
 			);
@@ -254,6 +263,7 @@
 		25C0A8A52A78DE5F002C1C2A /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				C0DECA110000000000000006,
 				25C0A8A42A78DE5F002C1C2A /* MacPacker.app */,
 				254BB5592ABBE8430059A1D5 /* MacPackerStore.app */,
 				252F12022E7ABDD9004CCEBE /* FinderExtension.appex */,
@@ -381,6 +391,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 25C0A8C92A78DE62002C1C2A /* Build configuration list for PBXNativeTarget "MacPacker" */;
 			buildPhases = (
+				C0DECA11000000000000000A,
 				25C0A8A02A78DE5F002C1C2A /* Sources */,
 				25C0A8A12A78DE5F002C1C2A /* Frameworks */,
 				25C0A8A22A78DE5F002C1C2A /* Resources */,
@@ -389,6 +400,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				C0DECA11000000000000000D,
 				252F13CF2E801C4C004CCEBE /* PBXTargetDependency */,
 				2567C83C2E8FB75F008E1BD8 /* PBXTargetDependency */,
 			);
@@ -410,6 +422,7 @@
 			productReference = 25C0A8A42A78DE5F002C1C2A /* MacPacker.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C0DECA11000000000000000C = {isa = PBXNativeTarget; buildConfigurationList = C0DECA11000000000000000E; buildPhases = (C0DECA110000000000000009, C0DECA110000000000000008, ); buildRules = (); dependencies = (); fileSystemSynchronizedGroups = (C0DECA110000000000000007, ); name = MacPackerCLI; packageProductDependencies = (C0DECA110000000000000002, C0DECA110000000000000004, ); productName = "macpacker-cli"; productReference = C0DECA110000000000000006; productType = "com.apple.product-type.tool"; };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -469,6 +482,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				C0DECA11000000000000000C,
 				25C0A8A32A78DE5F002C1C2A /* MacPacker */,
 				254BB53C2ABBE8430059A1D5 /* MacPacker Store */,
 				252F12012E7ABDD9004CCEBE /* FinderExtension */,
@@ -554,6 +568,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C0DECA110000000000000009 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -582,6 +597,7 @@
 			target = 25C0A8A32A78DE5F002C1C2A /* MacPacker */;
 			targetProxy = 25B7C0DE2F0000000000A007 /* PBXContainerItemProxy */;
 		};
+		C0DECA11000000000000000D = {isa = PBXTargetDependency; target = C0DECA11000000000000000C; targetProxy = C0DECA11000000000000000B; };
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -1299,6 +1315,9 @@
 			};
 			name = "Release Store";
 		};
+		C0DECA11000000000000000F = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_IDENTITY = "-"; CODE_SIGN_STYLE = Automatic; ENABLE_HARDENED_RUNTIME = YES; MACOSX_DEPLOYMENT_TARGET = 14.6; PRODUCT_NAME = "macpacker-cli"; SDKROOT = macosx; SKIP_INSTALL = YES; SWIFT_VERSION = 6.0; }; name = "Debug"; };
+		C0DECA110000000000000010 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_IDENTITY = "-"; CODE_SIGN_STYLE = Automatic; ENABLE_HARDENED_RUNTIME = YES; MACOSX_DEPLOYMENT_TARGET = 14.6; PRODUCT_NAME = "macpacker-cli"; SDKROOT = macosx; SKIP_INSTALL = YES; SWIFT_VERSION = 6.0; }; name = "Release"; };
+		C0DECA110000000000000011 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_IDENTITY = "-"; CODE_SIGN_STYLE = Automatic; ENABLE_HARDENED_RUNTIME = YES; MACOSX_DEPLOYMENT_TARGET = 14.6; PRODUCT_NAME = "macpacker-cli"; SDKROOT = macosx; SKIP_INSTALL = YES; SWIFT_VERSION = 6.0; }; name = "Release Store"; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1362,6 +1381,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		C0DECA11000000000000000E = {isa = XCConfigurationList; buildConfigurations = (C0DECA11000000000000000F, C0DECA110000000000000010, C0DECA110000000000000011, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1485,6 +1505,8 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ArchivePreviewUI;
 		};
+		C0DECA110000000000000002 = {isa = XCSwiftPackageProductDependency; productName = ArchiveCommands; };
+		C0DECA110000000000000004 = {isa = XCSwiftPackageProductDependency; productName = Swift7zip; };
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 25C0A89C2A78DE5F002C1C2A /* Project object */;

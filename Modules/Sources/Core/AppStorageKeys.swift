@@ -16,8 +16,16 @@ public enum Keys {
     /// empties what was already collected — a history you can no longer see is one
     /// you should no longer keep.
     public static let rememberRecentArchives = "rememberRecentArchives"
-    /// Whether extraction decides on its own that the result needs a container
-    /// folder named after the archive. On by default.
+    /// Move whole source archives to Trash after successful extraction.
+    public static let trashAfterExtraction = "trashAfterSuccessfulExtraction"
+    /// Optional confirmation after a successful extraction. Source cleanup
+    /// itself remains opt-in via `trashAfterExtraction`.
+    public static let confirmTrashAfterExtraction = "confirmTrashAfterExtraction"
+
+    public static func confirmsTrashAfterExtraction(in defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: confirmTrashAfterExtraction) as? Bool ?? false
+    }
+
     public static let smartExtraction = "smartExtraction"
 
     /// `smartExtraction`, read from the app group so the Quick Look extension —

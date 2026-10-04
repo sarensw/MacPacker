@@ -299,11 +299,21 @@ class FinderSync: FIFinderSync {
         }
 
         log.notice("Opening main app for '\(action)'", context: ["url": url.absoluteString])
-        let opened = NSWorkspace.shared.open(url)
-        if opened {
-            log.notice("Handed '\(action)' off to the main app")
-        } else {
-            log.error("NSWorkspace could not open \(url.absoluteString) — is the '\(appScheme)' scheme registered to MacPacker?")
+        let progressOnly = item.action.supportsProgressOnly && FinderMenuSettings.isProgressOnly()
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = !progressOnly
+        if progressOnly {
+            // Supplied only on a cold launch. This also covers URL delivery
+            // after applicationDidFinishLaunching, before which no URL exists
+            // for the app to inspect.
+            configuration.arguments = ["-\(FinderOperationSession.launchArgument)", "YES"]
+        }
+        NSWorkspace.shared.open([url], withApplicationAt: Bundle.appRootURL, configuration: configuration) { _, error in
+            if let error {
+                log.error("Could not hand Finder action to MacPacker", context: ["error": error.localizedDescription])
+            } else {
+                log.notice("Handed '\(action)' off to the main app")
+            }
         }
     }
 
@@ -358,4 +368,3 @@ class FinderSync: FIFinderSync {
     }
 
 }
-

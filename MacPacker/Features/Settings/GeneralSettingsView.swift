@@ -21,6 +21,9 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
 
+    @AppStorage(Keys.trashAfterExtraction) private var trashAfterExtraction = false
+    @AppStorage(Keys.confirmTrashAfterExtraction) private var confirmTrashAfterExtraction = false
+
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
@@ -119,6 +122,25 @@ struct GeneralSettingsView: View {
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
             }
+            Divider()
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle(isOn: $trashAfterExtraction) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Move archives to Trash after successful extraction", comment: "Optional removal of fully extracted source archives")
+                        Text("Only after extracting the whole archive. Failed or cancelled extractions keep the original.", comment: "Explanation of safe source archive removal")
+                            .font(.footnote).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                if trashAfterExtraction {
+                    Toggle(isOn: $confirmTrashAfterExtraction) {
+                        Text("Ask before moving archives to Trash", comment: "Optional confirmation before removing successfully extracted source archives")
+                    }
+                    .padding(.leading, 20)
+                }
+            }
+            .toggleStyle(.checkbox)
+            .frame(width: 460, alignment: .leading)
         }
         .padding()
         // Turning it off is a privacy switch, so what was collected goes with it —

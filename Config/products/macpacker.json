@@ -39,6 +39,55 @@
         "version": "1.0.1",
         "items": [
           {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+              "en": "Progress-only Finder actions",
+              "de": "Finder-Aktionen nur mit Fortschrittsanzeige",
+              "es-MX": "Acciones de Finder solo con progreso",
+              "fa": "نمایش فقط پیشرفت عملیات Finder",
+              "fr": "Actions Finder avec progression seule",
+              "it": "Azioni Finder con solo avanzamento",
+              "ja": "Finder操作で進行状況のみ表示",
+              "ko": "Finder 작업 진행 상황만 표시",
+              "nl": "Alleen voortgang bij Finder-acties",
+              "pl": "Tylko postęp operacji Findera",
+              "pt-BR": "Ações do Finder só com progresso",
+              "ru": "Только прогресс действий Finder",
+              "tr": "Finder işlemlerinde yalnızca ilerleme",
+              "uk": "Лише перебіг дій Finder",
+              "vi": "Chỉ hiện tiến trình thao tác Finder",
+              "zh-Hans": "Finder 操作仅显示进度"
+            },
+            "issues": [
+              "279"
+            ]
+          },
+          {
+            "type": "feat",
+            "title": {
+              "en": "Optional confirmation before Trash cleanup",
+              "de": "Optionale Bestätigung vor dem Verschieben in den Papierkorb",
+              "es-MX": "Confirmación opcional antes de mover a la Papelera",
+              "fa": "تأیید اختیاری پیش از انتقال به سطل زباله",
+              "fr": "Confirmation facultative avant la mise à la corbeille",
+              "it": "Conferma facoltativa prima di spostare nel Cestino",
+              "ja": "ゴミ箱へ移動する前の確認を選択可能に",
+              "ko": "휴지통으로 이동하기 전 확인 선택",
+              "nl": "Optionele bevestiging vóór verplaatsen naar de prullenmand",
+              "pl": "Opcjonalne potwierdzenie przed przeniesieniem do Kosza",
+              "pt-BR": "Confirmação opcional antes de mover para o Lixo",
+              "ru": "Необязательное подтверждение перед перемещением в Корзину",
+              "tr": "Çöp Sepeti’ne taşımadan önce isteğe bağlı onay",
+              "uk": "Необов’язкове підтвердження перед переміщенням у Смітник",
+              "vi": "Tùy chọn xác nhận trước khi chuyển vào Thùng rác",
+              "zh-Hans": "移至废纸篓前可选择是否确认"
+            },
+            "issues": [
+              "296"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

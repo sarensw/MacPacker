@@ -53,6 +53,17 @@ struct AdvancedSettingsView: View {
                 }
                 .frame(width: 240, alignment: .leading)
             }
+#if !STORE
+            Divider()
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Command-line interface", comment: "Advanced settings section title").font(.headline)
+                Text("Use this command in Terminal to see available archive commands:", comment: "Instructions for bundled CLI")
+                Text(verbatim: "\"" + Bundle.main.bundleURL.appendingPathComponent("Contents/MacOS/macpacker-cli").path + "\" --help")
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                    .fixedSize(horizontal: false, vertical: true)
+            }.frame(maxWidth: 520, alignment: .leading)
+#endif
         }
         .padding()
     }

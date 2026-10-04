@@ -48,7 +48,7 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         let window = NSWindow(contentViewController: hosting)
         // accessibility/Mission-Control name only — the visible title bar is
         // compact: traffic lights, no text
-        window.title = String(localized: .commonExtracting)
+        window.title = String(localized: "Archive progress", comment: "Accessibility title of the extraction and compression progress window")
         window.titleVisibility = .hidden
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false

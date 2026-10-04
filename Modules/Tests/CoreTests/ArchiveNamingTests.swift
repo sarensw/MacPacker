@@ -203,12 +203,18 @@ extension AllCoreTests {
             #expect(folderName("photo.7z") == "photo")
         }
 
+        @Test func rarAndTarVolumeNames() {
+            for file in ["set.r00", "set.r99", "set.part1.rar", "set.part01.rar", "set.part001.rar", "set.part0001.rar", "set.part00001.rar", "set.part000001.rar", "set.tar.001", "set.tar.002"] {
+                #expect(folderName(file) == "set", "\(file)")
+            }
+        }
+
         // MARK: - Tripwire
 
         /// Naming samples above are hand-written per scheme (a regex gives no
         /// sample name). A new split entry must arrive with its own cases.
         @Test func everySplitSchemeHasNamingSamples() {
-            #expect(Set(catalog.allSplits().map(\.id)) == ["zip-spanned", "zip-numeric", "7z-numeric"])
+            #expect(Set(catalog.allSplits().map(\.id)) == Set(["zip-spanned", "zip-numeric", "7z-numeric", "tar-numeric", "rar-legacy"] + (1...6).map { "rar-part-\($0)" }))
         }
     }
 }

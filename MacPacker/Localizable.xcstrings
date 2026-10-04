@@ -1,6 +1,138 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Archive operation in progress": {
+      "comment": "Quit confirmation title while extracting or compressing",
+      "extractionState": "manual"
+    },
+    "Archive progress": {
+      "comment": "Accessibility title of the extraction and compression progress window",
+      "extractionState": "manual"
+    },
+    "Ask before moving archives to Trash": {
+      "comment": "Optional confirmation before removing successfully extracted source archives",
+      "extractionState": "manual"
+    },
+    "Cancel": {
+      "comment": "Cancel extraction without changing the destination",
+      "extractionState": "manual"
+    },
+    "Choose default formats…": {
+      "comment": "Open the file association chooser",
+      "extractionState": "manual"
+    },
+    "Choose the archive formats MacPacker should open. macOS may confirm each selected format. Numbered archive parts are not included.": {
+      "comment": "Explanation above file association choices",
+      "extractionState": "manual"
+    },
+    "Clear selection": {
+      "comment": "Clear archive format checkboxes",
+      "extractionState": "manual"
+    },
+    "Command-line interface": {
+      "comment": "Advanced settings section title",
+      "extractionState": "manual"
+    },
+    "Default archive app": {
+      "comment": "Settings sheet title for file associations",
+      "extractionState": "manual"
+    },
+    "Done": {
+      "comment": "Close file association settings",
+      "extractionState": "manual"
+    },
+    "Extract and compress without opening the main window. MacPacker quits when finished if it was launched only for this action.": {
+      "comment": "Help below the Finder progress-only setting",
+      "extractionState": "manual"
+    },
+    "Extraction destination already exists": {
+      "comment": "Title when extracted items conflict with existing files",
+      "extractionState": "manual"
+    },
+    "Extraction finished; replaced files were kept": {
+      "comment": "Backup could not be moved to Trash after successful extraction",
+      "extractionState": "manual"
+    },
+    "Finder actions": {
+      "comment": "Settings: heading for Finder extraction and compression behavior",
+      "extractionState": "manual"
+    },
+    "Keep Archives": {
+      "comment": "Keep source archives after extraction",
+      "extractionState": "manual"
+    },
+    "Make MacPacker default": {
+      "comment": "Apply selected file associations",
+      "extractionState": "manual"
+    },
+    "Merge": {
+      "comment": "Merge extraction while keeping existing files",
+      "extractionState": "manual"
+    },
+    "Merge keeps existing files and adds missing items. Replace All moves replaced items to Trash. New Folder extracts into a separate numbered folder.": {
+      "comment": "Explanation of extraction conflict choices",
+      "extractionState": "manual"
+    },
+    "Move archives to Trash after successful extraction": {
+      "comment": "Optional removal of fully extracted source archives",
+      "extractionState": "manual"
+    },
+    "Move extracted archives to Trash?": {
+      "comment": "Confirm source cleanup for a public URL extraction request",
+      "extractionState": "manual"
+    },
+    "Move to Trash": {
+      "comment": "Confirm moving extracted source archives to Trash",
+      "extractionState": "manual"
+    },
+    "New Folder": {
+      "comment": "Extract to a separate uniquely named folder",
+      "extractionState": "manual"
+    },
+    "No further default-app changes requested.": {
+      "comment": "Association batch stopped after macOS did not confirm a change",
+      "extractionState": "manual"
+    },
+    "OK": {
+      "comment": "Dismiss extraction backup warning",
+      "extractionState": "manual"
+    },
+    "Only after extracting the whole archive. Failed or cancelled extractions keep the original.": {
+      "comment": "Explanation of safe source archive removal",
+      "extractionState": "manual"
+    },
+    "Quitting now will interrupt extraction or compression. Do you want to quit anyway?": {
+      "comment": "Quit confirmation while an archive operation is running",
+      "extractionState": "manual"
+    },
+    "Replace All": {
+      "comment": "Replace conflicting extraction destinations with recoverable backups",
+      "extractionState": "manual"
+    },
+    "Select all": {
+      "comment": "Select all archive format checkboxes",
+      "extractionState": "manual"
+    },
+    "Selected archive associations updated.": {
+      "comment": "File association success message",
+      "extractionState": "manual"
+    },
+    "Show only progress for Finder actions": {
+      "comment": "Settings checkbox: extract and compress from Finder without opening the main app window",
+      "extractionState": "manual"
+    },
+    "Stop": {
+      "comment": "Stop requesting further default archive associations",
+      "extractionState": "manual"
+    },
+    "The backup could not be moved to Trash. Your original files are still available here:": {
+      "comment": "Followed by recovery backup folder path",
+      "extractionState": "manual"
+    },
+    "Use this command in Terminal to see available archive commands:": {
+      "comment": "Instructions for bundled CLI",
+      "extractionState": "manual"
+    },
     "appExtractionInProgress": {
       "comment": "Title of the alert shown when the user quits while an extraction is running.",
       "extractionState": "manual",
@@ -17,7 +149,7 @@
             "value": "An extraction is still in progress"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Una extracción sigue en proceso"
@@ -65,7 +197,7 @@
             "value": "Rozpakowywanie nadal jest w toku"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "An extraction is still in progress"
@@ -125,7 +257,7 @@
             "value": "Quit Anyway"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Salir"
@@ -173,7 +305,7 @@
             "value": "Zakończ mimo to"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Encerrar Mesmo Assim"
@@ -233,7 +365,7 @@
             "value": "Quitting now stops the extraction and may leave incomplete files at the destination."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Salir ahora detendrá la extracción y podría dejar archivos incompletos en el destino."
@@ -281,7 +413,7 @@
             "value": "Zakończenie operacji rozpakowywania może spowodować niekompletność plików w miejscu docelowym."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Quitting now stops the extraction and may leave incomplete files at the destination."
@@ -340,7 +472,7 @@
             "value": "Delete the selected items from the archive"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Eliminar los elementos seleccionados del archivo comprimido"
@@ -388,7 +520,7 @@
             "value": "Usuń zaznaczone obiekty z archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Delete the selected items from the archive"
@@ -448,7 +580,7 @@
             "value": "Modified"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Modificación"
@@ -496,7 +628,7 @@
             "value": "Zmodyfikowano"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Modificado"
@@ -556,7 +688,7 @@
             "value": "Enclosing Folder"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Carpeta contenedora"
@@ -604,7 +736,7 @@
             "value": "Folder obejmujący"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Pasta Original"
@@ -664,7 +796,7 @@
             "value": "Open in New Window"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir en una ventana nueva"
@@ -712,7 +844,7 @@
             "value": "Otwórz w nowym oknie"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir em Nova Janela"
@@ -772,7 +904,7 @@
             "value": "Quick Look"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Vista rápida"
@@ -820,7 +952,7 @@
             "value": "Szybki przegląd"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Visualização Rápida"
@@ -880,7 +1012,7 @@
             "value": "Drop here to compress"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Suelta aquí para comprimir"
@@ -928,7 +1060,7 @@
             "value": "Upuść tutaj, aby zarchiwizować."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Solte aqui para comprimir"
@@ -988,7 +1120,7 @@
             "value": "Compress here"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprime aquí"
@@ -1036,7 +1168,7 @@
             "value": "Archiwizuj tutaj"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprimir Aqui"
@@ -1096,7 +1228,7 @@
             "value": "Keep on Top"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Mantener arriba"
@@ -1144,7 +1276,7 @@
             "value": "Pozostaw na górze"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Manter em Primeiro Plano"
@@ -1203,7 +1335,7 @@
             "value": "Add files or folders to the archive"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Añadir archivos o carpetas al archivo comprimido"
@@ -1251,7 +1383,7 @@
             "value": "Dodaj pliki lub foldery do archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Add files or folders to the archive"
@@ -1311,7 +1443,7 @@
             "value": "Archive info"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Información del archivo"
@@ -1359,7 +1491,7 @@
             "value": "Informacje o Archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Informações de Arquivo"
@@ -1419,7 +1551,7 @@
             "value": "Automatic"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Automáticamente"
@@ -1467,7 +1599,7 @@
             "value": "Automatycznie"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Automaticamente"
@@ -1527,7 +1659,7 @@
             "value": "Change the password under Options…"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Cambia la contraseña en Opciones…"
@@ -1575,7 +1707,7 @@
             "value": "Zmień hasło używając Opcji..."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Change the password under Options…"
@@ -1635,7 +1767,7 @@
             "value": "A zip password can only use letters A–Z, digits, spaces and common symbols. 7z takes any password."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "La contraseña de un archivo zip sólo puede contener letras A-Z, números, espacios y símbolos comunes. Los archivos 7z pueden tener cualquier contraseña."
@@ -1683,7 +1815,7 @@
             "value": "Hasło ZIP może zawierać tylko znaki A-Z, cyfry, spacje i symbole ogólne. 7z akceptuje każde hasło."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "A zip password can only use letters A–Z, digits, spaces and common symbols. 7z takes any password."
@@ -1743,7 +1875,7 @@
             "value": "Create a new archive"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Crear un nuevo archivo comprimido"
@@ -1791,7 +1923,7 @@
             "value": "Utwórz nowe archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Create a new archive"
@@ -1851,7 +1983,7 @@
             "value": "Choose where to extract"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Selecciona a donde extraer"
@@ -1899,7 +2031,7 @@
             "value": "Wybierz miejsce rozpakowania"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Choose where to extract"
@@ -1959,7 +2091,7 @@
             "value": "%@ left"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Quedan %@"
@@ -2007,7 +2139,7 @@
             "value": "%@ pozostało"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "%@ left"
@@ -2067,7 +2199,7 @@
             "value": "With AES-256, a zip password can be at most %lld characters long."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Con AES-256, la contraseña de un zip puede tener como máximo %lld caracteres."
@@ -2115,7 +2247,7 @@
             "value": "Z szyfrowaniem AES-256 hasło zip może mieć do %lld znaków."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "With AES-256, a zip password can be at most %lld characters long."
@@ -2175,7 +2307,7 @@
             "value": "ZipCrypto is easily broken. Pick it only for tools that cannot open AES-256."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "ZipCrypto falla regularmente. Úsalo solo para herramientas que no puedan abrir archivos cifrados con AES-256."
@@ -2223,7 +2355,7 @@
             "value": "ZipCrypto można łatwo złamać. Używaj tylko tam, gdzie nie można użyć AES-256."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "ZipCrypto is easily broken. Pick it only for tools that cannot open AES-256."
@@ -2283,7 +2415,7 @@
             "value": "the archive"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "el archivo comprimido"
@@ -2331,7 +2463,7 @@
             "value": "archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "the archive"
@@ -2391,7 +2523,7 @@
             "value": "Dictionary size"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamaño del diccionario"
@@ -2439,7 +2571,7 @@
             "value": "Rozmiar słownika"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamanho do dicionário"
@@ -2499,7 +2631,7 @@
             "value": "Don't Save"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "No guardar"
@@ -2547,7 +2679,7 @@
             "value": "Nie zachowuj"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Não Salvar"
@@ -2607,7 +2739,7 @@
             "value": "Don't split"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "No dividir"
@@ -2655,7 +2787,7 @@
             "value": "Nie rozdzielaj"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Don't split"
@@ -2715,7 +2847,7 @@
             "value": "Encrypt file names"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Cifrar nombres de archivo"
@@ -2763,7 +2895,7 @@
             "value": "Zaszyfruj nazwy plików"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Encriptar nomes de ficheiros"
@@ -2823,7 +2955,7 @@
             "value": "File names stay readable in a zip archive. 7z can encrypt them too."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "En archivos zip los nombres de los archivos siguen siendo visibles. En archivos 7z pueden ser cifrados."
@@ -2871,7 +3003,7 @@
             "value": "Nazwy plików będą odczytywalne w archiwum ZIP. 7z potrafi je szyfrować."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "File names stay readable in a zip archive. 7z can encrypt them too."
@@ -2931,7 +3063,7 @@
             "value": "Encryption method"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Método de cifrado"
@@ -2979,7 +3111,7 @@
             "value": "Sposób szyfrowania"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Método de encriptação"
@@ -3039,7 +3171,7 @@
             "value": "Exclude .DS_Store files"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Excluir archivos .DS_Store"
@@ -3087,7 +3219,7 @@
             "value": "Wyklucz pliki .DS_Store"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Exclude .DS_Store files"
@@ -3147,7 +3279,7 @@
             "value": "Format"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Formato"
@@ -3195,7 +3327,7 @@
             "value": "Format"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Formato"
@@ -3255,7 +3387,7 @@
             "value": "Fast"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Rápida"
@@ -3303,7 +3435,7 @@
             "value": "Szybko"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Rápida"
@@ -3363,7 +3495,7 @@
             "value": "Fastest"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "El más rápido"
@@ -3411,7 +3543,7 @@
             "value": "Najszybsza"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Muito rápido"
@@ -3471,7 +3603,7 @@
             "value": "Maximum"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Máxima"
@@ -3519,7 +3651,7 @@
             "value": "Maksymalna"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Máxima"
@@ -3579,7 +3711,7 @@
             "value": "Normal"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Normal"
@@ -3627,7 +3759,7 @@
             "value": "Normalna"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Normal"
@@ -3687,7 +3819,7 @@
             "value": "Store"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Sin compresión"
@@ -3735,7 +3867,7 @@
             "value": "Bez kompresji"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Sem compressão"
@@ -3795,7 +3927,7 @@
             "value": "Ultra"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Ultra"
@@ -3843,7 +3975,7 @@
             "value": "Ultra"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Ultra"
@@ -3903,7 +4035,7 @@
             "value": "Method"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Método"
@@ -3951,7 +4083,7 @@
             "value": "Tryb"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Método"
@@ -4011,7 +4143,7 @@
             "value": "Non-solid"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "No sólido"
@@ -4059,7 +4191,7 @@
             "value": "Nieciągły"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Não sólido"
@@ -4119,7 +4251,7 @@
             "value": "Repeat"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Repetir"
@@ -4167,7 +4299,7 @@
             "value": "Powtórz"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Repetir"
@@ -4227,7 +4359,7 @@
             "value": "Solid"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Sólido"
@@ -4275,7 +4407,7 @@
             "value": "Ciągły"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Sólido"
@@ -4335,7 +4467,7 @@
             "value": "Solid block size"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamaño de bloque sólido"
@@ -4383,7 +4515,7 @@
             "value": "Rozmiar bloku ciągłego"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamanho dos blocos sólidos"
@@ -4443,7 +4575,7 @@
             "value": "Split into volumes"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Dividir en volúmenes"
@@ -4491,7 +4623,7 @@
             "value": "Dziel na woluminy"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Split into volumes"
@@ -4551,7 +4683,7 @@
             "value": "Do you want to save the changes you made to “%@”?"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Deseas guardar los cambios que hiciste a “%@”?"
@@ -4599,7 +4731,7 @@
             "value": "Czy chcesz zapisać zmiany, które wprowadziłeś do “%@”?"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Do you want to save the changes you made to “%@”?"
@@ -4659,7 +4791,7 @@
             "value": "Your changes will be lost if you don’t save them."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Tus cambios se perderán si no los guardas."
@@ -4707,7 +4839,7 @@
             "value": "Twoje zmiany zostaną utracone, jeśli ich nie zapiszesz."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Your changes will be lost if you don’t save them."
@@ -4767,7 +4899,7 @@
             "value": "Word size"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamaño de la palabra"
@@ -4815,7 +4947,7 @@
             "value": "Rozmiar słowa"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamanho da palavra"
@@ -4875,7 +5007,7 @@
             "value": "Date Modified"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Fecha de modificación"
@@ -4923,7 +5055,7 @@
             "value": "Data modyfikacji"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Data de Modificação"
@@ -4983,7 +5115,7 @@
             "value": "Name"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Nombre"
@@ -5031,7 +5163,7 @@
             "value": "Nazwa"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Nome"
@@ -5091,7 +5223,7 @@
             "value": "Packed Size"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamaño comprimido"
@@ -5139,7 +5271,7 @@
             "value": "Rozmiar po spakowaniu"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamanho total"
@@ -5199,7 +5331,7 @@
             "value": "Permissions"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Permisos"
@@ -5247,7 +5379,7 @@
             "value": "Uprawnienia"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Permissões"
@@ -5307,7 +5439,7 @@
             "value": "Size"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamaño"
@@ -5355,7 +5487,7 @@
             "value": "Rozmiar"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Tamanho"
@@ -5415,7 +5547,7 @@
             "value": "About %@"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Acerca de %@"
@@ -5463,7 +5595,7 @@
             "value": "O %@"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Sobre %@"
@@ -5523,7 +5655,7 @@
             "value": "Acknowledgements"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Reconocimientos"
@@ -5571,7 +5703,7 @@
             "value": "Podziękowania"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Reconhecimentos"
@@ -5631,7 +5763,7 @@
             "value": "Add"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Agregar"
@@ -5679,7 +5811,7 @@
             "value": "Dodaj"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Adicionar"
@@ -5739,7 +5871,7 @@
             "value": "Add to archive..."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Agregar al archivo comprimido..."
@@ -5787,7 +5919,7 @@
             "value": "Dodaj do archiwum..."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Adicionar ao arquivo..."
@@ -5847,7 +5979,7 @@
             "value": "Add to “%@”"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Agregar a “%@”"
@@ -5895,7 +6027,7 @@
             "value": "Dodaj do “%@”"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Adicionar a “%@”"
@@ -5955,7 +6087,7 @@
             "value": "Back"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Atrás"
@@ -6003,7 +6135,7 @@
             "value": "Wróć"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Voltar"
@@ -6063,7 +6195,7 @@
             "value": "Bottom"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Abajo"
@@ -6111,7 +6243,7 @@
             "value": "na dole"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Inferior"
@@ -6171,7 +6303,7 @@
             "value": "Cancel"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Cancelar"
@@ -6219,7 +6351,7 @@
             "value": "Anuluj"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Cancel"
@@ -6279,7 +6411,7 @@
             "value": "Clear"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Borrar"
@@ -6327,7 +6459,7 @@
             "value": "Wyczyść"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Clear"
@@ -6386,7 +6518,7 @@
             "value": "Compress Contents of \"%@\""
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprimir el contenido de \"%@\""
@@ -6434,7 +6566,7 @@
             "value": "Spakuj zawartość \"%@\""
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Compress Contents of \"%@\""
@@ -6493,7 +6625,7 @@
             "value": "Compress to \"%@\""
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprimir en \"%@\""
@@ -6541,7 +6673,7 @@
             "value": "Spakuj do \"%@\""
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Compress to \"%@\""
@@ -6601,7 +6733,7 @@
             "value": "Compression"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Compresión"
@@ -6649,7 +6781,7 @@
             "value": "Archiwizacja"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Compressão"
@@ -6709,7 +6841,7 @@
             "value": "Continue"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Continuar"
@@ -6757,7 +6889,7 @@
             "value": "Dalej"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Continuar"
@@ -6817,7 +6949,7 @@
             "value": "Delete"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Eliminar"
@@ -6865,7 +6997,7 @@
             "value": "Usuń"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Apagar"
@@ -6925,7 +7057,7 @@
             "value": "Disabled"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Deshabilitado"
@@ -6973,7 +7105,7 @@
             "value": "Wyłączone"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Desativado"
@@ -7033,7 +7165,7 @@
             "value": "Done"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Listo"
@@ -7081,7 +7213,7 @@
             "value": "OK"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "OK"
@@ -7141,7 +7273,7 @@
             "value": "enabled"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Habilitado"
@@ -7189,7 +7321,7 @@
             "value": "Włączone"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Ativado"
@@ -7249,7 +7381,7 @@
             "value": "Extract"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extraer"
@@ -7297,7 +7429,7 @@
             "value": "Wyodrębnij"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extrair"
@@ -7357,7 +7489,7 @@
             "value": "Extract archive"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extraer archivo"
@@ -7405,7 +7537,7 @@
             "value": "Rozpakuj archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extrair Arquivo"
@@ -7465,7 +7597,7 @@
             "value": "Extract Here"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extraer aquí"
@@ -7513,7 +7645,7 @@
             "value": "Wypakuj tutaj"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extrair para aqui"
@@ -7573,7 +7705,7 @@
             "value": "Extract selected"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extraer selección"
@@ -7621,7 +7753,7 @@
             "value": "Rozpakuj zaznaczone"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extrair seleção"
@@ -7680,7 +7812,7 @@
             "value": "Extract to \"%@\""
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extraer en \"%@\""
@@ -7728,7 +7860,7 @@
             "value": "Rozpakuj do \"%@\""
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extract to \"%@\""
@@ -7788,7 +7920,7 @@
             "value": "Extracting"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extrayendo"
@@ -7836,7 +7968,7 @@
             "value": "Wypakowanie"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extracting"
@@ -7896,7 +8028,7 @@
             "value": "Find"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Buscar"
@@ -7944,7 +8076,7 @@
             "value": "Znajdź"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Buscar"
@@ -8004,7 +8136,7 @@
             "value": "Grant Access"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Permitir acceso"
@@ -8052,7 +8184,7 @@
             "value": "Udziel dostępu"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Grant Access"
@@ -8112,7 +8244,7 @@
             "value": "Help with translation"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Ayuda a traducir"
@@ -8160,7 +8292,7 @@
             "value": "Pomoc w tłumaczeniu"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Help with translation"
@@ -8220,7 +8352,7 @@
             "value": "Legal Notice"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Aviso legal"
@@ -8268,7 +8400,7 @@
             "value": "Nota prawna"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Aviso legal"
@@ -8352,7 +8484,7 @@
             }
           }
         },
-        "es-mx": {
+        "es-MX": {
           "variations": {
             "plural": {
               "many": {
@@ -8514,7 +8646,7 @@
             }
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "variations": {
             "plural": {
               "many": {
@@ -8670,7 +8802,7 @@
             "value": "Learn more…"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Obtén detalles…"
@@ -8718,7 +8850,7 @@
             "value": "Więcej informacji…"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Saiba mais…"
@@ -8778,7 +8910,7 @@
             "value": "More"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Más"
@@ -8826,7 +8958,7 @@
             "value": "Więcej"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Mais"
@@ -8886,7 +9018,7 @@
             "value": "New Archive"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Crear archivo comprimido"
@@ -8934,7 +9066,7 @@
             "value": "Nowe archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "New Archive"
@@ -8994,7 +9126,7 @@
             "value": "New %@ Window"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Nueva ventana de %@"
@@ -9042,7 +9174,7 @@
             "value": "Nowe %@ Okno"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "New %@ Window"
@@ -9102,7 +9234,7 @@
             "value": "None"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Ninguno"
@@ -9150,7 +9282,7 @@
             "value": "Brak"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Nenhuma"
@@ -9209,7 +9341,7 @@
             "value": "Nothing selected"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Nada seleccionado"
@@ -9257,7 +9389,7 @@
             "value": "Nic nie jest zaznaczone"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Não há nada selecionado"
@@ -9317,7 +9449,7 @@
             "value": "OK"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Aceptar"
@@ -9365,7 +9497,7 @@
             "value": "OK"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "OK"
@@ -9425,7 +9557,7 @@
             "value": "Open"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir"
@@ -9473,7 +9605,7 @@
             "value": "Otwórz z dysku"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir"
@@ -9533,7 +9665,7 @@
             "value": "Open Archive"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir archivo comprimido"
@@ -9581,7 +9713,7 @@
             "value": "Otwórz archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir arquivo"
@@ -9640,7 +9772,7 @@
             "value": "Open %lld Archives"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir %lld archivos comprimidos"
@@ -9688,7 +9820,7 @@
             "value": "Otwórz %lld archiwa"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Open %lld Archives"
@@ -9748,7 +9880,7 @@
             "value": "Options"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Opciones"
@@ -9796,7 +9928,7 @@
             "value": "Opcje"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Opções"
@@ -9856,7 +9988,7 @@
             "value": "Password:"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Contraseña:"
@@ -9904,7 +10036,7 @@
             "value": "Hasło:"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Senha:"
@@ -9964,7 +10096,7 @@
             "value": "“%@” is password protected."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "“%@” está protegido con contraseña."
@@ -10012,7 +10144,7 @@
             "value": "„%@” jest chroniony hasłem."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "“%@” está protegido por senha."
@@ -10072,7 +10204,7 @@
             "value": "Preview"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Vista previa"
@@ -10120,7 +10252,7 @@
             "value": "Podgląd"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Pré Visualização"
@@ -10180,7 +10312,7 @@
             "value": "Privacy"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Privacidad"
@@ -10228,7 +10360,7 @@
             "value": "Prywatność"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Privacidade"
@@ -10288,7 +10420,7 @@
             "value": "Quick Compress"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Compresión rápida"
@@ -10336,7 +10468,7 @@
             "value": "Szybka kompresja"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Quick Compress"
@@ -10396,7 +10528,7 @@
             "value": "Quick Compress Window"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Ventana de Compresión rápida"
@@ -10444,7 +10576,7 @@
             "value": "Okno szybkiej kompresji"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Quick Compress Window"
@@ -10504,7 +10636,7 @@
             "value": "Refresh"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Actualizar"
@@ -10552,7 +10684,7 @@
             "value": "Odśwież"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Recarregar"
@@ -10612,7 +10744,7 @@
             "value": "save"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "guardar"
@@ -10660,7 +10792,7 @@
             "value": "Zachowaj"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "salvar"
@@ -10720,7 +10852,7 @@
             "value": "Save As…"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Guardar como…"
@@ -10768,7 +10900,7 @@
             "value": "Zachowaj jako…"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Salvar Como…"
@@ -10852,7 +10984,7 @@
             }
           }
         },
-        "es-mx": {
+        "es-MX": {
           "variations": {
             "plural": {
               "many": {
@@ -11014,7 +11146,7 @@
             }
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "variations": {
             "plural": {
               "many": {
@@ -11170,7 +11302,7 @@
             "value": "Settings..."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Configuración..."
@@ -11218,7 +11350,7 @@
             "value": "Ustawienia…"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Configurações..."
@@ -11278,7 +11410,7 @@
             "value": "Start"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Iniciar"
@@ -11326,7 +11458,7 @@
             "value": "Start"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Iniciar"
@@ -11386,7 +11518,7 @@
             "value": "Terms & Conditions"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Términos y condiciones"
@@ -11434,7 +11566,7 @@
             "value": "Warunki i zasady"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Termos e Condições"
@@ -11494,7 +11626,7 @@
             "value": "Top"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Arriba"
@@ -11542,7 +11674,7 @@
             "value": "Na górze"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Acima"
@@ -11602,7 +11734,7 @@
             "value": "Website"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Sitio web"
@@ -11650,7 +11782,7 @@
             "value": "Strona Internetowa"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Site"
@@ -11710,7 +11842,7 @@
             "value": "What's new"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Novedades"
@@ -11758,7 +11890,7 @@
             "value": "Co nowego"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Novidades"
@@ -11818,7 +11950,7 @@
             "value": "Contact us"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Contáctanos"
@@ -11866,7 +11998,7 @@
             "value": "Skontaktuj się z nami"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Fale Conosco"
@@ -11926,7 +12058,7 @@
             "value": "... raise a Bug"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "...reporta un Bug"
@@ -11974,7 +12106,7 @@
             "value": "… zgłoś błąd"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Reportar falhas"
@@ -12034,7 +12166,7 @@
             "value": "... send a mail to %@"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "...envía un correo a %@"
@@ -12082,7 +12214,7 @@
             "value": "… wyślij wiadomość do %@"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Escrever para %@"
@@ -12142,7 +12274,7 @@
             "value": "... request a Feature"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "...solicita funcionalidad"
@@ -12190,7 +12322,7 @@
             "value": "… wyślij propozycje"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Pedir nova função"
@@ -12250,7 +12382,7 @@
             "value": "Go here to ..."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Más opciones..."
@@ -12298,7 +12430,7 @@
             "value": "Przejdź do …"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Clique aqui para"
@@ -12358,7 +12490,7 @@
             "value": "Export failed"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Exportación fallida"
@@ -12406,7 +12538,7 @@
             "value": "Eksport nie powiódł się"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Export failed"
@@ -12466,7 +12598,7 @@
             "value": "Could not open archive"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "No se ha podido abrir el archivo comprimido"
@@ -12514,7 +12646,7 @@
             "value": "Nie można otworzyć archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Could not open archive"
@@ -12574,7 +12706,7 @@
             "value": "That password is incorrect. Try again."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "La contraseña es incorrecta. Inténtalo nuevamente."
@@ -12622,7 +12754,7 @@
             "value": "To hasło jest nieprawidłowe. Spróbuj ponownie."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "That password is incorrect. Try again."
@@ -12682,7 +12814,7 @@
             "value": "Passwords do not match"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Las contraseñas no coinciden"
@@ -12730,7 +12862,7 @@
             "value": "Hasła nie zgadzają się"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "As palavras-passe não coincidem"
@@ -12790,7 +12922,7 @@
             "value": "Could not save archive"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "No se pudo guardar el archivo"
@@ -12838,7 +12970,7 @@
             "value": "Nie udało się zapisać archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Could not save archive"
@@ -12898,7 +13030,7 @@
             "value": "Cancelled - no access to that folder"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Cancelado - sin acceso a ese folder"
@@ -12946,7 +13078,7 @@
             "value": "Anulowano – brak dostępu do tego folderu"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Cancelled - no access to that folder"
@@ -13006,7 +13138,7 @@
             "value": "Leave a review in the App Store"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Escribe una reseña en la App Store"
@@ -13054,7 +13186,7 @@
             "value": "Zostaw opinie w App Store"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Deixe uma avaliação na App Store"
@@ -13114,7 +13246,7 @@
             "value": "Follow"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Seguir"
@@ -13162,7 +13294,7 @@
             "value": "Obserwuj"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Follow"
@@ -13222,7 +13354,7 @@
             "value": "Review"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Reseña"
@@ -13270,7 +13402,7 @@
             "value": "Ocena"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Review"
@@ -13330,7 +13462,7 @@
             "value": "Send a smile"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Enviar una sonrisa"
@@ -13378,7 +13510,7 @@
             "value": "Zostaw opinie"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Enviar um sorriso"
@@ -13438,7 +13570,7 @@
             "value": "Star"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Estrella"
@@ -13486,7 +13618,7 @@
             "value": "Polub"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Star"
@@ -13546,7 +13678,7 @@
             "value": "Star the repository on GitHub"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Añadir una estrella en GitHub"
@@ -13594,7 +13726,7 @@
             "value": "Dodaj do ulubionych na GitHubie"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Avalie o repositório no GitHub"
@@ -13654,7 +13786,7 @@
             "value": "Support the development..."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Apoya el desarrollo..."
@@ -13702,7 +13834,7 @@
             "value": "Wesprzyj rozwój aplikacji…"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Suporte o desenvolvimento"
@@ -13762,7 +13894,7 @@
             "value": "Translate"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Traducir"
@@ -13810,7 +13942,7 @@
             "value": "Tłumaczenie"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Traduzir"
@@ -13870,7 +14002,7 @@
             "value": "Guides & documentation"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Guías y documentación"
@@ -13918,7 +14050,7 @@
             "value": "Przewodniki i dokumentacja"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Guias e documentação"
@@ -13978,7 +14110,7 @@
             "value": "Learn to use %@"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Aprende a usar %@"
@@ -14026,7 +14158,7 @@
             "value": "Jak użyć %@"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Learn to use %@"
@@ -14086,7 +14218,7 @@
             "value": "No recent archives."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "No hay archivos comprimidos recientes"
@@ -14134,7 +14266,7 @@
             "value": "Brak ostatnich archiwów."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "No recent archives."
@@ -14194,7 +14326,7 @@
             "value": "Recent"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Recientes"
@@ -14242,7 +14374,7 @@
             "value": "Ostatnie"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Recentes"
@@ -14302,7 +14434,7 @@
             "value": "Release Notes"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Notas de la versión"
@@ -14350,7 +14482,7 @@
             "value": "Informacje o wersji"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Notas de Lançamento"
@@ -14410,7 +14542,7 @@
             "value": "%@ needs access to %@"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "%@ necesita acceso a %@"
@@ -14458,7 +14590,7 @@
             "value": "%@ wymaga dostępu do %@"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "%@ needs access to %@"
@@ -14518,7 +14650,7 @@
             "value": "About"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Información"
@@ -14566,7 +14698,7 @@
             "value": "Informacje"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Sobre"
@@ -14626,7 +14758,7 @@
             "value": "Access granted"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Acceso permitido"
@@ -14674,7 +14806,7 @@
             "value": "Dostęp nadany"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Access granted"
@@ -14734,7 +14866,7 @@
             "value": "Advanced"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Avanzado"
@@ -14782,7 +14914,7 @@
             "value": "Zaawansowane"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Avançado"
@@ -14842,7 +14974,7 @@
             "value": "Archive Formats"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Formatos de archivos comprimidos"
@@ -14890,7 +15022,7 @@
             "value": "Format Archiwum"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Formatos de Arquivos"
@@ -14950,7 +15082,7 @@
             "value": "Automatic engine selection"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Selección automática del motor"
@@ -14998,7 +15130,7 @@
             "value": "Automatyczny wybór silnika"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Automatic engine selection"
@@ -15058,7 +15190,7 @@
             "value": "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "MacPacker selecciona el motor para abrir cada tipo de archivo comprimido e intenta con otro si el primer motor no lo puede leer. Deshabilita esta opción si deseas seleccionar tus motores manualmente."
@@ -15106,7 +15238,7 @@
             "value": "MacPacker wybiera silnik dla każdego archiwum i próbuje innego, jeśli pierwszy nie może go odczytać. Wyłącz tę opcję, aby samodzielnie wybierać silniki."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself."
@@ -15166,7 +15298,7 @@
             "value": "Automatically check for updates"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprobar actualizaciones automaticamente"
@@ -15214,7 +15346,7 @@
             "value": "Automatycznie szukaj aktualizacji"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Automatically check for updates"
@@ -15274,7 +15406,7 @@
             "value": "Breadcrumb position"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Posición de la ruta de navegación"
@@ -15322,7 +15454,7 @@
             "value": "Pole nawigacyjne"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Posição da barra de navegação"
@@ -15382,7 +15514,7 @@
             "value": "Cache"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Caché"
@@ -15430,7 +15562,7 @@
             "value": "Pamięć podręczna"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Cachê"
@@ -15490,7 +15622,7 @@
             "value": "Clear cache"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Limpiar caché"
@@ -15538,7 +15670,7 @@
             "value": "Wyczyść Pamięć podręczną"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Limpar Cachê"
@@ -15598,7 +15730,7 @@
             "value": "Clears all content from the cache"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Limpiar todo el contenido del caché"
@@ -15646,7 +15778,7 @@
             "value": "Wyczyść całą zawartość pamięci podręcznej"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Limpa todo o conteúdo do cachê"
@@ -15706,7 +15838,7 @@
             "value": "Columns"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Columnas"
@@ -15754,7 +15886,7 @@
             "value": "Kolumny:"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Colunas:"
@@ -15814,7 +15946,7 @@
             "value": "Compress each item separately"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprimir cada elemento por separado"
@@ -15862,7 +15994,7 @@
             "value": "Skompresuj każdy element osobno"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Compress each item separately"
@@ -15922,7 +16054,7 @@
             "value": "Compress a folder’s contents"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprimir el contenido de una carpeta"
@@ -15970,7 +16102,7 @@
             "value": "Skompresuj zwartość folderu"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Compress a folder’s contents"
@@ -16030,7 +16162,7 @@
             "value": "Compress to 7z"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprimir a 7z"
@@ -16078,7 +16210,7 @@
             "value": "Skompresuj do 7z"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Compress to 7z"
@@ -16138,7 +16270,7 @@
             "value": "Compress to zip"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprimir a zip"
@@ -16186,7 +16318,7 @@
             "value": "Skompresuj do zip"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Compress to zip"
@@ -16246,7 +16378,7 @@
             "value": "Compress to zip with date and time"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Comprimir a zip con fecha y hora"
@@ -16294,7 +16426,7 @@
             "value": "Skompresuj do zip z datą i czasem"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Compress to zip with date and time"
@@ -16354,7 +16486,7 @@
             "value": "Context Menu"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Menú contextual"
@@ -16402,7 +16534,7 @@
             "value": "Menu kontekstowe"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Menu Contextual"
@@ -16462,7 +16594,7 @@
             "value": "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Para hacer que MacPacker sea la aplicación por defecto para un tipo de archivo en específico: Haz clic derecho en un archivo → 'Obtener Información' → selecciona MacPacker en el menu 'Abrir con:' → Haz clic en 'Cambiar todo…' para aplicar los cambios a todos los archivos del mismo tipo."
@@ -16510,7 +16642,7 @@
             "value": "Aby ustawić MacPacker domyślnie dla danego typu pliku: Kliknij plik prawym przyciskiem myszy → „Informacje” → wybierz MacPacker w sekcji „Otwórz za pomocą:” → kliknij „Zmień wszystko…”, aby zastosować tę opcję do wszystkich podobnych archiwów."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives."
@@ -16570,7 +16702,7 @@
             "value": "Default status & engine settings"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Configuración por defecto y motores de compresión"
@@ -16618,7 +16750,7 @@
             "value": "Ustawienia domyślne oraz ustawienia jądra"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Status Padrão & Configuração de Motor"
@@ -16678,7 +16810,7 @@
             "value": "Edits archives, not only opens them"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Edita archivos comprimidos, no solo los abre."
@@ -16726,7 +16858,7 @@
             "value": "Edytuje archiwa, nie tylko je otwiera"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Edits archives, not only opens them"
@@ -16786,7 +16918,7 @@
             "value": "Engine"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Motor de compresión"
@@ -16834,7 +16966,7 @@
             "value": "Jądro"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Motor"
@@ -16894,7 +17026,7 @@
             "value": "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "MacPacker hace uso de varios motores de compresión. El motor predeterminado es el recomendado; motores adicionales pueden ayudar con problemas específicos de un formato. Ten en cuenta que el soporte para cada motor varía dependiendo del formato."
@@ -16942,7 +17074,7 @@
             "value": "MacPacker zawiera w sobie kilka różnych silników archiwizujących. Rekomendowany jest domyślny; inne silniki mogą pomóc z problemami dla konkretnych formatów. Miej na uwadze, że wsparcie silnika różni się w zależności od formatu."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format."
@@ -17002,7 +17134,7 @@
             "value": "Export Logs"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Exportar registros"
@@ -17050,7 +17182,7 @@
             "value": "Eksportuj dzienniki"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Exportar Registros"
@@ -17110,7 +17242,7 @@
             "value": "Extensions"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extensiones"
@@ -17158,7 +17290,7 @@
             "value": "Rozszerzenia"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extensões"
@@ -17218,7 +17350,7 @@
             "value": "External volumes"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Volúmenes externos"
@@ -17266,7 +17398,7 @@
             "value": "Dyski zewnętrzne"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Volumes externos"
@@ -17326,7 +17458,7 @@
             "value": "Covers USB drives, memory cards and network shares, which appear in /Volumes."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Incluye unidades USB, tarjetas de memoria y recursos compartidos de red que aparecen en /Volumes."
@@ -17374,7 +17506,7 @@
             "value": "Zawiera dyski USB, karty pamięci i udziały, ktore pojawiają się w /Volumes."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Covers USB drives, memory cards and network shares, which appear in /Volumes."
@@ -17434,7 +17566,7 @@
             "value": "Extract To…"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extraer en…"
@@ -17482,7 +17614,7 @@
             "value": "Rozpakuj do…"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extrair para…"
@@ -17542,7 +17674,7 @@
             "value": "Extract to folder"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extraer en carpeta"
@@ -17590,7 +17722,7 @@
             "value": "Rozpakuj do folderu"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extract to folder"
@@ -17650,7 +17782,7 @@
             "value": "File Format"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Formato de archivo"
@@ -17698,7 +17830,7 @@
             "value": "Format pliku"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Formato do arquivo"
@@ -17758,7 +17890,7 @@
             "value": "File provider extension"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extensión de proveedor de archivos"
@@ -17806,7 +17938,7 @@
             "value": "Rozszerzenie typu pliku"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Extensão do File Provider"
@@ -17866,7 +17998,7 @@
             "value": "macOS lets %@ open and write files only where you allow it, which is why a folder-access panel shows up now and then. A grant covers everything inside the folder you pick, so allowing these two puts an end to the asking."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "macOS permite que %@ acceda a archivos solo en las ubicaciones que autorices. Por eso, ocasionalmente te pedirá acceso a una carpeta. El permiso se aplica a todo su contenido, así que autorizar estas dos ubicaciones evitará futuras solicitudes."
@@ -17914,7 +18046,7 @@
             "value": "macOS pozwala %@ otwierać i zapisywać pliki tylko tam, gdzie pozwolisz, dlatego czasami pojawia sie okno dostępu do folderów. Nadanie dostępu uwzględni wszystko w wybranym folderze i kolejne prośby nie będą sie pojawiać."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "macOS lets %@ open and write files only where you allow it, which is why a folder-access panel shows up now and then. A grant covers everything inside the folder you pick, so allowing these two puts an end to the asking."
@@ -17974,7 +18106,7 @@
             "value": "General"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "General"
@@ -18022,7 +18154,7 @@
             "value": "Ogólne"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Geral"
@@ -18082,7 +18214,7 @@
             "value": "Home folder"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Carpeta de inicio"
@@ -18130,7 +18262,7 @@
             "value": "Folder domowy"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Pasta pessoal"
@@ -18190,7 +18322,7 @@
             "value": "Covers the Desktop, Documents, Downloads and everything else in your home folder."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Incluye el Escritorio, Documentos, Descargas y todo lo demás en tu carpeta de inicio."
@@ -18238,7 +18370,7 @@
             "value": "Zawiera Pulpit, Dokumenty, Pobrane i wszystko inne w Twoim foldere domowym."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Covers the Desktop, Documents, Downloads and everything else in your home folder."
@@ -18298,7 +18430,7 @@
             "value": "How to set %@ as default?"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "¿Cómo establecer %@ como predeterminado?"
@@ -18346,7 +18478,7 @@
             "value": "Jak ustawić %@ jako domyślny?"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Como tornar %@ padrão"
@@ -18406,7 +18538,7 @@
             "value": "Include Beta updates"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Incluir actualizaciones beta"
@@ -18454,7 +18586,7 @@
             "value": "Dodaj wersje Beta"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Include Beta updates"
@@ -18514,7 +18646,7 @@
             "value": "Info on Engines"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Información de motores de compresión"
@@ -18562,7 +18694,7 @@
             "value": "Informacje o jądrach"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Informações"
@@ -18622,7 +18754,7 @@
             "value": "Logs"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Registros"
@@ -18670,7 +18802,7 @@
             "value": "Dzienniki"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Registros"
@@ -18730,7 +18862,7 @@
             "value": "Set MacPacker as the default app"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Establece MacPacker como la aplicación por defecto"
@@ -18778,7 +18910,7 @@
             "value": "Ustaw MacPacker jako domyślną aplikację"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Set MacPacker as the default app"
@@ -18838,7 +18970,7 @@
             "value": "Manage in System Settings"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Administra en la Configuración del Sistema"
@@ -18886,7 +19018,7 @@
             "value": "Zarządzaj w Ustawieniach Systemu"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Gerir em configurações do sistema"
@@ -18946,7 +19078,7 @@
             "value": "Nest actions in a submenu"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Agrupar acciones en un submenú"
@@ -18994,7 +19126,7 @@
             "value": "Zagnieżdżaj akcje w podmenu"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Nest actions in a submenu"
@@ -19054,7 +19186,7 @@
             "value": "Open cache directory"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir directorio del caché"
@@ -19102,7 +19234,7 @@
             "value": "Otwórz katalog pamięci podręcznej"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Abrir diretório de cachê"
@@ -19162,7 +19294,7 @@
             "value": "Quit on last window closed"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Salir al cerrar la última ventana"
@@ -19210,7 +19342,7 @@
             "value": "Zakończ po zamknięciu ostatniego okna"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Quit on last window closed"
@@ -19270,7 +19402,7 @@
             "value": "Remember recent archives"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Recordar archivos comprimidos recientes"
@@ -19318,7 +19450,7 @@
             "value": "Zapamiętaj ostatnie archiwa"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Remember recent archives"
@@ -19378,7 +19510,7 @@
             "value": "Show application support folder"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Mostrar el folder the soporte de la aplicación"
@@ -19426,7 +19558,7 @@
             "value": "Pokaż folder pomocy technicznej aplikacji"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Mostrar pasta de suporte de aplicação"
@@ -19486,7 +19618,7 @@
             "value": "Show in Menu Bar"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Mostrar en la barra de menús"
@@ -19534,7 +19666,7 @@
             "value": "Pokazuj na pasku menu"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Mostrar na Barra de Menus"
@@ -19594,7 +19726,7 @@
             "value": "Show parent folder entry (“..”)"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Mostrar la carpeta superior (“..”)"
@@ -19642,7 +19774,7 @@
             "value": "Pokaż wpis folderu nadrzędnego (“..”)"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Show parent folder entry (“..”)"
@@ -19702,7 +19834,7 @@
             "value": "Smart extraction"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Extracción inteligente"
@@ -19750,7 +19882,7 @@
             "value": "Sprytne rozpakowywanie"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Smart extraction"
@@ -19810,7 +19942,7 @@
             "value": "Check for Updates…"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Buscar actualizaciones…"
@@ -19858,7 +19990,7 @@
             "value": "Sprawdź Aktualizacje…"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Verificar Atualizações"
@@ -19918,7 +20050,7 @@
             "value": "Changelog"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Registro de cambios"
@@ -19966,7 +20098,7 @@
             "value": "Dziennik zmian"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Changelog"
@@ -20026,7 +20158,7 @@
             "value": "Coming next"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Próximamente"
@@ -20074,7 +20206,7 @@
             "value": "Nadchodzące zmiany"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Coming next"
@@ -20134,7 +20266,7 @@
             "value": "Release highlights"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Novedades destacadas"
@@ -20182,7 +20314,7 @@
             "value": "Najważniejsze nowości"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Destaques da versão"
@@ -20242,7 +20374,7 @@
             "value": "Support %@"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Apoya a %@"
@@ -20290,7 +20422,7 @@
             "value": "Wesprzyj %@"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Apoie o %@"
@@ -20350,7 +20482,7 @@
             "value": "Your donation supports ongoing development."
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Tu donación apoya el desarrollo continuo."
@@ -20398,7 +20530,7 @@
             "value": "Twoja darowizna wspiera dalszy rozwój."
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Sua doação apoia o desenvolvimento contínuo."
@@ -20458,7 +20590,7 @@
             "value": "Help keep %@ growing"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Ayuda a que %@ siga creciendo"
@@ -20506,7 +20638,7 @@
             "value": "Pomóż rozwijać %@"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Ajude o %@ a crescer"
@@ -20566,7 +20698,7 @@
             "value": "Welcome to %@"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Bienvenido a %@"
@@ -20614,7 +20746,7 @@
             "value": "Witaj w aplikacji %@"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Bem-vindo ao %@"
@@ -20674,7 +20806,7 @@
             "value": "View all changes"
           }
         },
-        "es-mx": {
+        "es-MX": {
           "stringUnit": {
             "state": "translated",
             "value": "Ver todos los cambios"
@@ -20722,7 +20854,7 @@
             "value": "Zobacz wszystkie zmiany"
           }
         },
-        "pt-br": {
+        "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Ver todas as alterações"
