@@ -208,6 +208,40 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>lzma</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>LZMA Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>org.tukaani.lzma-archive</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>tar.lzma</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>LZMA Tarball Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array/>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>rar</string>
 			</array>
 			<key>CFBundleTypeName</key>
