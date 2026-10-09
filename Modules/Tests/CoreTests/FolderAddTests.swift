@@ -140,32 +140,55 @@ extension AllCoreTests {
             #expect(entriesChanges == 1, "entries changed \(entriesChanges) times")
         }
 
-        /// A time limit, where the tests above watch for the two causes that
-        /// were found: 20,000 files are in the archive within two seconds of
-        /// being added. As it is read now that takes 0.3 seconds on the machine
-        /// this was written on, and the CI runner is about 1.6 times slower; the
-        /// walk on the main actor took 13. Up to three tries, and the best one
-        /// counts: a busy machine only ever makes a run slower.
-        @Test func twentyThousandFilesAreAddedWithinTwoSeconds() async throws {
+        /// A plain walk of `folder`: every folder listed, every entry looked at
+        /// once. The least that reading it can take, on this machine, right now.
+        private func walk(_ folder: URL) throws -> Int {
+            var seen = 0
+            for entry in try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) {
+                var status = stat()
+                #expect(lstat(entry.path, &status) == 0)
+                seen += 1
+                if status.st_mode & S_IFMT == S_IFDIR {
+                    seen += try walk(entry)
+                }
+            }
+            return seen
+        }
+
+        /// A limit on time, where the tests above watch for the two causes that
+        /// were found: adding 20,000 files costs no more than a few times a
+        /// plain walk of them. Measured against the walk, not in seconds: the
+        /// same add takes 0.3 seconds on the machine this was written on and
+        /// 1.4 on the CI runner, whose disk is that much slower, so a number of
+        /// seconds is either too tight there or too loose here. The walk on the
+        /// main actor took 13 seconds here, a hundred times its own walk.
+        ///
+        /// Up to three tries, and one good one is enough: a busy machine only
+        /// ever makes a run slower.
+        @Test func addingTwentyThousandFilesCostsLittleMoreThanWalkingThem() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let project = try makeProject(in: dir, files: 20_000)
-            let limit = Duration.seconds(2)
+            let allowed = 6.0
 
-            var times: [Duration] = []
-            for _ in 0..<3 where (times.min() ?? limit) >= limit {
+            var tries: [(add: Duration, walk: Duration)] = []
+            for _ in 0..<3 where !tries.contains(where: { $0.add < $0.walk * allowed }) {
+                var start = ContinuousClock.now
+                let onDisk = try walk(project) + 1
+                let walking = ContinuousClock.now - start
+
                 let state = makeState()
                 state.create()
-                let start = ContinuousClock.now
+                start = ContinuousClock.now
                 #expect(await state.add(url: project).value)
-                times.append(ContinuousClock.now - start)
-                #expect(state.diff.count > 20_000)
+                tries.append((ContinuousClock.now - start, walking))
+                #expect(state.diff.count == onDisk)
             }
 
-            let best = try #require(times.min())
             // in the log of every run, so the headroom on a given machine shows
-            print("Adding 20,000 files took \(times), the limit is \(limit)")
-            #expect(best < limit, "adding 20,000 files took \(times)")
+            print("Adding 20,000 files, and a plain walk of them: \(tries)")
+            #expect(tries.contains { $0.add < $0.walk * allowed },
+                    "adding 20,000 files took more than \(allowed) times a walk of them: \(tries)")
         }
 
         /// Taking a folder out again is one change as well: it used to drop its
