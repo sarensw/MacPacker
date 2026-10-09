@@ -36,8 +36,32 @@
     },
     "versions": [
       {
-        "version": "1.0.1",
+        "version": "1.1.0",
         "items": [
+          {
+            "type": "feat",
+            "title": {
+                "en": "Progress window when compressing from Finder",
+                "zh-Hans": "从 Finder 压缩时显示进度窗口",
+                "fr": "Fenêtre de progression pour la compression depuis le Finder",
+                "de": "Fortschrittsfenster beim Komprimieren im Finder",
+                "it": "Finestra di avanzamento per la compressione dal Finder",
+                "ja": "Finder からの圧縮に進行状況ウィンドウを表示",
+                "fa": "پنجره پیشرفت هنگام فشرده‌سازی از Finder",
+                "pl": "Okno postępu przy kompresowaniu z Findera",
+                "pt-BR": "Janela de progresso ao comprimir pelo Finder",
+                "ru": "Окно хода сжатия из Finder",
+                "uk": "Вікно перебігу стиснення з Finder",
+                "es-MX": "Ventana de progreso al comprimir desde el Finder",
+                "ko": "Finder에서 압축할 때 진행 창 표시",
+                "nl": "Voortgangsvenster bij comprimeren in de Finder",
+                "tr": "Finder’dan sıkıştırırken ilerleme penceresi",
+                "vi": "Cửa sổ tiến trình khi nén từ Finder"
+            },
+            "issues": [
+                "278"
+            ]
+          },
           {
             "type": "fix",
             "highlight": true,
@@ -58,6 +82,30 @@
                 "nl": "Een map comprimeren in de Finder geeft een lege zip",
                 "tr": "Finder’dan klasör sıkıştırmak boş zip oluşturuyor",
                 "vi": "Nén thư mục từ Finder tạo ra tệp zip trống"
+            },
+            "issues": [
+                "278"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Compressing a large folder freezes the app",
+                "zh-Hans": "压缩大型文件夹会导致应用程序冻结",
+                "fr": "Compresser un gros dossier bloque l’application",
+                "de": "Großen Ordner komprimieren lässt die App einfrieren",
+                "it": "Comprimere una cartella grande blocca l’applicazione",
+                "ja": "大きなフォルダを圧縮するとアプリがフリーズする",
+                "fa": "فشرده‌سازی پوشه بزرگ باعث توقف برنامه می‌شود",
+                "pl": "Kompresowanie dużego folderu zawiesza aplikację",
+                "pt-BR": "Comprimir uma pasta grande faz o aplicativo travar",
+                "ru": "Сжатие большой папки приводит к зависанию приложения",
+                "uk": "Стиснення великої папки призводить до зависання застосунку",
+                "es-MX": "Comprimir una carpeta grande congela la aplicación",
+                "ko": "큰 폴더를 압축하면 앱이 멈춤",
+                "nl": "Een grote map comprimeren laat de app vastlopen",
+                "tr": "Büyük bir klasörü sıkıştırmak uygulamayı donduruyor",
+                "vi": "Nén thư mục lớn làm ứng dụng bị treo"
             },
             "issues": [
                 "278"
