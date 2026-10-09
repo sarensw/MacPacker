@@ -584,7 +584,7 @@ extension ArchiveState {
     /// Adds files and folders from disk where the window is; a folder goes in
     /// with everything it holds.
     ///
-    /// They are read off the main actor, by `ArchiveScanner`, so what was added
+    /// They are read off the main actor, by `FileScanner`, so what was added
     /// is there once the returned task ends. An add started meanwhile waits its
     /// turn, and what it adds comes after.
     ///
@@ -652,7 +652,7 @@ extension ArchiveState {
         addCancel = cancel
         updateStatus(.processing)
         updateStatusText(String(localized: "loading...", bundle: .module, comment: "Archive operation status"))
-        let scan = try? await ArchiveScanner().scan(urls, under: base, cancel: cancel)
+        let scan = try? await FileScanner().scan(urls, under: base, cancel: cancel)
 
         // replaced while it was read: the same, and the busy state is no longer
         // this add's to clear
@@ -682,7 +682,7 @@ extension ArchiveState {
     /// to replace would still be in there next to its replacement. Except a
     /// folder over a folder: that one is merged into, so only the files that
     /// collide inside it are replaced and the rest of what it holds stays.
-    private func put(_ scan: ArchiveScan, under target: ArchiveItem) {
+    private func put(_ scan: FileScan, under target: ArchiveItem) {
         var entries = self.entries
         var replaced = Removal()
         var additions: [ArchiveUpdateItem] = []

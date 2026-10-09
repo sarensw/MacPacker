@@ -1,5 +1,5 @@
 //
-//  ArchiveScanner.swift
+//  FileScanner.swift
 //  Modules
 //
 //  What is about to be added, read from disk: every file and folder below the
@@ -13,7 +13,7 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
 /// What a scan found.
-struct ArchiveScan: Sendable {
+struct FileScan: Sendable {
     struct Entry: Sendable {
         /// What the window shows for it. Below the top it is already attached to
         /// the folder it is in.
@@ -36,7 +36,7 @@ struct ArchiveScan: Sendable {
 /// can hold any number of files, and each one is a trip to the disk. Read on the
 /// main actor, a project of 20,000 files kept the app from drawing for 11
 /// seconds (#278).
-final actor ArchiveScanner {
+final actor FileScanner {
 
     /// - Parameters:
     ///   - urls: the files and folders picked
@@ -44,9 +44,9 @@ final actor ArchiveScanner {
     ///     folder's path with a trailing slash
     ///   - cancel: looked at before each folder is read
     /// - Throws: `CancellationError` once `cancel` is set.
-    func scan(_ urls: [URL], under base: String, cancel: ExtractionCancelFlag) async throws -> ArchiveScan {
+    func scan(_ urls: [URL], under base: String, cancel: ExtractionCancelFlag) async throws -> FileScan {
         try await runBlocking {
-            var scan = ArchiveScan()
+            var scan = FileScan()
             for url in urls {
                 let status = Self.status(of: url)
                 let archivePath = base + url.lastPathComponent
@@ -79,7 +79,7 @@ final actor ArchiveScanner {
         _ status: stat?,
         as archivePath: String,
         in parent: Int?,
-        into scan: inout ArchiveScan,
+        into scan: inout FileScan,
         cancel: ExtractionCancelFlag
     ) throws {
         let isFolder = status?.isFolder == true
