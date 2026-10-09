@@ -76,7 +76,8 @@ struct CompressPinButton: View {
     }
 }
 
-/// The urls of one drop, handed over together — one drop is one archive.
+/// The urls of one drop, handed over together — one drop is one archive, or one
+/// add to the archive a window shows.
 ///
 /// `loadItem` must be *started* inside the drop callback: the providers belong to
 /// the drag session and are unreliable once it ends. The answers arrive later, out

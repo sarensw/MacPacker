@@ -109,6 +109,63 @@ extension AllCoreTests {
             #expect(entriesChanges == 1, "entries changed \(entriesChanges) times")
         }
 
+        /// However many files come in one add, the archive changes once. A drop
+        /// onto a window hands everything it holds to one add for that reason:
+        /// added file by file, a thousand files were a thousand reads, a
+        /// thousand changes and a thousand reloads of the list.
+        @Test func manyFilesInOneAddChangeTheArchiveOnce() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let files = try (0..<300).map { index -> URL in
+                let file = dir.appendingPathComponent("file\(index).txt")
+                try Data("file \(index)".utf8).write(to: file)
+                return file
+            }
+            let state = makeState()
+            state.create()
+
+            var diffChanges = 0
+            var entriesChanges = 0
+            let watching = [
+                state.$diff.dropFirst().sink { _ in diffChanges += 1 },
+                state.$entries.dropFirst().sink { _ in entriesChanges += 1 },
+            ]
+            defer { watching.forEach { $0.cancel() } }
+
+            #expect(await state.add(urls: files).value)
+
+            // in the order they were handed over
+            #expect(pendingPaths(state) == files.map(\.lastPathComponent))
+            #expect(diffChanges == 1, "diff changed \(diffChanges) times")
+            #expect(entriesChanges == 1, "entries changed \(entriesChanges) times")
+        }
+
+        /// A time limit, where the tests above watch for the two causes that
+        /// were found: 20,000 files are in the archive within two seconds of
+        /// being added. As it is read now that takes 0.3 seconds on the machine
+        /// this was written on, and the CI runner is about 1.6 times slower; the
+        /// walk on the main actor took 13. Up to three tries, and the best one
+        /// counts: a busy machine only ever makes a run slower.
+        @Test func twentyThousandFilesAreAddedWithinTwoSeconds() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let project = try makeProject(in: dir, files: 20_000)
+            let limit = Duration.seconds(2)
+
+            var times: [Duration] = []
+            for _ in 0..<3 where (times.min() ?? limit) >= limit {
+                let state = makeState()
+                state.create()
+                let start = ContinuousClock.now
+                #expect(await state.add(url: project).value)
+                times.append(ContinuousClock.now - start)
+                #expect(state.diff.count > 20_000)
+            }
+
+            let best = try #require(times.min())
+            #expect(best < limit, "adding 20,000 files took \(times)")
+        }
+
         /// Taking a folder out again is one change as well: it used to drop its
         /// entries one by one, the same copy for each.
         @Test func removingAFolderChangesTheArchiveOnce() async throws {
@@ -461,6 +518,29 @@ extension AllCoreTests {
                 return
             }
             #expect(reason.contains("build"), "\(reason)")
+            #expect(!FileManager.default.fileExists(atPath: dest.path))
+        }
+
+        /// A read that fails for another reason than being cancelled says why: in
+        /// `error`, and in the job of a compress that has no window. Swallowed, the
+        /// add came back empty-handed and the job failed without a word, which
+        /// the Finder's handler then took for a cancel.
+        @Test func aReadThatFailsSaysWhy() async throws {
+            struct DiskGone: LocalizedError {
+                var errorDescription: String? { "The disk went away." }
+            }
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let project = try makeProject(in: dir, files: 16)
+            let dest = dir.appendingPathComponent("FileApex.zip")
+            let center = ExtractionProgressCenter()
+            let state = makeState(reportingTo: center)
+            state.scanFiles = { _, _, _ in throw DiskGone() }
+
+            #expect(await !state.compress([project], to: dest, showingProgress: true))
+
+            #expect(state.error == "The disk went away.")
+            #expect(center.jobs.first?.state == .failed("The disk went away."), "\(String(describing: center.jobs.first?.state))")
             #expect(!FileManager.default.fileExists(atPath: dest.path))
         }
 

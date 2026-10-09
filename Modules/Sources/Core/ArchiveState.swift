@@ -146,6 +146,11 @@ public class ArchiveState: ObservableObject {
     /// and says whether there was one. The app wires this to its window manager;
     /// the default finds none, so Core and the unit tests open in place.
     public var focusWindowHolding: (URL) -> Bool = { _ in false }
+    /// Reads what is to be added from disk: `FileScanner`, off the main actor.
+    /// A property so that a test can hand in one that fails.
+    var scanFiles: @Sendable ([URL], String, ExtractionCancelFlag) async throws -> FileScan = { urls, base, cancel in
+        try await FileScanner().scan(urls, under: base, cancel: cancel)
+    }
     /// Where user-triggered extractions report their progress. Defaults to
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
@@ -652,7 +657,18 @@ extension ArchiveState {
         addCancel = cancel
         updateStatus(.processing)
         updateStatusText(String(localized: "loading...", bundle: .module, comment: "Archive operation status"))
-        let scan = try? await FileScanner().scan(urls, under: base, cancel: cancel)
+        var scan: FileScan?
+        var failure: String?
+        do {
+            scan = try await scanFiles(urls, base, cancel)
+        } catch is CancellationError {
+            // stopped on request: nothing was added, and nothing went wrong
+        } catch {
+            // Not swallowed with the cancel: the add would come back empty-handed
+            // without a word, and a compress fail for no reason it could name.
+            log.error("Failed to read what was to be added", context: ["error": String(describing: error)])
+            failure = error.localizedDescription
+        }
 
         // replaced while it was read: the same, and the busy state is no longer
         // this add's to clear
@@ -661,7 +677,10 @@ extension ArchiveState {
         addCancel = nil
         updateStatusText(nil)
         updateStatus(.done)
-        // cancelled, or the folder it was going into was removed meanwhile
+        if let failure {
+            self.error = failure
+        }
+        // cancelled or failed, or the folder it was going into was removed meanwhile
         guard let scan, target === root || entries[target.id] != nil else { return false }
 
         put(scan, under: target)
