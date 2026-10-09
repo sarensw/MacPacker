@@ -163,6 +163,8 @@ extension AllCoreTests {
             }
 
             let best = try #require(times.min())
+            // in the log of every run, so the headroom on a given machine shows
+            print("Adding 20,000 files took \(times), the limit is \(limit)")
             #expect(best < limit, "adding 20,000 files took \(times)")
         }
 
