@@ -39,9 +39,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
         panel.begin { response in
             guard response == .OK else { return }
             Task { @MainActor in
-                for url in panel.urls {
-                    state.add(url: url)
-                }
+                state.add(urls: panel.urls)
             }
         }
     }

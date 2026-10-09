@@ -271,30 +271,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
 
     /// Asked for in #119: don't let the app quit silently while an
-    /// extraction is running.
+    /// extraction is running. Nor while Finder's compress is: quitting leaves
+    /// the archive half written under the name it was going to have.
     public func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
 #if DEBUG
         // The extraction demo keeps a job "active" on purpose; don't let the
         // quit-guard alert block the relaunches that drive its screenshots.
         if ExtractionDemo.isRequested { return .terminateNow }
 #endif
-        guard ExtractionProgressCenter.shared.hasActiveJobs else {
+        guard let running = ExtractionProgressCenter.shared.runningKind else {
             return .terminateNow
         }
 
-        log.notice("Quit requested while extraction is running — asking user")
+        // "extraction" / "compression": the lines an extraction always logged, as they were
+        let what = running == .extraction ? "extraction" : "compression"
+        log.notice("Quit requested while \(what) is running — asking user")
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = String(localized: .appExtractionInProgress)
-        alert.informativeText = String(localized: .appQuitDuringExtractionWarning)
+        switch running {
+        case .extraction:
+            alert.messageText = String(localized: .appExtractionInProgress)
+            alert.informativeText = String(localized: .appQuitDuringExtractionWarning)
+        case .compression:
+            alert.messageText = String(localized: .appCompressionInProgress)
+            alert.informativeText = String(localized: .appQuitDuringCompressionWarning)
+        }
         alert.addButton(withTitle: String(localized: .commonCancel))
         alert.addButton(withTitle: String(localized: .appQuitAnyway))
 
         if alert.runModal() == .alertFirstButtonReturn {
-            log.notice("Quit cancelled — extraction continues")
+            log.notice("Quit cancelled — \(what) continues")
             return .terminateCancel
         }
-        log.notice("Quit forced during extraction")
+        log.notice("Quit forced during \(what)")
         return .terminateNow
     }
 

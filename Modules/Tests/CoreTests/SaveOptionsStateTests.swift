@@ -477,7 +477,7 @@ extension AllCoreTests {
 
                 let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
                 state.create()
-                state.add(url: folder)
+                #expect(await state.add(url: folder).value)
                 let target = dir.appendingPathComponent("out.\(format.rawValue)")
                 await state.save(to: target, options: .init(format: format, excludeDSStore: exclude))?.value
                 #expect(state.error == nil, "\(state.error ?? "")")
@@ -518,7 +518,7 @@ extension AllCoreTests {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             state.open(url: zip)
             try await state.openTask?.value
-            state.add(url: folder)
+            #expect(await state.add(url: folder).value)
             await state.save(options: .init(format: .zip, excludeDSStore: true))?.value
             #expect(state.error == nil, "\(state.error ?? "")")
 
@@ -704,7 +704,7 @@ extension AllCoreTests {
             #expect(state.activeEngine == (engine == .xad ? .xad : .`7zip`))
             let added = dir.appendingPathComponent("added.txt")
             try "added".write(to: added, atomically: true, encoding: .utf8)
-            state.add(url: added)
+            #expect(await state.add(url: added).value)
 
             let format: CompressionOptions.Format = source.pathExtension == "7z" ? .sevenZ : .zip
             let saved = asACopy ? dir.appendingPathComponent("copy.\(format.rawValue)") : source
@@ -752,7 +752,7 @@ extension AllCoreTests {
             try await state.openTask?.value
             let added = dir.appendingPathComponent("added.txt")
             try "added".write(to: added, atomically: true, encoding: .utf8)
-            state.add(url: added)
+            #expect(await state.add(url: added).value)
 
             await state.save()?.value
             #expect(state.saveError != nil)
@@ -783,7 +783,7 @@ extension AllCoreTests {
             try await state.openTask?.value
             let added = dir.appendingPathComponent("added.txt")
             try "added".write(to: added, atomically: true, encoding: .utf8)
-            state.add(url: added)
+            #expect(await state.add(url: added).value)
 
             await state.save()?.value
             #expect(state.saveError?.contains("ASCII") == true, "\(state.saveError ?? "no reason")")
@@ -821,7 +821,7 @@ extension AllCoreTests {
             try noise(bytes: 200_000).write(to: file)
             let state = makeState(Prompts([]))
             state.create()
-            state.add(url: file)
+            #expect(await state.add(url: file).value)
             await state.save(to: dir.appendingPathComponent("set.\(format.rawValue)"),
                              options: .init(format: format, volumeSize: 64 << 10))?.value
             return state
@@ -858,7 +858,7 @@ extension AllCoreTests {
             try await state.openTask?.value
             let added = dir.appendingPathComponent("added.txt")
             try "added".write(to: added, atomically: true, encoding: .utf8)
-            state.add(url: added)
+            #expect(await state.add(url: added).value)
             let nested = try #require(state.entries.values.first { $0.name == "inner.zip" })
             try await state.openAsync(item: nested)
 
@@ -906,7 +906,7 @@ extension AllCoreTests {
             let before = try names.map { try Data(contentsOf: dir.appendingPathComponent($0)) }
             let added = dir.appendingPathComponent("added.txt")
             try "added".write(to: added, atomically: true, encoding: .utf8)
-            state.add(url: added)
+            #expect(await state.add(url: added).value)
 
             await state.save()?.value
             #expect(state.saveError?.contains("Save As") == true, "\(state.saveError ?? "no reason")")
@@ -932,7 +932,7 @@ extension AllCoreTests {
             let prompts = Prompts([nil])
             let state = makeState(prompts)
             state.create()
-            state.add(url: file)
+            #expect(await state.add(url: file).value)
             let target = dir.appendingPathComponent("hidden.7z")
             await state.save(to: target, options: .init(format: .sevenZ, password: "pw", encryptFileNames: true))?.value
             #expect(state.error == nil, "\(state.error ?? "")")
@@ -1003,7 +1003,7 @@ extension AllCoreTests {
             if withAnAddition {
                 let added = dir.appendingPathComponent("added.txt")
                 try "added".write(to: added, atomically: true, encoding: .utf8)
-                state.add(url: added)
+                #expect(await state.add(url: added).value)
             }
 
             await state.save(to: archive, options: .init(format: format, password: "fresh",

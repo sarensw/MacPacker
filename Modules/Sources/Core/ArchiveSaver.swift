@@ -43,8 +43,11 @@ final actor ArchiveSaver {
     private let sourcePassword: String?
     private let passwordResolver: ArchivePasswordResolver
     private let folderAccessProvider: ArchiveFolderAccessUserProvider?
-    /// Percent written, on the main actor.
-    private let onProgress: @MainActor @Sendable (Int) -> Void
+    /// Bytes written, of how many, and when 7-Zip said so — on the main actor.
+    private let onProgress: @MainActor @Sendable (_ completed: UInt64, _ total: UInt64, _ at: Date) -> Void
+    /// Set to stop the write. 7-Zip is told at its next progress report, and
+    /// removes what it had written.
+    private let cancel: ExtractionCancelFlag?
 
     /// How often the source's password is asked for before the save gives up.
     static let passwordPrompts = 5
@@ -60,7 +63,8 @@ final actor ArchiveSaver {
         sourcePassword: String?,
         passwordResolver: @escaping ArchivePasswordResolver,
         folderAccessProvider: ArchiveFolderAccessUserProvider?,
-        onProgress: @escaping @MainActor @Sendable (Int) -> Void
+        onProgress: @escaping @MainActor @Sendable (_ completed: UInt64, _ total: UInt64, _ at: Date) -> Void,
+        cancel: ExtractionCancelFlag? = nil
     ) {
         self.source = source
         self.splitArchiveName = splitArchiveName
@@ -73,6 +77,7 @@ final actor ArchiveSaver {
         self.passwordResolver = passwordResolver
         self.folderAccessProvider = folderAccessProvider
         self.onProgress = onProgress
+        self.cancel = cancel
     }
 
     func save() async throws -> Saved {
@@ -178,20 +183,21 @@ final actor ArchiveSaver {
         }
     }
 
-    /// 7-Zip's byte progress as a percentage. The callback fires on the writing
-    /// (GCD) thread: throttled, then passed to the main actor.
+    /// 7-Zip's byte progress. The callback fires on the writing (GCD) thread:
+    /// throttled, then passed to the main actor with the time it was emitted —
+    /// reports reach the main queue in bursts, and speed is worked out from how
+    /// far apart they really were. What it returns is whether to go on.
     private func progressHandler() -> @Sendable (UInt64, UInt64) -> Bool {
         let throttle = ProgressThrottle()
-        let onProgress = onProgress
+        let (onProgress, cancel) = (onProgress, cancel)
         return { completed, total in
-            guard total > 0 else { return true }
-            let percent = Int((completed * 100) / total)
-            if throttle.shouldEmit(at: Date()) {
+            let now = Date()
+            if total > 0, throttle.shouldEmit(at: now) {
                 DispatchQueue.main.async {
-                    MainActor.assumeIsolated { onProgress(percent) }
+                    MainActor.assumeIsolated { onProgress(completed, total, now) }
                 }
             }
-            return true
+            return cancel?.isCancelled != true
         }
     }
 

@@ -130,6 +130,17 @@ struct ArchiveView: View {
             "zone": zone.name
         ])
 
+        // One drop is one add, however many files it holds. Added file by file,
+        // each was read, put into the archive and shown on its own: a thousand
+        // files, a thousand times over.
+        if zone == .add {
+            loadDroppedFileURLs(from: providers) { urls in
+                log.notice("Drop → add to current archive", context: ["files": "\(urls.count)"])
+                state.add(urls: urls)
+            }
+            return
+        }
+
         for provider in providers {
             provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { data, _ in
                 guard let data = data as? Data,
@@ -138,15 +149,11 @@ struct ArchiveView: View {
                     return
                 }
                 Task { @MainActor in
-                    switch zone {
-                    case .add:
-                        log.notice("Drop → add to current archive", context: ["file": url.lastPathComponent])
-                        state.add(url: url)
-                    case .open where state.hasArchive:
+                    if state.hasArchive {
                         // This window is taken (and may hold unsaved edits).
                         log.notice("Drop → open in a new window", context: ["file": url.lastPathComponent])
                         openInNewWindowAction(url)
-                    case .open:
+                    } else {
                         log.notice("Drop → open in this window", context: ["file": url.lastPathComponent])
                         if state.isSupportedArchive(url: url) { RecentArchives.note(url) }
                         state.openDropped(url: url)
