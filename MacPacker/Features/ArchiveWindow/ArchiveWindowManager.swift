@@ -138,8 +138,8 @@ class ArchiveWindowManager {
     func openCreateArchiveWindow(with files: [URL] = []) -> ArchiveState {
         let state = createAndShowArchiveWindow(nil)
         state.create(named: String(localized: .commonNewArchive))
-        for file in files {
-            state.add(url: file)
+        if !files.isEmpty {
+            state.add(urls: files)
         }
         return state
     }

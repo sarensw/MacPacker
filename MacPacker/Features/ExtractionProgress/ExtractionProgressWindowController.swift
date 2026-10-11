@@ -13,10 +13,10 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 
-/// Owns the extraction progress window. It observes the shared
+/// Owns the progress window. It observes the shared
 /// `ExtractionProgressCenter` and
 /// - shows itself as soon as a job is running (also for window-less flows
-///   like the Finder extension's "Extract here"),
+///   like the Finder extension's "Extract here" and "Compress to …"),
 /// - closes itself shortly after all jobs finished successfully,
 /// - stays open when a job failed so the error remains visible.
 @MainActor
@@ -103,6 +103,12 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
 
 
         if hasActive {
+            // Named after what is running. The title bar shows no text; VoiceOver
+            // and Mission Control read it.
+            let title = String(localized: center.runningKind == .compression ? .commonCompressing : .commonExtracting)
+            if window?.title != title {
+                window?.title = title
+            }
             scheduledClose?.cancel()
             scheduledClose = nil
             scheduleShowIfNeeded()

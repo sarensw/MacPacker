@@ -15,6 +15,10 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Writes `items` into a new archive at `destination` through the same
 /// add/save path the UI uses; the format follows the destination's extension.
+///
+/// There is no window to show it in, so it goes to the progress window: that
+/// comes up once the compress takes long enough, can cancel it, and stays up
+/// to say why it failed.
 /// - Returns: whether the archive was written.
 @MainActor
 private func writeArchive(
@@ -25,10 +29,12 @@ private func writeArchive(
 ) async -> Bool {
     log.notice("Compressing \(items.count) item(s) to \(destination.lastPathComponent)")
     let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
-    await state.compress(items, to: destination)
-
-    if let error = state.error {
-        log.error("Compress failed", context: ["error": error])
+    guard await state.compress(items, to: destination, showingProgress: true) else {
+        if let error = state.error {
+            log.error("Compress failed", context: ["error": error])
+        } else {
+            log.notice("Compress cancelled", context: ["file": destination.lastPathComponent])
+        }
         return false
     }
     log.notice("Compress done", context: ["file": destination.lastPathComponent])

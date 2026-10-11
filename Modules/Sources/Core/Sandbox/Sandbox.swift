@@ -28,6 +28,11 @@ public nonisolated final class Sandbox: Sendable {
     /// Persist a security-scoped bookmark for `url`. Call right after the user has
     /// granted access (e.g. from an open panel) while the grant is still active.
     public static func storeBookmark(url: URL) {
+        storeBookmark(url: url, in: store)
+    }
+
+    /// `store` is where the bookmarks are kept: the app's defaults, or a test's own.
+    static func storeBookmark(url: URL, in store: UserDefaults) {
         do {
             let bookmarkData = try url.bookmarkData(
                 options: .withSecurityScope,
@@ -82,49 +87,98 @@ public nonisolated final class Sandbox: Sendable {
         sandbox.getSecurityUrl(url: url)
     }
 
-    private func getSecurityUrl(url: URL) -> URL? {
+    static func securityScopedURL(for url: URL, in store: UserDefaults) -> URL? {
+        sandbox.getSecurityUrl(url: url, in: store)
+    }
+
+    private func getSecurityUrl(url: URL, in store: UserDefaults = Sandbox.store) -> URL? {
         var securityUrl: URL? = nil
         autoreleasepool {
-            var isStale = false
             var subUrl: URL = url
 
-            do {
-                while subUrl.path().count > 1 {
-                    let key = getBookmarkKey(url: subUrl)
+            while subUrl.path().count > 1 {
+                let key = getBookmarkKey(url: subUrl)
+                var isStale = false
 
-                    if let bookmarkData = Sandbox.store.data(forKey: key) {
-                        let resolved = try URL(
-                            resolvingBookmarkData: bookmarkData,
-                            options: [.withSecurityScope, .withoutMounting, .withoutUI],
-                            bookmarkDataIsStale: &isStale
-                        )
-                        securityUrl = resolved
+                if let bookmarkData = store.data(forKey: key),
+                   let resolved = grant(in: bookmarkData, storedFor: subUrl, isStale: &isStale) {
+                    securityUrl = resolved
 
-                        // A stale-but-resolvable bookmark still grants access right
-                        // now; refresh it from the resolved URL so it keeps working.
-                        // Network bookmarks go stale whenever the volume is
-                        // unmounted/remounted. Creating the new bookmark requires the
-                        // scope to be held.
-                        if isStale, resolved.startAccessingSecurityScopedResource() {
-                            defer { resolved.stopAccessingSecurityScopedResource() }
-                            if let refreshed = try? resolved.bookmarkData(
-                                options: .withSecurityScope,
-                                includingResourceValuesForKeys: nil,
-                                relativeTo: nil) {
-                                Sandbox.store.set(refreshed, forKey: key)
-                            }
+                    // A stale-but-resolvable bookmark still grants access right
+                    // now; refresh it from the resolved URL so it keeps working.
+                    // Network bookmarks go stale whenever the volume is
+                    // unmounted/remounted. Creating the new bookmark requires the
+                    // scope to be held.
+                    if isStale, resolved.startAccessingSecurityScopedResource() {
+                        defer { resolved.stopAccessingSecurityScopedResource() }
+                        if let refreshed = try? resolved.bookmarkData(
+                            options: .withSecurityScope,
+                            includingResourceValuesForKeys: nil,
+                            relativeTo: nil) {
+                            store.set(refreshed, forKey: key)
                         }
-
-                        return
                     }
 
-                    subUrl = subUrl.deletingLastPathComponent()
+                    return
                 }
-            } catch {
-                log.error("Could not resolve bookmark data: \(error.localizedDescription)")
+
+                subUrl = subUrl.deletingLastPathComponent()
             }
         }
 
         return securityUrl
+    }
+
+    /// What the bookmark stored for `path` gives access to — if that is still
+    /// what is at `path`. Otherwise `nil`, and the search goes on further up.
+    ///
+    /// A bookmark follows its file. An archive that was opened has one, for the
+    /// list of recent archives: moved to the Trash, it points into the Trash,
+    /// and once the Trash is emptied it cannot be resolved at all. Neither is a
+    /// grant for `path` any longer. Taken for one, it hid the folder's grant
+    /// above it — being the first found on the way up, or by ending the search
+    /// with its error — and the next archive written under that name could not
+    /// be created, in a folder the user had given access to.
+    private func grant(in bookmarkData: Data, storedFor path: URL, isStale: inout Bool) -> URL? {
+        let resolved: URL
+        do {
+            resolved = try URL(
+                resolvingBookmarkData: bookmarkData,
+                options: [.withSecurityScope, .withoutMounting, .withoutUI],
+                bookmarkDataIsStale: &isStale
+            )
+        } catch {
+            // Not an error any more: what it was for is gone, and what is asked
+            // for may well be covered further up.
+            log.notice("Bookmark cannot be resolved, passing it over", context: [
+                "name": path.lastPathComponent,
+                "error": error.localizedDescription
+            ])
+            return nil
+        }
+        guard isSameItem(resolved, path) else {
+            log.notice("Bookmark has left the path it was stored for, passing it over", context: [
+                "name": path.lastPathComponent
+            ])
+            return nil
+        }
+        return resolved
+    }
+
+    /// Whether two urls name the same file or folder. By what the file system
+    /// says they are, where it says; by path where one of them is not there to
+    /// ask about — which is the case this is for.
+    private func isSameItem(_ one: URL, _ other: URL) -> Bool {
+        func identity(_ url: URL) -> (any NSObjectProtocol)? {
+            // asked afresh: a url keeps what it was last told about its file,
+            // and that was before the file moved
+            var url = url
+            url.removeAllCachedResourceValues()
+            return (try? url.resourceValues(forKeys: [.fileResourceIdentifierKey]))?.fileResourceIdentifier
+        }
+        if let first = identity(one), let second = identity(other) {
+            return first.isEqual(second)
+        }
+        return one.resolvingSymlinksInPath().path == other.resolvingSymlinksInPath().path
     }
 }

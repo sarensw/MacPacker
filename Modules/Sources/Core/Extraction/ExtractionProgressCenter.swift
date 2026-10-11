@@ -21,7 +21,8 @@ public struct ExtractionSpeedSample: Equatable, Sendable {
     public let bytesPerSecond: Double
 }
 
-/// One user-visible extraction run (e.g. "extract selected items to folder X").
+/// One user-visible run: an extraction (e.g. "extract selected items to folder
+/// X"), or a compress that has no window of its own to show its progress in.
 public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public enum State: Equatable, Sendable {
         case running
@@ -30,7 +31,22 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
         case cancelled
     }
 
+    /// What the job does. The window shows both alike; what is said around it
+    /// differs — the quit warning, the name of the window.
+    public enum Kind: Equatable, Sendable {
+        case extraction
+        case compression
+
+        fileprivate var label: String {
+            switch self {
+            case .extraction: "Extraction"
+            case .compression: "Compression"
+            }
+        }
+    }
+
     public let id: UUID
+    public let kind: Kind
     public let archiveName: String
     public let destination: URL?
     public let itemCount: Int
@@ -148,9 +164,9 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     }
 }
 
-/// Global registry of running extractions. All archive windows (and the
-/// window-less Finder-extension flows) report here so one progress window
-/// can show everything that is being extracted right now.
+/// Global registry of running jobs. All archive windows (and the window-less
+/// Finder-extension flows) report here so one progress window can show
+/// everything that is being extracted, or compressed from Finder, right now.
 @MainActor
 public final class ExtractionProgressCenter: ObservableObject {
     public static let shared = ExtractionProgressCenter()
@@ -165,9 +181,19 @@ public final class ExtractionProgressCenter: ObservableObject {
         jobs.contains { !$0.isFinished }
     }
 
+    /// What the running jobs are doing, for the wording around the window:
+    /// extraction while one is running, compression when those are all that is
+    /// left, `nil` when nothing is.
+    public var runningKind: ExtractionJob.Kind? {
+        let running = jobs.filter { !$0.isFinished }
+        if running.contains(where: { $0.kind == .extraction }) { return .extraction }
+        return running.isEmpty ? nil : .compression
+    }
+
     /// Registers a new running job and returns its id.
     @discardableResult
     public func begin(
+        kind: ExtractionJob.Kind = .extraction,
         archiveName: String,
         destination: URL?,
         itemCount: Int,
@@ -175,6 +201,7 @@ public final class ExtractionProgressCenter: ObservableObject {
     ) -> UUID {
         let job = ExtractionJob(
             id: UUID(),
+            kind: kind,
             archiveName: archiveName,
             destination: destination,
             itemCount: itemCount,
@@ -182,7 +209,7 @@ public final class ExtractionProgressCenter: ObservableObject {
             startedAt: Date()
         )
         jobs.append(job)
-        log.notice("Extraction job started", context: [
+        log.notice("\(kind.label) job started", context: [
             "job": job.id.uuidString,
             "archive": archiveName,
             "destination": destination?.path ?? "(temp)",
@@ -203,8 +230,26 @@ public final class ExtractionProgressCenter: ObservableObject {
     /// running until the extraction task acknowledges with `finish(_, .cancelled)`.
     public func requestCancel(_ id: UUID) {
         guard let handler = cancelHandlers.removeValue(forKey: id) else { return }
-        log.notice("Extraction cancel requested", context: ["job": id.uuidString])
+        let label = jobs.first { $0.id == id }?.kind.label ?? ExtractionJob.Kind.extraction.label
+        log.notice("\(label) cancel requested", context: ["job": id.uuidString])
         handler()
+    }
+
+    /// Asks every running job of `kind` to stop, and comes back once they
+    /// have — for the app about to quit. After `limit` it comes back whatever
+    /// they did: a quit is not held up for ever by a job that will not stop.
+    public func cancelAll(_ kind: ExtractionJob.Kind, waitingUpTo limit: Duration) async {
+        func running() -> [UUID] {
+            jobs.filter { !$0.isFinished && $0.kind == kind }.map(\.id)
+        }
+        running().forEach(requestCancel)
+
+        // ponytail: looked at every few milliseconds rather than woken by the
+        // job ending. It runs once, when the app quits.
+        let deadline = ContinuousClock.now + limit
+        while !running().isEmpty, ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(20))
+        }
     }
 
     /// Byte progress reported by the extraction engine itself.
@@ -245,21 +290,22 @@ public final class ExtractionProgressCenter: ObservableObject {
         cancelHandlers[id] = nil
 
         let duration = Date().timeIntervalSince(jobs[index].startedAt)
+        let label = jobs[index].kind.label
         switch state {
         case .done:
-            log.notice("Extraction job done", context: [
+            log.notice("\(label) job done", context: [
                 "job": id.uuidString,
                 "archive": jobs[index].archiveName,
                 "seconds": String(format: "%.2f", duration)
             ])
         case .failed(let message):
-            log.error("Extraction job failed", context: [
+            log.error("\(label) job failed", context: [
                 "job": id.uuidString,
                 "archive": jobs[index].archiveName,
                 "error": message
             ])
         case .cancelled:
-            log.notice("Extraction job cancelled", context: [
+            log.notice("\(label) job cancelled", context: [
                 "job": id.uuidString,
                 "archive": jobs[index].archiveName
             ])

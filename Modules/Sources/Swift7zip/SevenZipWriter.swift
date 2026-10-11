@@ -475,6 +475,19 @@ extension SevenZipArchive {
         return buffer.split(separator: 0).map { String(cString: Array($0) + [0]) }
     }
 
+    /// Whether `source` has anything `packMetadata` would put on the stand-in it
+    /// packs: an extended attribute worth keeping, or the hidden flag. With
+    /// neither, that stand-in is an empty file, and packing it gives the sample
+    /// `EmptyMetadata` compares against — a sidecar that is left out.
+    static func carriesMetadata(_ source: URL) throws -> Bool {
+        if try attributeNames(of: source).contains(where: { !systemOwnedAttributes.contains($0) }) {
+            return true
+        }
+        var status = stat()
+        guard lstat(source.path, &status) == 0 else { throw metadataError("lstat", source) }
+        return status.st_flags & UInt32(UF_HIDDEN) != 0
+    }
+
     /// Serializes what macOS keeps outside a file's contents — resource fork,
     /// extended attributes, and the FinderInfo that carries a custom-icon or
     /// invisible flag — into AppleDouble. Returns the file written.
@@ -612,12 +625,19 @@ extension SevenZipArchive {
                 continue
             }
 
+            // Nothing a sidecar would carry, so none is packed to find that out.
+            // That is nearly every file, and packing costs two scratch files and
+            // a read each: 8 seconds for 20,000 of them, before a single byte of
+            // the archive was written (#278).
+            guard try carriesMetadata(source) else { continue }
+
             let values = try source.resourceValues(
                 forKeys: [.isSymbolicLinkKey, .contentModificationDateKey])
             if values.isSymbolicLink == true { continue }
 
-            // The only reason to leave a sidecar out: it was packed, and what came
-            // back says nothing. A failure above is a failure, not an absence.
+            // Otherwise the only reason to leave a sidecar out: it was packed, and
+            // what came back says nothing. A failure above is a failure, not an
+            // absence.
             let packed = try packMetadata(of: source, into: scratch)
             let bytes = try Data(contentsOf: packed)
             if empty.describesNothing(bytes) { continue }
