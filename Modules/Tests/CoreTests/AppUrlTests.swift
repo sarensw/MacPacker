@@ -163,5 +163,16 @@ extension AllCoreTests {
                 #expect(!action.honorsSmartExtraction, "\(action) does not extract")
             }
         }
+
+        /// #279: a Finder action that needs no window must not bring up the
+        /// launch window. Only the actions that open one keep it.
+        @Test("Only Open and Add to Archive show a window")
+        func windowlessActions() {
+            for action in [AppUrlAction.extractHere, .extractToFolder, .extractTo, .compress, .compressEach, .compressContents] {
+                #expect(action.runsWithoutWindow, "\(action) needs no window")
+            }
+            #expect(!AppUrlAction.open.runsWithoutWindow)
+            #expect(!AppUrlAction.addToArchive.runsWithoutWindow)
+        }
 }
 }

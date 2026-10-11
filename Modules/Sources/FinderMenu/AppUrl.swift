@@ -38,6 +38,20 @@ public extension AppUrlAction {
             false
         }
     }
+
+    /// Whether the action does its work without a window of its own. A launch
+    /// for such an action shows neither the launch nor the welcome window, and
+    /// the app quits once the work is done (#279). Progress, password and
+    /// folder prompts still appear when needed.
+    var runsWithoutWindow: Bool {
+        switch self {
+        case .extractHere, .extractToFolder, .extractTo, .compress,
+             .compressEach, .compressContents:
+            true
+        case .open, .addToArchive:
+            false
+        }
+    }
 }
 
 /// A request from the Finder extension, sent as

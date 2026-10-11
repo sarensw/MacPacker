@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import Combine
 import Core
 import FinderMenu
 import Foundation
@@ -32,6 +33,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var dropCompressor: DropCompressor? = nil
     private var dropWindowController: DropWindowController? = nil
     private var pendingOpenURLs: [URL] = []
+    /// Launched only to run Finder actions that need no window (#279): no
+    /// launch or welcome window then, and the app quits once they are done.
+    private var launchedForFinderActions = false
+    /// Launched to open something whose open event has not arrived yet: the
+    /// launch and welcome windows wait for it, as it may be such an action.
+    private var awaitingLaunchURLs = false
+    private var runningFinderActions = 0
+    private var finderActionSubscriptions: Set<AnyCancellable> = []
 
     private static var isRunningInPreview: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
@@ -82,6 +91,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             return
         }
 
+        // the open event that launched the app, arriving after the launch
+        if awaitingLaunchURLs {
+            awaitingLaunchURLs = false
+            if Self.areWindowlessFinderActions(urls) {
+                beginFinderActionsLaunch()
+            } else {
+                showLaunchWindows()
+            }
+        }
+
         // first check if this is an app url, and handle it accordingly
         if let url = urls.first,
            let appUrl: AppUrl = UrlParser().parse(appUrl: url) {
@@ -119,7 +138,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
 
             // we have all the url info, start the handlers now
-            handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
+            runningFinderActions += 1
+            Task {
+                await handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
+                runningFinderActions -= 1
+                quitIfFinderActionsAreDone()
+            }
 
             // no need to move further here as it was an app url
             return
@@ -188,11 +212,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         let showsExtractionDemo = false
 #endif
         let launchedToOpenSomething = opensWindow || showsExtractionDemo
-
-        // make sure that at least one window will be shown even if it is empty
+        // A Finder action that needs no window (#279) is what the user asked
+        // for, not the app. Its open event can arrive before this point or
+        // after it; until it has, the launch and welcome windows wait.
+        let isDefaultLaunch = notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool ?? true
         if !launchedToOpenSomething {
-            log.notice("Opening launch window (pending open urls: \(pendingOpenURLs.count))")
-            archiveWindowManager?.openLaunchArchiveWindow()
+            if Self.areWindowlessFinderActions(pendingOpenURLs) {
+                beginFinderActionsLaunch()
+            } else if pendingOpenURLs.isEmpty && !isDefaultLaunch {
+                awaitingLaunchURLs = true
+                // launched to open something that never came: as a plain launch
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                    guard let self, self.awaitingLaunchURLs else { return }
+                    self.awaitingLaunchURLs = false
+                    self.showLaunchWindows()
+                }
+            } else {
+                // make sure that at least one window will be shown even if it is empty
+                log.notice("Opening launch window (pending open urls: \(pendingOpenURLs.count))")
+                archiveWindowManager?.openLaunchArchiveWindow()
+            }
         }
 
         // Launch parameters: open the requested archive and (optionally)
@@ -209,12 +248,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             application(NSApp, open: queued)
         }
 
-        // opens the welcome window
-        if !launchedToOpenSomething,
-           welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") {
-            log.notice("Showing welcome window")
-            WelcomeWindowController().show()
-            welcomeScreenShownInVersion = Bundle.main.appVersionLong
+        if !launchedToOpenSomething && !launchedForFinderActions && !awaitingLaunchURLs {
+            showWelcomeWindowIfNeeded()
         }
         log.notice("applicationDidFinishLaunching done")
 
@@ -256,6 +291,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         guard !Self.isRunningInPreview else { return true }
         log.notice("applicationShouldHandleReopen (hasVisibleWindows: \(hasVisibleWindows))")
+        // clicked in the Dock: the user wants the app now, so it stays
+        launchedForFinderActions = false
         if !hasVisibleWindows {
             archiveWindowManager?.openArchiveWindow()
             NSApp.activate(ignoringOtherApps: true)
@@ -346,5 +383,54 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
     func showDropWindow() {
         dropWindowController?.show()
+    }
+
+    private func showWelcomeWindowIfNeeded() {
+        guard welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") else { return }
+        log.notice("Showing welcome window")
+        WelcomeWindowController().show()
+        welcomeScreenShownInVersion = Bundle.main.appVersionLong
+    }
+
+    /// The launch window and the welcome window, once it is clear the app
+    /// was not launched just for a Finder action.
+    private func showLaunchWindows() {
+        log.notice("Opening launch window")
+        archiveWindowManager?.openLaunchArchiveWindow()
+        showWelcomeWindowIfNeeded()
+    }
+
+    private static func areWindowlessFinderActions(_ urls: [URL]) -> Bool {
+        !urls.isEmpty && urls.allSatisfy { UrlParser().parse(appUrl: $0)?.action.runsWithoutWindow == true }
+    }
+
+    private func beginFinderActionsLaunch() {
+        log.notice("Launched for Finder actions — no launch or welcome window")
+        launchedForFinderActions = true
+        observeFinderActions()
+    }
+
+    /// Re-checks whether to quit as jobs finish and windows close — the
+    /// progress window stays up on a failure until the user has read it.
+    private func observeFinderActions() {
+        ExtractionProgressCenter.shared.$jobs
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.quitIfFinderActionsAreDone() }
+            .store(in: &finderActionSubscriptions)
+        NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)
+            // after the close, so the window no longer counts as visible
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.quitIfFinderActionsAreDone() }
+            .store(in: &finderActionSubscriptions)
+    }
+
+    private func quitIfFinderActionsAreDone() {
+        guard launchedForFinderActions,
+              runningFinderActions == 0,
+              ExtractionProgressCenter.shared.jobs.isEmpty,
+              !NSApp.windows.contains(where: { $0.isVisible || $0.isMiniaturized })
+        else { return }
+        log.notice("Finder actions done — quitting")
+        NSApp.terminate(nil)
     }
 }

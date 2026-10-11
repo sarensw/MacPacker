@@ -114,6 +114,30 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Finder actions no longer open the main window",
+                "zh-Hans": "Finder 操作不再打开主窗口",
+                "fr": "Les actions du Finder n’ouvrent plus la fenêtre principale",
+                "de": "Finder-Aktionen öffnen nicht mehr das Hauptfenster",
+                "it": "Le azioni del Finder non aprono più la finestra principale",
+                "ja": "Finder のアクションでメインウインドウが開かなくなりました",
+                "fa": "کارهای Finder دیگر پنجره اصلی را باز نمی‌کنند",
+                "pl": "Akcje Findera nie otwierają już głównego okna",
+                "pt-BR": "Ações do Finder não abrem mais a janela principal",
+                "ru": "Действия Finder больше не открывают главное окно",
+                "uk": "Дії Finder більше не відкривають головне вікно",
+                "es-MX": "Las acciones del Finder ya no abren la ventana principal",
+                "ko": "Finder 동작이 더 이상 기본 창을 열지 않음",
+                "nl": "Finder-acties openen het hoofdvenster niet meer",
+                "tr": "Finder eylemleri artık ana pencereyi açmıyor",
+                "vi": "Thao tác Finder không còn mở cửa sổ chính"
+            },
+            "issues": [
+                "279"
+            ]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.04",
