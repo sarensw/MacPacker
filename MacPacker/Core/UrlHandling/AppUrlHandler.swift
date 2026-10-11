@@ -16,7 +16,7 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 @MainActor
 protocol AppUrlHandler {
-    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager)
+    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async
 }
 
 extension AppUrlHandler {
