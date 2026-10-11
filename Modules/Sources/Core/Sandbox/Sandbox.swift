@@ -148,11 +148,18 @@ public nonisolated final class Sandbox: Sendable {
                 bookmarkDataIsStale: &isStale
             )
         } catch {
-            log.error("Could not resolve bookmark data: \(error.localizedDescription)")
+            // Not an error any more: what it was for is gone, and what is asked
+            // for may well be covered further up.
+            log.notice("Bookmark cannot be resolved, passing it over", context: [
+                "name": path.lastPathComponent,
+                "error": error.localizedDescription
+            ])
             return nil
         }
         guard isSameItem(resolved, path) else {
-            log.notice("Bookmark has left the path it was stored for", context: ["name": path.lastPathComponent])
+            log.notice("Bookmark has left the path it was stored for, passing it over", context: [
+                "name": path.lastPathComponent
+            ])
             return nil
         }
         return resolved
