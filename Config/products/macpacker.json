@@ -114,6 +114,30 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Move archives to Trash after extracting from Finder",
+                "zh-Hans": "从 Finder 解压后将归档移到废纸篓",
+                "fr": "Placer l’archive dans la corbeille après extraction depuis le Finder",
+                "de": "Archiv nach dem Entpacken im Finder in den Papierkorb legen",
+                "it": "Sposta l’archivio nel Cestino dopo l’estrazione dal Finder",
+                "ja": "Finder から展開した後にアーカイブをゴミ箱へ移動",
+                "fa": "انتقال آرشیو به سطل زباله پس از استخراج از Finder",
+                "pl": "Przenoś archiwum do kosza po rozpakowaniu z Findera",
+                "pt-BR": "Mover o arquivo para o Lixo após extrair pelo Finder",
+                "ru": "Перемещать архив в Корзину после извлечения из Finder",
+                "uk": "Переміщувати архів у Смітник після видобування з Finder",
+                "es-MX": "Mover el archivo a la Papelera tras extraer desde el Finder",
+                "ko": "Finder에서 압축 해제 후 아카이브를 휴지통으로 이동",
+                "nl": "Archief naar prullenmand na uitpakken in de Finder",
+                "tr": "Finder’dan çıkarınca arşivi Çöp Sepeti’ne taşı",
+                "vi": "Chuyển tệp nén vào Thùng rác sau khi giải nén từ Finder"
+            },
+            "issues": [
+                "316"
+            ]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.04",

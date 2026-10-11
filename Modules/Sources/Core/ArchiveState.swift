@@ -155,6 +155,10 @@ public class ArchiveState: ObservableObject {
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
+    /// How the last `extract(to:smart:)` ended; `nil` until one has. The
+    /// progress center drops finished jobs when its window closes, so a
+    /// caller that waits for the end reads it here.
+    public private(set) var lastExtractionState: ExtractionJob.State?
     /// Passwords the user gave, by the file they were given for. One window can
     /// hold more than one archive: an archive inside the archive opens in the
     /// same tree, extracted to a temp file, and each can have its own password.
@@ -1109,6 +1113,21 @@ extension ArchiveState {
         return file
     }
 
+    /// The archive's file — for a split set, every volume of it in the
+    /// archive's folder. What goes to the Trash once it is extracted.
+    public var sourceFiles: [URL] {
+        url.map(files(ofArchiveAt:)) ?? []
+    }
+
+    func files(ofArchiveAt url: URL) -> [URL] {
+        let setName = splitSetName(for: url)
+        let folder = url.deletingLastPathComponent()
+        let siblings = (try? FileManager.default.contentsOfDirectory(
+            at: folder, includingPropertiesForKeys: nil)) ?? []
+        let volumes = siblings.filter { splitSetName(for: $0) == setName }
+        return volumes.isEmpty ? [url] : volumes
+    }
+
     public func open(url: URL) {
         // A second open supersedes the first. Without cancelling, the earlier
         // task keeps running against the same state.
@@ -1734,6 +1753,7 @@ extension ArchiveState {
     ///   - smart: see `extract(items:to:smart:)`
     public func extract(to destination: URL, smart: Bool) {
         isBusy = true
+        lastExtractionState = nil
         updateStatus(.processing)
 
         let jobId = progressCenter.begin(
@@ -1785,16 +1805,20 @@ extension ArchiveState {
                     to: target,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
+                lastExtractionState = .done
                 progressCenter.finish(jobId, .done)
             } catch is CancellationError {
+                lastExtractionState = .cancelled
                 progressCenter.finish(jobId, .cancelled)
             } catch ArchiveError.passwordCancelled {
                 let outcome = passwordCancelledOutcome()
                 if case .failed(let message) = outcome { self.error = message }
+                lastExtractionState = outcome
                 progressCenter.finish(jobId, outcome)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
+                lastExtractionState = .failed(error.localizedDescription)
                 progressCenter.finish(jobId, .failed(error.localizedDescription))
             }
 

@@ -436,5 +436,42 @@ extension AllCoreTests {
             #expect(center.jobs[0].state == .done)
             #expect(center.hasActiveJobs == false)
         }
+
+        /// Finder's extract actions read the outcome here once the job has
+        /// ended — the progress window may already have dropped it — and move
+        /// the archive to the Trash only when it is `.done`.
+        @Test func extractFullArchiveRecordsItsOutcome() async throws {
+            let state = try await openedState()
+            state.progressCenter = ExtractionProgressCenter()
+            #expect(state.lastExtractionState == nil)
+
+            let dest = try makeDest()
+            defer { try? FileManager.default.removeItem(at: dest) }
+
+            await withCheckedContinuation { continuation in
+                state.onStatusChange = { status in
+                    if status == .done { continuation.resume() }
+                }
+                state.extract(to: dest, smart: false)
+            }
+            #expect(state.lastExtractionState == .done)
+        }
+
+        /// A plain archive is its own file; a split set is every volume of it
+        /// next to the one opened, and nothing else in the folder.
+        @Test func sourceFilesCoverEveryVolumeOfASplitSet() async throws {
+            let folder = try makeDest()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            for name in ["set.z01", "set.z02", "set.zip", "other.zip", "set.txt"] {
+                FileManager.default.createFile(atPath: folder.appendingPathComponent(name).path, contents: Data())
+            }
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let volumes = state.files(ofArchiveAt: folder.appendingPathComponent("set.z02"))
+            #expect(Set(volumes.map(\.lastPathComponent)) == ["set.z01", "set.z02", "set.zip"])
+
+            let plain = try await openedState()
+            #expect(plain.sourceFiles.map(\.lastPathComponent) == ["defaultArchive.zip"])
+        }
     }
 }
