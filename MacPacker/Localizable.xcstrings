@@ -230,13 +230,13 @@
       }
     },
     "appQuitDuringCompressionWarning": {
-      "comment": "Body of the alert shown when the user quits while Finder's \"Compress to …\" is still writing an archive.",
+      "comment": "Body of the alert shown when the user quits while Finder's \"Compress to …\" is still writing an archive. Quitting cancels it and removes what was written so far.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quitting now stops the compression and may leave an incomplete archive at the destination."
+            "value": "Quitting now stops the compression. The archive will not be created."
           }
         }
       }

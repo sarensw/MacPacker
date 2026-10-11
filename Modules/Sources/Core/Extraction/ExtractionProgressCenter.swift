@@ -235,6 +235,23 @@ public final class ExtractionProgressCenter: ObservableObject {
         handler()
     }
 
+    /// Asks every running job of `kind` to stop, and comes back once they
+    /// have — for the app about to quit. After `limit` it comes back whatever
+    /// they did: a quit is not held up for ever by a job that will not stop.
+    public func cancelAll(_ kind: ExtractionJob.Kind, waitingUpTo limit: Duration) async {
+        func running() -> [UUID] {
+            jobs.filter { !$0.isFinished && $0.kind == kind }.map(\.id)
+        }
+        running().forEach(requestCancel)
+
+        // ponytail: looked at every few milliseconds rather than woken by the
+        // job ending. It runs once, when the app quits.
+        let deadline = ContinuousClock.now + limit
+        while !running().isEmpty, ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(20))
+        }
+    }
+
     /// Byte progress reported by the extraction engine itself.
     /// `date` must be the time the engine emitted the values — reports may
     /// arrive on the main queue in bursts, and speed math needs the real

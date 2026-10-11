@@ -569,6 +569,46 @@ extension AllCoreTests {
             #expect(!FileManager.default.fileExists(atPath: dest.path))
         }
 
+        /// Quitting anyway stops what is being compressed before the app goes:
+        /// the writer then removes what it had written. Quit under it, and half
+        /// an archive stays behind under the name the whole one was to have.
+        @Test func quittingStopsACompressAndWaitsForItToEnd() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let project = try makeProject(in: dir, files: 2_000)
+            let dest = dir.appendingPathComponent("FileApex.zip")
+            let center = ExtractionProgressCenter()
+            let state = makeState(reportingTo: center)
+            // an extraction next to it is not this call's to stop
+            let extraction = center.begin(archiveName: "other.zip", destination: nil, itemCount: 1, totalBytes: nil)
+
+            let compressing = Task { await state.compress([project], to: dest, showingProgress: true) }
+            for _ in 0..<1_000 where center.jobs.count < 2 { await Task.yield() }
+            #expect(center.jobs.count == 2, "the compress never showed up in the progress center")
+
+            await center.cancelAll(.compression, waitingUpTo: .seconds(30))
+
+            // by the time it comes back, the job has ended and nothing is left
+            #expect(center.jobs.last?.state == .cancelled, "\(String(describing: center.jobs.last?.state))")
+            #expect(!FileManager.default.fileExists(atPath: dest.path), "half an archive was left behind")
+            #expect(center.jobs.first { $0.id == extraction }?.state == .running)
+            #expect(await !compressing.value)
+        }
+
+        /// A job that does not stop holds the quit up only so long.
+        @Test func quittingDoesNotWaitForEverForAJobThatWillNotStop() async {
+            let center = ExtractionProgressCenter()
+            let stubborn = center.begin(
+                kind: .compression, archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
+            var asked = false
+            center.setOnCancel(stubborn) { asked = true }
+
+            await center.cancelAll(.compression, waitingUpTo: .milliseconds(100))
+
+            #expect(asked)
+            #expect(center.jobs.first?.state == .running)
+        }
+
         /// The quit warning and the window's name follow what is running:
         /// extraction while there is one, compression when that is all there is.
         @Test func whatIsRunningDecidesTheWording() {

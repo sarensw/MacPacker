@@ -271,8 +271,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
 
     /// Asked for in #119: don't let the app quit silently while an
-    /// extraction is running. Nor while Finder's compress is: quitting leaves
-    /// the archive half written under the name it was going to have.
+    /// extraction is running. Nor while Finder's compress is, which has no
+    /// window that would say so.
     public func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
 #if DEBUG
         // The extraction demo keeps a job "active" on purpose; don't let the
@@ -304,7 +304,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             return .terminateCancel
         }
         log.notice("Quit forced during \(what)")
-        return .terminateNow
+        // What is being compressed is stopped first, and the quit waits for it:
+        // the writer then removes what it had written. Quit under it, and half
+        // an archive stays behind under the name the whole one was to have.
+        Task { @MainActor in
+            await ExtractionProgressCenter.shared.cancelAll(.compression, waitingUpTo: .seconds(5))
+            NSApp.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
     }
 
     public func applicationWillTerminate(_ notification: Notification) {
