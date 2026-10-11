@@ -236,7 +236,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quitting now stops the compression. The archive will not be created."
+            "value": "Quitting stops the compression."
           }
         }
       }
