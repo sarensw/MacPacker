@@ -40,6 +40,7 @@
         "items": [
           {
             "type": "feat",
+            "highlight": true,
             "title": {
                 "en": "Progress window when compressing from Finder",
                 "zh-Hans": "从 Finder 压缩时显示进度窗口",
@@ -89,6 +90,7 @@
           },
           {
             "type": "fix",
+            "highlight": true,
             "title": {
                 "en": "Compressing a large folder freezes the app",
                 "zh-Hans": "压缩大型文件夹会导致应用程序冻结",
