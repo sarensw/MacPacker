@@ -19830,6 +19830,18 @@
         }
       }
     },
+    "settingsTrashArchiveAfterFinderExtraction": {
+      "comment": "Setting: after Finder's Extract Here / Extract to has extracted an archive successfully, move the archive (every volume of a split set) to the Trash, without asking.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move archive to Trash after extracting from Finder"
+          }
+        }
+      }
+    },
     "updatesCheckForUpdates": {
       "comment": "Allow the user to check for updates",
       "extractionState": "manual",

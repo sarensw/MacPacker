@@ -20,6 +20,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
+    @AppStorage(Keys.trashArchiveAfterFinderExtraction) var trashArchiveAfterFinderExtraction: Bool = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -115,6 +116,17 @@ struct GeneralSettingsView: View {
 
                 HStack {
                     Toggle(isOn: $smartExtraction) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            HStack(alignment: .top) {
+                Text(.settingsTrashArchiveAfterFinderExtraction)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $trashArchiveAfterFinderExtraction) {}
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
