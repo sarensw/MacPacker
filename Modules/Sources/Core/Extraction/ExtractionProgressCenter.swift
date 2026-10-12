@@ -174,6 +174,7 @@ public final class ExtractionProgressCenter: ObservableObject {
     @Published public private(set) var jobs: [ExtractionJob] = []
 
     private var cancelHandlers: [UUID: () -> Void] = [:]
+    private var actionsUnderWay = 0
 
     public init() {}
 
@@ -188,6 +189,30 @@ public final class ExtractionProgressCenter: ObservableObject {
         let running = jobs.filter { !$0.isFinished }
         if running.contains(where: { $0.kind == .extraction }) { return .extraction }
         return running.isEmpty ? nil : .compression
+    }
+
+    /// Whether a job has failed and is still listed: the progress window
+    /// shows it, or is about to, and keeps it until it is closed.
+    public var hasFailedJobs: Bool {
+        jobs.contains {
+            if case .failed = $0.state { return true }
+            return false
+        }
+    }
+
+    /// Whether an action is under way: work that is several jobs, like
+    /// Finder's "Extract Here" on a selection of archives. Each archive is
+    /// opened before its job starts, so between two of them `hasActiveJobs`
+    /// is false and the action is not done.
+    public var isRunningAction: Bool {
+        actionsUnderWay > 0
+    }
+
+    /// Runs `action`, which counts as under way until it returns.
+    public func run(_ action: () async -> Void) async {
+        actionsUnderWay += 1
+        defer { actionsUnderWay -= 1 }
+        await action()
     }
 
     /// Registers a new running job and returns its id.

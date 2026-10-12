@@ -36,6 +36,8 @@ struct AboutSettingsView: View {
 #if !STORE
                         if let updaterController = appState.updaterController {
                             CheckForUpdatesView(updater: updaterController.updater)
+                                // whoever looks here uses the app, whatever started it
+                                .onAppear { appState.startUpdateChecks() }
                         }
 #endif
                         

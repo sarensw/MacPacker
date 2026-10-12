@@ -32,6 +32,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var dropCompressor: DropCompressor? = nil
     private var dropWindowController: DropWindowController? = nil
     private var pendingOpenURLs: [URL] = []
+    /// What the app was launched for: it decides the launch windows, and
+    /// whether the app quits again when a Finder action is done.
+    private var launch = Launch()
 
     private static var isRunningInPreview: Bool {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
@@ -46,18 +49,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     override init() {
         log.notice("AppDelegate.init starting")
         #if !STORE
-        // If you want to start the updater manually, pass false to startingUpdater and call .startUpdater() later
+        // The updater is not started here but once the app is in use as an
+        // app: see `startUpdateChecksIfInUse`.
         // This is where you can also pass an updater delegate if you need one.
         // `-DisableUpdateChecks YES` suppresses the automatic check — useful for
         // scripted/automated launches (CI, screenshots) where a check dialog
         // would interrupt.
-        let startUpdater = !Self.isRunningInPreview && !LaunchParameters.disableUpdateChecks
+        let allowsUpdateChecks = !Self.isRunningInPreview && !LaunchParameters.disableUpdateChecks
         updaterController = SPUStandardUpdaterController(
-            startingUpdater: startUpdater,
+            startingUpdater: false,
             updaterDelegate: updaterDelegate,
             userDriverDelegate: nil
         )
-        appState = AppState(updaterController: updaterController)
+        appState = AppState(updaterController: updaterController, allowsUpdateChecks: allowsUpdateChecks)
         #else
         appState = AppState()
         #endif
@@ -83,8 +87,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
 
         // first check if this is an app url, and handle it accordingly
-        if let url = urls.first,
-           let appUrl: AppUrl = UrlParser().parse(appUrl: url) {
+        let appUrl: AppUrl? = urls.first.flatMap { UrlParser().parse(appUrl: $0) }
+
+        // On a cold start this is what the launch was started for, so it
+        // decides the launch windows. The welcome window goes on top of what
+        // opens below.
+        let showsLaunchWindows = launch.started(for: appUrl == nil ? .archives : .finderAction)
+        if showsLaunchWindows {
+            openLaunchWindow()
+        }
+        defer {
+            if showsLaunchWindows {
+                showWelcomeWindowIfDue()
+            }
+        }
+
+        if let appUrl {
             log.notice("Routing Finder app-url action '\(appUrl.action.rawValue)' for \(appUrl.files.count) file(s)")
             var handler: AppUrlHandler?
 
@@ -118,8 +136,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 return
             }
 
-            // we have all the url info, start the handlers now
-            handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
+            // We have all the url info, start the handlers now. The action
+            // counts as under way until all of it is done, so that the app
+            // does not quit in the middle of it: see
+            // `applicationShouldTerminateAfterLastWindowClosed`.
+            Task {
+                await ExtractionProgressCenter.shared.run {
+                    await handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
+                }
+                // A moment for Finder to take the request to show the result,
+                // and for another action that follows at once.
+                try? await Task.sleep(for: .seconds(1))
+                if finderLaunchIsOver {
+                    log.notice("Launched for a Finder action, which is done — quitting")
+                    NSApp.terminate(nil)
+                }
+            }
 
             // no need to move further here as it was an app url
             return
@@ -161,6 +193,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             quickCompressOptions: quickCompressOptions,
             openQuickCompressWindow: { dropWindowController.show() }
         )
+        // from its first window on, the app is in use as an app
+        archiveWindowManager?.onFirstWindowOpened = { [weak self] in self?.startUpdateChecksIfInUse() }
         extractionProgressWindowController = ExtractionProgressWindowController(center: .shared)
 
         // The window is cheap (the panel itself is built on first show); the menu
@@ -189,10 +223,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 #endif
         let launchedToOpenSomething = opensWindow || showsExtractionDemo
 
+        // What the launch was started for decides whether it shows the launch
+        // window and the welcome window. Launch parameters say so themselves,
+        // and a launch that asked for the app itself comes with the "open
+        // application" event. Any other launch is to open something: an
+        // archive, or an action from Finder's menu, which must leave the
+        // screen as it was (#279). That decides in `application(_:open:)`,
+        // where it arrives, and it may still be on its way: AppKit hands it
+        // over once it is done restoring windows, on one launch before this
+        // point and on the next after it.
+        let launchEvent = NSAppleEventManager.shared().currentAppleEvent
+        let startedAsApp = launchEvent?.eventClass == AEEventClass(kCoreEventClass)
+            && launchEvent?.eventID == AEEventID(kAEOpenApplication)
+        let showsLaunchWindows: Bool
+        if launchedToOpenSomething {
+            showsLaunchWindows = launch.started(for: .ownWindow)
+        } else if startedAsApp {
+            showsLaunchWindows = launch.started(for: .app)
+        } else {
+            showsLaunchWindows = false
+            log.notice("Not launched for the app itself (pending open urls: \(pendingOpenURLs.count))")
+            // What it was launched for arrives within moments. Should it
+            // never, somebody still started the app, and is not left without
+            // a window.
+            Task {
+                try? await Task.sleep(for: .seconds(3))
+                guard launch.waitedLongEnough() else { return }
+                log.notice("Nothing to open arrived")
+                openLaunchWindow()
+                showWelcomeWindowIfDue()
+            }
+        }
+
+        // launch parameters do not always come with an archive window
+        startUpdateChecksIfInUse()
+
         // make sure that at least one window will be shown even if it is empty
-        if !launchedToOpenSomething {
-            log.notice("Opening launch window (pending open urls: \(pendingOpenURLs.count))")
-            archiveWindowManager?.openLaunchArchiveWindow()
+        if showsLaunchWindows {
+            openLaunchWindow()
         }
 
         // Launch parameters: open the requested archive and (optionally)
@@ -210,11 +278,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
 
         // opens the welcome window
-        if !launchedToOpenSomething,
-           welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") {
-            log.notice("Showing welcome window")
-            WelcomeWindowController().show()
-            welcomeScreenShownInVersion = Bundle.main.appVersionLong
+        if showsLaunchWindows {
+            showWelcomeWindowIfDue()
         }
         log.notice("applicationDidFinishLaunching done")
 
@@ -253,6 +318,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 #endif
     }
     
+    /// Starts the update checks once the app is in use as an app: opened as
+    /// one, or with a window of its own by now. Not for a Finder action that
+    /// started it, which is over in a moment.
+    private func startUpdateChecksIfInUse() {
+#if !STORE
+        guard launch.checksForUpdates(usedAsApp: archiveWindowManager?.hasOpenedWindow ?? false) else { return }
+        appState.startUpdateChecks()
+#endif
+    }
+
+    private func openLaunchWindow() {
+        log.notice("Opening launch window")
+        archiveWindowManager?.openLaunchArchiveWindow()
+    }
+
+    private func showWelcomeWindowIfDue() {
+        guard welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") else {
+            return
+        }
+        log.notice("Showing welcome window")
+        WelcomeWindowController().show()
+        welcomeScreenShownInVersion = Bundle.main.appVersionLong
+    }
+
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         guard !Self.isRunningInPreview else { return true }
         log.notice("applicationShouldHandleReopen (hasVisibleWindows: \(hasVisibleWindows))")
@@ -264,10 +353,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
     
     public func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        // A Finder action under way has work still to come: what closed was
+        // its progress window between two archives, or a panel it asked in.
+        if ExtractionProgressCenter.shared.isRunningAction {
+            return false
+        }
         if quitOnLastWindowClosed {
             return true
         }
-        return false
+        // the progress window of a Finder action that had started the app
+        return finderLaunchIsOver
+    }
+
+    /// Whether the app was started for a Finder action and has done it, with
+    /// nothing left on screen. It quits then, and takes its Dock icon with it,
+    /// whatever "Quit on last window closed" says: nobody opened this app.
+    private var finderLaunchIsOver: Bool {
+        let center = ExtractionProgressCenter.shared
+        return launch.isOver(
+            usedAsApp: archiveWindowManager?.hasOpenedWindow ?? false,
+            actionUnderWay: center.isRunningAction,
+            // a failed job is on screen in a moment: the progress window puts it up and keeps it
+            somethingOnScreen: center.hasFailedJobs || NSApp.windows.contains { $0.isVisible || $0.isMiniaturized }
+        )
     }
 
     /// Asked for in #119: don't let the app quit silently while an

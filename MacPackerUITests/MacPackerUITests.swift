@@ -17,6 +17,8 @@ final class MacPackerUITests: XCTestCase {
     /// Bundle id of the debug app under test (drives container + url scheme).
     private let appBundleId = "com.sarensx.MacPacker.debug"
     private let appUrlScheme = "app.macpacker.debug"
+    /// `Keys.quitOnLastWindowClosed`; as a launch argument it overrides the setting.
+    private let quitOnLastWindowClosedKey = "quitOnLastWindowClosed"
 
     /// Fixture area: the runner's home (its own container under XCUITest).
     /// The app under test can READ here but not write — saving triggers the
@@ -78,6 +80,24 @@ final class MacPackerUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = arguments + ["-DisableUpdateChecks", "YES"]
         app.launch()
+        return app
+    }
+
+    /// Launches the app the way a Finder action does when the app is not
+    /// running: with the url the Finder extension sends, and nothing else.
+    private func launchApp(
+        finderAction action: String, files: [URL], target: URL, arguments: [String] = []
+    ) -> XCUIApplication {
+        let encode: (URL) -> String? = { $0.path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) }
+        var comps = URLComponents(string: "\(appUrlScheme)://\(action)")!
+        comps.queryItems = [
+            URLQueryItem(name: "files", value: files.compactMap(encode).joined(separator: ",")),
+            URLQueryItem(name: "target", value: encode(target)),
+        ]
+        let app = XCUIApplication()
+        app.terminate()
+        app.launchArguments = arguments + ["-DisableUpdateChecks", "YES"]
+        app.open(comps.url!)
         return app
     }
 
@@ -210,6 +230,53 @@ final class MacPackerUITests: XCTestCase {
         let entries = try zipEntries(created)
         XCTAssertTrue(entries.contains("hello.txt"), "hello.txt missing: \(entries)")
         try run("/usr/bin/unzip", ["-t", created.path])
+        app.terminate()
+    }
+
+    /// A Finder action that has to start the app does its work without a
+    /// window of its own, and the app is gone again when it is done: the
+    /// launch window and the welcome window used to come up with it, and the
+    /// app stayed (#279, #312). The url is the Finder extension's, and
+    /// launches the app as that does.
+    func testFinderActionStartsTheAppWithoutAWindowAndQuitsIt() throws {
+        let dir = try makeWorkDir("finder-launch")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let payload = dir.appendingPathComponent("hello.txt")
+        try "hello zip".write(to: payload, atomically: true, encoding: .utf8)
+
+        let app = launchApp(finderAction: "compress", files: [payload], target: dir)
+
+        // the sandbox asks once for folder access, and that panel is all
+        // there is to see
+        let grant = app.windows.buttons["Grant Access"].firstMatch
+        XCTAssertTrue(grant.waitForExistence(timeout: 10), "no folder-access prompt")
+        let titles = app.windows.allElementsBoundByIndex.map(\.title)
+        XCTAssertEqual(titles.count, 1, "the Finder action came with a window of its own: \(titles)")
+        app.typeKey(.return, modifierFlags: [])
+
+        XCTAssertTrue(waitForFile(dir.appendingPathComponent("hello.zip")), "hello.zip was not created")
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 10), "the app stayed after its Finder action")
+    }
+
+    /// "Extract to…" asks where to extract. For an app that Finder started the
+    /// panel is the only window, and with "Quit on last window closed" on,
+    /// answering it must not end the app before it has extracted (#279).
+    func testFinderExtractToSurvivesItsPanelClosing() throws {
+        let dir = try makeWorkDir("finder-extract-to")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let payload = dir.appendingPathComponent("one.txt")
+        try "one".write(to: payload, atomically: true, encoding: .utf8)
+        let zip = dir.appendingPathComponent("fixture.zip")
+        try run("/usr/bin/zip", [zip.path, "one.txt"], cwd: dir)
+        try FileManager.default.removeItem(at: payload)
+
+        let app = launchApp(
+            finderAction: "extractTo", files: [zip], target: dir,
+            arguments: ["-\(quitOnLastWindowClosedKey)", "YES"])
+
+        // the panel opens on the archive's folder: Return extracts there
+        confirmAccessPanel(app, button: "Extract")
+        XCTAssertTrue(waitForFile(payload), "one.txt was not extracted")
         app.terminate()
     }
 

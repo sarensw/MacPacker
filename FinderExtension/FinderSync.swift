@@ -299,11 +299,18 @@ class FinderSync: FIFinderSync {
         }
 
         log.notice("Opening main app for '\(action)'", context: ["url": url.absoluteString])
-        let opened = NSWorkspace.shared.open(url)
-        if opened {
-            log.notice("Handed '\(action)' off to the main app")
-        } else {
-            log.error("NSWorkspace could not open \(url.absoluteString) — is the '\(appScheme)' scheme registered to MacPacker?")
+        // An action that extracts or compresses leaves the user in Finder: the
+        // app starts and works behind it, and takes the focus only for what
+        // has to be answered.
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = item.action.bringsAppToFront
+        let scheme = appScheme
+        NSWorkspace.shared.open(url, configuration: configuration) { _, error in
+            if let error {
+                log.error("NSWorkspace could not open \(url.absoluteString) — is the '\(scheme)' scheme registered to MacPacker?", context: ["error": error.localizedDescription])
+            } else {
+                log.notice("Handed '\(action)' off to the main app")
+            }
         }
     }
 

@@ -17,6 +17,8 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "lifecycle")
 final class AppState: ObservableObject {
 #if !STORE
     let updaterController: SPUStandardUpdaterController?
+    /// Not in a preview, and not when a launch parameter switched them off.
+    private let allowsUpdateChecks: Bool
 #endif
     
     let catalog: ArchiveTypeCatalog = ArchiveTypeCatalog()
@@ -34,12 +36,21 @@ final class AppState: ObservableObject {
     }
 
 #if !STORE
-    init(updaterController: SPUStandardUpdaterController? = nil) {
+    init(updaterController: SPUStandardUpdaterController? = nil, allowsUpdateChecks: Bool = false) {
         self.archiveEngineConfigStore = AppState.makeEngineConfigStore(catalog: catalog)
         self.engineSelector = ArchiveEngineSelector(catalog: catalog, configStore: archiveEngineConfigStore)
 
         self.updaterController = updaterController
+        self.allowsUpdateChecks = allowsUpdateChecks
         log.notice("AppState ready (catalog + engine selector initialised)")
+    }
+
+    /// Starts the update checks; a second call does nothing. Not done at
+    /// launch: only an app in use checks for updates, see
+    /// `Launch.checksForUpdates`.
+    func startUpdateChecks() {
+        guard allowsUpdateChecks else { return }
+        updaterController?.startUpdater()
     }
 #else
     init() {

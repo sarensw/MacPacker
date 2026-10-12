@@ -169,8 +169,13 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
 
     private func presentWindow(reason: String) {
         log.notice("Extraction progress window shown", context: ["reason": reason, "jobs": "\(center.jobs.count)"])
-        showWindow(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        // In front, where it is seen, but the focus stays where the user is:
+        // a Finder action runs while they go on working in Finder.
+        if NSApp.isActive {
+            showWindow(nil)
+        } else {
+            window?.orderFrontRegardless()
+        }
     }
 
     func windowWillClose(_ notification: Notification) {
