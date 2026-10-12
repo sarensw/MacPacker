@@ -45,9 +45,8 @@ extension AllCoreTests {
         }
 
         /// Only the launch decides. A Finder action sent to the running app
-        /// does not bring the launch windows up a second time, an archive
-        /// opened after a Finder launch does not bring them up at all, and
-        /// neither does the wait that ends after the launch was decided.
+        /// does not bring the launch windows up a second time, and an archive
+        /// opened after a Finder launch does not bring them up at all.
         @Test(arguments: [Launch.Reason.app, .archives, .finderAction, .ownWindow])
         func whatComesAfterTheLaunchShowsNoLaunchWindows(first: Launch.Reason) {
             var launch = Launch()
@@ -57,20 +56,9 @@ extension AllCoreTests {
                 launch.started(for: .app),
                 launch.started(for: .archives),
                 launch.started(for: .finderAction),
-                launch.waitedLongEnough(),
             ]
-            #expect(later == [false, false, false, false])
+            #expect(later == [false, false, false])
             #expect(launch.reason == first)
-        }
-
-        /// A launch that never says what it was started for still ends with a
-        /// window, once.
-        @Test func aLaunchThatSaysNothingShowsTheLaunchWindowsInTheEnd() {
-            var launch = Launch()
-            let first = launch.waitedLongEnough()
-            let second = launch.waitedLongEnough()
-            #expect(first)
-            #expect(!second)
         }
 
         // MARK: - Quitting when the work is done

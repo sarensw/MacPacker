@@ -52,13 +52,6 @@ public struct Launch: Sendable {
         }
     }
 
-    /// Nothing said what the launch was started for. Somebody still started
-    /// the app, and must not be left without a window.
-    /// - Returns: whether to show the launch windows now
-    public mutating func waitedLongEnough() -> Bool {
-        started(for: .app)
-    }
-
     /// Whether the app checks for updates. Only an app somebody uses does. One
     /// that a Finder action started is gone a moment later: a check begun
     /// there is cut off, the updater counts it as made all the same, and what

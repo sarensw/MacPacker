@@ -144,9 +144,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 await ExtractionProgressCenter.shared.run {
                     await handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
                 }
-                // A moment for Finder to take the request to show the result,
-                // and for another action that follows at once.
-                try? await Task.sleep(for: .seconds(1))
                 if finderLaunchIsOver {
                     log.notice("Launched for a Finder action, which is done — quitting")
                     NSApp.terminate(nil)
@@ -231,7 +228,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // screen as it was (#279). That decides in `application(_:open:)`,
         // where it arrives, and it may still be on its way: AppKit hands it
         // over once it is done restoring windows, on one launch before this
-        // point and on the next after it.
+        // point and on the next after it. Should a launch bring nothing to
+        // open after all, it shows nothing either, until the app is opened:
+        // see `applicationShouldHandleReopen`.
         let launchEvent = NSAppleEventManager.shared().currentAppleEvent
         let startedAsApp = launchEvent?.eventClass == AEEventClass(kCoreEventClass)
             && launchEvent?.eventID == AEEventID(kAEOpenApplication)
@@ -243,16 +242,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         } else {
             showsLaunchWindows = false
             log.notice("Not launched for the app itself (pending open urls: \(pendingOpenURLs.count))")
-            // What it was launched for arrives within moments. Should it
-            // never, somebody still started the app, and is not left without
-            // a window.
-            Task {
-                try? await Task.sleep(for: .seconds(3))
-                guard launch.waitedLongEnough() else { return }
-                log.notice("Nothing to open arrived")
-                openLaunchWindow()
-                showWelcomeWindowIfDue()
-            }
         }
 
         // launch parameters do not always come with an archive window
@@ -345,7 +334,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     public func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         guard !Self.isRunningInPreview else { return true }
         log.notice("applicationShouldHandleReopen (hasVisibleWindows: \(hasVisibleWindows))")
-        if !hasVisibleWindows {
+        if launch.started(for: .app) {
+            // The launch never said what it was for, and now the app is
+            // opened: this is its launch window.
+            openLaunchWindow()
+            showWelcomeWindowIfDue()
+            NSApp.activate(ignoringOtherApps: true)
+        } else if !hasVisibleWindows {
             archiveWindowManager?.openArchiveWindow()
             NSApp.activate(ignoringOtherApps: true)
         }
