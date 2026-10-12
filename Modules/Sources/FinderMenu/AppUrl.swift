@@ -40,6 +40,22 @@ public extension AppUrlAction {
     }
 }
 
+public extension AppUrlAction {
+    /// Whether the app comes to the front for this action: it opens a window
+    /// to work in, or starts by asking where to. Every other action extracts
+    /// or compresses while the user stays in Finder, which keeps the focus
+    /// from the click to the result (#279).
+    var bringsAppToFront: Bool {
+        switch self {
+        case .open, .addToArchive, .extractTo:
+            true
+        case .extractHere, .extractToFolder, .compress, .compressEach,
+             .compressContents:
+            false
+        }
+    }
+}
+
 /// A request from the Finder extension, sent as
 /// `<scheme>://<action>?files=…&target=…[&format=…][&dated=<seconds since 1970>]`.
 ///

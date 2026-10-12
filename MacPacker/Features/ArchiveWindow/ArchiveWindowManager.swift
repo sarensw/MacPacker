@@ -16,6 +16,11 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "lifecycle")
 @MainActor
 class ArchiveWindowManager {
     private var windowControllers: [ArchiveWindowController] = []
+    /// Whether an archive window has been open since the launch: the app is
+    /// then in use as an app, not only there for Finder.
+    private(set) var hasOpenedWindow = false
+    /// Called when the first archive window opens.
+    var onFirstWindowOpened: (() -> Void)?
     private let appState: AppState
     private let dropCompressor: DropCompressor
     private let quickCompressOptions: ArchiveSaveOptions
@@ -47,6 +52,10 @@ class ArchiveWindowManager {
     @discardableResult
     fileprivate func createAndShowArchiveWindow(_ url: URL?) -> ArchiveState {
         log.notice("Creating window", context: ["url": url?.lastPathComponent ?? "(empty)"])
+        if !hasOpenedWindow {
+            hasOpenedWindow = true
+            onFirstWindowOpened?()
+        }
         // every window has an archive state which defines both empty
         // (not yet loaded archives) or loaded archives
         let archiveState = ArchiveState(

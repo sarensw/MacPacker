@@ -201,6 +201,60 @@ extension AllCoreTests {
             #expect(center.jobs[1].estimatedSecondsRemaining == nil)
         }
 
+        /// Finder's "Extract Here" on several archives opens each one before
+        /// its job starts. No job is running then, and the action is not done:
+        /// with the progress window as its last window, the app quit when that
+        /// closed between two archives and left the rest unextracted (#279).
+        @Test func anActionIsUnderWayBetweenItsJobs() async {
+            let center = ExtractionProgressCenter()
+            var underWayBetweenJobs = false
+
+            await center.run {
+                let first = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
+                center.finish(first, .done)
+                // the second archive is being opened: no job yet
+                #expect(!center.hasActiveJobs)
+                underWayBetweenJobs = center.isRunningAction
+            }
+
+            #expect(underWayBetweenJobs)
+            #expect(!center.isRunningAction)
+        }
+
+        /// Two actions at once, each from its own Finder menu click: the first
+        /// to end does not end the other.
+        @Test func anActionStaysUnderWayWhenAnotherEnds() async {
+            let center = ExtractionProgressCenter()
+            var underWayAfterTheInnerOneEnded = false
+
+            await center.run {
+                await center.run {}
+                underWayAfterTheInnerOneEnded = center.isRunningAction
+            }
+
+            #expect(underWayAfterTheInnerOneEnded)
+            #expect(!center.isRunningAction)
+        }
+
+        /// A failed job stays listed until the window that shows it closes.
+        /// The app must not quit under it: nobody would learn that the
+        /// extraction failed.
+        @Test func aFailedJobCountsUntilItIsCleared() {
+            let center = ExtractionProgressCenter()
+            let done = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
+            center.finish(done, .done)
+            let cancelled = center.begin(archiveName: "b.zip", destination: nil, itemCount: 1, totalBytes: nil)
+            center.finish(cancelled, .cancelled)
+            #expect(!center.hasFailedJobs)
+
+            let failed = center.begin(archiveName: "c.zip", destination: nil, itemCount: 1, totalBytes: nil)
+            center.finish(failed, .failed("disk full"))
+            #expect(center.hasFailedJobs)
+
+            center.clearFinished()
+            #expect(!center.hasFailedJobs)
+        }
+
         @Test func clearFinishedKeepsRunningJobs() {
             let center = ExtractionProgressCenter()
             let done = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
