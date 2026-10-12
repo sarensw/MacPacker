@@ -28,6 +28,10 @@ public enum Keys {
     public static func smartExtractionEnabled(in defaults: UserDefaults = .macPackerShared) -> Bool {
         defaults.object(forKey: smartExtraction) as? Bool ?? true
     }
+    /// Whether Finder's extract actions move the archive to the Trash once it
+    /// was extracted completely. Off by default; on, it does not ask — the
+    /// Trash is the way back.
+    public static let trashArchiveAfterFinderExtraction = "trashArchiveAfterFinderExtraction"
     
     // table settings
     public static let showParentRow = "showParentRow"

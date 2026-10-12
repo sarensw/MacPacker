@@ -59,6 +59,11 @@ extension AppUrlHandler {
             break
         }
 
+        if state.lastExtractionState == .done,
+           UserDefaults.standard.bool(forKey: Keys.trashArchiveAfterFinderExtraction) {
+            trash(state.sourceFiles)
+        }
+
         let added = folderContents(destination).filter { !before.contains($0) }
         if !added.isEmpty {
             return added
@@ -68,6 +73,20 @@ extension AppUrlHandler {
         return topLevel
             .map { destination.appendingPathComponent($0) }
             .filter { FileManager.default.fileExists(atPath: $0.path) }
+    }
+}
+
+/// Moves what was extracted to the Trash — never deletes it. One that cannot
+/// be moved stays where it is; the extraction itself has succeeded.
+@MainActor
+private func trash(_ files: [URL]) {
+    for file in files {
+        do {
+            try FileManager.default.trashItem(at: file, resultingItemURL: nil)
+            log.notice("Moved extracted archive to the Trash", context: ["file": file.lastPathComponent])
+        } catch {
+            log.error("Could not move \(file.lastPathComponent) to the Trash", context: ["error": error.localizedDescription])
+        }
     }
 }
 
