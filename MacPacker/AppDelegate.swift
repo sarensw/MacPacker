@@ -92,7 +92,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // On a cold start this is what the launch was started for, so it
         // decides the launch windows. The welcome window goes on top of what
         // opens below.
-        let showsLaunchWindows = launch.started(for: appUrl == nil ? .archives : .finderAction)
+        let showsLaunchWindows = launch.started(for: appUrl == nil ? .openWith : .finderExtension)
         if showsLaunchWindows {
             openLaunchWindow()
         }
@@ -236,7 +236,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             && launchEvent?.eventID == AEEventID(kAEOpenApplication)
         let showsLaunchWindows: Bool
         if launchedToOpenSomething {
-            showsLaunchWindows = launch.started(for: .ownWindow)
+            showsLaunchWindows = launch.started(for: .launchParameters)
         } else if startedAsApp {
             showsLaunchWindows = launch.started(for: .app)
         } else {

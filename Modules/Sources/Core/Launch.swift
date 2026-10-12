@@ -18,17 +18,19 @@ import Foundation
 /// as it knows, and shows nothing before.
 public struct Launch: Sendable {
 
-    /// What a launch was started for.
+    /// What started a launch.
     public enum Reason: Sendable {
-        /// The app itself: the Dock, Finder, Spotlight.
+        /// The app was opened as such: the Dock, Finder, Spotlight.
         case app
-        /// Launch parameters that put their own window up.
-        case ownWindow
-        /// Archives to open, by Open With or a double click. The first one
+        /// Launch parameters that say what to show: `-ArchivePath`,
+        /// `-NewArchive`, `-DropWindow` and the like.
+        case launchParameters
+        /// Something to open was handed over: Open With, a double click, a
+        /// drop on the Dock icon, `open` in Terminal. The first archive
         /// takes the launch window.
-        case archives
-        /// An action from Finder's menu.
-        case finderAction
+        case openWith
+        /// A request from the Finder extension, for an entry of its menu.
+        case finderExtension
     }
 
     /// What the launch was started for, once that is known.
@@ -43,11 +45,11 @@ public struct Launch: Sendable {
         guard self.reason == nil else { return false }
         self.reason = reason
         switch reason {
-        case .app, .archives:
+        case .app, .openWith:
             return true
         // A Finder action extracts or compresses and leaves the screen as it
         // was, or opens the one window it is about (#279).
-        case .ownWindow, .finderAction:
+        case .launchParameters, .finderExtension:
             return false
         }
     }
@@ -59,9 +61,9 @@ public struct Launch: Sendable {
     /// - Parameter usedAsApp: a window of the app has been open since the launch
     public func checksForUpdates(usedAsApp: Bool) -> Bool {
         switch reason {
-        case .app, .ownWindow, .archives:
+        case .app, .launchParameters, .openWith:
             true
-        case .finderAction:
+        case .finderExtension:
             usedAsApp
         // not known yet: the url of a Finder action can still be on its way
         case nil:
@@ -80,6 +82,6 @@ public struct Launch: Sendable {
     ///   - somethingOnScreen: a window is up, or about to be: progress, an
     ///     error, a question
     public func isOver(usedAsApp: Bool, actionUnderWay: Bool, somethingOnScreen: Bool) -> Bool {
-        reason == .finderAction && !usedAsApp && !actionUnderWay && !somethingOnScreen
+        reason == .finderExtension && !usedAsApp && !actionUnderWay && !somethingOnScreen
     }
 }

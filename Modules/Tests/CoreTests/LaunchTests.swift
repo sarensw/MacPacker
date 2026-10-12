@@ -20,7 +20,7 @@ extension AllCoreTests {
         /// with it (#279, #312).
         @Test func aFinderActionShowsNoLaunchWindows() {
             var launch = Launch()
-            let shown = launch.started(for: .finderAction)
+            let shown = launch.started(for: .finderExtension)
             #expect(!shown)
         }
 
@@ -34,28 +34,28 @@ extension AllCoreTests {
         /// then takes, and the welcome window.
         @Test func openingAnArchiveShowsTheLaunchWindows() {
             var launch = Launch()
-            let shown = launch.started(for: .archives)
+            let shown = launch.started(for: .openWith)
             #expect(shown)
         }
 
         @Test func launchParametersWithTheirOwnWindowShowNoLaunchWindows() {
             var launch = Launch()
-            let shown = launch.started(for: .ownWindow)
+            let shown = launch.started(for: .launchParameters)
             #expect(!shown)
         }
 
         /// Only the launch decides. A Finder action sent to the running app
         /// does not bring the launch windows up a second time, and an archive
         /// opened after a Finder launch does not bring them up at all.
-        @Test(arguments: [Launch.Reason.app, .archives, .finderAction, .ownWindow])
+        @Test(arguments: [Launch.Reason.app, .openWith, .finderExtension, .launchParameters])
         func whatComesAfterTheLaunchShowsNoLaunchWindows(first: Launch.Reason) {
             var launch = Launch()
             _ = launch.started(for: first)
 
             let later = [
                 launch.started(for: .app),
-                launch.started(for: .archives),
-                launch.started(for: .finderAction),
+                launch.started(for: .openWith),
+                launch.started(for: .finderExtension),
             ]
             #expect(later == [false, false, false])
             #expect(launch.reason == first)
@@ -67,7 +67,7 @@ extension AllCoreTests {
         /// once it is done: the app quits, and its Dock icon goes with it.
         @Test func aLaunchForAFinderActionIsOverWhenTheActionIsDone() {
             var launch = Launch()
-            _ = launch.started(for: .finderAction)
+            _ = launch.started(for: .finderExtension)
             #expect(launch.isOver(usedAsApp: false, actionUnderWay: false, somethingOnScreen: false))
         }
 
@@ -76,19 +76,19 @@ extension AllCoreTests {
         /// own: then it is in use, and stays like one the user opened.
         @Test func aLaunchForAFinderActionIsNotOverWhileTheAppIsNeeded() {
             var launch = Launch()
-            _ = launch.started(for: .finderAction)
+            _ = launch.started(for: .finderExtension)
             #expect(!launch.isOver(usedAsApp: false, actionUnderWay: true, somethingOnScreen: false))
             #expect(!launch.isOver(usedAsApp: false, actionUnderWay: false, somethingOnScreen: true))
             #expect(!launch.isOver(usedAsApp: true, actionUnderWay: false, somethingOnScreen: false))
         }
 
         /// An app the user opened stays, whatever Finder asks of it later.
-        @Test(arguments: [Launch.Reason.app, .archives, .ownWindow])
+        @Test(arguments: [Launch.Reason.app, .openWith, .launchParameters])
         func anyOtherLaunchIsNeverOver(reason: Launch.Reason) {
             var launch = Launch()
             _ = launch.started(for: reason)
             // a Finder action arrives, and gets done
-            _ = launch.started(for: .finderAction)
+            _ = launch.started(for: .finderExtension)
             #expect(!launch.isOver(usedAsApp: false, actionUnderWay: false, somethingOnScreen: false))
         }
 
@@ -106,18 +106,18 @@ extension AllCoreTests {
         /// and puts the next one off by a day: no update would ever be seen.
         @Test func aLaunchForAFinderActionChecksForNoUpdates() {
             var launch = Launch()
-            _ = launch.started(for: .finderAction)
+            _ = launch.started(for: .finderExtension)
             #expect(!launch.checksForUpdates(usedAsApp: false))
         }
 
         /// Once it has a window of its own it is an app in use, and checks.
         @Test func aLaunchForAFinderActionChecksOnceTheAppIsInUse() {
             var launch = Launch()
-            _ = launch.started(for: .finderAction)
+            _ = launch.started(for: .finderExtension)
             #expect(launch.checksForUpdates(usedAsApp: true))
         }
 
-        @Test(arguments: [Launch.Reason.app, .archives, .ownWindow])
+        @Test(arguments: [Launch.Reason.app, .openWith, .launchParameters])
         func anyOtherLaunchChecksForUpdates(reason: Launch.Reason) {
             var launch = Launch()
             _ = launch.started(for: reason)
