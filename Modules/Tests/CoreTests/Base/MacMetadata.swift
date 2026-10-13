@@ -31,6 +31,14 @@ enum ZipReader: String, CaseIterable, Sendable {
         case .xad: ArchiveXadEngine()
         }
     }
+
+    /// The same reader, for a test that goes through `ArchiveState`.
+    var selector: any ArchiveEngineSelectorProtocol {
+        switch self {
+        case .sevenZip: ArchiveEngineSelector7zip()
+        case .xad: ArchiveEngineSelectorXad()
+        }
+    }
 }
 
 /// Reads one extended attribute, or nil when the file does not carry it.
