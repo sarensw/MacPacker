@@ -46,25 +46,27 @@ class FinderSync: FIFinderSync {
     
     var baseFolderUrl = FileManager.default.homeDirectoryForCurrentUser
     var documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    
+
+    /// Keeps Finder's roots in step with the mounted volumes while the extension lives.
+    private var observedDirectories: FinderObservedDirectories.Watcher?
+
     override init() {
         super.init()
         
         tb.start()
         log.debug("FinderSync() launched from \(Bundle.main.bundlePath as NSString)")
         
-        // Set up the directory we are syncing.
-        let syncUrls: Set<URL> = [
-            self.baseFolderUrl,
-            URL(fileURLWithPath: "/Users/\(ProcessInfo.processInfo.userName)")
-        ]
-        FIFinderSyncController.default().directoryURLs = syncUrls
-        log.debug("Initializing on...")
-        for syncUrl in syncUrls {
-            log.debug("\t\(syncUrl.path)")
+        observedDirectories = FinderObservedDirectories.Watcher(
+            homeDirectory: baseFolderUrl,
+            userName: ProcessInfo.processInfo.userName
+        ) { roots in
+            // This only controls menu availability; file access still goes through
+            // the main app's existing folder permission flow.
+            FIFinderSyncController.default().directoryURLs = roots
+            log.info("Observing Finder directories: \(roots.map(\.path).sorted())")
         }
     }
-    
+
     // MARK: - Primary Finder Sync protocol methods
     
     override func beginObservingDirectory(at url: URL) {

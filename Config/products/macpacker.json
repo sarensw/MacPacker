@@ -139,6 +139,30 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "No Finder menu on external drives",
+                "zh-Hans": "外置驱动器上没有 Finder 菜单",
+                "fr": "Pas de menu Finder sur les disques externes",
+                "de": "Kein Finder-Menü auf externen Laufwerken",
+                "it": "Nessun menu Finder sui dischi esterni",
+                "ja": "外付けドライブで Finder メニューが表示されない",
+                "fa": "بدون منوی Finder در درایوهای خارجی",
+                "pl": "Brak menu Findera na dyskach zewnętrznych",
+                "pt-BR": "Sem menu do Finder em unidades externas",
+                "ru": "Нет меню Finder на внешних дисках",
+                "uk": "Немає меню Finder на зовнішніх дисках",
+                "es-MX": "Sin menú del Finder en discos externos",
+                "ko": "외장 드라이브에 Finder 메뉴가 없음",
+                "nl": "Geen Finder-menu op externe schijven",
+                "tr": "Harici sürücülerde Finder menüsü yok",
+                "vi": "Không có menu Finder trên ổ đĩa ngoài"
+            },
+            "issues": [
+                "275"
+            ]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.04",
