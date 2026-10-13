@@ -141,22 +141,22 @@
           {
             "type": "fix",
             "title": {
-                "en": "Finder actions on external drives",
-                "zh-Hans": "外置驱动器上的 Finder 操作",
-                "fr": "Actions Finder sur les disques externes",
-                "de": "Finder-Aktionen auf externen Laufwerken",
-                "it": "Azioni Finder sui dischi esterni",
-                "ja": "外付けドライブでの Finder アクション",
-                "fa": "عملیات Finder در درایوهای خارجی",
-                "pl": "Akcje Finder na dyskach zewnętrznych",
-                "pt-BR": "Ações do Finder em unidades externas",
-                "ru": "Действия Finder на внешних дисках",
-                "uk": "Дії Finder на зовнішніх дисках",
-                "es-MX": "Acciones de Finder en discos externos",
-                "ko": "외장 드라이브의 Finder 동작",
-                "nl": "Finder-acties op externe schijven",
-                "tr": "Harici sürücülerde Finder işlemleri",
-                "vi": "Thao tác Finder trên ổ đĩa ngoài"
+                "en": "No Finder menu on external drives",
+                "zh-Hans": "外置驱动器上没有 Finder 菜单",
+                "fr": "Pas de menu Finder sur les disques externes",
+                "de": "Kein Finder-Menü auf externen Laufwerken",
+                "it": "Nessun menu Finder sui dischi esterni",
+                "ja": "外付けドライブで Finder メニューが表示されない",
+                "fa": "بدون منوی Finder در درایوهای خارجی",
+                "pl": "Brak menu Findera na dyskach zewnętrznych",
+                "pt-BR": "Sem menu do Finder em unidades externas",
+                "ru": "Нет меню Finder на внешних дисках",
+                "uk": "Немає меню Finder на зовнішніх дисках",
+                "es-MX": "Sin menú del Finder en discos externos",
+                "ko": "외장 드라이브에 Finder 메뉴가 없음",
+                "nl": "Geen Finder-menu op externe schijven",
+                "tr": "Harici sürücülerde Finder menüsü yok",
+                "vi": "Không có menu Finder trên ổ đĩa ngoài"
             },
             "issues": [
                 "275"
