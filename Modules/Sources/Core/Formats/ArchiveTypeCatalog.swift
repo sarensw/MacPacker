@@ -10,6 +10,7 @@
 // - https://www.digipres.org/formats/mime-types/
 // - /System/Library/CoreServices/CoreTypes.bundle/Contents/Info.plist
 
+import Swift7zip
 import UniformTypeIdentifiers
 import tb
 
@@ -93,6 +94,22 @@ public final class ArchiveTypeCatalog: ArchiveTypeCatalogProtocol, Sendable {
     public func defaultEngine(for formatId: String) -> ArchiveEngineType? {
         return defaultEngineByFormat[formatId]
     }
-    
-    
+
+    // MARK: - What the writer writes
+
+    // The writer names a format as files of it are called — `zip`, `7z` — so the
+    // catalog's format for one is the one that lists that name as an extension.
+
+    /// The catalog's format for an archive written as `format`.
+    public func type(writtenAs format: CompressionOptions.Format) -> ArchiveTypeDto? {
+        getType(where: { $0.extensions.contains(format.rawValue) })
+    }
+
+    /// The format a file with the extension `ext` is written in: the writer's
+    /// for the catalog's format of that extension — a `jar` is a zip. `nil` when
+    /// the catalog has no format for it, or the writer none for that format.
+    public func writtenFormat(forExtension ext: String) -> CompressionOptions.Format? {
+        guard let type = getType(where: { $0.extensions.contains(ext.lowercased()) }) else { return nil }
+        return CompressionOptions.Format.allCases.first { type.extensions.contains($0.rawValue) }
+    }
 }

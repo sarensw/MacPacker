@@ -11,6 +11,12 @@ import Combine
 import Foundation
 import Swift7zip
 
+extension CompressionOptions.Format {
+    /// The format of a new archive, until one is picked: what a first save
+    /// offers, and what a window calls an archive nobody has saved yet.
+    public static let newArchive: CompressionOptions.Format = .zip
+}
+
 /// The save panel's options, and their memory.
 ///
 /// Remembered the way 7-Zip does it: per format, so switching zip → 7z → zip
@@ -108,7 +114,7 @@ public final class ArchiveSaveOptions: ObservableObject {
                 remembered[format] = Remembered(level: UInt32(clamping: legacyLevel))
             }
         }
-        let format = defaults.string(forKey: storage.formatKey).flatMap(Format.init(rawValue:)) ?? .zip
+        let format = defaults.string(forKey: storage.formatKey).flatMap(Format.init(rawValue:)) ?? .newArchive
         self.format = format
         self.excludeDSStore = defaults.bool(forKey: storage.excludeDSStoreKey)
         apply(remembered[format] ?? Remembered())

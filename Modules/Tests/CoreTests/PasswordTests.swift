@@ -1180,11 +1180,16 @@ extension AllCoreTests {
         /// through. Those entries are encrypted, so the rewrite must keep them
         /// readable with the original password rather than corrupting or
         /// silently decrypting them.
-        @Test func deletingAnEntryKeepsTheRestEncrypted() async throws {
+        ///
+        /// A 7z does not copy them: they share a solid block with the entry that
+        /// goes, so 7-Zip decrypts what is left of it, packs it again and locks it
+        /// with the same password — and the names with it, where they were locked.
+        @Test(arguments: ["zip_aes256.zip", "7z_aes256.7z", "7z_encrypted_header.7z"])
+        func deletingAnEntryKeepsTheRestEncrypted(_ name: String) async throws {
             let work = try tempDirectory()
             defer { try? FileManager.default.removeItem(at: work) }
-            let archive = work.appendingPathComponent("edit_aes256.zip")
-            try FileManager.default.copyItem(at: fixture("zip_aes256.zip"), to: archive)
+            let archive = work.appendingPathComponent("edit_\(name)")
+            try FileManager.default.copyItem(at: fixture(name), to: archive)
 
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             state.passwordProvider = { _ in correctPassword }
@@ -1213,6 +1218,11 @@ extension AllCoreTests {
                 #expect(matchesPayload(extracted, path), "\(path) did not survive the rewrite")
             }
             #expect(reopened.isEncrypted == true, "the rewrite dropped the encryption")
+            if name == "7z_encrypted_header.7z" {
+                #expect(throws: (any Error).self, "its names open without the password") {
+                    _ = try SevenZipArchive(url: archive)
+                }
+            }
         }
     }
 

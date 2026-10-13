@@ -68,6 +68,14 @@ public class SevenZipArchive {
         sz_is_tree(handle.ref)
     }
 
+    /// The format 7-Zip opened the archive as, by the name of the handler that
+    /// did — `7z`, `zip`, `tar`, `Rar5` — or `nil` when it has none. It is what
+    /// the archive is, whatever its file is called. For a set of volumes it is
+    /// the format of the archive they make up, not `Split`.
+    public var formatName: String? {
+        sz_format_name(handle.ref).map { String(cString: $0) }
+    }
+
     /// How the entry at `index` is compressed, as 7-Zip names it — `Deflate`,
     /// `LZMA2:22`, `PPMD:o6:mem24`, `Copy`, `Store` — or `nil` when the archive
     /// does not say.
