@@ -36,7 +36,7 @@ private let sevenZipToolPath: String? = {
 /// It used to be optional — "used when it is there" — and only ever looked for
 /// `7zz`, which no hosted runner has: every check against 7-Zip itself quietly
 /// did nothing on CI, which is worse than not having one.
-private func sevenZipTool(sourceLocation: SourceLocation = #_sourceLocation) throws -> String {
+func sevenZipTool(sourceLocation: SourceLocation = #_sourceLocation) throws -> String {
     try #require(sevenZipToolPath,
                  "No 7-Zip command line found. Install one with `brew install sevenzip`.",
                  sourceLocation: sourceLocation)
@@ -45,10 +45,11 @@ private func sevenZipTool(sourceLocation: SourceLocation = #_sourceLocation) thr
 /// Runs `7zz`. It decodes its arguments by the locale, which a test process need
 /// not have; without UTF-8 a Unicode password reaches it mangled.
 @discardableResult
-private func sevenZip(_ tool: String, _ args: [String]) throws -> String {
+func sevenZip(_ tool: String, _ args: [String], cwd: URL? = nil) throws -> String {
     let process = Process()
     process.executableURL = URL(fileURLWithPath: tool)
     process.arguments = args
+    if let cwd { process.currentDirectoryURL = cwd }
     var environment = ProcessInfo.processInfo.environment
     environment["LC_ALL"] = "en_US.UTF-8"
     environment["LANG"] = "en_US.UTF-8"

@@ -9,6 +9,7 @@
 
 import Foundation
 import Testing
+import Swift7zip
 @testable import Core
 
 private final class MutableBox<T: Sendable>: @unchecked Sendable {
@@ -464,13 +465,29 @@ extension AllCoreTests {
         }
 
         /// What the window and the Settings pencil go by: only 7-Zip edits, and
-        /// only zip. A format gaining an editor shows up here first (#265).
-        @Test func onlySevenZipEditsAndOnlyZip() {
+        /// only zip and 7z. A format gaining an editor shows up here first (#265).
+        @Test func onlySevenZipEditsAndOnlyZipAnd7z() {
             let catalog = ArchiveTypeCatalog()
             let editors = catalog.allFormatIds().flatMap { format in
                 catalog.engineOptions(for: format).filter(\.canEdit).map { "\(format)/\($0.id)" }
             }
-            #expect(editors == ["zip/7zip"])
+            #expect(editors.sorted() == ["7zip/7zip", "zip/7zip"])
+        }
+
+        /// The catalog says what can be edited, the writer what it can write, and
+        /// an edit is written: a format the catalog lets be edited is one the
+        /// writer has. One it has not would open with every editing control on
+        /// and fail at the first save.
+        @Test func whatTheCatalogLetsBeEditedTheWriterWrites() {
+            let catalog = ArchiveTypeCatalog()
+            let editable = catalog.allFormatIds().filter { format in
+                catalog.engineOptions(for: format).contains(where: \.canEdit)
+            }
+            let written = CompressionOptions.Format.allCases.map { catalog.type(writtenAs: $0)?.id }
+            #expect(!written.contains(nil), "the catalog has no format for one the writer writes: \(written)")
+            for format in editable {
+                #expect(written.contains(format), "\(format) can be edited, and the writer has no format for it")
+            }
         }
     }
 

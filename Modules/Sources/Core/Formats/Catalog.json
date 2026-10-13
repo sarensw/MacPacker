@@ -12,7 +12,7 @@
       ],
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"] },
-        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "splitVolumes"], "default": true },
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles", "edit", "splitVolumes"], "default": true },
         { "id": "swc", "capabilities": ["listContents", "extractFiles"] }
       ]
     },

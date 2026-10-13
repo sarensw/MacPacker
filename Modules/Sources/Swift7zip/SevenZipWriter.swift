@@ -98,12 +98,23 @@ extension SevenZipArchive {
             let sourceArchive = try source.map { try SevenZipArchive(url: $0, password: sourcePassword) }
             let locked = try sourceArchive?.entries.filter(\.isEncrypted) ?? []
             let encrypted = !locked.isEmpty
-            if let source, !inPlace, encrypted, !options.encrypts,
-               writableFormat(of: source) != options.format {
+            // The source's format, from 7-Zip, which opened it — under the names
+            // `Format` has for them. `nil` when it is not one the writer writes.
+            let sourceFormat = sourceArchive?.formatName.flatMap(CompressionOptions.Format.init(rawValue:))
+            if !inPlace, encrypted, !options.encrypts, sourceFormat != options.format {
                 throw SevenZipError.writeFailed(
                     "An encrypted archive can't be saved as \(options.format.rawValue) without a password: it would lose its encryption")
             }
             rebuild = sourceArchive != nil && (!inPlace || rewrite) && (!encrypted || options.encrypts)
+            // What is not rebuilt is updated, and an update is written by the handler
+            // that read the source: it comes out in the source's format whatever
+            // `options.format` says. That option still picks which format's settings
+            // are sent along, so it follows the source. A caller going by the name
+            // takes a 7z called anything but `.7z` for a zip — `comics.cb7`, a
+            // download with no extension — and a file added to a locked one then
+            // came with zip's cipher setting, which 7-Zip refuses for a 7z: the
+            // save failed.
+            if !rebuild, let sourceFormat { options.format = sourceFormat }
 
             // Not rebuilt, an encrypted source keeps its entries as they are, and
             // what is written anew takes their password and cipher. What is added:
@@ -114,11 +125,10 @@ extension SevenZipArchive {
             // ponytail: every 7z removal asks, though only one cutting into a solid
             // block needs it; the bridge could pass on 7-Zip's own ask
             // (ICryptoGetTextPassword) if that prompt ever gets in the way.
-            let sevenZ = source.map { writableFormat(of: $0) == .sevenZ } ?? false
             let writesAnew = items.contains {
                 switch $0 {
                 case .addFile, .addData, .addDirectory: true
-                case .remove: sevenZ
+                case .remove: sourceFormat == .sevenZ
                 case .move: false
                 }
             }
@@ -390,16 +400,6 @@ extension SevenZipArchive {
         }
 
         return rebuilt + additions
-    }
-
-    /// The writable format a file is in, by its signature.
-    private static func writableFormat(of url: URL) -> CompressionOptions.Format? {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
-        defer { try? handle.close() }
-        let head = (try? handle.read(upToCount: 6)) ?? Data()
-        if head.starts(with: [0x50, 0x4B]) { return .zip }
-        if head.starts(with: [0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C]) { return .sevenZ }
-        return nil
     }
 
     // MARK: - macOS Metadata

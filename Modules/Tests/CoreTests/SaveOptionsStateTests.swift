@@ -504,25 +504,26 @@ extension AllCoreTests {
 
         /// An edit adds nothing Finder-made, and takes nothing the archive already
         /// holds: removing entries is a job for the user, not for a save option.
-        @MainActor @Test func excludingKeepsWhatTheArchiveAlreadyHolds() async throws {
+        @MainActor @Test(arguments: CompressionOptions.Format.allCases)
+        func excludingKeepsWhatTheArchiveAlreadyHolds(_ format: CompressionOptions.Format) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
-            let zip = dir.appendingPathComponent("existing.zip")
+            let archive = dir.appendingPathComponent("existing.\(format.rawValue)")
             try SevenZipArchive.writeArchive(
-                destination: zip,
+                destination: archive,
                 items: [.addData(archivePath: ".DS_Store", data: Data("Bud1".utf8)),
                         .addData(archivePath: "a.txt", data: Data("a".utf8))],
-                options: .init(format: .zip))
+                options: .init(format: format))
             let folder = try finderFolder(in: dir)
 
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            state.open(url: zip)
+            state.open(url: archive)
             try await state.openTask?.value
             #expect(await state.add(url: folder).value)
-            await state.save(options: .init(format: .zip, excludeDSStore: true))?.value
+            await state.save(options: .init(format: format, excludeDSStore: true))?.value
             #expect(state.error == nil, "\(state.error ?? "")")
 
-            let paths = try systemZipEntries(zip)
+            let paths = try systemEntries(archive)
             #expect(paths.contains(".DS_Store"), "the one the archive held stays")
             #expect(!paths.contains { $0.hasPrefix("Photos") && $0.hasSuffix(".DS_Store") }, "\(paths)")
             #expect(paths.contains("Photos/a.jpg"))
@@ -769,6 +770,66 @@ extension AllCoreTests {
             #expect(try opens(source, with: "password"))
         }
 
+        /// A removal asks the same of a 7z. A zip copies what it keeps, locked as
+        /// it is; a 7z packs what is left of a solid block again, and can neither
+        /// read that nor lock it back up without the password. Cancelling leaves
+        /// the archive as it was, every entry still in it.
+        @Test(arguments: [nil, "nope"] as [String?])
+        func aRemovalFromALocked7zAsksForThePasswordItLacks(whenOpening: String?) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = try copyOfFixture("password", "7z_aes256.7z", in: dir)
+            let before = try Data(contentsOf: source)
+            // opening, then the first save — cancelled — then the second
+            let prompts = Prompts([whenOpening, nil, "password"])
+            let state = makeState(prompts)
+            state.open(url: source)
+            try await state.openTask?.value
+            state.remove(items: [try #require(state.entries.values.first { $0.virtualPath == "hello world.txt" })])
+
+            await state.save()?.value
+            #expect(state.saveError != nil)
+            #expect(prompts.count == 2)
+            #expect(try Data(contentsOf: source) == before, "a cancelled save changed the archive")
+
+            await state.save()?.value
+            #expect(state.saveError == nil, "\(state.saveError ?? "")")
+            #expect(prompts.count == 3)
+            let files = try SevenZipArchive(url: source).entries.filter { !$0.isDirectory && $0.size > 0 }
+            #expect(files.map(\.path).sorted() == ["folder/NestedArchive.zip", "folder/README.md"])
+            let plain = files.filter { !$0.isEncrypted }.map(\.path)
+            #expect(plain.isEmpty, "left in plain: \(plain)")
+            #expect(try opens(source, with: "password"))
+        }
+
+        /// What a Save writes is the archive's own format, whatever the file is
+        /// called. `.cb7` is the name of a comic book packed as a 7z, the way
+        /// `.cbz` is one packed as a zip, and the catalog knows it only by its
+        /// contents. The save went by the name: not `.7z`, so a zip — and the file
+        /// added came with zip's cipher setting, which a 7z does not take. The
+        /// save failed.
+        @Test func aLocked7zByAnotherNameTakesAnAddition() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("locked.cb7")
+            try FileManager.default.copyItem(at: passwordFixture("7z_aes256.7z"), to: source)
+            let state = makeState(Prompts(["password"]))
+            state.open(url: source)
+            try await state.openTask?.value
+            #expect(state.canBeEdited)
+            let added = dir.appendingPathComponent("added.txt")
+            try "added".write(to: added, atomically: true, encoding: .utf8)
+            #expect(await state.add(url: added).value)
+
+            await state.save()?.value
+            #expect(state.saveError == nil, "\(state.saveError ?? "")")
+            let reader = try SevenZipArchive(url: source, password: "password")
+            let new = try #require(try reader.entries.first { $0.path == "added.txt" })
+            #expect(reader.method(ofEntryAt: new.index)?.contains("7zAES") == true,
+                    "added with \(reader.method(ofEntryAt: new.index) ?? "nothing")")
+            #expect(try opens(source, with: "password"))
+        }
+
         /// Info-ZIP's `zip` locks with any password, 7-Zip only with plain ASCII.
         /// A file added to a zip whose password 7-Zip cannot write with is refused,
         /// with the reason, rather than stored in plain.
@@ -842,17 +903,18 @@ extension AllCoreTests {
         /// Opening an archive inside the archive renames the window after the
         /// inner one; the window still holds, and saves, the outer one — which
         /// is no split set for all the names differ.
-        @Test func anArchiveSavesWhileANestedOneIsOpen() async throws {
+        @Test(arguments: CompressionOptions.Format.allCases)
+        func anArchiveSavesWhileANestedOneIsOpen(_ format: CompressionOptions.Format) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let inner = dir.appendingPathComponent("inner.zip")
             try SevenZipArchive.writeArchive(
                 destination: inner, items: [.addData(archivePath: "in.txt", data: Data("in".utf8))],
                 options: .init(format: .zip))
-            let outer = dir.appendingPathComponent("outer.zip")
+            let outer = dir.appendingPathComponent("outer.\(format.rawValue)")
             try SevenZipArchive.writeArchive(
                 destination: outer, items: [.addFile(archivePath: "inner.zip", diskPath: inner)],
-                options: .init(format: .zip))
+                options: .init(format: format))
             let state = makeState(Prompts([]))
             state.open(url: outer)
             try await state.openTask?.value
@@ -940,34 +1002,38 @@ extension AllCoreTests {
             #expect(state.entries.values.contains { $0.name == "note.txt" })
         }
 
-        /// A zip whose one file Deflate shrinks, so its method shows: 7-Zip stores
-        /// what a method would not shrink, and `zipinfo` then says `stor`.
-        private func compressibleZip(in dir: URL) throws -> URL {
-            let zip = dir.appendingPathComponent("text.zip")
+        /// An archive whose one file its method shrinks, so the method shows: 7-Zip
+        /// stores what a method would not shrink, and `zipinfo` then says `stor`.
+        private func compressibleArchive(_ format: CompressionOptions.Format, in dir: URL) throws -> URL {
+            let archive = dir.appendingPathComponent("text.\(format.rawValue)")
             try SevenZipArchive.writeArchive(
-                destination: zip,
+                destination: archive,
                 items: [.addData(archivePath: "text.txt",
                                  data: Data(String(repeating: "text text text\n", count: 200).utf8))],
-                options: .init(format: .zip))
-            return zip
+                options: .init(format: format))
+            return archive
         }
 
         /// Every entry is written again with the chosen method — onto another file,
         /// and onto the archive's own, where the panel suggests saving.
-        @Test(arguments: [false, true])
-        func saveAsCarriesTheChosenMethod(ontoItsOwnFile: Bool) async throws {
+        @Test(arguments: CompressionOptions.Format.allCases, [false, true])
+        func saveAsCarriesTheChosenMethod(_ format: CompressionOptions.Format, ontoItsOwnFile: Bool) async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
-            let zip = try compressibleZip(in: dir)
-            #expect(try zipMethods(zip)["text.txt"] == "defN")
+            // the format's own method to begin with, and one of its others to save with
+            let (own, chosen, recorded): (String, CompressionOptions.Method, String) =
+                format == .zip ? ("defN", .lzma, "lzma") : ("LZMA2:", .ppmd, "PPMD:")
+            let archive = try compressibleArchive(format, in: dir)
+            #expect(try entryMethods(archive)["text.txt"]?.hasPrefix(own) == true)
             let state = makeState(Prompts([]))
-            state.open(url: zip)
+            state.open(url: archive)
             try await state.openTask?.value
 
-            let saved = ontoItsOwnFile ? zip : dir.appendingPathComponent("lzma.zip")
-            await state.save(to: saved, options: .init(format: .zip, level: 9, method: .lzma))?.value
+            let saved = ontoItsOwnFile ? archive : dir.appendingPathComponent("chosen.\(format.rawValue)")
+            await state.save(to: saved, options: .init(format: format, level: 9, method: chosen))?.value
             #expect(state.error == nil, "\(state.error ?? "")")
-            #expect(try zipMethods(saved)["text.txt"] == "lzma")
+            let method = try entryMethods(saved)["text.txt"] ?? "missing"
+            #expect(method.hasPrefix(recorded), "text.txt was written as \(method)")
         }
 
         /// What locks an archive before it is saved again.

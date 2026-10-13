@@ -573,8 +573,9 @@ extension ArchiveState {
         self.hasArchive = true
         // self.url = nil
         self.name = name
-        self.type = self.catalog.getType(for: "zip")
-        self.ext = ".zip"
+        // of the format new archives start in, until a save picks one; with no
+        // file yet, it has no extension
+        self.type = self.catalog.type(writtenAs: .newArchive)
         
         // Named like the archive, not "<root>": the breadcrumb shows this item,
         // and a placeholder there is the first thing a new archive shows.
@@ -997,9 +998,11 @@ extension ArchiveState {
         // Save with nothing pending is a no-op. A Save As is not, even of a clean
         // archive onto its own file: its options have to reach every entry.
         guard !diff.isEmpty || destination != nil else { return nil }
-        // format follows the target extension; zip is the default
-        let format: CompressionOptions.Format =
-            target.pathExtension.lowercased() == "7z" ? .sevenZ : .zip
+        // Given no options, the format follows the target's name, and which
+        // name is which format's is the catalog's to say — a `jar` is a zip. A
+        // name that says nothing is written as a new archive starts out. For a
+        // Save in place neither matters: the writer asks 7-Zip what the archive is.
+        let format = catalog.writtenFormat(forExtension: target.pathExtension) ?? .newArchive
         let saver = ArchiveSaver(
             source: url,
             // From the file's name, by the catalog's split patterns — not by

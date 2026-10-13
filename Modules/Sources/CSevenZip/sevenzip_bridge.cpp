@@ -111,6 +111,7 @@ static int64_t FileTimeToUnixEpoch(const FILETIME &ft) {
 struct SZArchiveLevel {
     CMyComPtr<IInArchive> archive;
     CMyComPtr<IInStream> stream;  // stream this archive was opened from
+    std::string format;           // name of the handler that opened it: "7z", "zip", "Split"
 };
 
 struct SZArchiveHandle {
@@ -300,10 +301,12 @@ public:
 };
 
 /// Try all registered formats against the given seekable stream.
-/// Returns S_OK on success with archiveOut set, S_FALSE if no format matched.
+/// Returns S_OK on success with archiveOut set, and formatOut the name 7-Zip
+/// registers the format that opened it under; S_FALSE if no format matched.
 static HRESULT tryOpenStream(
     IInStream *stream,
     CMyComPtr<IInArchive> &archiveOut,
+    std::string &formatOut,
     IArchiveOpenCallback *callback = nullptr)
 {
     UInt32 numFormats = 0;
@@ -330,6 +333,9 @@ static HRESULT tryOpenStream(
         hr = archive->Open(stream, &maxCheckStart, callback);
         if (hr == S_OK) {
             archiveOut = archive;
+            NWindows::NCOM::CPropVariant propName;
+            GetHandlerProperty2(i, NArchive::NHandlerPropID::kName, &propName);
+            formatOut = PropVariantToUTF8(propName);
             return S_OK;
         }
         archive->Close();
@@ -1140,7 +1146,8 @@ SZArchiveRef sz_open(const char *path, const char *password,
 
         // Try each registered format on the file stream
         CMyComPtr<IInArchive> firstArchive;
-        HRESULT hr = tryOpenStream(handle->fileStream, firstArchive, volCallback);
+        std::string firstFormat;
+        HRESULT hr = tryOpenStream(handle->fileStream, firstArchive, firstFormat, volCallback);
         if (hr != S_OK || !firstArchive) {
             if (needs_password_out)
                 *needs_password_out = volCallbackSpec->passwordRequested;
@@ -1156,6 +1163,7 @@ SZArchiveRef sz_open(const char *path, const char *password,
         SZArchiveLevel rootLevel;
         rootLevel.archive = firstArchive;
         rootLevel.stream = handle->fileStream;
+        rootLevel.format = firstFormat;
         handle->levels.push_back(rootLevel);
 
         // Drill into nested archives (disk images containing filesystems)
@@ -1201,9 +1209,10 @@ SZArchiveRef sz_open(const char *path, const char *password,
             // encrypted it cannot open without one. Stopping short would show the
             // joined volumes as a single file.
             CMyComPtr<IInArchive> innerArchive;
+            std::string innerFormat;
             CNestedOpenCallback *nestedSpec = new CNestedOpenCallback(password);
             CMyComPtr<IArchiveOpenCallback> nestedCallback = nestedSpec;
-            if (tryOpenStream(subStream, innerArchive, nestedCallback) != S_OK) {
+            if (tryOpenStream(subStream, innerArchive, innerFormat, nestedCallback) != S_OK) {
                 if (nestedSpec->passwordRequested) {
                     if (needs_password_out) *needs_password_out = true;
                     if (error_out) *error_out = strdup("The archive header is encrypted");
@@ -1217,6 +1226,7 @@ SZArchiveRef sz_open(const char *path, const char *password,
             SZArchiveLevel level;
             level.archive = innerArchive;
             level.stream = subStream;
+            level.format = innerFormat;
             handle->levels.push_back(level);
         }
 
@@ -1317,6 +1327,14 @@ const char *sz_entry_path(SZArchiveRef archive, uint32_t index) {
 
 const char *sz_entry_method(SZArchiveRef archive, uint32_t index) {
     return entryString(archive, index, kpidMethod);
+}
+
+const char *sz_format_name(SZArchiveRef archive) {
+    if (!archive) return nullptr;
+    auto *handle = static_cast<SZArchiveHandle *>(archive);
+    // the innermost level: the one the entries are listed from
+    if (handle->levels.empty() || handle->levels.back().format.empty()) return nullptr;
+    return handle->levels.back().format.c_str();
 }
 
 bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
