@@ -64,6 +64,31 @@
             ]
           },
           {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Edit 7z archives",
+                "zh-Hans": "编辑 7z 压缩包",
+                "fr": "Modifier les archives 7z",
+                "de": "7z-Archive bearbeiten",
+                "it": "Modificare gli archivi 7z",
+                "ja": "7z アーカイブを編集",
+                "fa": "ویرایش آرشیوهای 7z",
+                "pl": "Edytowanie archiwów 7z",
+                "pt-BR": "Editar arquivos 7z",
+                "ru": "Редактирование архивов 7z",
+                "uk": "Редагування архівів 7z",
+                "es-MX": "Editar archivos 7z",
+                "ko": "7z 압축 파일 편집",
+                "nl": "7z-archieven bewerken",
+                "tr": "7z arşivlerini düzenleme",
+                "vi": "Chỉnh sửa tệp nén 7z"
+            },
+            "issues": [
+                "132"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {
