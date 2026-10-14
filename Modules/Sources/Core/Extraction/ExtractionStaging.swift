@@ -190,11 +190,32 @@ struct ExtractionStaging: Sendable {
                 if rename(source.path, real.path) != 0 {
                     // behind a link the file may be on another volume, where
                     // there is no renaming onto it
-                    try fm.removeItem(at: real)
-                    try fm.moveItem(at: source, to: real)
+                    try ExtractionStaging.replace(real, withCopyOf: source)
                 }
             }
         }
+    }
+
+    /// Replaces `real` with `source` where the one cannot simply be renamed
+    /// onto the other. The new file is copied beside the old one first, on the
+    /// old one's volume, and takes its place in a single rename: the old file
+    /// goes only once the new one is whole. A copy that fails — a full disk is
+    /// enough — leaves the old file as it was.
+    static func replace(_ real: URL, withCopyOf source: URL) throws {
+        let fm = FileManager.default
+        let beside = real.deletingLastPathComponent().appendingPathComponent(
+            ".macpacker-" + UUID().uuidString.prefix(8).lowercased())
+        do {
+            try fm.copyItem(at: source, to: beside)
+            if rename(beside.path, real.path) != 0 {
+                throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+            }
+        } catch {
+            try? fm.removeItem(at: beside)
+            throw error
+        }
+        // the work folder goes anyway; this only keeps it from holding a second copy
+        try? fm.removeItem(at: source)
     }
 
     /// Works out how `source` — one extracted item — gets to `target`, without

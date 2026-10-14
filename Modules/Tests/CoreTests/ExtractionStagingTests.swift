@@ -313,6 +313,33 @@ extension AllCoreTests {
             #expect(try mode(dest.appendingPathComponent("photos")) == 0o755)
         }
 
+        /// Where the new file cannot be renamed onto the old one — the old one
+        /// sits behind a link, on another volume — it is copied beside it and
+        /// swapped in. The old file must outlive a copy that fails: the run is
+        /// discarded then, and with the old file removed first both would be
+        /// gone.
+        @Test func aReplacementByCopyKeepsTheOldFileUntilTheNewOneIsWhole() throws {
+            let dir = try makeFolder()
+            defer { remove(dir) }
+            let old = dir.appendingPathComponent("photo.jpg")
+            let new = dir.appending(path: "work/photo.jpg")
+            try write("old", to: old)
+            try write("new", to: new)
+
+            try ExtractionStaging.replace(old, withCopyOf: new)
+            #expect(try text(old) == "new")
+            // nothing left beside it, and no second copy in the work folder
+            #expect(try everything(in: dir) == ["photo.jpg", "work/"])
+
+            // a copy that cannot be made
+            try write("old", to: old)
+            #expect(throws: (any Error).self) {
+                try ExtractionStaging.replace(old, withCopyOf: dir.appending(path: "work/not-there.jpg"))
+            }
+            #expect(try text(old) == "old")
+            #expect(try everything(in: dir) == ["photo.jpg", "work/"])
+        }
+
         // MARK: - What cannot be committed
 
         enum Clash: CaseIterable {

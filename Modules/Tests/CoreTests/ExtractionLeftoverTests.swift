@@ -90,8 +90,43 @@ private final class HandedFolder: @unchecked Sendable {
     }
 }
 
+/// 7-Zip, whose whole-archive extraction finishes — and says so just before it
+/// returns, so that a test can have something happen at that very moment.
+private struct FinishingEngine: ArchiveEngine {
+    let real = Archive7ZipEngine()
+    let beforeReturning: @Sendable () async -> Void
+
+    func statusStream() async -> AsyncStream<EngineStatus> { await real.statusStream() }
+    func cancel() async { await real.cancel() }
+
+    func loadArchive(
+        url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> ArchiveEngineLoadResult {
+        try await real.loadArchive(url: url, passwordResolver: passwordResolver)
+    }
+
+    func extract(
+        items: [ArchiveItem],
+        from url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws -> ArchiveExtractionResult {
+        try await real.extract(items: items, from: url, to: destination, passwordResolver: passwordResolver)
+    }
+
+    func extract(
+        _ url: URL,
+        to destination: URL,
+        passwordResolver: @escaping ArchivePasswordResolver
+    ) async throws {
+        try await real.extract(url, to: destination, passwordResolver: passwordResolver)
+        await beforeReturning()
+    }
+}
+
 private struct EndingEngineSelector: ArchiveEngineSelectorProtocol {
-    let engine: EndingEngine
+    let engine: any ArchiveEngine
 
     func engine(for id: String) -> (any ArchiveEngine)? { engine }
     func engine(for type: ArchiveEngineType) -> any ArchiveEngine { engine }
@@ -287,6 +322,32 @@ extension AllCoreTests {
                 state.extract(items: topLevel, to: dest, smart: true)
             }
 
+            #expect(try everything(in: dest) == ["mine.txt"])
+        }
+
+        /// Cancel pressed as the engine writes its last byte: it has nothing
+        /// left to stop, and returns as if all were well. The run was cancelled
+        /// all the same, before anything of it reached the destination — so
+        /// nothing does, and it is reported for what it was.
+        @Test func aCancelThatArrivesAsTheEngineFinishesStillCancels() async throws {
+            let dir = try makeFolder()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try makeZip(in: dir, name: "trip", entries: ["a.txt", "b.txt", "photos/c.jpg"])
+            let dest = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
+            try Data("mine".utf8).write(to: dest.appendingPathComponent("mine.txt"))
+
+            let center = ExtractionProgressCenter()
+            let engine = FinishingEngine(beforeReturning: {
+                await MainActor.run {
+                    if let job = center.jobs.first { center.requestCancel(job.id) }
+                }
+            })
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: EndingEngineSelector(engine: engine))
+            state.progressCenter = center
+            try await extractFull(state, zip, to: dest, smart: true)
+
+            #expect(center.jobs.first?.state == .cancelled)
             #expect(try everything(in: dest) == ["mine.txt"])
         }
 

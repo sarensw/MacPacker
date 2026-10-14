@@ -1808,6 +1808,11 @@ extension ArchiveState {
                             return engineProgress(completed, total)
                         }
                     )
+                    // A cancel that arrives as the engine finishes finds
+                    // nothing left to stop, and the engine returns as if all
+                    // were well. The run is cancelled all the same: nothing of
+                    // it has reached the destination yet, and nothing will.
+                    try Task.checkCancellation()
                     // Decided only now: the container is the work folder
                     // renamed, so a run that never gets here leaves no empty
                     // one behind, and it takes the name that is free when the
