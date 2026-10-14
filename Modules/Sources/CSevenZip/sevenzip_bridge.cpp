@@ -300,14 +300,16 @@ public:
     }
 };
 
-/// Try all registered formats against the given seekable stream.
+/// Try all registered formats against the given seekable stream, each allowed
+/// to look for its signature in the first `maxCheckStart` bytes.
 /// Returns S_OK on success with archiveOut set, and formatOut the name 7-Zip
 /// registers the format that opened it under; S_FALSE if no format matched.
 static HRESULT tryOpenStream(
     IInStream *stream,
     CMyComPtr<IInArchive> &archiveOut,
     std::string &formatOut,
-    IArchiveOpenCallback *callback = nullptr)
+    IArchiveOpenCallback *callback,
+    UInt64 maxCheckStart)
 {
     UInt32 numFormats = 0;
     GetNumberOfFormats(&numFormats);
@@ -329,7 +331,6 @@ static HRESULT tryOpenStream(
         UInt64 newPos;
         stream->Seek(0, STREAM_SEEK_SET, &newPos);
 
-        UInt64 maxCheckStart = 1 << 22; // 4MB
         hr = archive->Open(stream, &maxCheckStart, callback);
         if (hr == S_OK) {
             archiveOut = archive;
@@ -340,6 +341,30 @@ static HRESULT tryOpenStream(
         }
         archive->Close();
     }
+    return S_FALSE;
+}
+
+/// Opens the given seekable stream as an archive. Returns as tryOpenStream.
+///
+/// An archive at the start of the stream wins. Some handlers look for their
+/// signature anywhere in the first 4 MB, and asked first, the 7z handler took
+/// a zip that stores a 7z for that 7z (#336). So every handler is asked about
+/// the start alone before any may search, as 7-Zip's own client does. A
+/// self-extracting archive opens as the program, whose handler names the
+/// archive behind it as the main subfile, opened in turn by sz_open.
+///
+/// Shared with the write bridge, which has to open a file it changes as the
+/// archive it was read as: a pending removal names entries by their number.
+HRESULT sz_open_stream(
+    IInStream *stream,
+    CMyComPtr<IInArchive> &archiveOut,
+    std::string &formatOut,
+    IArchiveOpenCallback *callback)
+{
+    // the start alone, then a search of the first 4 MB
+    for (const UInt64 maxCheckStart : {(UInt64)0, (UInt64)1 << 22})
+        if (tryOpenStream(stream, archiveOut, formatOut, callback, maxCheckStart) == S_OK)
+            return S_OK;
     return S_FALSE;
 }
 
@@ -1147,7 +1172,7 @@ SZArchiveRef sz_open(const char *path, const char *password,
         // Try each registered format on the file stream
         CMyComPtr<IInArchive> firstArchive;
         std::string firstFormat;
-        HRESULT hr = tryOpenStream(handle->fileStream, firstArchive, firstFormat, volCallback);
+        HRESULT hr = sz_open_stream(handle->fileStream, firstArchive, firstFormat, volCallback);
         if (hr != S_OK || !firstArchive) {
             if (needs_password_out)
                 *needs_password_out = volCallbackSpec->passwordRequested;
@@ -1212,7 +1237,7 @@ SZArchiveRef sz_open(const char *path, const char *password,
             std::string innerFormat;
             CNestedOpenCallback *nestedSpec = new CNestedOpenCallback(password);
             CMyComPtr<IArchiveOpenCallback> nestedCallback = nestedSpec;
-            if (tryOpenStream(subStream, innerArchive, innerFormat, nestedCallback) != S_OK) {
+            if (sz_open_stream(subStream, innerArchive, innerFormat, nestedCallback) != S_OK) {
                 if (nestedSpec->passwordRequested) {
                     if (needs_password_out) *needs_password_out = true;
                     if (error_out) *error_out = strdup("The archive header is encrypted");
