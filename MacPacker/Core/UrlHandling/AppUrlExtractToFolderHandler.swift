@@ -38,18 +38,21 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
             // archive, so the name comes from `fileUrl`.
             let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
             let folderUrl = appUrl.target.appendingPathComponent(folderName)
-            do {
-                try FileManager.default.createDirectory(at: folderUrl, withIntermediateDirectories: true)
-            } catch {
-                log.error(error.localizedDescription)
-                continue
-            }
+            // The folder is not created here. The extraction makes a
+            // destination that is not there yet, and takes it back with a run
+            // that does not finish — created up front, it stayed behind, empty,
+            // after a cancel. A name that is taken by a file fails there too,
+            // where it is reported, rather than here, where it was only logged.
+            //
             // `honorsSmartExtraction` is false for this action: the folder
-            // it is named after has just been created, so wrapping a second
-            // one inside would be the `Photos/Photos` nesting the smart rule
-            // exists to avoid.
+            // it is named after is the one extracted into, so wrapping a
+            // second one inside would be the `Photos/Photos` nesting the smart
+            // rule exists to avoid.
             _ = await self.extractArchive(fileUrl, into: folderUrl, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
-            folders.append(folderUrl)
+            // only a folder that is there can be shown
+            if FileManager.default.fileExists(atPath: folderUrl.path) {
+                folders.append(folderUrl)
+            }
         }
         if !folders.isEmpty {
             NSWorkspace.shared.activateFileViewerSelecting(folders)

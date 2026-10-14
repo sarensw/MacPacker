@@ -89,6 +89,30 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Extraction progress shown in Finder",
+                "zh-Hans": "在 Finder 中显示解压进度",
+                "fr": "Progression de l’extraction visible dans le Finder",
+                "de": "Entpack-Fortschritt im Finder sichtbar",
+                "it": "Avanzamento dell’estrazione visibile nel Finder",
+                "ja": "Finder に展開の進行状況を表示",
+                "fa": "نمایش پیشرفت استخراج در Finder",
+                "pl": "Postęp wypakowywania widoczny w Finderze",
+                "pt-BR": "Progresso da extração visível no Finder",
+                "ru": "Ход распаковки виден в Finder",
+                "uk": "Перебіг розпакування видно у Finder",
+                "es-MX": "Progreso de la extracción visible en el Finder",
+                "ko": "Finder에 압축 해제 진행 상황 표시",
+                "nl": "Voortgang van uitpakken zichtbaar in de Finder",
+                "tr": "Çıkarma ilerlemesi Finder’da görünür",
+                "vi": "Tiến trình giải nén hiển thị trong Finder"
+            },
+            "issues": [
+                "338"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {
@@ -185,6 +209,30 @@
             },
             "issues": [
                 "275"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Cancelled extraction leaves files behind",
+                "zh-Hans": "取消解压后会留下文件",
+                "fr": "Une extraction annulée laisse des fichiers",
+                "de": "Abgebrochenes Entpacken hinterlässt Dateien",
+                "it": "Un’estrazione annullata lascia dei file",
+                "ja": "展開をキャンセルしてもファイルが残る",
+                "fa": "استخراج لغوشده فایل‌هایی به‌جا می‌گذارد",
+                "pl": "Anulowane wypakowywanie zostawia pliki",
+                "pt-BR": "Extração cancelada deixa arquivos para trás",
+                "ru": "Отменённая распаковка оставляет файлы",
+                "uk": "Скасоване розпакування залишає файли",
+                "es-MX": "La extracción cancelada deja archivos",
+                "ko": "압축 해제를 취소해도 파일이 남음",
+                "nl": "Geannuleerd uitpakken laat bestanden achter",
+                "tr": "İptal edilen çıkarma dosya bırakıyor",
+                "vi": "Hủy giải nén vẫn để lại tệp"
+            },
+            "issues": [
+                "338"
             ]
           },
           {
