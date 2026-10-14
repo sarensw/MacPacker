@@ -53,6 +53,8 @@ extension AllCoreTests {
             ("jar", "zip", 5, 2),
             // installers
             ("rpm", "rpm", 2, 1),
+            // a self-extracting 7z: the archive behind the program, not the program
+            ("exe", "msapp", 5, 2),
             // disk images
             ("dmg", "dmg", 5, 2),
             ("fat", "fat", 5, 2),

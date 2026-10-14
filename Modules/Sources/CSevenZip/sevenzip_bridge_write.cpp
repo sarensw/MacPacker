@@ -40,6 +40,11 @@
 // conversions to UTF-8 so archives with non-ASCII names work on macOS.
 void sz_force_utf8_paths(void);
 
+// Defined in sevenzip_bridge.cpp -- opens a stream with the handler the read
+// side picks, so a save changes the archive the window listed.
+HRESULT sz_open_stream(IInStream *stream, CMyComPtr<IInArchive> &archiveOut,
+                       std::string &formatOut, IArchiveOpenCallback *callback);
+
 // --- GUIDs ---
 
 static const GUID IID_IOutArchive_Local = {
@@ -50,11 +55,6 @@ static const GUID IID_IOutArchive_Local = {
 static const GUID IID_ISetProperties_Local = {
   0x23170F69, 0x40C1, 0x278A,
   {0x00, 0x00, 0x00, 0x06, 0x00, 0x03, 0x00, 0x00}
-};
-
-static const GUID IID_IInArchive_Local_W = {
-  0x23170F69, 0x40C1, 0x278A,
-  {0x00, 0x00, 0x00, 0x06, 0x00, 0x60, 0x00, 0x00}
 };
 
 // --- External functions ---
@@ -597,8 +597,8 @@ int sz_update_archive(
         CMyComPtr<IOutArchive> outArchive;
 
         if (source_path) {
-            // For editing, auto-detect the source format (try all handlers),
-            // then QI the successful handler for IOutArchive.
+            // For editing, open the source as the read side does, then QI
+            // that handler for IOutArchive.
             CInFileStream *fs = new CInFileStream;
             inFileStream = fs;
             FString fpath = us2fs(UTF8ToUString(source_path));
@@ -609,33 +609,8 @@ int sz_update_archive(
             }
 
             CMyComPtr<IArchiveOpenCallback> openCallback(new CSourceOpenCallback(source_password));
-            UInt32 numFormats = 0;
-            GetNumberOfFormats(&numFormats);
-            bool opened = false;
-            for (UInt32 i = 0; i < numFormats; i++) {
-                NWindows::NCOM::CPropVariant propClassID;
-                GetHandlerProperty2(i, NArchive::NHandlerPropID::kClassID, &propClassID);
-                if (propClassID.vt != VT_BSTR || !propClassID.bstrVal) continue;
-
-                GUID fmtClsid;
-                memcpy(&fmtClsid, propClassID.bstrVal, sizeof(GUID));
-
-                CMyComPtr<IInArchive> candidate;
-                HRESULT hr = CreateArchiver(&fmtClsid, &IID_IInArchive_Local_W, (void **)&candidate);
-                if (hr != S_OK || !candidate) continue;
-
-                UInt64 newPos;
-                inFileStream->Seek(0, STREAM_SEEK_SET, &newPos);
-                UInt64 maxCheck = 1 << 22;
-                hr = candidate->Open(inFileStream, &maxCheck, openCallback);
-                if (hr == S_OK) {
-                    inArchive = candidate;
-                    opened = true;
-                    break;
-                }
-                candidate->Close();
-            }
-            if (!opened) {
+            std::string sourceFormat;
+            if (sz_open_stream(inFileStream, inArchive, sourceFormat, openCallback) != S_OK) {
                 if (error_out) *error_out = makeCError(
                     std::string("Failed to open source archive (no format matched): ") + source_path);
                 return 1;
