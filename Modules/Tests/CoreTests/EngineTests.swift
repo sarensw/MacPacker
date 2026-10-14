@@ -907,10 +907,12 @@ extension AllCoreTests {
         // targets, extended attributes, every path in the tree.
         //
         // `appledouble.zip` is deliberately not in this list. It is a synthetic
-        // fixture built to exercise edge cases, and one of them — an archive with no
-        // directory entries at all, which no real tool produces — XADMaster gets
-        // wrong. Fixtures like that are what this test exists to compensate for, so
-        // it is restricted to archives real tools actually made.
+        // fixture built to exercise edge cases, and one of them — a sidecar for a
+        // folder, `payload/Contents/._Resources` — stops XADMaster with "User
+        // cancelled extraction". Fixtures like that are what this test exists to
+        // compensate for, so it is restricted to archives real tools actually made.
+        // Its lack of directory entries is not the trouble: real tools write zips
+        // without them too, Python's `zipfile` among them (#306).
         @Test(arguments: [
             "zip/minimalApp.zip",
             "zip/appbundle.zip",

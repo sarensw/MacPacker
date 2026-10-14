@@ -166,5 +166,118 @@ extension AllCoreTests {
             let destContents = try FileManager.default.contentsOfDirectory(atPath: destination.path).sorted()
             #expect(destContents == ["README.md"], "expected the bare file, got \(destContents)")
         }
+
+        // MARK: - A folder the archive has no entry for (#306)
+
+        // A zip is a list of entries, and a folder is one of them only if
+        // somebody wrote it. A download site's zip holds `Sample Kit/readme.html`
+        // and nothing for `Sample Kit/`, so the row the window shows for the
+        // folder is one `ArchiveLoader.buildTree` made up. No engine can be asked
+        // for a folder like that and none says where it ended up, and the drag
+        // settled for the first url the extraction did report: one of the files
+        // inside, delivered under the folder's name. That is the document without
+        // an extension, shown by Finder with a "?", of #306.
+        //
+        // `zip/noFolderEntries.zip` is the archive of that report in shape, down
+        // to the tool that wrote it: see `TestArchives/zip/make_no_folder_entries.sh`.
+        @Test(arguments: ZipReader.allCases)
+        func dragOutFolderWithoutAnEntryDeliversTheFolder(reader: ZipReader) async throws {
+            let (state, folder) = try await folderWithoutAnEntry("Sample Kit", reader: reader)
+
+            let destination = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: destination) }
+
+            // What the file promise hands over: the place Finder chose, ending in
+            // the name the row has.
+            let target = destination.appending(component: folder.name)
+            try await state.fulfillDrag(item: folder, to: target)
+
+            var isDirectory: ObjCBool = false
+            #expect(
+                FileManager.default.fileExists(atPath: target.path, isDirectory: &isDirectory) && isDirectory.boolValue,
+                "the dragged folder should arrive as a folder"
+            )
+            for file in ["readme.html", "Sample Kit.txt", "extras/licenses/license.txt"] {
+                #expect(
+                    FileManager.default.fileExists(atPath: target.appending(path: file).path),
+                    "\(file) should come along inside it"
+                )
+            }
+        }
+
+        // One level is not the whole of it. `extras` holds nothing but `licenses`,
+        // and the archive has no entry for that one either: where `extras` is can
+        // only be told from a file two levels down.
+        @Test(arguments: ZipReader.allCases)
+        func dragOutFolderHoldingOnlyAFolderWithoutAnEntry(reader: ZipReader) async throws {
+            let (state, folder) = try await folderWithoutAnEntry("extras", reader: reader)
+
+            let destination = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: destination) }
+
+            let target = destination.appending(component: folder.name)
+            try await state.fulfillDrag(item: folder, to: target)
+
+            #expect(FileManager.default.fileExists(atPath: target.appending(path: "licenses/license.txt").path))
+        }
+
+        // "Extract selected" is the same folder through the other door, and it
+        // failed the other way round: the files were extracted, then left in the
+        // temporary folder because their parent was selected and so was the one to
+        // move — and it had no url to be moved from. The destination stayed empty
+        // and the job reported done.
+        @Test(arguments: ZipReader.allCases)
+        func extractFolderWithoutAnEntryKeepsItsFiles(reader: ZipReader) async throws {
+            let (state, folder) = try await folderWithoutAnEntry("Sample Kit", reader: reader)
+
+            let destination = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: destination) }
+
+            let batches = try ArchiveBatchResolver().resolveBatches(
+                for: [folder],
+                in: state.entries,
+                using: reader.selector
+            )
+            let extractor = ArchiveExtractor(
+                archiveEngineSelector: reader.selector,
+                passwordResolver: { _ in nil }
+            )
+            _ = try await extractor.extract(batches: batches, to: destination)
+
+            let destContents = try FileManager.default.contentsOfDirectory(atPath: destination.path).sorted()
+            #expect(destContents == ["Sample Kit"], "only the selected folder belongs here, got \(destContents)")
+            for file in ["readme.html", "Sample Kit.txt", "extras/licenses/license.txt"] {
+                #expect(
+                    FileManager.default.fileExists(atPath: destination.appending(path: "Sample Kit/\(file)").path),
+                    "\(file) should come along inside it"
+                )
+            }
+        }
+
+        /// Opens `zip/noFolderEntries.zip` and hands back its folder `name`,
+        /// having made sure it is what the tests above are about: a folder the
+        /// archive holds no entry for. A fixture rebuilt with folder entries would
+        /// otherwise leave them passing for nothing.
+        private func folderWithoutAnEntry(
+            _ name: String,
+            reader: ZipReader
+        ) async throws -> (ArchiveState, ArchiveItem) {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: reader.selector)
+            state.progressCenter = ExtractionProgressCenter()
+            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
+
+            state.open(url: zipFolder.appendingPathComponent("noFolderEntries.zip"))
+            try await state.openTask?.value
+
+            let folder = try #require(
+                state.entries.values.first(where: { $0.name == name && $0.isFolder }),
+                "fixture should show \(name) as a folder"
+            )
+            try #require(folder.type == .virtual, "\(name) should be a folder the archive has no entry for")
+            return (state, folder)
+        }
     }
 }

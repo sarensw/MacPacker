@@ -188,6 +188,30 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Dragging a folder out creates a blank file",
+                "zh-Hans": "拖出文件夹会生成空白文件",
+                "fr": "Glisser un dossier au-dehors donne un fichier vide",
+                "de": "Ordner herausziehen ergibt eine leere Datei",
+                "it": "Trascinare fuori una cartella crea un file vuoto",
+                "ja": "フォルダをドラッグで取り出すと空のファイルになる",
+                "fa": "بیرون کشیدن پوشه یک فایل خالی می‌سازد",
+                "pl": "Wyciągnięcie folderu tworzy pusty plik",
+                "pt-BR": "Arrastar uma pasta para fora gera um arquivo vazio",
+                "ru": "Перетаскивание папки наружу создаёт пустой файл",
+                "uk": "Перетягування папки назовні створює порожній файл",
+                "es-MX": "Arrastrar una carpeta afuera genera un archivo vacío",
+                "ko": "폴더를 밖으로 드래그하면 빈 파일이 만들어짐",
+                "nl": "Een map naar buiten slepen geeft een leeg bestand",
+                "tr": "Klasörü dışarı sürüklemek boş dosya oluşturuyor",
+                "vi": "Kéo thư mục ra ngoài tạo ra tệp trống"
+            },
+            "issues": [
+                "306"
+            ]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.04",
