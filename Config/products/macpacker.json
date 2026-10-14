@@ -89,6 +89,30 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Open and extract LZMA files",
+                "zh-Hans": "打开并解压 LZMA 文件",
+                "fr": "Ouvrir et extraire les fichiers LZMA",
+                "de": "LZMA-Dateien öffnen und entpacken",
+                "it": "Aprire ed estrarre i file LZMA",
+                "ja": "LZMA ファイルを開いて展開する",
+                "fa": "باز کردن و استخراج فایل‌های LZMA",
+                "pl": "Otwieranie i wypakowywanie plików LZMA",
+                "pt-BR": "Abrir e extrair arquivos LZMA",
+                "ru": "Открытие и извлечение файлов LZMA",
+                "uk": "Відкриття та розпакування файлів LZMA",
+                "es-MX": "Abrir y extraer archivos LZMA",
+                "ko": "LZMA 파일 열기 및 압축 해제",
+                "nl": "LZMA-bestanden openen en uitpakken",
+                "tr": "LZMA dosyalarını açma ve çıkarma",
+                "vi": "Mở và giải nén tệp LZMA"
+            },
+            "issues": [
+                "340"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {
@@ -185,6 +209,30 @@
             },
             "issues": [
                 "275"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Deb files list their contents correctly",
+                "zh-Hans": "deb 文件正确显示内容",
+                "fr": "Les fichiers deb affichent correctement leur contenu",
+                "de": "Deb-Dateien listen ihren Inhalt korrekt auf",
+                "it": "I file deb mostrano correttamente il contenuto",
+                "ja": "deb ファイルの内容を正しく表示",
+                "fa": "نمایش صحیح محتوای فایل‌های deb",
+                "pl": "Pliki deb pokazują poprawnie zawartość",
+                "pt-BR": "Arquivos deb listam corretamente seu conteúdo",
+                "ru": "Deb-файлы корректно показывают содержимое",
+                "uk": "Deb-файли коректно показують вміст",
+                "es-MX": "Los archivos deb muestran correctamente su contenido",
+                "ko": "deb 파일 내용을 올바르게 표시",
+                "nl": "Deb-bestanden tonen hun inhoud correct",
+                "tr": "Deb dosyaları içeriğini doğru gösteriyor",
+                "vi": "Tệp deb hiển thị đúng nội dung"
+            },
+            "issues": [
+                "340"
             ]
           },
           {
