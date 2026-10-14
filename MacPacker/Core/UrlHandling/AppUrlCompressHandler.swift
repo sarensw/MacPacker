@@ -15,6 +15,10 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Writes `items` into a new archive at `destination` through the same
 /// add/save path the UI uses; the format follows the destination's extension.
+///
+/// There is no window to show it in, so it goes to the progress window: that
+/// comes up once the compress takes long enough, can cancel it, and stays up
+/// to say why it failed.
 /// - Returns: whether the archive was written.
 @MainActor
 private func writeArchive(
@@ -25,10 +29,12 @@ private func writeArchive(
 ) async -> Bool {
     log.notice("Compressing \(items.count) item(s) to \(destination.lastPathComponent)")
     let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
-    await state.compress(items, to: destination)
-
-    if let error = state.error {
-        log.error("Compress failed", context: ["error": error])
+    guard await state.compress(items, to: destination, showingProgress: true) else {
+        if let error = state.error {
+            log.error("Compress failed", context: ["error": error])
+        } else {
+            log.notice("Compress cancelled", context: ["file": destination.lastPathComponent])
+        }
         return false
     }
     log.notice("Compress done", context: ["file": destination.lastPathComponent])
@@ -48,24 +54,22 @@ class AppUrlCompressHandler: AppUrlHandler {
         self.engineSelector = engineSelector
     }
 
-    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
+    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.notice("Compress handler: \(appUrl.files.count) file(s)", context: ["target": appUrl.target.path])
 
         // access to the folder covers reading the inputs and writing the archive
-        Task { @MainActor in
-            guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
-                log.error("No access to \(appUrl.target.lastPathComponent) — cannot compress")
-                return
-            }
-            let ext = appUrl.format ?? "zip"
-            let name = appUrl.archiveName(
-                CompressDestination.name(files: appUrl.files, target: appUrl.target, ext: ext),
-                extension: ext
-            )
-            let dest = CompressDestination.unique(named: name, in: appUrl.target)
-            if await writeArchive(appUrl.files, to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
-                NSWorkspace.shared.activateFileViewerSelecting([dest])
-            }
+        guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
+            log.error("No access to \(appUrl.target.lastPathComponent) — cannot compress")
+            return
+        }
+        let ext = appUrl.format ?? "zip"
+        let name = appUrl.archiveName(
+            CompressDestination.name(files: appUrl.files, target: appUrl.target, ext: ext),
+            extension: ext
+        )
+        let dest = CompressDestination.unique(named: name, in: appUrl.target)
+        if await writeArchive(appUrl.files, to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
+            NSWorkspace.shared.activateFileViewerSelecting([dest])
         }
     }
 }
@@ -81,27 +85,25 @@ class AppUrlCompressEachHandler: AppUrlHandler {
         self.engineSelector = engineSelector
     }
 
-    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
+    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.notice("Compress-each handler: \(appUrl.files.count) item(s)")
 
-        Task { @MainActor in
-            guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
-                log.error("No access to \(appUrl.target.lastPathComponent) — cannot compress")
-                return
+        guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
+            log.error("No access to \(appUrl.target.lastPathComponent) — cannot compress")
+            return
+        }
+        var written: [URL] = []
+        for item in appUrl.files {
+            let dest = CompressDestination.unique(
+                named: CompressDestination.name(files: [item], target: appUrl.target),
+                in: appUrl.target
+            )
+            if await writeArchive([item], to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
+                written.append(dest)
             }
-            var written: [URL] = []
-            for item in appUrl.files {
-                let dest = CompressDestination.unique(
-                    named: CompressDestination.name(files: [item], target: appUrl.target),
-                    in: appUrl.target
-                )
-                if await writeArchive([item], to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
-                    written.append(dest)
-                }
-            }
-            if !written.isEmpty {
-                NSWorkspace.shared.activateFileViewerSelecting(written)
-            }
+        }
+        if !written.isEmpty {
+            NSWorkspace.shared.activateFileViewerSelecting(written)
         }
     }
 }
@@ -118,36 +120,34 @@ class AppUrlCompressContentsHandler: AppUrlHandler {
         self.engineSelector = engineSelector
     }
 
-    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
+    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         guard let folder = appUrl.files.first else { return }
         log.notice("Compress-contents handler", context: ["folder": folder.lastPathComponent])
 
-        Task { @MainActor in
-            guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
-                log.error("No access to \(appUrl.target.lastPathComponent) — cannot compress")
-                return
+        guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
+            log.error("No access to \(appUrl.target.lastPathComponent) — cannot compress")
+            return
+        }
+        let contents: [URL]
+        do {
+            // the stored grant found above gives access only inside its scope (#278)
+            contents = try Sandbox.accessSync(url: folder) {
+                try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
             }
-            let contents: [URL]
-            do {
-                // the stored grant found above gives access only inside its scope (#278)
-                contents = try Sandbox.accessSync(url: folder) {
-                    try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
-                }
-            } catch {
-                log.error("Could not list the folder", context: ["error": error.localizedDescription])
-                return
-            }
-            guard !contents.isEmpty else {
-                log.notice("Folder is empty — nothing to compress")
-                return
-            }
-            let dest = CompressDestination.unique(
-                named: CompressDestination.name(files: [folder], target: appUrl.target),
-                in: appUrl.target
-            )
-            if await writeArchive(contents, to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
-                NSWorkspace.shared.activateFileViewerSelecting([dest])
-            }
+        } catch {
+            log.error("Could not list the folder", context: ["error": error.localizedDescription])
+            return
+        }
+        guard !contents.isEmpty else {
+            log.notice("Folder is empty — nothing to compress")
+            return
+        }
+        let dest = CompressDestination.unique(
+            named: CompressDestination.name(files: [folder], target: appUrl.target),
+            in: appUrl.target
+        )
+        if await writeArchive(contents, to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
+            NSWorkspace.shared.activateFileViewerSelecting([dest])
         }
     }
 }
@@ -156,18 +156,16 @@ class AppUrlCompressContentsHandler: AppUrlHandler {
 /// with the selection; the user picks name/format/level on save.
 class AppUrlAddToArchiveHandler: AppUrlHandler {
 
-    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) {
+    func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.notice("Add-to-archive handler: \(appUrl.files.count) file(s)")
 
         // the selected files live in the target folder — one folder grant
         // makes them readable for the later save
-        Task { @MainActor in
-            guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
-                log.error("No access to \(appUrl.target.lastPathComponent) — cannot add to archive")
-                return
-            }
-            archiveWindowManager.openCreateArchiveWindow(with: appUrl.files)
-            NSApp.activate(ignoringOtherApps: true)
+        guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
+            log.error("No access to \(appUrl.target.lastPathComponent) — cannot add to archive")
+            return
         }
+        archiveWindowManager.openCreateArchiveWindow(with: appUrl.files)
+        NSApp.activate(ignoringOtherApps: true)
     }
 }

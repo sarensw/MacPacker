@@ -36,8 +36,58 @@
     },
     "versions": [
       {
-        "version": "1.0.1",
+        "version": "1.1.0",
         "items": [
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Progress window when compressing from Finder",
+                "zh-Hans": "从 Finder 压缩时显示进度窗口",
+                "fr": "Fenêtre de progression pour la compression depuis le Finder",
+                "de": "Fortschrittsfenster beim Komprimieren im Finder",
+                "it": "Finestra di avanzamento per la compressione dal Finder",
+                "ja": "Finder からの圧縮に進行状況ウィンドウを表示",
+                "fa": "پنجره پیشرفت هنگام فشرده‌سازی از Finder",
+                "pl": "Okno postępu przy kompresowaniu z Findera",
+                "pt-BR": "Janela de progresso ao comprimir pelo Finder",
+                "ru": "Окно хода сжатия из Finder",
+                "uk": "Вікно перебігу стиснення з Finder",
+                "es-MX": "Ventana de progreso al comprimir desde el Finder",
+                "ko": "Finder에서 압축할 때 진행 창 표시",
+                "nl": "Voortgangsvenster bij comprimeren in de Finder",
+                "tr": "Finder’dan sıkıştırırken ilerleme penceresi",
+                "vi": "Cửa sổ tiến trình khi nén từ Finder"
+            },
+            "issues": [
+                "278"
+            ]
+          },
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Edit 7z archives",
+                "zh-Hans": "编辑 7z 压缩包",
+                "fr": "Modifier les archives 7z",
+                "de": "7z-Archive bearbeiten",
+                "it": "Modificare gli archivi 7z",
+                "ja": "7z アーカイブを編集",
+                "fa": "ویرایش آرشیوهای 7z",
+                "pl": "Edytowanie archiwów 7z",
+                "pt-BR": "Editar arquivos 7z",
+                "ru": "Редактирование архивов 7z",
+                "uk": "Редагування архівів 7z",
+                "es-MX": "Editar archivos 7z",
+                "ko": "7z 압축 파일 편집",
+                "nl": "7z-archieven bewerken",
+                "tr": "7z arşivlerini düzenleme",
+                "vi": "Chỉnh sửa tệp nén 7z"
+            },
+            "issues": [
+                "132"
+            ]
+          },
           {
             "type": "fix",
             "highlight": true,
@@ -61,6 +111,104 @@
             },
             "issues": [
                 "278"
+            ]
+          },
+          {
+            "type": "fix",
+            "highlight": true,
+            "title": {
+                "en": "Compressing a large folder freezes the app",
+                "zh-Hans": "压缩大型文件夹会导致应用程序冻结",
+                "fr": "Compresser un gros dossier bloque l’application",
+                "de": "Großen Ordner komprimieren lässt die App einfrieren",
+                "it": "Comprimere una cartella grande blocca l’applicazione",
+                "ja": "大きなフォルダを圧縮するとアプリがフリーズする",
+                "fa": "فشرده‌سازی پوشه بزرگ باعث توقف برنامه می‌شود",
+                "pl": "Kompresowanie dużego folderu zawiesza aplikację",
+                "pt-BR": "Comprimir uma pasta grande faz o aplicativo travar",
+                "ru": "Сжатие большой папки приводит к зависанию приложения",
+                "uk": "Стиснення великої папки призводить до зависання застосунку",
+                "es-MX": "Comprimir una carpeta grande congela la aplicación",
+                "ko": "큰 폴더를 압축하면 앱이 멈춤",
+                "nl": "Een grote map comprimeren laat de app vastlopen",
+                "tr": "Büyük bir klasörü sıkıştırmak uygulamayı donduruyor",
+                "vi": "Nén thư mục lớn làm ứng dụng bị treo"
+            },
+            "issues": [
+                "278"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Finder actions open the main window",
+                "zh-Hans": "Finder 操作会打开主窗口",
+                "fr": "Les actions du Finder ouvrent la fenêtre principale",
+                "de": "Finder-Aktionen öffnen das Hauptfenster",
+                "it": "Le azioni del Finder aprono la finestra principale",
+                "ja": "Finder の操作でメインウィンドウが開く",
+                "fa": "عملیات Finder پنجره اصلی را باز می‌کند",
+                "pl": "Akcje Findera otwierają okno główne",
+                "pt-BR": "Ações do Finder abrem a janela principal",
+                "ru": "Действия Finder открывают главное окно",
+                "uk": "Дії Finder відкривають головне вікно",
+                "es-MX": "Las acciones del Finder abren la ventana principal",
+                "ko": "Finder 작업 시 메인 창이 열림",
+                "nl": "Finder-acties openen het hoofdvenster",
+                "tr": "Finder işlemleri ana pencereyi açıyor",
+                "vi": "Thao tác Finder mở cửa sổ chính"
+            },
+            "issues": [
+                "279",
+                "312"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "No Finder menu on external drives",
+                "zh-Hans": "外置驱动器上没有 Finder 菜单",
+                "fr": "Pas de menu Finder sur les disques externes",
+                "de": "Kein Finder-Menü auf externen Laufwerken",
+                "it": "Nessun menu Finder sui dischi esterni",
+                "ja": "外付けドライブで Finder メニューが表示されない",
+                "fa": "بدون منوی Finder در درایوهای خارجی",
+                "pl": "Brak menu Findera na dyskach zewnętrznych",
+                "pt-BR": "Sem menu do Finder em unidades externas",
+                "ru": "Нет меню Finder на внешних дисках",
+                "uk": "Немає меню Finder на зовнішніх дисках",
+                "es-MX": "Sin menú del Finder en discos externos",
+                "ko": "외장 드라이브에 Finder 메뉴가 없음",
+                "nl": "Geen Finder-menu op externe schijven",
+                "tr": "Harici sürücülerde Finder menüsü yok",
+                "vi": "Không có menu Finder trên ổ đĩa ngoài"
+            },
+            "issues": [
+                "275"
+            ]
+          },
+          {
+            "type": "core",
+            "title": {
+                "en": "Update 7-Zip to v26.04",
+                "zh-Hans": "更新 7-Zip 至 v26.04",
+                "fr": "Mise à jour de 7-Zip vers la version 26.04",
+                "de": "7-Zip auf Version 26.04 aktualisiert",
+                "it": "Aggiornamento di 7-Zip alla versione 26.04",
+                "ja": "7-Zip を v26.04 に更新",
+                "fa": "به‌روزرسانی 7-Zip به نسخه 26.04",
+                "pl": "Aktualizacja 7-Zip do wersji 26.04",
+                "pt-BR": "Atualização do 7-Zip para a versão 26.04",
+                "ru": "Обновление 7-Zip до версии 26.04",
+                "uk": "Оновлення 7-Zip до версії 26.04",
+                "es-MX": "Actualización de 7-Zip a la versión 26.04",
+                "ko": "7-Zip을 v26.04로 업데이트",
+                "nl": "7-Zip bijgewerkt naar v26.04",
+                "tr": "7-Zip v26.04'e güncellendi",
+                "vi": "Cập nhật 7-Zip lên v26.04"
+            },
+            "issues": [
+                "313"
             ]
           }
         ]

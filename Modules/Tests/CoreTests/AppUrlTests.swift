@@ -17,6 +17,22 @@ extension AllCoreTests {
 
         private let scheme = "app.macpacker"
 
+        /// Extracting and compressing from Finder's menu happen in the
+        /// background, and Finder keeps the focus. The app used to come to
+        /// the front for every action and hand the focus back when it was
+        /// done (#279).
+        @Test(arguments: [AppUrlAction.extractHere, .extractToFolder, .compress, .compressEach, .compressContents])
+        func extractingAndCompressingLeaveTheAppInTheBackground(action: AppUrlAction) {
+            #expect(!action.bringsAppToFront)
+        }
+
+        /// A window to work in, or a question to answer first, needs the app
+        /// in front.
+        @Test(arguments: [AppUrlAction.open, .addToArchive, .extractTo])
+        func whatOpensAWindowBringsTheAppToTheFront(action: AppUrlAction) {
+            #expect(action.bringsAppToFront)
+        }
+
         /// Builds a url by hand, the way any other app could send one. What the
         /// Finder extension really sends goes through `AppUrl.url(scheme:)`.
         private func url(

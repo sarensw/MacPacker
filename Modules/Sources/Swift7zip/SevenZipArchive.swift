@@ -50,7 +50,7 @@ public class SevenZipArchive {
 
     // MARK: - Inspection
 
-    /// Version of the embedded 7-Zip library, e.g. `26.03`.
+    /// Version of the embedded 7-Zip library, e.g. `26.04`.
     ///
     /// Read from the vendored sources at compile time, so it follows the
     /// `Sources/CSevenZip/vendor/7zip` submodule automatically.
@@ -66,6 +66,14 @@ public class SevenZipArchive {
     /// is `nil`.
     public var isTree: Bool {
         sz_is_tree(handle.ref)
+    }
+
+    /// The format 7-Zip opened the archive as, by the name of the handler that
+    /// did — `7z`, `zip`, `tar`, `Rar5` — or `nil` when it has none. It is what
+    /// the archive is, whatever its file is called. For a set of volumes it is
+    /// the format of the archive they make up, not `Split`.
+    public var formatName: String? {
+        sz_format_name(handle.ref).map { String(cString: $0) }
     }
 
     /// How the entry at `index` is compressed, as 7-Zip names it — `Deflate`,

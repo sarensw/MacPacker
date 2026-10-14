@@ -991,36 +991,30 @@ extension AllCoreTests {
         // it too — otherwise editing an archive leaves metadata describing
         // something the archive no longer holds, which then reappears in the
         // listing as a stray `._name` entry, in the place the user just cleared.
-        @Test func deletingAFileDeletesItsSidecar() async throws {
-            let zipFolder = Bundle.module.url(forResource: "zip", withExtension: nil)!
-            let source = zipFolder.appendingPathComponent("appledouble.zip")
-
+        //
+        // In a zip and in a 7z, and both ways a removal is written: by Save, which
+        // updates the archive in place, and by Save As, which writes it again.
+        @Test(arguments: CompressionOptions.Format.allCases, [true, false])
+        func deletingAFileDeletesItsSidecar(from format: CompressionOptions.Format, inPlace: Bool) async throws {
             let fm = FileManager.default
             let tempDir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try fm.createDirectory(at: tempDir, withIntermediateDirectories: true)
             defer { try? fm.removeItem(at: tempDir) }
+            let source = try appleDoubleFixture(format, in: tempDir)
 
             let archive = try SevenZipArchive(url: source)
             let icon = try #require(try archive.entries.first { $0.path.hasSuffix("Resources/icon.png") })
 
-            let edited = tempDir.appendingPathComponent("edited.zip")
+            let edited = inPlace ? source : tempDir.appendingPathComponent("edited.\(format.rawValue)")
             try SevenZipArchive.writeArchive(
                 source: source,
                 destination: edited,
                 items: [.remove(sourceIndex: icon.index)],
-                options: .init(format: .zip)
+                options: .init(format: format)
             )
 
             // Read the result with a tool that has no opinion about sidecars.
-            let listing = Process()
-            listing.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
-            listing.arguments = ["-Z1", edited.path]
-            let pipe = Pipe()
-            listing.standardOutput = pipe
-            try listing.run()
-            let raw = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
-                .split(separator: "\n").map(String.init)
-            listing.waitUntilExit()
+            let raw = try systemEntries(edited)
 
             #expect(
                 raw.contains { $0.hasSuffix("/icon.png") } == false,
@@ -1029,6 +1023,10 @@ extension AllCoreTests {
             #expect(
                 raw.contains { $0.hasSuffix("/._icon.png") } == false,
                 "._icon.png described icon.png and should have gone with it, found \(raw)"
+            )
+            #expect(
+                raw.contains { $0.hasSuffix("/._helper") },
+                "._helper describes a file that stays and should have stayed with it, found \(raw)"
             )
         }
 

@@ -53,6 +53,14 @@ const char *sz_entry_path(SZArchiveRef archive, uint32_t index);
 /// entry. NULL when the archive does not say. Lives as long as the handle.
 const char *sz_entry_method(SZArchiveRef archive, uint32_t index);
 
+/// The format 7-Zip opened the archive as, by the name of the handler that did
+/// -- "7z", "zip", "tar", "Rar5" -- which is the name `sz_update_archive` takes
+/// a format by. Where one archive sits inside another -- the volumes of a split
+/// set, the filesystem of a disk image -- it is the innermost one, whose entries
+/// the handle lists. NULL when the handler has no name. Lives as long as the
+/// handle.
+const char *sz_format_name(SZArchiveRef archive);
+
 typedef struct {
     uint32_t index;
     const char *path;        // UTF-8; pointer valid until sz_close()
@@ -130,7 +138,7 @@ bool sz_is_tree(SZArchiveRef archive);
 
 // --- Utilities ---
 
-/// Version of the vendored 7-Zip sources, e.g. "26.03".
+/// Version of the vendored 7-Zip sources, e.g. "26.04".
 /// Statically allocated -- do not free.
 const char* sz_version(void);
 

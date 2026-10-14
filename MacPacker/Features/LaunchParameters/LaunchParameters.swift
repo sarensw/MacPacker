@@ -239,6 +239,8 @@ enum LaunchParameters {
         _ state: ArchiveState, navigate: String?, add: [URL], search: String?, select: String?
     ) async {
         try? await state.openTask?.value
+        // what a new archive was opened with is read off the main actor
+        _ = await state.addTask?.value
 
         if let navigate, !navigate.isEmpty {
             for segment in navigate.split(separator: "/").map(String.init) {
@@ -250,8 +252,8 @@ enum LaunchParameters {
             }
         }
 
-        for file in add {
-            state.add(url: file)
+        if !add.isEmpty {
+            _ = await state.add(urls: add).value
         }
 
         if let search, !search.isEmpty {

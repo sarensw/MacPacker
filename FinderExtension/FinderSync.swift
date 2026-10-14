@@ -46,25 +46,27 @@ class FinderSync: FIFinderSync {
     
     var baseFolderUrl = FileManager.default.homeDirectoryForCurrentUser
     var documentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    
+
+    /// Keeps Finder's roots in step with the mounted volumes while the extension lives.
+    private var observedDirectories: FinderObservedDirectories.Watcher?
+
     override init() {
         super.init()
         
         tb.start()
         log.debug("FinderSync() launched from \(Bundle.main.bundlePath as NSString)")
         
-        // Set up the directory we are syncing.
-        let syncUrls: Set<URL> = [
-            self.baseFolderUrl,
-            URL(fileURLWithPath: "/Users/\(ProcessInfo.processInfo.userName)")
-        ]
-        FIFinderSyncController.default().directoryURLs = syncUrls
-        log.debug("Initializing on...")
-        for syncUrl in syncUrls {
-            log.debug("\t\(syncUrl.path)")
+        observedDirectories = FinderObservedDirectories.Watcher(
+            homeDirectory: baseFolderUrl,
+            userName: ProcessInfo.processInfo.userName
+        ) { roots in
+            // This only controls menu availability; file access still goes through
+            // the main app's existing folder permission flow.
+            FIFinderSyncController.default().directoryURLs = roots
+            log.info("Observing Finder directories: \(roots.map(\.path).sorted())")
         }
     }
-    
+
     // MARK: - Primary Finder Sync protocol methods
     
     override func beginObservingDirectory(at url: URL) {
@@ -299,11 +301,18 @@ class FinderSync: FIFinderSync {
         }
 
         log.notice("Opening main app for '\(action)'", context: ["url": url.absoluteString])
-        let opened = NSWorkspace.shared.open(url)
-        if opened {
-            log.notice("Handed '\(action)' off to the main app")
-        } else {
-            log.error("NSWorkspace could not open \(url.absoluteString) — is the '\(appScheme)' scheme registered to MacPacker?")
+        // An action that extracts or compresses leaves the user in Finder: the
+        // app starts and works behind it, and takes the focus only for what
+        // has to be answered.
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = item.action.bringsAppToFront
+        let scheme = appScheme
+        NSWorkspace.shared.open(url, configuration: configuration) { _, error in
+            if let error {
+                log.error("NSWorkspace could not open \(url.absoluteString) — is the '\(scheme)' scheme registered to MacPacker?", context: ["error": error.localizedDescription])
+            } else {
+                log.notice("Handed '\(action)' off to the main app")
+            }
         }
     }
 
