@@ -1100,6 +1100,24 @@ static void sz_indexAppleDoubleSidecars(SZArchiveHandle *handle) {
     }
 }
 
+/// Open an archive at the given filesystem path.
+///
+/// Tries each registered 7-Zip handler on the file, then drills into nested
+/// containers (disk images containing filesystems) up to a fixed depth via
+/// the `kpidMainSubfile` stream. A `deb` level is not drilled into: its
+/// payload is a tar under a compression wrapper with no usable entry paths,
+/// which would otherwise list as a lone entry named "unknown" instead of the
+/// deb's members.
+///
+/// @param path  Filesystem path of the archive (UTF-8).
+/// @param password  Password for reading encrypted headers (7z `-mhe=on`,
+///   RAR `-hp`), or NULL. Also pre-sets the extraction password.
+/// @param needs_password_out  If non-NULL, set to true when a handler asked
+///   for a password during the open. Meaningful only on failure: it tells the
+///   caller to prompt and retry rather than report an unsupported file.
+/// @param error_out  If non-NULL, set to a malloc'd UTF-8 error string on
+///   failure; caller must free() it.
+/// @return Opaque archive handle on success, NULL on failure.
 SZArchiveRef sz_open(const char *path, const char *password,
                      bool *needs_password_out, char **error_out) {
     if (needs_password_out) *needs_password_out = false;
