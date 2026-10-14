@@ -235,7 +235,9 @@
 			<key>LSHandlerRank</key>
 			<string>Default</string>
 			<key>LSItemContentTypes</key>
-			<array/>
+			<array>
+				<string>org.tukaani.tar-lzma-archive</string>
+			</array>
 			<key>LSTypeIsPackage</key>
 			<false/>
 		</dict>
