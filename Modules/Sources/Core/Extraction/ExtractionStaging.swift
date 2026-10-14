@@ -123,6 +123,11 @@ struct ExtractionStaging: Sendable {
     /// where a folder goes, a file or folder that cannot be written — is found
     /// *before* anything moves, and throws with the destination untouched.
     ///
+    /// What cannot be foreseen — a file protected against deletion, a disk that
+    /// gives out — stops the commit part-way. Then every step already taken is
+    /// taken back: a commit puts all of the result in place, or leaves the
+    /// destination as it was.
+    ///
     /// - Parameter container: The folder the result is to become: smart
     ///   extraction's container, which must not exist yet. `nil` puts the
     ///   extracted items straight into the destination.
@@ -144,8 +149,20 @@ struct ExtractionStaging: Sendable {
                 onto: destination.appendingPathComponent(name),
                 into: &steps)
         }
-        for step in steps {
-            try step.run()
+        var taken: [Taken] = []
+        do {
+            for step in steps {
+                taken.append(try step.run())
+            }
+        } catch {
+            for step in taken.reversed() {
+                step.undo()
+            }
+            throw error
+        }
+        // Nothing can fail any more: what was kept for an undo can go.
+        for step in taken {
+            step.settle()
         }
         // What is left are the folders that were merged away, emptied.
         Self.removeTree(workFolder)
@@ -163,36 +180,137 @@ struct ExtractionStaging: Sendable {
 
     // MARK: - Putting the result in place
 
+    /// A step that has been taken.
+    private struct Taken {
+        /// Takes the step back: the destination is as it was before it.
+        let undo: () -> Void
+        /// What is left to do once every step has been taken.
+        let settle: () -> Void
+    }
+
     private enum Step {
         /// Nothing is in the way: the item moves as it is, whatever is in it.
         case move(URL, to: URL)
         /// A file is in the way: the item takes its place.
         case replace(URL, with: URL)
 
-        func run() throws {
-            let fm = FileManager.default
+        func run() throws -> Taken {
             switch self {
             case .move(let source, let target):
                 do {
-                    try fm.moveItem(at: source, to: target)
+                    try ExtractionStaging.move(source, to: target)
                 } catch {
-                    // A folder moving to another parent gets its `..`
-                    // rewritten, which takes write permission on the folder
-                    // itself — and an archive may hold one without it.
-                    guard let mode = ExtractionStaging.mode(ofFolder: source), mode & 0o200 == 0 else { throw error }
-                    try fm.setAttributes([.posixPermissions: mode | 0o200], ofItemAtPath: source.path)
-                    try fm.moveItem(at: source, to: target)
-                    try fm.setAttributes([.posixPermissions: mode], ofItemAtPath: target.path)
+                    // nothing was there before, so nothing of a move that
+                    // stopped half-way may stay
+                    ExtractionStaging.removeTree(target)
+                    throw error
                 }
+                return Taken(
+                    // back where it came from, where a discarded run takes it along
+                    undo: {
+                        do {
+                            try ExtractionStaging.move(target, to: source)
+                        } catch {
+                            ExtractionStaging.removeTree(target)
+                        }
+                    },
+                    settle: {})
             case .replace(let target, with: let source):
                 // through a link, as the engines write through one
                 let real = target.resolvingSymlinksInPath()
-                if rename(source.path, real.path) != 0 {
-                    // behind a link the file may be on another volume, where
-                    // there is no renaming onto it
-                    try ExtractionStaging.replace(real, withCopyOf: source)
+                // Where the volume can do it, the two files change places in
+                // one go: the new one is in place, and the old one waits in the
+                // work folder — for an undo, or to go with that folder.
+                if renamex_np(source.path, real.path, UInt32(RENAME_SWAP)) == 0 {
+                    return Taken(
+                        undo: {
+                            if renamex_np(source.path, real.path, UInt32(RENAME_SWAP)) != 0 {
+                                log.error("Could not put a replaced file back", context: [
+                                    "file": real.path, "errno": "\(errno)",
+                                ])
+                            }
+                        },
+                        settle: {})
                 }
+                let reason = errno
+                guard [ENOTSUP, EINVAL, EXDEV].contains(reason) else {
+                    // not a matter of how, then: the file is not to be touched
+                    throw ArchiveError.extractionFailed(
+                        "Could not replace \"\(real.lastPathComponent)\": the file in the destination cannot be changed.")
+                }
+                // No changing places on this volume, or the file is on another
+                // one, behind a link. Then the file that is there is kept
+                // beside itself until every step has been taken.
+                let kept = try ExtractionStaging.keep(real)
+                do {
+                    if rename(source.path, real.path) != 0 {
+                        // behind a link the file may be on another volume,
+                        // where there is no renaming onto it
+                        try ExtractionStaging.replace(real, withCopyOf: source)
+                    }
+                } catch {
+                    ExtractionStaging.putBack(kept, as: real)
+                    throw error
+                }
+                return Taken(
+                    undo: { ExtractionStaging.putBack(kept, as: real) },
+                    settle: { try? FileManager.default.removeItem(at: kept) })
             }
+        }
+    }
+
+    /// Moves an extracted item to where nothing is.
+    ///
+    /// A folder moving to another parent gets its `..` rewritten, which takes
+    /// write permission on the folder itself — and an archive may hold one
+    /// without it. It is given that permission for the move alone.
+    private static func move(_ source: URL, to target: URL) throws {
+        let fm = FileManager.default
+        do {
+            try fm.moveItem(at: source, to: target)
+        } catch {
+            guard let mode = mode(ofFolder: source), mode & 0o200 == 0 else { throw error }
+            try fm.setAttributes([.posixPermissions: mode | 0o200], ofItemAtPath: source.path)
+            do {
+                try fm.moveItem(at: source, to: target)
+            } catch {
+                try? fm.setAttributes([.posixPermissions: mode], ofItemAtPath: source.path)
+                throw error
+            }
+            try fm.setAttributes([.posixPermissions: mode], ofItemAtPath: target.path)
+        }
+    }
+
+    /// Keeps the file at `real` under a second, hidden name beside it, and
+    /// returns that name.
+    ///
+    /// As a hard link where the volume has them: the file then stays in place
+    /// under its own name too, and replacing it remains the single rename it
+    /// was. Where the volume has none, the file itself is moved aside.
+    static func keep(_ real: URL) throws -> URL {
+        let kept = real.deletingLastPathComponent().appendingPathComponent(
+            ".macpacker-" + UUID().uuidString.prefix(8).lowercased())
+        if link(real.path, kept.path) != 0, rename(real.path, kept.path) != 0 {
+            throw ArchiveError.extractionFailed(
+                "Could not replace \"\(real.lastPathComponent)\": the file in the destination cannot be changed.")
+        }
+        return kept
+    }
+
+    /// Puts a kept file back under its own name, whatever is there now.
+    static func putBack(_ kept: URL, as real: URL) {
+        if rename(kept.path, real.path) != 0 {
+            log.error("Could not put a replaced file back", context: [
+                "file": real.path, "kept": kept.path, "errno": "\(errno)",
+            ])
+            return
+        }
+        // A rename between two names of one and the same file changes nothing:
+        // then the second name is what is left over.
+        if unlink(kept.path) != 0, errno != ENOENT {
+            log.error("Could not remove the second name of a kept file", context: [
+                "kept": kept.path, "errno": "\(errno)",
+            ])
         }
     }
 

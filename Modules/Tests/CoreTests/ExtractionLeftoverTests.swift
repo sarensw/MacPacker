@@ -351,6 +351,40 @@ extension AllCoreTests {
             #expect(try everything(in: dest) == ["mine.txt"])
         }
 
+        /// Finder's `Extract to "trip"` names a folder that is not there yet and
+        /// leaves making it to the extraction. It comes into being with the
+        /// run, and goes with one that does not finish: created by the action
+        /// itself, up front, it used to stay behind, empty.
+        @Test(arguments: UnfinishedEnding.allCases)
+        func aDestinationMadeForTheRunGoesWithAnUnfinishedOne(ending: UnfinishedEnding) async throws {
+            let dir = try makeFolder()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try makeZip(in: dir, name: "trip", entries: ["a.txt", "b.txt", "photos/c.jpg"])
+            let beside = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: beside, withIntermediateDirectories: true)
+
+            let state = ArchiveState(
+                catalog: ArchiveTypeCatalog(),
+                engineSelector: EndingEngineSelector(engine: EndingEngine(ending: ending)))
+            try await extractFull(state, zip, to: beside.appendingPathComponent("trip"), smart: false)
+
+            #expect(try everything(in: beside) == [])
+        }
+
+        /// …and stays with one that does, holding the result.
+        @Test func aDestinationMadeForTheRunStaysWithAFinishedOne() async throws {
+            let dir = try makeFolder()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try makeZip(in: dir, name: "trip", entries: ["a.txt", "b.txt", "photos/c.jpg"])
+            let beside = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: beside, withIntermediateDirectories: true)
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            try await extractFull(state, zip, to: beside.appendingPathComponent("trip"), smart: false)
+
+            #expect(try everything(in: beside) == ["trip/", "trip/a.txt", "trip/b.txt", "trip/photos/", "trip/photos/c.jpg"])
+        }
+
         // MARK: - An extraction that finishes
 
         /// Nothing of the way there is left once the result is in place —

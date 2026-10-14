@@ -31,12 +31,27 @@ extension AllCoreTests {
             return url
         }
 
-        /// Removes a test's folder, read-only items in it included.
+        /// Removes a test's folder — read-only and locked items in it, and
+        /// those protected against deletion, included.
         private func remove(_ folder: URL) {
+            try? chmod(["-R", "-N", folder.path])
             for path in (try? fm.subpathsOfDirectory(atPath: folder.path)) ?? [] {
-                try? fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: folder.appendingPathComponent(path).path)
+                let item = folder.appendingPathComponent(path).path
+                _ = chflags(item, 0)
+                try? fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: item)
             }
             try? fm.removeItem(at: folder)
+        }
+
+        /// Runs the system's `chmod`, for what `FileManager` has no call for:
+        /// access-control entries.
+        private func chmod(_ arguments: [String]) throws {
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/bin/chmod")
+            p.arguments = arguments
+            p.standardError = Pipe()
+            try p.run()
+            p.waitUntilExit()
         }
 
         private func write(_ text: String, to url: URL) throws {
@@ -340,10 +355,72 @@ extension AllCoreTests {
             #expect(try everything(in: dir) == ["photo.jpg", "work/"])
         }
 
+        /// A file protected against deletion reads as writable, so nothing is
+        /// found beforehand — and it stops the commit in the middle, after a
+        /// new item has been moved in and another file replaced. Both are taken
+        /// back: the destination is as it was, with nothing of the attempt left
+        /// in it.
+        @Test func aCommitThatStopsPartWayPutsEverythingBack() throws {
+            let dest = try makeFolder()
+            defer { remove(dest) }
+            try write("old a", to: dest.appendingPathComponent("a.txt"))
+            try write("old b", to: dest.appendingPathComponent("b.txt"))
+            try write("mine", to: dest.appending(path: "photos/mine.txt"))
+            try chmod(["+a", "everyone deny delete", dest.appendingPathComponent("b.txt").path])
+
+            let staging = try ExtractionStaging(in: dest, named: "trip")
+            // in the order they are taken: moved in, replaced, refused
+            try write("new", to: staging.workFolder.appendingPathComponent("0-new.txt"))
+            try write("new a", to: staging.workFolder.appendingPathComponent("a.txt"))
+            try write("new b", to: staging.workFolder.appendingPathComponent("b.txt"))
+            try write("c", to: staging.workFolder.appending(path: "photos/c.jpg"))
+
+            do {
+                try staging.commit()
+                Issue.record("a file protected against deletion was replaced")
+            } catch {
+                // (stopped by the step itself, not by the look beforehand)
+                #expect(error.localizedDescription.contains("cannot be changed"))
+            }
+            staging.discard()
+
+            #expect(try everything(in: dest) == ["a.txt", "b.txt", "photos/", "photos/mine.txt"])
+            #expect(try text(dest.appendingPathComponent("a.txt")) == "old a")
+            #expect(try text(dest.appendingPathComponent("b.txt")) == "old b")
+        }
+
+        /// Where a volume cannot have two files change places, the old file is
+        /// kept under a second name beside itself until the commit is through,
+        /// and put back from there. Whether or not the new file got as far as
+        /// taking its place, the old one is back under its own name alone.
+        @Test func aKeptFileComesBackUnderItsOwnName() throws {
+            let dir = try makeFolder()
+            defer { remove(dir) }
+            let file = dir.appendingPathComponent("photo.jpg")
+
+            // replaced meanwhile
+            try write("old", to: file)
+            var kept = try ExtractionStaging.keep(file)
+            #expect(try text(kept) == "old")
+            try write("new", to: dir.appendingPathComponent("incoming"))
+            #expect(rename(dir.appendingPathComponent("incoming").path, file.path) == 0)
+            #expect(try text(file) == "new")
+            ExtractionStaging.putBack(kept, as: file)
+            #expect(try text(file) == "old")
+            #expect(try everything(in: dir) == ["photo.jpg"])
+
+            // never replaced
+            kept = try ExtractionStaging.keep(file)
+            ExtractionStaging.putBack(kept, as: file)
+            #expect(try text(file) == "old")
+            #expect(try everything(in: dir) == ["photo.jpg"])
+        }
+
         // MARK: - What cannot be committed
 
         enum Clash: CaseIterable {
             case fileWhereAFolderGoes, folderWhereAFileGoes, brokenLink, fileThatCannotBeWritten, folderThatCannotBeWritten
+            case lockedFile
         }
 
         /// The engines failed on each of these as well, part-way through.
@@ -373,6 +450,11 @@ extension AllCoreTests {
             case .folderThatCannotBeWritten:
                 try write("mine", to: dest.appending(path: "photos/mine.txt"))
                 try fm.setAttributes([.posixPermissions: 0o555], ofItemAtPath: dest.appendingPathComponent("photos").path)
+                try write("b", to: staging.workFolder.appending(path: "photos/b.jpg"))
+            case .lockedFile:
+                // what Finder's "Locked" checkbox sets
+                try write("mine", to: dest.appending(path: "photos/b.jpg"))
+                #expect(chflags(dest.appending(path: "photos/b.jpg").path, UInt32(UF_IMMUTABLE)) == 0)
                 try write("b", to: staging.workFolder.appending(path: "photos/b.jpg"))
             }
             let before = try everything(in: dest).filter { !$0.hasPrefix(staging.workFolder.lastPathComponent) }
