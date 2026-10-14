@@ -236,6 +236,54 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Dragging a folder out creates a blank file",
+                "zh-Hans": "拖出文件夹会生成空白文件",
+                "fr": "Glisser un dossier au-dehors donne un fichier vide",
+                "de": "Ordner herausziehen ergibt eine leere Datei",
+                "it": "Trascinare fuori una cartella crea un file vuoto",
+                "ja": "フォルダをドラッグで取り出すと空のファイルになる",
+                "fa": "بیرون کشیدن پوشه یک فایل خالی می‌سازد",
+                "pl": "Wyciągnięcie folderu tworzy pusty plik",
+                "pt-BR": "Arrastar uma pasta para fora gera um arquivo vazio",
+                "ru": "Перетаскивание папки наружу создаёт пустой файл",
+                "uk": "Перетягування папки назовні створює порожній файл",
+                "es-MX": "Arrastrar una carpeta afuera genera un archivo vacío",
+                "ko": "폴더를 밖으로 드래그하면 빈 파일이 만들어짐",
+                "nl": "Een map naar buiten slepen geeft een leeg bestand",
+                "tr": "Klasörü dışarı sürüklemek boş dosya oluşturuyor",
+                "vi": "Kéo thư mục ra ngoài tạo ra tệp trống"
+            },
+            "issues": [
+                "306"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Saving a zip that holds a 7z breaks it",
+                "zh-Hans": "保存包含 7z 的 zip 会将其损坏",
+                "fr": "Enregistrer un zip contenant un 7z l’endommage",
+                "de": "Speichern beschädigt ein zip-Archiv, das ein 7z enthält",
+                "it": "Salvare uno zip che contiene un 7z lo danneggia",
+                "ja": "7z を含む zip を保存すると壊れる",
+                "fa": "ذخیره zip حاوی 7z آن را خراب می‌کند",
+                "pl": "Zapisanie pliku zip zawierającego 7z uszkadza go",
+                "pt-BR": "Salvar um zip que contém um 7z o danifica",
+                "ru": "Сохранение zip-архива с 7z внутри повреждает его",
+                "uk": "Збереження zip-архіву з 7z усередині пошкоджує його",
+                "es-MX": "Guardar un zip que contiene un 7z lo daña",
+                "ko": "7z가 들어 있는 zip을 저장하면 손상됨",
+                "nl": "Opslaan beschadigt een zip met een 7z erin",
+                "tr": "7z içeren bir zip’i kaydetmek onu bozuyor",
+                "vi": "Lưu tệp zip chứa 7z làm hỏng tệp đó"
+            },
+            "issues": [
+                "336"
+            ]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.04",

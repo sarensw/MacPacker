@@ -464,6 +464,7 @@ let package = Package(
                 .copy("TestArchives/stuffit"),
                 .copy("TestArchives/zip"),
                 .copy("TestArchives/sevenzip"),
+                .copy("TestArchives/nested"),
                 .copy("TestArchives/password"),
                 // One app bundle per archiver, so extraction can be checked against
                 // files nobody here tailored to it.

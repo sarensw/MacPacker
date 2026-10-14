@@ -48,11 +48,13 @@ extension AllCoreTests {
             ("tar", "tar", 5, 2),
             ("xar", "xar", 6, 3), // additional `[TOC].xml`
             ("zip", "zip", 5, 2),
-            // zip-based package format — detected as plain zip, and like the zip
+            // zip-based package format — detected as plain zip. Unlike the zip
             // fixture it stores no folder entry, so buildTree synthesizes it
             ("jar", "zip", 5, 2),
             // installers
             ("rpm", "rpm", 2, 1),
+            // a self-extracting 7z: the archive behind the program, not the program
+            ("exe", "msapp", 5, 2),
             // disk images
             ("dmg", "dmg", 5, 2),
             ("fat", "fat", 5, 2),

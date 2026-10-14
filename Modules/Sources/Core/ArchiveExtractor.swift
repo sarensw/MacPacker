@@ -89,9 +89,14 @@ final actor ArchiveExtractor {
 
         let engine = archiveEngineSelector.engine(for: batch.engineType)
 
+        // A folder `ArchiveLoader.buildTree` made up, because the archive lists
+        // `folder/file` and nothing for `folder/`, is not an entry an engine can
+        // be asked for.
+        let entries = batch.items.filter { $0.type != .virtual }
+
         let extractedURLs = try await Sandbox.access(url: batch.archiveURL) {
             try await engine.extract(
-                items: batch.items,
+                items: entries,
                 from: batch.archiveURL,
                 to: temp.url,
                 passwordResolver: passwordResolver,
@@ -99,7 +104,24 @@ final actor ArchiveExtractor {
             )
         }
 
-        return (extractedURLs.urlsByItemID, temp.url)
+        // It is on disk all the same, as the directory holding what was extracted
+        // below it: one level up from each entry, and on up for as long as the
+        // level above is made up too. Without a url of its own a dragged folder
+        // came out as one of its files, and a selected one was not moved at all
+        // (#306).
+        let itemsById = Dictionary(batch.items.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var urls = extractedURLs.urlsByItemID
+        for (id, url) in extractedURLs.urlsByItemID {
+            var place = url
+            var parent = itemsById[id]?.parent.flatMap { itemsById[$0] }
+            while let folder = parent, folder.type == .virtual, urls[folder.id] == nil {
+                place = place.deletingLastPathComponent()
+                urls[folder.id] = place
+                parent = folder.parent.flatMap { itemsById[$0] }
+            }
+        }
+
+        return (urls, temp.url)
     }
 
     /// Extracts a single item from a resolved batch to the target directory through a temp directory.

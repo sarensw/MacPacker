@@ -1086,17 +1086,6 @@ extension AllCoreTests {
             let state = makeState()
             state.open(url: outer)
             try await state.openTask?.value
-            // A zip keeps a file that does not shrink as it is, and a 7z does not
-            // shrink. The bridge takes the first of 7-Zip's handlers that opens the
-            // file, and the 7z handler, asked before the zip one, finds that 7z by
-            // its signature: the zip opens as the 7z inside it, without a row for
-            // it. Nothing here can be tried until the zip is read as a zip.
-            if outerFormat == .zip && innerFormat == .sevenZ {
-                withKnownIssue("a zip that stores a 7z is opened as that 7z") {
-                    #expect(item(inner.lastPathComponent, in: state) != nil)
-                }
-                return
-            }
             let innerRow = try #require(item(inner.lastPathComponent, in: state))
             try await state.openAsync(item: innerRow)
 
@@ -1114,6 +1103,48 @@ extension AllCoreTests {
             await state.save()?.value
             #expect(state.saveError == nil, "\(state.saveError ?? "")")
             #expect(try systemEntries(outer).sorted() == ["a.txt", "b.txt"])
+        }
+
+        /// The archives of `nested/`: each stores the inner archive as it is.
+        nonisolated static let storedInside = [
+            ("7zInZip.zip", "inner.7z"), ("rarInZip.zip", "inner.rar"),
+            ("cabInZip.zip", "inner.cab"), ("7zInTar.tar", "inner.7z"),
+        ]
+
+        /// An archive stored in another as it is opens as one of its entries. The
+        /// handlers for 7z, rar and cab look for their signature anywhere in the
+        /// first 4 MB, and asked before the outer archive's own handler they took
+        /// the file for the archive inside it (#336).
+        @Test(arguments: storedInside)
+        func anArchiveStoredInsideIsAnEntry(_ name: String, holding inner: String) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = makeState()
+            state.open(url: try copyOfFixture("nested", name, in: dir))
+            try await state.openTask?.value
+
+            #expect(Set(state.entries.values.compactMap(\.virtualPath)) == ["readme.txt", "notes.txt", inner])
+            let readme = try #require(item("readme.txt", in: state))
+            #expect(try String(contentsOf: await state.extractToTemp(item: readme), encoding: .utf8) == "readme\n")
+        }
+
+        /// A save writes the zip, not the archive inside it. Removing a file of a
+        /// zip that stored a 7z wrote the 7z over the zip, and what was left had
+        /// lost the zip's central directory (#336).
+        @Test(arguments: storedInside.filter { $0.0.hasSuffix(".zip") })
+        func aSaveKeepsAZipThatStoresAnArchiveAZip(_ name: String, holding inner: String) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let archive = try copyOfFixture("nested", name, in: dir)
+            let state = makeState()
+            state.open(url: archive)
+            try await state.openTask?.value
+
+            state.remove(items: [try #require(item("notes.txt", in: state))])
+            await state.save()?.value
+            #expect(state.saveError == nil, "\(state.saveError ?? "")")
+            #expect(try systemZipEntries(archive).sorted() == [inner, "readme.txt"])
+            try systemTest(archive)
         }
 
         /// A switch of engine in Settings applies to the archives opened after it.
