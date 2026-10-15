@@ -85,6 +85,7 @@ struct ExtractionStaging: Sendable {
         // Not every volume keeps a creation date. Where it does not take, the
         // item is merely not dimmed.
         Self.setCreationDate(Self.busyDate, of: workFolder)
+        Self.note(workFolder)
     }
 
     /// Creates `<name>.macpack` in `destination`, or `<name> (2).macpack`, … when
@@ -133,6 +134,9 @@ struct ExtractionStaging: Sendable {
     ///   extracted items straight into the destination.
     func commit(as container: URL? = nil) throws {
         let fm = FileManager.default
+        // The run is over, whichever way this ends: a commit that throws is
+        // followed by `discard()`.
+        defer { Self.unnote(workFolder) }
         if let container {
             // It is the result now, and no longer to be shown as unfinished.
             Self.setCreationDate(createdAt, of: workFolder)
@@ -172,10 +176,94 @@ struct ExtractionStaging: Sendable {
     /// was before the run.
     func discard() {
         Self.removeTree(workFolder)
+        Self.unnote(workFolder)
         if createdDestination {
             // only goes when empty — whatever else got there is not ours
             _ = rmdir(destination.path)
         }
+    }
+
+    // MARK: - After a crash
+
+    /// Where the work folders in use are noted: by the name of each, with a
+    /// bookmark of the folder it is in — the access needed to remove it at
+    /// the next start, should the app stop mid-run and leave it behind — and
+    /// the start of the app that writes it, whose own are never taken for
+    /// leftovers.
+    static let ledgerKey = "extractionWorkFolders"
+    private static let ledgerLock = NSLock()
+
+    /// This start of the app, as its notes name it. Not the process id, which
+    /// a later start can be given again.
+    static let thisStart = UUID().uuidString
+
+    /// Notes `workFolder` as in use by `start` — this one, unless a test says.
+    static func note(_ workFolder: URL, in store: UserDefaults = .standard, by start: String = thisStart) {
+        let folder = workFolder.deletingLastPathComponent()
+        guard let bookmark = (try? folder.bookmarkData(
+            options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil))
+            ?? (try? folder.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)) else {
+            log.error("Could not note the extraction work folder", context: ["folder": workFolder.path])
+            return
+        }
+        ledgerLock.withLock {
+            var noted = store.dictionary(forKey: ledgerKey) as? [String: [String: Any]] ?? [:]
+            noted[workFolder.path] = ["in": bookmark, "name": workFolder.lastPathComponent, "by": start]
+            store.set(noted, forKey: ledgerKey)
+        }
+    }
+
+    /// Takes the note away: the run is over, whichever way it ended.
+    static func unnote(_ workFolder: URL, in store: UserDefaults = .standard) {
+        ledgerLock.withLock {
+            var noted = store.dictionary(forKey: ledgerKey) as? [String: [String: Any]] ?? [:]
+            guard noted.removeValue(forKey: workFolder.path) != nil else { return }
+            store.set(noted, forKey: ledgerKey)
+        }
+    }
+
+    /// Removes the work folders that runs of an earlier start of the app left
+    /// behind: it stopped before they were done, so they are still noted. For
+    /// the app to call as it starts. What this start is writing already — a
+    /// Finder action can come in first — is its own, and left alone.
+    ///
+    /// Only what is still a work folder goes: a folder with this extension
+    /// that Finder still shows as being written (`busyDate`), which nothing
+    /// else gives one — and never one in the Trash. A note whose folder is
+    /// gone, or no longer that, is simply dropped.
+    static func removeLeftovers(in store: UserDefaults = .standard) {
+        let noted = ledgerLock.withLock {
+            store.dictionary(forKey: ledgerKey) as? [String: [String: Any]] ?? [:]
+        }
+        for (path, entry) in noted where entry["by"] as? String != thisStart {
+            defer { unnote(URL(fileURLWithPath: path), in: store) }
+            guard let bookmark = entry["in"] as? Data, let name = entry["name"] as? String else { continue }
+            // a volume that is not there is not asked for
+            var stale = false
+            guard let folder = (try? URL(
+                resolvingBookmarkData: bookmark, options: [.withSecurityScope, .withoutMounting],
+                relativeTo: nil, bookmarkDataIsStale: &stale))
+                ?? (try? URL(resolvingBookmarkData: bookmark, options: [.withoutMounting], relativeTo: nil, bookmarkDataIsStale: &stale))
+            else { continue }
+            let scoped = folder.startAccessingSecurityScopedResource()
+            defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
+
+            let leftover = folder.appendingPathComponent(name, isDirectory: true)
+            guard isLeftover(leftover) else { continue }
+            removeTree(leftover)
+            log.notice("Removed what an extraction left when the app stopped", context: ["folder": leftover.path])
+        }
+    }
+
+    /// Whether `url` is still an unfinished work folder.
+    static func isLeftover(_ url: URL) -> Bool {
+        let path = url.standardizedFileURL.path
+        guard url.pathExtension == workFolderExtension,
+              !path.contains("/.Trash/"), !path.contains("/.Trashes/"),
+              let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey, .creationDateKey]),
+              values.isDirectory == true, values.isSymbolicLink != true
+        else { return false }
+        return values.creationDate == busyDate
     }
 
     // MARK: - Putting the result in place
@@ -413,7 +501,7 @@ struct ExtractionStaging: Sendable {
     /// Removes `folder` and all in it, read-only folders included: an engine
     /// gives folders the permissions the archive holds, and one that may not be
     /// written does not let go of its content.
-    private static func removeTree(_ folder: URL) {
+    static func removeTree(_ folder: URL) {
         let fm = FileManager.default
         guard fm.fileExists(atPath: folder.path) else { return }
         do {
@@ -440,6 +528,15 @@ struct ExtractionStaging: Sendable {
                 "folder": folder.path, "error": error.localizedDescription,
             ])
         }
+    }
+}
+
+/// What an extraction leaves behind when the app stops in the middle of it.
+public enum ExtractionLeftovers {
+    /// Removes the work folders that extractions of an earlier start of the
+    /// app were writing when it stopped. See `ExtractionStaging.removeLeftovers`.
+    public static func removeFromEarlierRuns() {
+        ExtractionStaging.removeLeftovers()
     }
 }
 

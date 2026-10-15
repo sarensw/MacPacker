@@ -169,6 +169,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // the terminate-time cleanup never runs when the app crashes or is
         // killed — clear stale extraction caches from previous runs here too
         CacheCleaner().clean()
+        // and what an extraction under way then left where it was extracting
+        // to — off the main thread: a folder that held one may be slow to reach
+        Task.detached(priority: .utility) {
+            ExtractionLeftovers.removeFromEarlierRuns()
+        }
 
         // Built before the window manager: the archive windows are handed the
         // compressor and the way to open the quick-compress window, so their
