@@ -12,15 +12,10 @@ import SwiftUI
 struct WelcomeView: View {
     @Environment(\.openURL) private var openURL
 
-    /// The app's own icon at the size shown. The system renders it for exactly
-    /// that size, so it stays sharp; a scaled-down bitmap blurs the zipper teeth.
-    /// It carries the standard macOS margin (the body is 824 of 1024), so 60pt
-    /// draws a 48pt body, with the margin padded away.
-    private var appIcon: NSImage {
-        let icon = NSApp.applicationIconImage.copy() as! NSImage
-        icon.size = NSSize(width: 60, height: 60)
-        return icon
-    }
+    /// The app's own icon at the size shown. It carries the standard macOS
+    /// margin (the body is 824 of 1024), so 60pt draws a 48pt body, with the
+    /// margin padded away.
+    private var appIcon: NSImage { .appIcon(size: 60) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

@@ -17,9 +17,7 @@ struct AboutSettingsView: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack(alignment: .top) {
-                if let nsImage = NSImage(named: "AppIcon") {
-                    Image(nsImage: nsImage)
-                }
+                Image(nsImage: .appIcon(size: 128))
                 
                 VStack(alignment: .leading, spacing: 12) {
                     VStack(alignment: .leading) {

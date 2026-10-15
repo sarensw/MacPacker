@@ -89,6 +89,30 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Improved app icon",
+                "zh-Hans": "改进 App 图标",
+                "fr": "Icône de l’app améliorée",
+                "de": "Verbessertes App-Symbol",
+                "it": "Icona dell’app migliorata",
+                "ja": "アプリアイコンを改良",
+                "fa": "بهبود آیکون برنامه",
+                "pl": "Ulepszona ikona aplikacji",
+                "pt-BR": "Ícone do app aprimorado",
+                "ru": "Улучшенный значок приложения",
+                "uk": "Покращена іконка програми",
+                "es-MX": "Ícono de la app mejorado",
+                "ko": "앱 아이콘 개선",
+                "nl": "Verbeterd appsymbool",
+                "tr": "İyileştirilmiş uygulama simgesi",
+                "vi": "Cải thiện biểu tượng ứng dụng"
+            },
+            "issues": [
+                "333"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {
