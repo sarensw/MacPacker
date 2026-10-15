@@ -23,15 +23,21 @@ final actor ArchiveExtractor {
     /// Fired for every temp directory an extraction writes into, so callers
     /// can register it for cleanup if the run is cancelled or fails.
     private let onTempDirectoryCreated: (@Sendable (URL) -> Void)?
+    /// What becomes of an extracted item whose name is taken in the
+    /// destination (see `ExtractionStaging.place`). Keeping both, unless the
+    /// caller says otherwise: nothing already there is lost by default.
+    private let nameClash: NameClash
 
     init(
         archiveEngineSelector: ArchiveEngineSelectorProtocol,
         passwordResolver: @escaping ArchivePasswordResolver,
-        onTempDirectoryCreated: (@Sendable (URL) -> Void)? = nil
+        onTempDirectoryCreated: (@Sendable (URL) -> Void)? = nil,
+        nameClash: NameClash = .keepBoth
     ) {
         self.archiveEngineSelector = archiveEngineSelector
         self.passwordResolver = passwordResolver
         self.onTempDirectoryCreated = onTempDirectoryCreated
+        self.nameClash = nameClash
     }
 
     /// Moves the given set of extracted temporary files to another destination.
@@ -53,7 +59,10 @@ final actor ArchiveExtractor {
         
         let itemsById = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
 
-        // Finally, move the file from the temp location to the actual destination.
+        // Finally, move the file from the temp location to the actual
+        // destination — where a name is taken, as the setting says, and all of
+        // them or none.
+        var selected: [(source: URL, name: String)] = []
         for (id, sourceURL) in extractedURLs {
             guard let item = itemsById[id] else { continue }
 
@@ -65,9 +74,10 @@ final actor ArchiveExtractor {
             // destination and collide on any repeated leaf name (#175).
             if let parentID = item.parent, itemsById[parentID] != nil { continue }
 
-            let targetURL = destination.appending(component: item.name)
-            try FileManager.default.moveItem(at: sourceURL, to: targetURL)
+            selected.append((source: sourceURL, name: item.name))
         }
+        try ExtractionStaging.place(
+            selected.sorted { $0.name < $1.name }, into: destination, clash: nameClash)
     }
 
     /// Extracts a single batch into a newly created temp directory.

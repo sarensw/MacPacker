@@ -69,6 +69,35 @@
           },
           {
             "type": "feat",
+            "title": {
+                "en": "Choose what to do when a name is taken",
+                "zh-Hans": "可选择名称冲突时的处理方式",
+                "fr": "Choisir quoi faire quand un nom est déjà pris",
+                "de": "Festlegen, was bei belegtem Namen passiert",
+                "it": "Scegliere cosa fare se un nome è già in uso",
+                "ja": "名前が使われているときの動作を選択",
+                "fa": "انتخاب رفتار هنگام تکراری بودن نام",
+                "pl": "Wybór działania, gdy nazwa jest zajęta",
+                "pt-BR": "Escolher o que fazer quando um nome já existe",
+                "ru": "Выбор действия, если имя уже занято",
+                "uk": "Вибір дії, якщо назва вже зайнята",
+                "es-MX": "Elegir qué hacer si un nombre ya existe",
+                "ko": "이름이 이미 있을 때의 동작 선택",
+                "nl": "Kiezen wat er gebeurt als een naam bezet is",
+                "tr": "Ad zaten varsa ne yapılacağını seçme",
+                "vi": "Chọn cách xử lý khi tên đã tồn tại",
+                "ar": "اختيار ما يحدث عندما يكون الاسم مستخدمًا",
+                "ca": "Tria què fer quan un nom ja existeix",
+                "el": "Επιλογή ενέργειας όταν ένα όνομα υπάρχει ήδη",
+                "nb": "Velg hva som skjer når et navn er i bruk",
+                "zh-TW": "選擇名稱已被使用時的處理方式"
+            },
+            "issues": [
+                "140"
+            ]
+          },
+          {
+            "type": "feat",
             "highlight": true,
             "title": {
                 "en": "Progress window when compressing from Finder",
@@ -274,6 +303,35 @@
             },
             "issues": [
                 "338"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Extract selected fails when a file exists",
+                "zh-Hans": "已有同名文件时“解压选中项”失败",
+                "fr": "« Extraire la sélection » échoue si le fichier existe",
+                "de": "„Auswahl entpacken“ scheitert bei vorhandener Datei",
+                "it": "“Estrai elementi selezionati” fallisce se il file esiste",
+                "ja": "同名のファイルがあると「選択した項目を抽出」が失敗する",
+                "fa": "«استخراج کردن موارد انتخاب شده» با وجود فایل هم‌نام شکست می‌خورد",
+                "pl": "„Rozpakuj zaznaczone” zawodzi, gdy plik istnieje",
+                "pt-BR": "“Extrair seleção” falha quando o arquivo já existe",
+                "ru": "«Распаковать выбранное» сбоит, если файл уже есть",
+                "uk": "«Розпакувати вибране» не спрацьовує, якщо файл уже є",
+                "es-MX": "“Extraer selección” falla si el archivo ya existe",
+                "ko": "같은 이름의 파일이 있으면 ‘선택 항목 압축 풀기’ 실패",
+                "nl": "‘Extract selected’ mislukt als het bestand al bestaat",
+                "tr": "Dosya varsa “Seçilenleri Çıkar” başarısız oluyor",
+                "vi": "“Giải nén các mục đã chọn” lỗi khi tệp đã tồn tại",
+                "ar": "يفشل استخراج المحدد عند وجود ملف بالاسم نفسه",
+                "ca": "Extreure la selecció falla si ja hi ha un fitxer",
+                "el": "Η εξαγωγή επιλεγμένων αποτυγχάνει όταν υπάρχει αρχείο",
+                "nb": "Utpakking av valgte feiler når en fil finnes",
+                "zh-TW": "已有同名檔案時，解壓縮所選項目會失敗"
+            },
+            "issues": [
+                "350"
             ]
           },
           {

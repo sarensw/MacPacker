@@ -151,6 +151,10 @@ public class ArchiveState: ObservableObject {
     var scanFiles: @Sendable ([URL], String, ExtractionCancelFlag) async throws -> FileScan = { urls, base, cancel in
         try await FileScanner().scan(urls, under: base, cancel: cancel)
     }
+    /// What an extraction does with an item whose name is taken where it goes,
+    /// read as each extraction starts. Replacing, the engines' way, unless the
+    /// app hands in its setting (`NameClash.current`).
+    public var nameClash: () -> NameClash = { .replace }
     /// Where user-triggered extractions report their progress. Defaults to
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
@@ -1660,7 +1664,8 @@ extension ArchiveState {
             passwordResolver: makePasswordResolver(),
             onTempDirectoryCreated: { url in
                 tempDirs.add(url)
-            }
+            },
+            nameClash: nameClash()
         )
         let batchResolver = ArchiveBatchResolver()
 
@@ -1762,6 +1767,7 @@ extension ArchiveState {
         )
 
         let cancelFlag = ExtractionCancelFlag()
+        let clash = nameClash()
         let task = Task {
             do {
                 guard let root else {
@@ -1828,7 +1834,7 @@ extension ArchiveState {
                     inFinder.end()
                     // Renames, as a rule — but extracting over what is already
                     // there walks both trees, and that is not for the main actor.
-                    try await runBlocking { @Sendable in try staging.commit(as: container) }
+                    try await runBlocking { @Sendable in try staging.commit(as: container, clash: clash) }
                 } catch {
                     inFinder.end()
                     // nor is removing half an archive

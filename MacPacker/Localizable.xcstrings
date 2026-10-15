@@ -23574,6 +23574,66 @@
         }
       }
     },
+    "settingsNameClash": {
+      "comment": "General setting: what an extraction does when an item of the same name is already where it extracts to.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If an item already exists"
+          }
+        }
+      }
+    },
+    "settingsNameClashHint": {
+      "comment": "Tooltip of the General setting \"If an item already exists\".",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What an extraction does when an item of the same name is already there. Keep both: the new one gets a number, as in “photo (2).jpg”. Replace: files are replaced and folders extracted into; what is replaced is deleted. Replace, old one to Trash: the same, but the replaced files go to the Trash."
+          }
+        }
+      }
+    },
+    "settingsNameClashKeepBoth": {
+      "comment": "Choice of the General setting \"If an item already exists\": the extracted item gets a free, numbered name; nothing is replaced.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep both"
+          }
+        }
+      }
+    },
+    "settingsNameClashReplace": {
+      "comment": "Choice of the General setting \"If an item already exists\": the extracted item replaces the one there (folders are extracted into).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace"
+          }
+        }
+      }
+    },
+    "settingsNameClashReplaceToTrash": {
+      "comment": "Choice of the General setting \"If an item already exists\": as Replace, but the replaced files go to the Trash.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace, old one to Trash"
+          }
+        }
+      }
+    },
     "settingsNestInSubmenu": {
       "comment": "Setting that puts the MacPacker Finder entries into a MacPacker submenu instead of directly into the Finder context menu",
       "extractionState": "manual",

@@ -36,7 +36,13 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
         for fileUrl in appUrl.files {
             // The folder we create in the target is named after the
             // archive, so the name comes from `fileUrl`.
-            let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
+            var folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
+            // A folder of that name is there already: kept as it is, with the
+            // archive in a second one beside it, when Settings say keep both.
+            // Otherwise extracted into, as before.
+            if NameClash.current() == .keepBoth {
+                folderName = NameClash.freeName(for: folderName, in: appUrl.target)
+            }
             let folderUrl = appUrl.target.appendingPathComponent(folderName)
             // The folder is not created here. The extraction makes a
             // destination that is not there yet, and takes it back with a run

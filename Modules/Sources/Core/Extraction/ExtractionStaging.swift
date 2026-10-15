@@ -128,10 +128,18 @@ struct ExtractionStaging: Sendable {
     /// taken back: a commit puts all of the result in place, or leaves the
     /// destination as it was.
     ///
-    /// - Parameter container: The folder the result is to become: smart
-    ///   extraction's container, which must not exist yet. `nil` puts the
-    ///   extracted items straight into the destination.
-    func commit(as container: URL? = nil) throws {
+    /// - Parameters:
+    ///   - container: The folder the result is to become: smart extraction's
+    ///     container, which must not exist yet. `nil` puts the extracted items
+    ///     straight into the destination.
+    ///   - clash: What becomes of an item whose name is taken in the
+    ///     destination (see `place`). Replacing is what the engines did.
+    ///   - trash: How a replaced file goes to the Trash.
+    func commit(
+        as container: URL? = nil,
+        clash: NameClash = .replace,
+        trash: (URL) throws -> Void = ExtractionStaging.moveToTrash
+    ) throws {
         let fm = FileManager.default
         if let container {
             // It is the result now, and no longer to be shown as unfinished.
@@ -142,12 +150,43 @@ struct ExtractionStaging: Sendable {
             return
         }
 
+        let items = try fm.contentsOfDirectory(atPath: workFolder.path).sorted().map {
+            (source: workFolder.appendingPathComponent($0), name: $0)
+        }
+        try Self.place(items, into: destination, clash: clash, trash: trash)
+        // What is left are the folders that were merged away, emptied, and
+        // the files that were replaced and are to go.
+        Self.removeTree(workFolder)
+    }
+
+    /// Puts extracted items into `destination`: all of them, or — should a
+    /// step fail part-way — none, every step already taken being taken back.
+    /// What "Extract selected" puts its items in place with, too.
+    ///
+    /// Where a name is taken, `clash` decides. `keepBoth` gives the item a free
+    /// name beside what is there, which is not touched. `replace` replaces a
+    /// file and extracts into a folder, the way the engines write; the file
+    /// replaced is deleted. `replaceToTrash` does the same, and the file
+    /// replaced goes to the Trash — or, where there is none to go to, stays
+    /// beside its replacement under a free name: it is never lost.
+    ///
+    /// - Parameter items: Each extracted item, and the name it is to have.
+    static func place(
+        _ items: [(source: URL, name: String)],
+        into destination: URL,
+        clash: NameClash,
+        trash: (URL) throws -> Void = ExtractionStaging.moveToTrash
+    ) throws {
         var steps: [Step] = []
-        for name in try fm.contentsOfDirectory(atPath: workFolder.path).sorted() {
-            try Self.plan(
-                workFolder.appendingPathComponent(name),
-                onto: destination.appendingPathComponent(name),
-                into: &steps)
+        var names: Set<String> = []
+        for item in items {
+            let name = clash == .keepBoth
+                ? NameClash.freeName(
+                    for: item.name, in: destination,
+                    isFolder: mode(ofFolder: item.source) != nil, reserved: names)
+                : item.name
+            names.insert(name)
+            try plan(item.source, onto: destination.appendingPathComponent(name), into: &steps)
         }
         var taken: [Taken] = []
         do {
@@ -160,12 +199,54 @@ struct ExtractionStaging: Sendable {
             }
             throw error
         }
-        // Nothing can fail any more: what was kept for an undo can go.
+        // Nothing can fail any more: what was kept for an undo can go — the
+        // files replaced to the Trash first, when that is asked for.
         for step in taken {
+            if clash == .replaceToTrash, let replaced = step.replaced {
+                putAway(replaced.old, replacedBy: replaced.by, using: trash)
+            }
             step.settle()
         }
-        // What is left are the folders that were merged away, emptied.
-        Self.removeTree(workFolder)
+    }
+
+    /// The Trash, for a file replaced by an extraction.
+    static func moveToTrash(_ url: URL) throws {
+        try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+    }
+
+    /// Sends `old` — a file `real` has replaced — to the Trash under the name
+    /// it had. Where it cannot go there, it is kept beside `real` under a free
+    /// name instead.
+    private static func putAway(_ old: URL, replacedBy real: URL, using trash: (URL) throws -> Void) {
+        let fm = FileManager.default
+        let folder = real.deletingLastPathComponent()
+        var old = old
+        // Waiting under a name of ours, it is given its own back first, for the
+        // Trash to show: in a folder of its own beside `real`, on its volume.
+        var holder: URL?
+        if old.lastPathComponent != real.lastPathComponent {
+            let made = folder.appendingPathComponent(".macpacker-" + UUID().uuidString.prefix(8).lowercased())
+            let named = made.appendingPathComponent(real.lastPathComponent)
+            if (try? fm.createDirectory(at: made, withIntermediateDirectories: false)) != nil {
+                holder = made
+                if rename(old.path, named.path) == 0 { old = named }
+            }
+        }
+        defer { if let holder { _ = rmdir(holder.path) } }
+
+        do {
+            try trash(old)
+            return
+        } catch {
+            log.notice("A replaced file cannot go to the Trash — keeping it beside its replacement", context: [
+                "file": real.path, "error": error.localizedDescription,
+            ])
+        }
+        let beside = folder.appendingPathComponent(
+            NameClash.freeName(for: real.lastPathComponent, in: folder, isFolder: false))
+        if rename(old.path, beside.path) != 0 {
+            log.error("Could not keep a replaced file", context: ["file": real.path, "errno": "\(errno)"])
+        }
     }
 
     /// Removes the work folder and everything in it: the destination is as it
@@ -186,6 +267,9 @@ struct ExtractionStaging: Sendable {
         let undo: () -> Void
         /// What is left to do once every step has been taken.
         let settle: () -> Void
+        /// For a file replaced: where the old one is now, and the file that
+        /// replaced it.
+        var replaced: (old: URL, by: URL)? = nil
     }
 
     private enum Step {
@@ -230,7 +314,8 @@ struct ExtractionStaging: Sendable {
                                 ])
                             }
                         },
-                        settle: {})
+                        settle: {},
+                        replaced: (old: source, by: real))
                 }
                 let reason = errno
                 guard [ENOTSUP, EINVAL, EXDEV].contains(reason) else {
@@ -254,7 +339,8 @@ struct ExtractionStaging: Sendable {
                 }
                 return Taken(
                     undo: { ExtractionStaging.putBack(kept, as: real) },
-                    settle: { try? FileManager.default.removeItem(at: kept) })
+                    settle: { try? FileManager.default.removeItem(at: kept) },
+                    replaced: (old: kept, by: real))
             }
         }
     }

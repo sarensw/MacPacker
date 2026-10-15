@@ -16,6 +16,10 @@ public enum Keys {
     /// empties what was already collected — a history you can no longer see is one
     /// you should no longer keep.
     public static let rememberRecentArchives = "rememberRecentArchives"
+    /// What an extraction does with an item whose name is taken where it goes:
+    /// a `NameClash`, `keepBoth` when unset. In the app group, like
+    /// `smartExtraction`, for the Quick Look preview to read.
+    public static let nameClash = "nameClash"
     /// Whether extraction decides on its own that the result needs a container
     /// folder named after the archive. On by default.
     public static let smartExtraction = "smartExtraction"

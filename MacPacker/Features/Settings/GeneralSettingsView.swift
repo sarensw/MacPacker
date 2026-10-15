@@ -16,6 +16,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
+    @AppStorage(Keys.nameClash, store: .macPackerShared) var nameClash: NameClash = .keepBoth
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
@@ -119,6 +120,21 @@ struct GeneralSettingsView: View {
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
             }
+
+            HStack(alignment: .top) {
+                Text(.settingsNameClash)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Picker(String(""), selection: $nameClash) {
+                        Text(.settingsNameClashKeepBoth).tag(NameClash.keepBoth)
+                        Text(.settingsNameClashReplace).tag(NameClash.replace)
+                        Text(.settingsNameClashReplaceToTrash).tag(NameClash.replaceToTrash)
+                    }
+                }
+                .frame(width: 240, alignment: .leading)
+            }
+            .help(Text(.settingsNameClashHint))
         }
         .padding()
         // Turning it off is a privacy switch, so what was collected goes with it —
