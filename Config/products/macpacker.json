@@ -127,6 +127,35 @@
           },
           {
             "type": "feat",
+            "title": {
+                "en": "Move archives to Trash after extracting",
+                "zh-Hans": "解压后将归档移到废纸篓",
+                "fr": "Placer les archives dans la corbeille après extraction",
+                "de": "Archive nach dem Entpacken in den Papierkorb legen",
+                "it": "Spostare gli archivi nel Cestino dopo l’estrazione",
+                "ja": "展開後にアーカイブをゴミ箱へ移動",
+                "fa": "انتقال آرشیوها به سطل زباله پس از استخراج",
+                "pl": "Przenoszenie archiwów do kosza po wypakowaniu",
+                "pt-BR": "Mover arquivos para o Lixo após extrair",
+                "ru": "Перемещение архивов в Корзину после распаковки",
+                "uk": "Переміщення архівів у Смітник після розпакування",
+                "es-MX": "Mover archivos a la Papelera tras extraer",
+                "ko": "압축 해제 후 아카이브를 휴지통으로 이동",
+                "nl": "Archieven na het uitpakken naar de prullenmand",
+                "tr": "Çıkardıktan sonra arşivleri Çöp Sepeti’ne taşıma",
+                "vi": "Chuyển tệp nén vào Thùng rác sau khi giải nén",
+                "ar": "نقل الأرشيفات إلى سلة المهملات بعد الاستخراج",
+                "ca": "Mou els arxius a la paperera després d’extreure’ls",
+                "el": "Μεταφορά συμπιεσμένων αρχείων στον Κάδο μετά την εξαγωγή",
+                "nb": "Flytt arkiver til papirkurven etter utpakking",
+                "zh-TW": "解壓縮後將壓縮檔移到垃圾桶"
+            },
+            "issues": [
+                "350"
+            ]
+          },
+          {
+            "type": "feat",
             "highlight": true,
             "title": {
                 "en": "Progress window when compressing from Finder",

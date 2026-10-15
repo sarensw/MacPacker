@@ -21,8 +21,9 @@ protocol AppUrlHandler {
 
 extension AppUrlHandler {
     /// Opens `archive`, extracts all of it into `destination` and waits for
-    /// the job to end. Returns what the extraction added to `destination`, so
-    /// the caller can select it in Finder.
+    /// the job to end — then moves the archive to the Trash, when Settings ask
+    /// for it and the job finished. Returns what the extraction added to
+    /// `destination`, so the caller can select it in Finder.
     ///
     /// `smart` is the caller's: an entry that already created the folder it
     /// named passes `false`, so the extraction does not wrap a second one.
@@ -52,9 +53,10 @@ extension AppUrlHandler {
         let topLevel = state.root?.children?.compactMap { state.entries[$0]?.name } ?? []
         // inside the grant that covers the destination, held until the end;
         // what it put there — nothing, for a run that did not finish
-        let (_, extracted) = await ExtractionFollowUp.extracting(into: destination, named: topLevel) {
+        let (outcome, extracted) = await ExtractionFollowUp.extracting(into: destination, named: topLevel) {
             await state.extract(to: destination, smart: smart).value
         }
+        await ExtractionFollowUp.trashIfAsked(state, after: outcome)
         return extracted
     }
 }

@@ -43,6 +43,11 @@ public enum Keys {
     /// With `extractNextToArchive`: the window closes once all of the archive
     /// has been extracted next to it. Off by default.
     public static let closeWindowAfterExtraction = "closeWindowAfterExtraction"
+
+    /// Whether an archive goes to the Trash — every volume of a split one —
+    /// once all of it was extracted, from its window or from Finder. Off by
+    /// default; on, it does not ask: the Trash is the way back.
+    public static let trashArchiveAfterExtraction = "trashArchiveAfterExtraction"
     
     // table settings
     public static let showParentRow = "showParentRow"

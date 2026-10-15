@@ -22,6 +22,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
     @AppStorage(Keys.extractNextToArchive, store: .macPackerShared) var extractNextToArchive: Bool = false
     @AppStorage(Keys.closeWindowAfterExtraction) var closeWindowAfterExtraction: Bool = false
+    @AppStorage(Keys.trashArchiveAfterExtraction) var trashArchiveAfterExtraction: Bool = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -139,6 +140,18 @@ struct GeneralSettingsView: View {
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
             }
+
+            HStack(alignment: .top) {
+                Text(.settingsTrashArchiveAfterExtraction)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $trashArchiveAfterExtraction) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+            .help(Text(.settingsTrashArchiveAfterExtractionHint))
         }
         .padding()
         // Turning it off is a privacy switch, so what was collected goes with it —

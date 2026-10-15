@@ -1116,6 +1116,20 @@ extension ArchiveState {
         return file
     }
 
+    /// The archive's files on disk: its own file or, when it is split into
+    /// volumes, every volume of it (see `ArchiveFiles`). Empty for an archive
+    /// that has never been saved.
+    ///
+    /// Reads the archive's folder, inside whatever grant covers it.
+    public func filesOnDisk() -> [URL] {
+        guard let url else { return [] }
+        let folder = url.deletingLastPathComponent()
+        let siblings = Sandbox.accessSync(url: folder) {
+            (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
+        }
+        return ArchiveFiles.files(of: url, among: siblings, splits: catalog.allSplits())
+    }
+
     public func open(url: URL) {
         // A second open supersedes the first. Without cancelling, the earlier
         // task keeps running against the same state.

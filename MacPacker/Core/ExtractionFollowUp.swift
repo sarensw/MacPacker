@@ -5,7 +5,9 @@
 //  What happens around an extraction an archive window starts: where it
 //  extracts to ("Extract next to the archive", or a folder the user picks),
 //  what it put there being selected in Finder when that takes no extra window,
-//  and the window closing once it is done ("Close the window afterwards").
+//  and what becomes of the archive and its window once it is done ("Move to
+//  Trash after extraction", "Close the window afterwards"). Finder's actions
+//  use the Trash part too.
 //
 
 import AppKit
@@ -82,8 +84,10 @@ enum ExtractionFollowUp {
 
     /// The window's "Extract archive", to `folder`. Once it is done, what it
     /// extracted is selected in Finder when Finder has no window open
-    /// (`ExtractedItems.select`), and the window closes when it was extracted
-    /// next to the archive and the setting that goes with that asks for it.
+    /// (`ExtractedItems.select`); the archive goes to the Trash when the
+    /// setting asks for it; and the window closes — when the archive went, or
+    /// when it was extracted next to itself and the setting that goes with
+    /// that asks for it.
     ///
     /// The extraction runs inside whatever grant covers `folder`, held until
     /// it ends — a folder next to the archive is not one the user just picked
@@ -94,6 +98,7 @@ enum ExtractionFollowUp {
             let (outcome, result) = await extracting(into: folder, named: topLevel) {
                 await state.extract(to: folder, smart: Keys.smartExtractionEnabled()).value
             }
+            let trashed = await trashIfAsked(state, after: outcome)
             if !result.isEmpty {
                 ExtractedItems.select(result)
             }
@@ -102,14 +107,15 @@ enum ExtractionFollowUp {
                 && outcome == .done
                 && !state.hasPendingChanges
                 && !state.isAddingItems
-            if closesAfter {
+            if trashed || closesAfter {
                 closeWindow(showing: state)
             }
         }
     }
 
     /// The window's "Extract selected", to `folder`, its result then selected
-    /// in Finder when Finder has no window open.
+    /// in Finder when Finder has no window open. Only part of the archive, so
+    /// it never goes to the Trash.
     static func extractItems(_ items: [ArchiveItem], of state: ArchiveState, to folder: URL) {
         Task {
             let (_, result) = await extracting(into: folder, named: items.map(\.name)) {
@@ -140,12 +146,46 @@ enum ExtractionFollowUp {
         }
     }
 
+    /// Moves the archive to the Trash after an extraction of all of it, when
+    /// the setting asks for it: only once that extraction has finished, never
+    /// after one that was cancelled or failed, and never while the window holds
+    /// edits not yet saved into the archive. Every volume of a split archive
+    /// goes. Returns whether the archive's own file went.
+    @discardableResult
+    static func trashIfAsked(_ state: ArchiveState, after outcome: ExtractionJob.State) async -> Bool {
+        guard UserDefaults.standard.bool(forKey: Keys.trashArchiveAfterExtraction),
+              outcome == .done,
+              !state.hasPendingChanges,
+              let archive = state.url else { return false }
+        // Moving a file out of its folder is a change to that folder.
+        guard await FolderAccessStore.shared.ensureAccess(forFileIn: archive) else {
+            log.notice("No access to the archive's folder — it stays where it is")
+            return false
+        }
+        let files = state.filesOnDisk()
+        return await Sandbox.access(url: archive.deletingLastPathComponent()) {
+            // the archive's own file comes first
+            var archiveWent = false
+            for file in files {
+                do {
+                    try FileManager.default.trashItem(at: file, resultingItemURL: nil)
+                    if file == files.first { archiveWent = true }
+                    log.notice("Moved the extracted archive to the Trash", context: ["file": file.lastPathComponent])
+                } catch {
+                    log.error("Could not move \(file.lastPathComponent) to the Trash", context: ["error": error.localizedDescription])
+                }
+            }
+            return archiveWent
+        }
+    }
+
     /// The window — or tab — showing `state`.
     static func window(showing state: ArchiveState) -> NSWindow? {
         NSApp.windows.first { ($0.windowController as? ArchiveWindowController)?.archiveState === state }
     }
 
-    /// Closes the window showing `state`: its work is done.
+    /// Closes the window showing `state`: its work is done, or what it showed
+    /// is in the Trash now.
     static func closeWindow(showing state: ArchiveState) {
         window(showing: state)?.performClose(nil)
     }

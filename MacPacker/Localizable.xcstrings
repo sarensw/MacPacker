@@ -24678,6 +24678,30 @@
         }
       }
     },
+    "settingsTrashArchiveAfterExtraction": {
+      "comment": "General setting: once a whole archive has been extracted successfully, from its window or from Finder, move it (every volume of a split archive) to the Trash, without asking.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to Trash after extraction"
+          }
+        }
+      }
+    },
+    "settingsTrashArchiveAfterExtractionHint": {
+      "comment": "Tooltip of the General setting that moves an archive to the Trash after it has been extracted.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Once all of an archive has been extracted, from its window or from Finder, it goes to the Trash, every part of a split archive included. Not after a cancelled or failed extraction, nor while the window has unsaved changes."
+          }
+        }
+      }
+    },
     "updatesCheckForUpdates": {
       "comment": "Allow the user to check for updates",
       "extractionState": "manual",
