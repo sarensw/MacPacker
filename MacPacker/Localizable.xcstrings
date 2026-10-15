@@ -19614,6 +19614,30 @@
         }
       }
     },
+    "settingsCloseWindowAfterExtraction": {
+      "comment": "General setting, under \"Extract next to the archive\": close the archive's window once all of it has been extracted next to it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close the window afterwards"
+          }
+        }
+      }
+    },
+    "settingsCloseWindowAfterExtractionHint": {
+      "comment": "Tooltip of the General setting that closes the archive's window after it has been extracted next to itself.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Once all of the archive has been extracted next to it, its window closes."
+          }
+        }
+      }
+    },
     "settingsColumns": {
       "comment": "Let's the user choose to show or hide columns in the archive window",
       "extractionState": "manual",
@@ -21722,6 +21746,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Covers USB drives, memory cards and network shares, which appear in /Volumes."
+          }
+        }
+      }
+    },
+    "settingsExtractNextToArchive": {
+      "comment": "General setting: the Extract buttons of the archive window and of the Quick Look preview extract into the folder the archive is in, without asking where to.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract next to the archive"
+          }
+        }
+      }
+    },
+    "settingsExtractNextToArchiveHint": {
+      "comment": "Tooltip of the General setting that makes the Extract buttons of the archive window and of the Quick Look preview extract into the archive's own folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Extract buttons of the archive window and of Quick Look extract into the archive's own folder, without asking where to."
           }
         }
       }

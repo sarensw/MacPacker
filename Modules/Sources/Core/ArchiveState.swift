@@ -1647,11 +1647,15 @@ extension ArchiveState {
     ///     container folder named after the archive. The caller owns that
     ///     decision: a menu entry that already names the folder it creates
     ///     passes `false`, everything else passes `Keys.smartExtractionEnabled()`.
+    /// - Returns: the run, whose value is how it ended — for a caller that has
+    ///   to hold something (access to the destination) until it ends, or acts
+    ///   on what it extracted.
+    @discardableResult
     public func extract(
         items: [ArchiveItem],
         to destination: URL,
         smart: Bool
-    ) {
+    ) -> Task<ExtractionJob.State, Never> {
         updateStatus(.processing)
 
         let tempDirs = ExtractionTempDirectories()
@@ -1672,7 +1676,8 @@ extension ArchiveState {
         )
 
         let cancelFlag = ExtractionCancelFlag()
-        let task = Task {
+        let task = Task { () -> ExtractionJob.State in
+            let outcome: ExtractionJob.State
             do {
                 let batches = try batchResolver.resolveBatches(for: items, in: entries, using: effectiveEngineSelector)
                 // "Extract selected" with the whole archive selected behaves
@@ -1704,38 +1709,43 @@ extension ArchiveState {
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 tempDirectories.append(contentsOf: result.tempDirs)
-                progressCenter.finish(jobId, .done)
+                outcome = .done
             } catch is CancellationError {
                 // partial temp output of the aborted extraction must not
                 // linger — register it for the regular cache cleanup
                 tempDirectories.append(contentsOf: tempDirs.all)
-                progressCenter.finish(jobId, .cancelled)
+                outcome = .cancelled
             } catch ArchiveError.passwordCancelled {
                 tempDirectories.append(contentsOf: tempDirs.all)
-                let outcome = passwordCancelledOutcome()
+                outcome = passwordCancelledOutcome()
                 if case .failed(let message) = outcome { self.error = message }
-                progressCenter.finish(jobId, outcome)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
                 self.isBusy = false
                 tempDirectories.append(contentsOf: tempDirs.all)
-                progressCenter.finish(jobId, .failed(error.localizedDescription))
+                outcome = .failed(error.localizedDescription)
             }
+            progressCenter.finish(jobId, outcome)
             
             updateStatus(.done)
+            return outcome
         }
         progressCenter.setOnCancel(jobId) {
             cancelFlag.cancel()
             task.cancel()
         }
+        return task
     }
     
     /// Extracts the whole archive to the given destination.
     /// - Parameters:
     ///   - destination: destination folder
     ///   - smart: see `extract(items:to:smart:)`
-    public func extract(to destination: URL, smart: Bool) {
+    /// - Returns: the run, whose value is how it ended — what a caller that
+    ///   acts on a finished extraction waits for.
+    @discardableResult
+    public func extract(to destination: URL, smart: Bool) -> Task<ExtractionJob.State, Never> {
         isBusy = true
         updateStatus(.processing)
 
@@ -1747,7 +1757,8 @@ extension ArchiveState {
         )
 
         let cancelFlag = ExtractionCancelFlag()
-        let task = Task {
+        let task = Task { () -> ExtractionJob.State in
+            let outcome: ExtractionJob.State
             do {
                 guard let root else {
                     throw ArchiveError.extractionFailed("No root item set")
@@ -1788,26 +1799,28 @@ extension ArchiveState {
                     to: target,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
-                progressCenter.finish(jobId, .done)
+                outcome = .done
             } catch is CancellationError {
-                progressCenter.finish(jobId, .cancelled)
+                outcome = .cancelled
             } catch ArchiveError.passwordCancelled {
-                let outcome = passwordCancelledOutcome()
+                outcome = passwordCancelledOutcome()
                 if case .failed(let message) = outcome { self.error = message }
-                progressCenter.finish(jobId, outcome)
             } catch {
                 extractLog.error(error)
                 self.error = error.localizedDescription
-                progressCenter.finish(jobId, .failed(error.localizedDescription))
+                outcome = .failed(error.localizedDescription)
             }
+            progressCenter.finish(jobId, outcome)
 
             self.isBusy = false
             updateStatus(.done)
+            return outcome
         }
         progressCenter.setOnCancel(jobId) {
             cancelFlag.cancel()
             task.cancel()
         }
+        return task
     }
     
     /// Updates the quick look preview URL. The previewer we're using is the default systems

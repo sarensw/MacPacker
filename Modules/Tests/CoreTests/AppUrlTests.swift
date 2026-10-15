@@ -165,6 +165,44 @@ extension AllCoreTests {
             #expect(try AppUrl(url: url, scheme: scheme) == request)
         }
     
+        /// The Quick Look preview's selection, with commas, spaces and accents
+        /// in its entries' paths, comes through as it was sent.
+        @Test("A selection of entries survives the trip through its url")
+        func itemsRoundTrip() throws {
+            let request = AppUrl(
+                action: .extractNextToArchive,
+                files: [URL(fileURLWithPath: "/Users/me/Trip.zip")],
+                target: URL(fileURLWithPath: "/Users/me"),
+                items: ["photos/a,b.jpg", "notes/été 100%.txt", "docs"]
+            )
+            let url = try #require(request.url(scheme: scheme))
+            #expect(try AppUrl(url: url, scheme: scheme) == request)
+            #expect(!AppUrlAction.extractNextToArchive.bringsAppToFront)
+            #expect(AppUrlAction.extractNextToArchive.honorsSmartExtraction)
+        }
+
+        /// The preview's "Extract archive" names no entries: all of it.
+        @Test("Extracting next to the archive without entries takes all of it")
+        func wholeArchiveNextToItself() throws {
+            let request = try AppUrl(url: url("extractNextToArchive", files: ["/Users/me/Trip.zip"]), scheme: scheme)
+            #expect(request.action == .extractNextToArchive)
+            #expect(request.files == [URL(fileURLWithPath: "/Users/me/Trip.zip")])
+            #expect(request.items.isEmpty)
+        }
+
+        @Test("Extracting next to the archive is for one archive")
+        func extractNextToArchiveOfTwoIsRejected() throws {
+            let twoArchives = try #require(AppUrl(
+                action: .extractNextToArchive,
+                files: [URL(fileURLWithPath: "/Users/me/a.zip"), URL(fileURLWithPath: "/Users/me/b.zip")],
+                target: URL(fileURLWithPath: "/Users/me"),
+                items: ["x"]
+            ).url(scheme: scheme))
+            #expect(throws: AppUrl.ParseError.notOneArchive) {
+                try AppUrl(url: twoArchives, scheme: scheme)
+            }
+        }
+
         /// Only the entry that creates and names its own folder opts out of the
         /// smart rule — everything else lets the setting decide. Nesting a
         /// container inside `Extract to "Photos"` gives `Photos/Photos`.

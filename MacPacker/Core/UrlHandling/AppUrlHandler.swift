@@ -6,7 +6,6 @@
 //
 
 import AppKit
-import Combine
 import Core
 import FinderMenu
 import Foundation
@@ -50,28 +49,12 @@ extension AppUrlHandler {
             return []
         }
 
-        let before = Set(folderContents(destination))
         let topLevel = state.root?.children?.compactMap { state.entries[$0]?.name } ?? []
-
-        // extract(to:) raises isBusy before it returns and lowers it once the
-        // job ends — done, cancelled or failed
-        state.extract(to: destination, smart: smart)
-        for await busy in state.$isBusy.values where !busy {
-            break
+        // inside the grant that covers the destination, held until the end;
+        // what it put there — nothing, for a run that did not finish
+        let (_, extracted) = await ExtractionFollowUp.extracting(into: destination, named: topLevel) {
+            await state.extract(to: destination, smart: smart).value
         }
-
-        let added = folderContents(destination).filter { !before.contains($0) }
-        if !added.isEmpty {
-            return added
-        }
-        // extracted over existing items: nothing is new, so point at what the
-        // archive holds
-        return topLevel
-            .map { destination.appendingPathComponent($0) }
-            .filter { FileManager.default.fileExists(atPath: $0.path) }
+        return extracted
     }
-}
-
-private func folderContents(_ folder: URL) -> [URL] {
-    (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
 }
