@@ -2,6 +2,11 @@ import AppKit
 
 /// Finder asks for context menus only underneath these roots. Watching a root
 /// does not grant the app permission to read or write its files.
+///
+/// Finder also draws the app's icon on every root it shows in its sidebar. The
+/// app's Info.plist names the `externaldrive` symbol (`CFBundleSymbolName` in
+/// `CFBundlePrimaryIcon`), which Finder draws instead, so drives keep looking
+/// like drives (#345).
 public enum FinderObservedDirectories {
     public static func urls(homeDirectory: URL, userName: String, mountedVolumes: [URL]) -> Set<URL> {
         var roots: Set<URL> = [
