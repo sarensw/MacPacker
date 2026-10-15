@@ -73,12 +73,22 @@ public enum FinderObservedDirectories {
         }
 
         @objc private func volumesDidChange(_ notification: Notification) {
-            report()
+            // The system can still list a volume when its unmount is announced.
+            // Handing it over again then changes nothing, and Finder, which
+            // drops the root by itself, never gets it back once it is remounted.
+            let ejected = notification.name == NSWorkspace.didUnmountNotification
+                ? notification.userInfo?[NSWorkspace.volumeURLUserInfoKey] as? URL
+                : nil
+            report(without: ejected)
         }
 
-        private func report() {
+        private func report(without ejected: URL? = nil) {
+            var volumes = mountedVolumes()
+            if let ejected {
+                volumes.removeAll { $0.standardizedFileURL.path == ejected.standardizedFileURL.path }
+            }
             onChange(FinderObservedDirectories.urls(
-                homeDirectory: homeDirectory, userName: userName, mountedVolumes: mountedVolumes()))
+                homeDirectory: homeDirectory, userName: userName, mountedVolumes: volumes))
         }
     }
 }
