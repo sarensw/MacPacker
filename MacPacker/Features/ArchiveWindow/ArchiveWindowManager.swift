@@ -46,11 +46,14 @@ class ArchiveWindowManager {
     }
     
     /// Creates a new archive window and loads the archive from the given url if available
-    /// - Parameter url: url of the archive
+    /// - Parameters:
+    ///   - url: url of the archive
+    ///   - host: When given, the window opens as a tab of that one, whatever
+    ///     Settings say about tabs: the user asked for a tab.
     /// - Returns: the window's `ArchiveState`, so callers that need to drive it
     ///   (e.g. the debug screenshot launcher) can navigate and select afterwards.
     @discardableResult
-    fileprivate func createAndShowArchiveWindow(_ url: URL?) -> ArchiveState {
+    fileprivate func createAndShowArchiveWindow(_ url: URL?, asTabOf host: NSWindow? = nil) -> ArchiveState {
         log.notice("Creating window", context: ["url": url?.lastPathComponent ?? "(empty)"])
         if !hasOpenedWindow {
             hasOpenedWindow = true
@@ -86,11 +89,17 @@ class ArchiveWindowManager {
             openArchiveInNewWindow: { [weak self] url in
                 self?.openDroppedInNewWindow(url)
             },
+            openNewTab: { [weak self] in
+                self?.openNewTab()
+            },
             cascadeFrom: modelWindow
         )
         windowControllers.append(archiveWindowController)
         archiveWindowController.willCloseHandler = { [weak self] in
             self?.windowControllers.removeAll { $0 === archiveWindowController }
+        }
+        if let host, let window = archiveWindowController.window, host !== window {
+            host.addTabbedWindow(window, ordered: .above)
         }
         archiveWindowController.showWindow(nil)
         return archiveState
@@ -127,6 +136,12 @@ class ArchiveWindowManager {
     /// Opens a new empty window, regardless of whether there is any other window open right now
     func openNewArchiveWindow() {
         createAndShowArchiveWindow(nil)
+    }
+
+    /// Opens the home screen in a new tab of the window in use — or in a
+    /// window of its own when none is open.
+    func openNewTab() {
+        createAndShowArchiveWindow(nil, asTabOf: modelWindow)
     }
 
     /// A file dropped on the "open in a new window" zone of a window that is

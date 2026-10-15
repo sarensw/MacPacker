@@ -2771,6 +2771,18 @@
         }
       }
     },
+    "archiveNewTabHint": {
+      "comment": "Tooltip of the toolbar's New Tab button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the home screen in a new tab"
+          }
+        }
+      }
+    },
     "archivePasswordMaxLengthHint": {
       "comment": "Save options: the zip password is too long; the number is the limit",
       "extractionState": "manual",
@@ -11386,6 +11398,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "New Archive"
+          }
+        }
+      }
+    },
+    "commonNewTab": {
+      "comment": "Toolbar button and File menu item: opens MacPacker's home screen in a new tab of the window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Tab"
           }
         }
       }
@@ -23702,6 +23726,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nest actions in a submenu"
+          }
+        }
+      }
+    },
+    "settingsOpenArchivesInTabs": {
+      "comment": "General setting: archives open as tabs of the front window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open archives in tabs"
+          }
+        }
+      }
+    },
+    "settingsOpenArchivesInTabsHint": {
+      "comment": "Tooltip of the General setting that opens archives as tabs of the front window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archives open as tabs of the front window. Off, each opens in a window of its own, unless macOS is set to prefer tabs."
           }
         }
       }

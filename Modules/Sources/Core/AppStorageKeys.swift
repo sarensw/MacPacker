@@ -11,6 +11,8 @@ public enum Keys {
     // general settings
     public static let settingBreadcrumbPosition = "settingBreadcrumbPosition"
     public static let quitOnLastWindowClosed = "quitOnLastWindowClosed"
+    /// Whether archives open as tabs of the front window. On by default.
+    public static let openArchivesInTabs = "openArchivesInTabs"
     /// Whether opened archives are remembered for the start page's Recent list
     /// (and the Dock's Recent Documents menu). On by default; turning it off also
     /// empties what was already collected — a history you can no longer see is one
@@ -79,6 +81,7 @@ public enum Keys {
             defaultOrderColumnAscending: true,
             dropWindowFloats: true,
             rememberRecentArchives: true,
+            openArchivesInTabs: true,
         ])
     }
 }

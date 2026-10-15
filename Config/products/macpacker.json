@@ -99,6 +99,35 @@
             ]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Open archives in tabs",
+                "zh-Hans": "在标签页中打开归档",
+                "fr": "Ouvrir les archives dans des onglets",
+                "de": "Archive in Tabs öffnen",
+                "it": "Aprire gli archivi in schede",
+                "ja": "アーカイブをタブで開く",
+                "fa": "باز کردن آرشیوها در زبانه‌ها",
+                "pl": "Otwieranie archiwów w kartach",
+                "pt-BR": "Abrir arquivos em abas",
+                "ru": "Открытие архивов во вкладках",
+                "uk": "Відкриття архівів у вкладках",
+                "es-MX": "Abrir archivos en pestañas",
+                "ko": "아카이브를 탭으로 열기",
+                "nl": "Archieven openen in tabbladen",
+                "tr": "Arşivleri sekmelerde açma",
+                "vi": "Mở tệp nén trong các tab",
+                "ar": "فتح الأرشيفات في علامات تبويب",
+                "ca": "Obre els arxius en pestanyes",
+                "el": "Άνοιγμα συμπιεσμένων αρχείων σε καρτέλες",
+                "nb": "Åpne arkiver i faner",
+                "zh-TW": "以分頁開啟壓縮檔"
+            },
+            "issues": [
+                "350"
+            ]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {
