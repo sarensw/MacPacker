@@ -306,6 +306,64 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Extract Here uses the window's folder, not the archive's",
+                "zh-Hans": "“解压到当前位置”使用了窗口的文件夹，而非压缩包所在的文件夹",
+                "fr": "« Extraire Ici » utilise le dossier de la fenêtre, pas celui de l’archive",
+                "de": "„Hier entpacken“ nutzt den Ordner des Fensters statt den des Archivs",
+                "it": "“Estrai qui” usa la cartella della finestra, non quella dell’archivio",
+                "ja": "「ここに展開」がアーカイブではなくウインドウのフォルダを使う",
+                "fa": "«استخراج در اینجا» از پوشه پنجره استفاده می‌کند، نه پوشه آرشیو",
+                "pl": "„Wypakuj tutaj” używa folderu okna zamiast folderu archiwum",
+                "pt-BR": "“Extrair para aqui” usa a pasta da janela, não a do arquivo",
+                "ru": "«Распаковать здесь» берёт папку окна, а не папку архива",
+                "uk": "«Розпакувати тут» бере теку вікна, а не теку архіву",
+                "es-MX": "“Extraer aquí” usa la carpeta de la ventana, no la del archivo",
+                "ko": "‘여기에 압축 풀기’가 아카이브가 아닌 창의 폴더를 사용함",
+                "nl": "‘Hier uitpakken’ gebruikt de map van het venster, niet die van het archief",
+                "tr": "“Buraya Çıkar” arşivin değil pencerenin klasörünü kullanıyor",
+                "vi": "“Giải nén tại đây” dùng thư mục của cửa sổ thay vì của tệp nén",
+                "ar": "«استخرج هنا» يستخدم مجلد النافذة لا مجلد الأرشيف",
+                "ca": "«Extreu aquí» fa servir la carpeta de la finestra, no la de l’arxiu",
+                "el": "Η «Εξαγωγή εδώ» χρησιμοποιεί τον φάκελο του παραθύρου, όχι του αρχείου",
+                "nb": "«Pakk ut her» bruker vinduets mappe, ikke arkivets",
+                "zh-TW": "「解壓縮到這裡」使用視窗的資料夾，而非壓縮檔所在的資料夾"
+            },
+            "issues": [
+                "350"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Compressing from Finder uses the window's folder",
+                "zh-Hans": "从 Finder 压缩时使用了窗口的文件夹",
+                "fr": "Compresser depuis le Finder utilise le dossier de la fenêtre",
+                "de": "Komprimieren im Finder nutzt den Ordner des Fensters",
+                "it": "Comprimere dal Finder usa la cartella della finestra",
+                "ja": "Finder からの圧縮がウインドウのフォルダを使う",
+                "fa": "فشرده‌سازی از Finder از پوشه پنجره استفاده می‌کند",
+                "pl": "Kompresowanie z Findera używa folderu okna",
+                "pt-BR": "Comprimir pelo Finder usa a pasta da janela",
+                "ru": "Сжатие из Finder берёт папку окна",
+                "uk": "Стиснення з Finder бере теку вікна",
+                "es-MX": "Comprimir desde el Finder usa la carpeta de la ventana",
+                "ko": "Finder에서 압축할 때 창의 폴더를 사용함",
+                "nl": "Comprimeren in de Finder gebruikt de map van het venster",
+                "tr": "Finder’dan sıkıştırma pencerenin klasörünü kullanıyor",
+                "vi": "Nén từ Finder dùng thư mục của cửa sổ",
+                "ar": "الضغط من Finder يستخدم مجلد النافذة",
+                "ca": "Comprimir des del Finder fa servir la carpeta de la finestra",
+                "el": "Η συμπίεση από το Finder χρησιμοποιεί τον φάκελο του παραθύρου",
+                "nb": "Komprimering fra Finder bruker vinduets mappe",
+                "zh-TW": "從 Finder 壓縮時使用了視窗的資料夾"
+            },
+            "issues": [
+                "350"
+            ]
+          },
+          {
             "type": "core",
             "highlight": true,
             "title": {

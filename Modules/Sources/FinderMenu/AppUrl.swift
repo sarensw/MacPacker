@@ -171,3 +171,42 @@ public struct AppUrl: Equatable, Sendable {
         return components?.url
     }
 }
+
+public extension AppUrl {
+    /// The folder an action puts what it makes of `item` in — what comes out
+    /// of an archive, or one item's own archive: the item's own. `target` is
+    /// the folder Finder's window shows, which is not always the item's: an
+    /// item in a folder expanded in list view sits in a subfolder of it.
+    func folder(of item: URL) -> URL {
+        item.deletingLastPathComponent()
+    }
+
+    /// The folder an action that makes one archive of all `files` puts it in:
+    /// the deepest folder holding every one of them — their own when they
+    /// share it, the window's when some sit in a folder expanded in it.
+    var folderOfFiles: URL {
+        Self.folder(containing: files) ?? target
+    }
+
+    /// The deepest folder holding every one of `items`; `nil` for none. The
+    /// Finder extension names the archive in its menu after it, before there
+    /// is a url.
+    static func folder(containing items: [URL]) -> URL? {
+        let parents = items.map { $0.deletingLastPathComponent().standardizedFileURL.pathComponents }
+        guard var common = parents.first else { return nil }
+        for components in parents.dropFirst() {
+            common = zip(common, components).prefix { $0 == $1 }.map(\.0)
+        }
+        return URL(fileURLWithPath: NSString.path(withComponents: common), isDirectory: true)
+    }
+
+    /// Of what an action put in place, what to select in Finder afterwards:
+    /// what is in the window's own folder (`target`). Finder selects in an
+    /// open window only what lies in that window's own folder, and opens a
+    /// second window for anything else — for a result in an expanded
+    /// subfolder, too, which the window already shows as it is.
+    func itemsToSelect(_ placed: [URL]) -> [URL] {
+        let window = target.standardizedFileURL.path
+        return placed.filter { $0.deletingLastPathComponent().standardizedFileURL.path == window }
+    }
+}

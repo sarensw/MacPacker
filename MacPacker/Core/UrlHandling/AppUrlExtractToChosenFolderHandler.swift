@@ -14,7 +14,8 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Finder action "Extract to…": asks where to extract, extracts every
-/// selected archive there, then selects what came out in Finder. Picking the folder also grants writing into it;
+/// selected archive there, then selects in Finder what came out in the
+/// window's own folder. Picking the folder also grants writing into it;
 /// archives outside the picked folder need their own read grant, which the
 /// folder-access store asks for only when no stored grant covers them.
 class AppUrlExtractToChosenFolderHandler: AppUrlHandler {
@@ -29,7 +30,9 @@ class AppUrlExtractToChosenFolderHandler: AppUrlHandler {
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.notice("Extract-to handler: \(appUrl.files.count) archive(s)")
 
-        guard let destination = await chooseDestination(startingIn: appUrl.target) else {
+        // the panel starts where Extract Here would put it: next to the archive
+        let start = appUrl.files.first.map(appUrl.folder(of:)) ?? appUrl.target
+        guard let destination = await chooseDestination(startingIn: start) else {
             log.notice("Extract-to cancelled")
             return
         }
@@ -38,20 +41,24 @@ class AppUrlExtractToChosenFolderHandler: AppUrlHandler {
         // there needs no panel at all. `ensureAccess` is for the other
         // case: it sees no stored bookmark yet and would put a second
         // panel over the one the user just answered. It is used below,
-        // where it belongs: on the archives' own folder.
+        // where it belongs: on the archives' own folders, those the picked
+        // one does not hold.
         Sandbox.storeBookmark(url: destination)
-        if !FolderAccess.isInside(appUrl.target, destination),
-           let first = appUrl.files.first,
-           !(await FolderAccessStore.shared.ensureAccess(forFileIn: first)) {
-            log.error("No read access to the archives' folder — cannot extract")
-            return
+        for folder in Set(appUrl.files.map(appUrl.folder(of:))).sorted(by: { $0.path < $1.path })
+        where !FolderAccess.isInside(folder, destination) {
+            guard await FolderAccessStore.shared.ensureAccess(forFolder: folder) else {
+                log.error("No read access to \(folder.lastPathComponent) — cannot extract")
+                return
+            }
         }
         var extracted: [URL] = []
         for fileUrl in appUrl.files {
             extracted += await self.extractArchive(fileUrl, into: destination, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
         }
-        if !extracted.isEmpty {
-            NSWorkspace.shared.activateFileViewerSelecting(extracted)
+        // only where it takes no second Finder window
+        let selected = appUrl.itemsToSelect(extracted)
+        if !selected.isEmpty {
+            NSWorkspace.shared.activateFileViewerSelecting(selected)
         }
     }
 

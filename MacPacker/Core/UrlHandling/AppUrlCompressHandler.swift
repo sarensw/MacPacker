@@ -57,25 +57,33 @@ class AppUrlCompressHandler: AppUrlHandler {
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.notice("Compress handler: \(appUrl.files.count) file(s)", context: ["target": appUrl.target.path])
 
-        // access to the folder covers reading the inputs and writing the archive
-        guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
-            log.error("No access to \(appUrl.target.lastPathComponent) — cannot compress")
+        // The archive goes in the folder the files sit in: the window's, or
+        // one expanded in it, and is named after it when there are several.
+        // Access to it covers reading the inputs and writing the archive; a
+        // grant on the window's folder covers those expanded in it.
+        let folder = appUrl.folderOfFiles
+        guard await FolderAccessStore.shared.ensureAccess(forFolder: folder) else {
+            log.error("No access to \(folder.lastPathComponent) — cannot compress")
             return
         }
         let ext = appUrl.format ?? "zip"
         let name = appUrl.archiveName(
-            CompressDestination.name(files: appUrl.files, target: appUrl.target, ext: ext),
+            CompressDestination.name(files: appUrl.files, target: folder, ext: ext),
             extension: ext
         )
-        let dest = CompressDestination.unique(named: name, in: appUrl.target)
+        let dest = CompressDestination.unique(named: name, in: folder)
         if await writeArchive(appUrl.files, to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
-            NSWorkspace.shared.activateFileViewerSelecting([dest])
+            // only where it takes no second Finder window
+            let selected = appUrl.itemsToSelect([dest])
+            if !selected.isEmpty {
+                NSWorkspace.shared.activateFileViewerSelecting(selected)
+            }
         }
     }
 }
 
 /// Finder action "Compress Each Item Separately": one zip per selected item,
-/// each next to its source. One folder grant covers them all.
+/// each next to its source. A grant on the window's folder covers them all.
 class AppUrlCompressEachHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
@@ -88,22 +96,29 @@ class AppUrlCompressEachHandler: AppUrlHandler {
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.notice("Compress-each handler: \(appUrl.files.count) item(s)")
 
-        guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
-            log.error("No access to \(appUrl.target.lastPathComponent) — cannot compress")
-            return
+        // each item's zip goes next to it: in the window's folder, or in a
+        // folder expanded in it
+        for folder in Set(appUrl.files.map(appUrl.folder(of:))).sorted(by: { $0.path < $1.path }) {
+            guard await FolderAccessStore.shared.ensureAccess(forFolder: folder) else {
+                log.error("No access to \(folder.lastPathComponent) — cannot compress")
+                return
+            }
         }
         var written: [URL] = []
         for item in appUrl.files {
+            let folder = appUrl.folder(of: item)
             let dest = CompressDestination.unique(
-                named: CompressDestination.name(files: [item], target: appUrl.target),
-                in: appUrl.target
+                named: CompressDestination.name(files: [item], target: folder),
+                in: folder
             )
             if await writeArchive([item], to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
                 written.append(dest)
             }
         }
-        if !written.isEmpty {
-            NSWorkspace.shared.activateFileViewerSelecting(written)
+        // only where it takes no second Finder window
+        let selected = appUrl.itemsToSelect(written)
+        if !selected.isEmpty {
+            NSWorkspace.shared.activateFileViewerSelecting(selected)
         }
     }
 }
@@ -124,8 +139,11 @@ class AppUrlCompressContentsHandler: AppUrlHandler {
         guard let folder = appUrl.files.first else { return }
         log.notice("Compress-contents handler", context: ["folder": folder.lastPathComponent])
 
-        guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
-            log.error("No access to \(appUrl.target.lastPathComponent) — cannot compress")
+        // the zip goes next to the folder: in the window's folder, or in one
+        // expanded in it
+        let parent = appUrl.folder(of: folder)
+        guard await FolderAccessStore.shared.ensureAccess(forFolder: parent) else {
+            log.error("No access to \(parent.lastPathComponent) — cannot compress")
             return
         }
         let contents: [URL]
@@ -143,11 +161,15 @@ class AppUrlCompressContentsHandler: AppUrlHandler {
             return
         }
         let dest = CompressDestination.unique(
-            named: CompressDestination.name(files: [folder], target: appUrl.target),
-            in: appUrl.target
+            named: CompressDestination.name(files: [folder], target: parent),
+            in: parent
         )
         if await writeArchive(contents, to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
-            NSWorkspace.shared.activateFileViewerSelecting([dest])
+            // only where it takes no second Finder window
+            let selected = appUrl.itemsToSelect([dest])
+            if !selected.isEmpty {
+                NSWorkspace.shared.activateFileViewerSelecting(selected)
+            }
         }
     }
 }

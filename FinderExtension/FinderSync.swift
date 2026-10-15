@@ -242,13 +242,13 @@ class FinderSync: FIFinderSync {
     }
 
     /// Same naming rule as the main app's compress handler: one item → its
-    /// stem, several → the surrounding folder's name.
+    /// stem, several → the name of the folder they sit in (`AppUrl.folderOfFiles`).
     private func compressedArchiveName(for items: [URL], pathExtension: String) -> String {
         if items.count == 1, let only = items.first {
             return only.deletingPathExtension().lastPathComponent + "." + pathExtension
         }
-        let target = FIFinderSyncController.default().targetedURL()
-        return (target?.lastPathComponent ?? "Archive") + "." + pathExtension
+        let folder = AppUrl.folder(containing: items) ?? FIFinderSyncController.default().targetedURL()
+        return (folder?.lastPathComponent ?? "Archive") + "." + pathExtension
     }
 
     
