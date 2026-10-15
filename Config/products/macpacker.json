@@ -70,6 +70,35 @@
           },
           {
             "type": "feat",
+            "title": {
+                "en": "Extraction progress inside the archive window",
+                "zh-Hans": "在归档窗口内显示解压进度",
+                "fr": "Progression de l’extraction dans la fenêtre de l’archive",
+                "de": "Entpackfortschritt im Archivfenster",
+                "it": "Avanzamento dell’estrazione nella finestra dell’archivio",
+                "ja": "アーカイブウインドウ内に展開の進行状況を表示",
+                "fa": "پیشرفت استخراج درون پنجره آرشیو",
+                "pl": "Postęp wypakowywania w oknie archiwum",
+                "pt-BR": "Progresso da extração na janela do arquivo",
+                "ru": "Ход распаковки в окне архива",
+                "uk": "Перебіг розпакування у вікні архіву",
+                "es-MX": "Progreso de extracción en la ventana del archivo",
+                "ko": "아카이브 창 안에 압축 해제 진행 상황 표시",
+                "nl": "Uitpakvoortgang in het archiefvenster",
+                "tr": "Arşiv penceresinde çıkarma ilerlemesi",
+                "vi": "Tiến trình giải nén ngay trong cửa sổ tệp nén",
+                "ar": "تقدّم الاستخراج داخل نافذة الأرشيف",
+                "ca": "Progrés de l’extracció dins la finestra de l’arxiu",
+                "el": "Πρόοδος εξαγωγής μέσα στο παράθυρο του αρχείου",
+                "nb": "Utpakkingsfremdrift i arkivvinduet",
+                "zh-TW": "在壓縮檔視窗內顯示解壓縮進度"
+            },
+            "issues": [
+                "350"
+            ]
+          },
+          {
+            "type": "feat",
             "highlight": true,
             "title": {
                 "en": "Edit 7z archives",

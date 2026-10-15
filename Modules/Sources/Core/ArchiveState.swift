@@ -155,6 +155,10 @@ public class ArchiveState: ObservableObject {
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
+    /// Set for an archive window's state: the id its extractions carry, so
+    /// that the window shows them itself rather than the progress window
+    /// (`ExtractionJob.shownIn`). `nil` for one no window shows — Finder's.
+    public var windowID: UUID?
     /// Passwords the user gave, by the file they were given for. One window can
     /// hold more than one archive: an archive inside the archive opens in the
     /// same tree, extracted to a temp file, and each can have its own password.
@@ -1571,6 +1575,7 @@ extension ArchiveState {
         let jobId = progressCenter.begin(
             archiveName: name ?? self.url?.lastPathComponent ?? "Archive",
             destination: url.deletingLastPathComponent(),
+            shownIn: windowID,
             itemCount: 1,
             totalBytes: Self.plannedBytes(of: [item])
         )
@@ -1667,6 +1672,7 @@ extension ArchiveState {
         let jobId = progressCenter.begin(
             archiveName: name ?? url?.lastPathComponent ?? "Archive",
             destination: destination,
+            shownIn: windowID,
             itemCount: items.count,
             totalBytes: Self.plannedBytes(of: items)
         )
@@ -1742,6 +1748,7 @@ extension ArchiveState {
         let jobId = progressCenter.begin(
             archiveName: name ?? url?.lastPathComponent ?? "Archive",
             destination: destination,
+            shownIn: windowID,
             itemCount: entries.values.count(where: { $0.type == .file }),
             totalBytes: (uncompressedSize ?? 0) > 0 ? uncompressedSize : nil
         )
