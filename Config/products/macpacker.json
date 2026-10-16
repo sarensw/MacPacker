@@ -360,7 +360,9 @@
                 "nb": "Nå tilgjengelig på arabisk, katalansk, gresk og norsk",
                 "zh-TW": "現已支援阿拉伯文、加泰隆尼亞文、希臘文和挪威文"
             },
-            "issues": []
+            "issues": [
+                "347"
+            ]
           }
         ]
       },
