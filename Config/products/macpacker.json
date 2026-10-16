@@ -57,7 +57,12 @@
                 "ko": "Finder에서 압축할 때 진행 창 표시",
                 "nl": "Voortgangsvenster bij comprimeren in de Finder",
                 "tr": "Finder’dan sıkıştırırken ilerleme penceresi",
-                "vi": "Cửa sổ tiến trình khi nén từ Finder"
+                "vi": "Cửa sổ tiến trình khi nén từ Finder",
+                "ar": "نافذة تقدّم عند الضغط من Finder",
+                "ca": "Finestra de progrés en comprimir des del Finder",
+                "el": "Παράθυρο προόδου κατά τη συμπίεση από το Finder",
+                "nb": "Fremdriftsvindu ved komprimering fra Finder",
+                "zh-TW": "從 Finder 壓縮時顯示進度視窗"
             },
             "issues": [
                 "278"
@@ -82,34 +87,15 @@
                 "ko": "7z 압축 파일 편집",
                 "nl": "7z-archieven bewerken",
                 "tr": "7z arşivlerini düzenleme",
-                "vi": "Chỉnh sửa tệp nén 7z"
+                "vi": "Chỉnh sửa tệp nén 7z",
+                "ar": "تحرير أرشيفات 7z",
+                "ca": "Edita arxius 7z",
+                "el": "Επεξεργασία συμπιεσμένων αρχείων 7z",
+                "nb": "Rediger 7z-arkiver",
+                "zh-TW": "編輯 7z 壓縮檔"
             },
             "issues": [
                 "132"
-            ]
-          },
-          {
-            "type": "feat",
-            "title": {
-                "en": "Improved app icon",
-                "zh-Hans": "改进 App 图标",
-                "fr": "Icône de l’app améliorée",
-                "de": "Verbessertes App-Symbol",
-                "it": "Icona dell’app migliorata",
-                "ja": "アプリアイコンを改良",
-                "fa": "بهبود آیکون برنامه",
-                "pl": "Ulepszona ikona aplikacji",
-                "pt-BR": "Ícone do app aprimorado",
-                "ru": "Улучшенный значок приложения",
-                "uk": "Покращена іконка програми",
-                "es-MX": "Ícono de la app mejorado",
-                "ko": "앱 아이콘 개선",
-                "nl": "Verbeterd appsymbool",
-                "tr": "İyileştirilmiş uygulama simgesi",
-                "vi": "Cải thiện biểu tượng ứng dụng"
-            },
-            "issues": [
-                "333"
             ]
           },
           {
@@ -131,7 +117,12 @@
                 "ko": "Finder에서 폴더를 압축하면 빈 zip이 만들어짐",
                 "nl": "Een map comprimeren in de Finder geeft een lege zip",
                 "tr": "Finder’dan klasör sıkıştırmak boş zip oluşturuyor",
-                "vi": "Nén thư mục từ Finder tạo ra tệp zip trống"
+                "vi": "Nén thư mục từ Finder tạo ra tệp zip trống",
+                "ar": "ضغط مجلد من Finder ينتج ملف zip فارغًا",
+                "ca": "Comprimir una carpeta des del Finder dona un zip buit",
+                "el": "Η συμπίεση φακέλου από το Finder δίνει κενό zip",
+                "nb": "Komprimering av en mappe fra Finder gir en tom zip",
+                "zh-TW": "從 Finder 壓縮資料夾會得到空的 zip"
             },
             "issues": [
                 "278"
@@ -139,7 +130,6 @@
           },
           {
             "type": "fix",
-            "highlight": true,
             "title": {
                 "en": "Compressing a large folder freezes the app",
                 "zh-Hans": "压缩大型文件夹会导致应用程序冻结",
@@ -156,7 +146,12 @@
                 "ko": "큰 폴더를 압축하면 앱이 멈춤",
                 "nl": "Een grote map comprimeren laat de app vastlopen",
                 "tr": "Büyük bir klasörü sıkıştırmak uygulamayı donduruyor",
-                "vi": "Nén thư mục lớn làm ứng dụng bị treo"
+                "vi": "Nén thư mục lớn làm ứng dụng bị treo",
+                "ar": "ضغط مجلد كبير يجمّد التطبيق",
+                "ca": "Comprimir una carpeta gran bloqueja l’app",
+                "el": "Η συμπίεση μεγάλου φακέλου παγώνει την εφαρμογή",
+                "nb": "Komprimering av en stor mappe fryser appen",
+                "zh-TW": "壓縮大型資料夾時 App 停止回應"
             },
             "issues": [
                 "278"
@@ -164,6 +159,7 @@
           },
           {
             "type": "fix",
+            "highlight": true,
             "title": {
                 "en": "Finder actions open the main window",
                 "zh-Hans": "Finder 操作会打开主窗口",
@@ -180,7 +176,12 @@
                 "ko": "Finder 작업 시 메인 창이 열림",
                 "nl": "Finder-acties openen het hoofdvenster",
                 "tr": "Finder işlemleri ana pencereyi açıyor",
-                "vi": "Thao tác Finder mở cửa sổ chính"
+                "vi": "Thao tác Finder mở cửa sổ chính",
+                "ar": "إجراءات Finder تفتح النافذة الرئيسية",
+                "ca": "Les accions del Finder obren la finestra principal",
+                "el": "Οι ενέργειες του Finder ανοίγουν το κύριο παράθυρο",
+                "nb": "Finder-handlinger åpner hovedvinduet",
+                "zh-TW": "Finder 動作會開啟主視窗"
             },
             "issues": [
                 "279",
@@ -189,6 +190,7 @@
           },
           {
             "type": "fix",
+            "highlight": true,
             "title": {
                 "en": "No Finder menu on external drives",
                 "zh-Hans": "外置驱动器上没有 Finder 菜单",
@@ -205,7 +207,12 @@
                 "ko": "외장 드라이브에 Finder 메뉴가 없음",
                 "nl": "Geen Finder-menu op externe schijven",
                 "tr": "Harici sürücülerde Finder menüsü yok",
-                "vi": "Không có menu Finder trên ổ đĩa ngoài"
+                "vi": "Không có menu Finder trên ổ đĩa ngoài",
+                "ar": "لا تظهر قائمة Finder على الأقراص الخارجية",
+                "ca": "No hi ha menú del Finder a les unitats externes",
+                "el": "Δεν εμφανίζεται μενού Finder σε εξωτερικούς δίσκους",
+                "nb": "Ingen Finder-meny på eksterne stasjoner",
+                "zh-TW": "外接磁碟上沒有 Finder 選單"
             },
             "issues": [
                 "275"
@@ -229,7 +236,12 @@
                 "ko": "폴더를 밖으로 드래그하면 빈 파일이 만들어짐",
                 "nl": "Een map naar buiten slepen geeft een leeg bestand",
                 "tr": "Klasörü dışarı sürüklemek boş dosya oluşturuyor",
-                "vi": "Kéo thư mục ra ngoài tạo ra tệp trống"
+                "vi": "Kéo thư mục ra ngoài tạo ra tệp trống",
+                "ar": "سحب مجلد إلى الخارج ينشئ ملفًا فارغًا",
+                "ca": "Arrossegar una carpeta cap a fora crea un fitxer buit",
+                "el": "Το σύρσιμο φακέλου προς τα έξω δημιουργεί κενό αρχείο",
+                "nb": "Å dra ut en mappe lager en tom fil",
+                "zh-TW": "將資料夾拖出時會產生空白檔案"
             },
             "issues": [
                 "306"
@@ -253,7 +265,12 @@
                 "ko": "7z가 들어 있는 zip을 저장하면 손상됨",
                 "nl": "Opslaan beschadigt een zip met een 7z erin",
                 "tr": "7z içeren bir zip’i kaydetmek onu bozuyor",
-                "vi": "Lưu tệp zip chứa 7z làm hỏng tệp đó"
+                "vi": "Lưu tệp zip chứa 7z làm hỏng tệp đó",
+                "ar": "حفظ ملف zip يحتوي على 7z يُتلفه",
+                "ca": "Desar un zip que conté un 7z l’espatlla",
+                "el": "Η αποθήκευση ενός zip που περιέχει 7z το καταστρέφει",
+                "nb": "Lagring av en zip som inneholder en 7z, ødelegger den",
+                "zh-TW": "儲存內含 7z 的 zip 會將其損壞"
             },
             "issues": [
                 "336"
@@ -261,6 +278,7 @@
           },
           {
             "type": "core",
+            "highlight": true,
             "title": {
                 "en": "Update 7-Zip to v26.04",
                 "zh-Hans": "更新 7-Zip 至 v26.04",
@@ -277,10 +295,73 @@
                 "ko": "7-Zip을 v26.04로 업데이트",
                 "nl": "7-Zip bijgewerkt naar v26.04",
                 "tr": "7-Zip v26.04'e güncellendi",
-                "vi": "Cập nhật 7-Zip lên v26.04"
+                "vi": "Cập nhật 7-Zip lên v26.04",
+                "ar": "تحديث 7-Zip إلى الإصدار 26.04",
+                "ca": "Actualització de 7-Zip a la versió 26.04",
+                "el": "Ενημέρωση του 7-Zip στην έκδοση 26.04",
+                "nb": "7-Zip oppdatert til versjon 26.04",
+                "zh-TW": "7-Zip 更新至 26.04 版"
             },
             "issues": [
                 "313"
+            ]
+          },
+          {
+            "type": "core",
+            "title": {
+                "en": "Improved app icon",
+                "zh-Hans": "改进 App 图标",
+                "fr": "Icône de l’app améliorée",
+                "de": "Verbessertes App-Symbol",
+                "it": "Icona dell’app migliorata",
+                "ja": "アプリアイコンを改良",
+                "fa": "بهبود آیکون برنامه",
+                "pl": "Ulepszona ikona aplikacji",
+                "pt-BR": "Ícone do app aprimorado",
+                "ru": "Улучшенный значок приложения",
+                "uk": "Покращена іконка програми",
+                "es-MX": "Ícono de la app mejorado",
+                "ko": "앱 아이콘 개선",
+                "nl": "Verbeterd appsymbool",
+                "tr": "İyileştirilmiş uygulama simgesi",
+                "vi": "Cải thiện biểu tượng ứng dụng",
+                "ar": "أيقونة تطبيق محسّنة",
+                "ca": "Icona de l’app millorada",
+                "el": "Βελτιωμένο εικονίδιο εφαρμογής",
+                "nb": "Forbedret appikon",
+                "zh-TW": "改良的 App 圖像"
+            },
+            "issues": [
+                "333"
+            ]
+          },
+          {
+            "type": "lang",
+            "title": {
+                "en": "Now available in Arabic, Catalan, Greek & Norwegian",
+                "zh-Hans": "现已支持阿拉伯语、加泰罗尼亚语、希腊语和挪威语",
+                "fr": "Désormais disponible en arabe, catalan, grec et norvégien",
+                "de": "Jetzt auch auf Arabisch, Katalanisch, Griechisch & Norwegisch",
+                "it": "Ora disponibile anche in arabo, catalano, greco e norvegese",
+                "ja": "アラビア語、カタロニア語、ギリシャ語、ノルウェー語にも対応しました",
+                "fa": "اکنون به زبان‌های عربی، کاتالان، یونانی و نروژی نیز در دسترس است",
+                "pl": "Dostępne teraz również po arabsku, katalońsku, grecku i norwesku",
+                "pt-BR": "Agora disponível em árabe, catalão, grego e norueguês",
+                "ru": "Теперь доступно на арабском, каталанском, греческом и норвежском",
+                "uk": "Тепер доступно арабською, каталонською, грецькою та норвезькою",
+                "es-MX": "Ahora disponible en árabe, catalán, griego y noruego",
+                "ko": "이제 아랍어, 카탈루냐어, 그리스어, 노르웨이어로도 제공됩니다",
+                "nl": "Nu ook beschikbaar in het Arabisch, Catalaans, Grieks en Noors",
+                "tr": "Artık Arapça, Katalanca, Yunanca ve Norveççe de mevcut",
+                "vi": "Hiện đã có tiếng Ả Rập, Catalan, Hy Lạp và Na Uy",
+                "ar": "متوفر الآن باللغات العربية والكتالونية واليونانية والنرويجية",
+                "ca": "Ara disponible en àrab, català, grec i noruec",
+                "el": "Πλέον διαθέσιμο στα αραβικά, καταλανικά, ελληνικά και νορβηγικά",
+                "nb": "Nå tilgjengelig på arabisk, katalansk, gresk og norsk",
+                "zh-TW": "現已支援阿拉伯文、加泰隆尼亞文、希臘文和挪威文"
+            },
+            "issues": [
+                "347"
             ]
           }
         ]
