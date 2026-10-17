@@ -55,8 +55,8 @@ MacPacker reads and extracts 40+ formats across archives, disk images, and compr
 | --- | --- |
 | **Archives** | 7z · ar · arj · cab · chm · cpio · deb · exe · lha · lzh · lzx · msi · pkg · rar · rpm · sea · sit · sitx · tar · xar · zip · zipx |
 | **Disk images** | dmg · fat · iso · ntfs · qcow2 · squashfs · vdi · vhd · vhdx · vmdk · wim |
-| **Compression** | bz2 · gz · lz4 · xz · z |
-| **Tarballs** | tar.gz (tgz) · tar.bz2 (tbz2) · tar.xz (txz) · tar.lz4 · tar.z (taz) |
+| **Compression** | bz2 · gz · lz4 · lzma · xz · z |
+| **Tarballs** | tar.gz (tgz) · tar.bz2 (tbz2) · tar.lzma · tar.xz (txz) · tar.lz4 · tar.z (taz) |
 
 See the [full format reference and per-format guides](https://macpacker.app/en/docs) on the website.
 

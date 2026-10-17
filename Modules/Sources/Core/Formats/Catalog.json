@@ -203,6 +203,18 @@
       ]
     },
     {
+      "id": "lzma",
+      "name": "LZMA File",
+      "kind": "compression",
+      "uti": ["org.tukaani.lzma-archive"],
+      "extensions": ["lzma"],
+      "mime": ["application/x-lzma"],
+      "rules": [],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
+    },
+    {
       "id": "lzx",
       "name": "LZX Archive",
       "kind": "archive",
@@ -570,6 +582,13 @@
       "uti": ["public.lz4-tar-archive"],
       "extensions": ["tlz4","tar.lz4"],
       "components": ["tar","lz4"]
+    },
+    {
+      "id": "tar.lzma",
+      "name": "LZMA Tar Archive",
+      "uti": [],
+      "extensions": ["tar.lzma"],
+      "components": ["tar","lzma"]
     },
     {
       "id": "tar.xz",
