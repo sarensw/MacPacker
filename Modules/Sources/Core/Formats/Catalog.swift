@@ -42,9 +42,10 @@ public struct SplitTypeDto: Codable, Sendable {
     public let scheme: String
     /// File-name regex; a match means the file is a volume part of this type.
     public let pattern: String
-    /// Optional content signal for when the name can't decide (the bare `.zip`
-    /// terminal volume): find `bytes` near the tail, then test a field.
-    public let marker: SplitMarkerDto?
+    /// Optional content signals for when the name can't decide (the bare `.zip`
+    /// terminal volume): each finds `bytes` near the tail, then tests a field;
+    /// any one that matches is enough.
+    public let markers: [SplitMarkerDto]?
     /// How to derive the first volume's name from *any* part (regex substitution) —
     /// what the engine is actually pointed at, e.g. spanned → `.z01`.
     public let firstVolume: FirstVolumeDto
@@ -57,7 +58,8 @@ public struct SplitTypeDto: Codable, Sendable {
 
 /// Content signal: locate `bytes` (a signature) in the file's tail, then test a
 /// field relative to it — e.g. the zip EOCD "number of this disk", non-zero when
-/// the archive spans more than one volume.
+/// the archive spans more than one volume. In Zip64 that field can be all ones,
+/// "see the Zip64 record", which then carries the number in a field of its own.
 public struct SplitMarkerDto: Codable, Sendable {
     public let bytes: [UInt8]
     public let field: SplitFieldDto
@@ -75,7 +77,9 @@ public struct SplitMarkerDto: Codable, Sendable {
 public struct SplitFieldDto: Codable, Sendable {
     public let offset: Int
     public let length: Int
-    public let match: String   // "nonzero" → the field must be non-zero to match
+    /// "nonzero" → the field must be non-zero to match; "nonzeroBelowMax" → and
+    /// not all ones either, a value that stands for one kept elsewhere
+    public let match: String
 }
 
 /// A regex substitution turning any volume part's file name into the first

@@ -277,6 +277,35 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Zips from Nextcloud or ownCloud fail to open",
+                "zh-Hans": "来自 Nextcloud 或 ownCloud 的 zip 无法打开",
+                "fr": "Les zip de Nextcloud ou ownCloud ne s’ouvrent pas",
+                "de": "Öffnen von zip-Archiven aus Nextcloud oder ownCloud schlägt fehl",
+                "it": "Gli zip di Nextcloud o ownCloud non si aprono",
+                "ja": "Nextcloud や ownCloud の zip が開けない",
+                "fa": "فایل‌های zip از Nextcloud یا ownCloud باز نمی‌شوند",
+                "pl": "Pliki zip z Nextcloud lub ownCloud nie otwierają się",
+                "pt-BR": "Arquivos zip do Nextcloud ou ownCloud não abrem",
+                "ru": "Не открываются zip-архивы из Nextcloud или ownCloud",
+                "uk": "Не відкриваються zip-архіви з Nextcloud або ownCloud",
+                "es-MX": "Los zip de Nextcloud u ownCloud no se abren",
+                "ko": "Nextcloud 또는 ownCloud의 zip이 열리지 않음",
+                "nl": "Openen van zips uit Nextcloud of ownCloud mislukt",
+                "tr": "Nextcloud veya ownCloud’dan gelen zip’ler açılmıyor",
+                "vi": "Tệp zip từ Nextcloud hoặc ownCloud không mở được",
+                "ar": "ملفات zip من Nextcloud أو ownCloud لا تُفتح",
+                "ca": "Els zip de Nextcloud o ownCloud no s’obren",
+                "el": "Τα zip από το Nextcloud ή το ownCloud δεν ανοίγουν",
+                "nb": "Kan ikke åpne zip-filer fra Nextcloud eller ownCloud",
+                "zh-TW": "來自 Nextcloud 或 ownCloud 的 zip 無法開啟"
+            },
+            "issues": [
+                "348"
+            ]
+          },
+          {
             "type": "core",
             "highlight": true,
             "title": {

@@ -5,9 +5,11 @@
 //  Split / multi-volume archive support (7-Zip engine): detection, canonical
 //  volume resolution, and open + extract from the resolved volume.
 //
-//  Fixtures (in the bundled `zip/` dir), both containing a single `lorem.txt`:
+//  Fixtures (in the bundled `zip/` dir), each containing a single `lorem.txt`:
 //   - spanned zip (Info-Zip `zip -s`): split_pk.z01, split_pk.z02, split_pk.zip
+//   - spanned Zip64 (zip.js):          split_zipjs64.z01 … split_zipjs64.zip
 //   - numeric split (7-Zip volumes):   split_7zz.zip.001 … split_7zz.zip.003
+//  and one that is no split at all: zipstreamer64.zip (Nextcloud's Zip64).
 //
 //  These run unsandboxed, so they validate the detector/resolver/engine path;
 //  the folder-access (sandbox) middleware is verified manually on a Release build.
@@ -74,6 +76,17 @@ extension AllCoreTests {
             #expect(detector.detect(for: dir.appendingPathComponent("nestedFolders.zip"))?.split == nil)
         }
 
+        @Test func detectorReadsZip64DiskPlaceholder() {
+            let detector = ArchiveTypeDetector(catalog: ArchiveTypeCatalog())
+            let dir = zipDir()
+            // Both write 0xFFFF as the EOCD disk number, "see the Zip64 record".
+            // Taken for a disk number, it made the single file the last volume of
+            // a set and the open failed on a `.z01` that never existed (#348).
+            #expect(detector.detect(for: dir.appendingPathComponent("zipstreamer64.zip"))?.split == nil)
+            // The Zip64 record has the real number: the last of three volumes.
+            #expect(detector.detect(for: dir.appendingPathComponent("split_zipjs64.zip"))?.split?.scheme == "spanned")
+        }
+
         @Test func catalogDeclaresZipSplits() throws {
             // Split detection *and* first-volume resolution are catalog data in the
             // top-level `splits` list; the engine only declares the capability.
@@ -83,11 +96,11 @@ extension AllCoreTests {
 
             let spanned = try #require(zipSplits.first(where: { $0.scheme == "spanned" }))
             #expect(spanned.firstVolume.replacement == ".z01")
-            // spanned carries a content marker (the EOCD) so a bare `.zip` is
-            // recognized from its bytes; numeric is name-only, so no marker.
-            #expect(spanned.marker != nil)
+            // spanned carries content markers (the EOCD, the Zip64 record) so a
+            // bare `.zip` is recognized from its bytes; numeric is name-only.
+            #expect(spanned.markers?.isEmpty == false)
             let numeric = try #require(zipSplits.first(where: { $0.scheme == "numeric" }))
-            #expect(numeric.marker == nil)
+            #expect(numeric.markers == nil)
 
             // the default engine declares it can read split volumes
             let zip = try #require(catalog.getType(for: "zip"))
@@ -132,17 +145,31 @@ extension AllCoreTests {
 
         // MARK: - End-to-end: opening ANY part surfaces the real file (lorem.txt)
 
-        @Test func openSpannedZipViaAnyPart() async throws {
-            for part in ["split_pk.z01", "split_pk.z02", "split_pk.zip"] {
+        @Test(arguments: ["split_pk", "split_zipjs64"])
+        func openSpannedZipViaAnyPart(set: String) async throws {
+            for part in ["\(set).z01", "\(set).z02", "\(set).zip"] {
                 let state = try await openPart(part)
                 #expect(state.error == nil, "opening \(part)")
                 #expect(state.type?.id == "zip", "opening \(part)")
                 #expect(names(state).contains("lorem.txt"), "opening \(part) → names=\(names(state))")
                 // window identity is the first volume, whichever part was opened
-                #expect(state.url?.lastPathComponent == "split_pk.z01", "opening \(part)")
+                #expect(state.url?.lastPathComponent == "\(set).z01", "opening \(part)")
                 // title is the reassembled set name, not the specific part
-                #expect(state.name == "split_pk.zip", "opening \(part)")
+                #expect(state.name == "\(set).zip", "opening \(part)")
             }
+        }
+
+        @Test func openZip64WithDiskPlaceholder() async throws {
+            // A download from Nextcloud or ownCloud (#348): "Failed to open file".
+            let state = try await openPart("zipstreamer64.zip")
+            #expect(state.error == nil, "\(state.error ?? "")")
+            #expect(names(state).contains("メモ.txt"), "names=\(names(state))")
+            #expect(names(state).contains("ノート.txt"), "names=\(names(state))")
+            #expect(state.url?.lastPathComponent == "zipstreamer64.zip")
+
+            let item = try #require(state.entries.values.first { $0.name == "メモ.txt" })
+            let extractedUrl = try await state.extractToTemp(item: item)
+            #expect(try String(contentsOf: extractedUrl, encoding: .utf8) == "Written by ZipStreamer in its Zip64 mode.\n")
         }
 
         @Test func openNumericSplitViaAnyPart() async throws {

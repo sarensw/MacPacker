@@ -156,14 +156,14 @@ final public class ArchiveTypeDetector: Sendable {
     // MARK: - Phase 3: content split probe (the ambiguous bare `.zip`)
 
     /// For a plain-format match with no split yet, test that format's split types'
-    /// content `marker`s — e.g. the zip EOCD disk field — so a bare `.zip` that is
-    /// really a spanned terminal volume is recognized.
+    /// content `markers` — e.g. the zip EOCD disk field, or the Zip64 record's —
+    /// so a bare `.zip` that is really a spanned terminal volume is recognized.
     private func attachSplitMarker(_ result: DetectionResult, url: URL) -> DetectionResult {
         guard result.split == nil else { return result }
-        let splits = catalog.allSplits().filter { $0.format == result.type.id && $0.marker != nil }
+        let splits = catalog.allSplits().filter { $0.format == result.type.id && $0.markers != nil }
         guard !splits.isEmpty, let tail = readTail(of: url) else { return result }
 
-        for split in splits where matchesMarker(split.marker!, in: tail) {
+        for split in splits where split.markers!.contains(where: { matchesMarker($0, in: tail) }) {
             return DetectionResult(
                 type: result.type,
                 composition: result.composition,
@@ -190,8 +190,10 @@ final public class ArchiveTypeDetector: Sendable {
 
         let fStart = s + marker.field.offset, fEnd = fStart + marker.field.length
         guard fStart >= 0, fEnd <= bytes.count else { return false }
+        let field = bytes[fStart..<fEnd]
         switch marker.field.match {
-        case "nonzero": return bytes[fStart..<fEnd].contains { $0 != 0 }
+        case "nonzero": return field.contains { $0 != 0 }
+        case "nonzeroBelowMax": return field.contains { $0 != 0 } && field.contains { $0 != 0xFF }
         default: return false
         }
     }
