@@ -27,6 +27,10 @@ extension AllCoreTests {
             Bundle.module.url(forResource: "zip", withExtension: nil)!
         }
 
+        private func nestedDir() -> URL {
+            Bundle.module.url(forResource: "nested", withExtension: nil)!
+        }
+
         private func newState() -> ArchiveState {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             // Unsandboxed tests can already read the folder, so grant unconditionally.
@@ -91,11 +95,15 @@ extension AllCoreTests {
             #expect(detector.detect(for: dir.appendingPathComponent("split_zipjs64comment.zip"))?.split?.scheme == "spanned")
         }
 
-        @Test func detectorSkipsLocatorWithoutEndRecord() {
+        @Test func detectorReadsOnlyTheArchivesOwnEndRecords() {
+            let detector = ArchiveTypeDetector(catalog: ArchiveTypeCatalog())
             // A stored file holding the bytes of a Zip64 locator that says
             // "3 disks", with no end record after them: no locator of this plain zip.
-            let detector = ArchiveTypeDetector(catalog: ArchiveTypeCatalog())
             #expect(detector.detect(for: zipDir().appendingPathComponent("zip64LocatorDecoy.zip"))?.split == nil)
+            // A plain zip storing the last piece of a spanned Zip64 set: the piece's
+            // locator and end record are in the tail, but the end record that ends
+            // the file is the outer zip's.
+            #expect(detector.detect(for: nestedDir().appendingPathComponent("spannedZip64InZip.zip"))?.split == nil)
         }
 
         @Test func catalogDeclaresZipSplits() throws {
@@ -181,6 +189,15 @@ extension AllCoreTests {
             let item = try #require(state.entries.values.first { $0.name == "メモ.txt" })
             let extractedUrl = try await state.extractToTemp(item: item)
             #expect(try String(contentsOf: extractedUrl, encoding: .utf8) == "Written by ZipStreamer in its Zip64 mode.\n")
+        }
+
+        @Test func openZipThatStoresSpannedPiece() async throws {
+            let state = newState()
+            state.open(url: nestedDir().appendingPathComponent("spannedZip64InZip.zip"))
+            try await state.openTask?.value
+            #expect(state.error == nil, "\(state.error ?? "")")
+            #expect(names(state).contains("split_zipjs64.zip"), "names=\(names(state))")
+            #expect(state.url?.lastPathComponent == "spannedZip64InZip.zip")
         }
 
         @Test func openNumericSplitViaAnyPart() async throws {

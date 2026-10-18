@@ -156,14 +156,20 @@ final public class ArchiveTypeDetector: Sendable {
     // MARK: - Phase 3: content split probe (the ambiguous bare `.zip`)
 
     /// For a plain-format match with no split yet, test that format's split types'
-    /// content `markers` — e.g. the zip EOCD disk field, or Zip64's locator —
-    /// so a bare `.zip` that is really a spanned terminal volume is recognized.
+    /// content `markers` at the file's end record — e.g. the zip EOCD disk field,
+    /// or Zip64's locator before it — so a bare `.zip` that is really a spanned
+    /// terminal volume is recognized.
     private func attachSplitMarker(_ result: DetectionResult, url: URL) -> DetectionResult {
         guard result.split == nil else { return result }
-        let splits = catalog.allSplits().filter { $0.format == result.type.id && $0.markers != nil }
+        let splits = catalog.allSplits().filter {
+            $0.format == result.type.id && $0.endRecord != nil && $0.markers != nil
+        }
         guard !splits.isEmpty, let tail = readTail(of: url) else { return result }
 
-        for split in splits where split.markers!.contains(where: { matchesMarker($0, in: tail) }) {
+        for split in splits {
+            guard let end = endRecordStart(split.endRecord!, in: tail),
+                  split.markers!.contains(where: { matchesMarker($0, at: end, in: tail) })
+            else { continue }
             return DetectionResult(
                 type: result.type,
                 composition: result.composition,
@@ -174,29 +180,22 @@ final public class ArchiveTypeDetector: Sendable {
         return result
     }
 
-    /// Find the last occurrence of `marker.bytes` in the tail that has `marker.with`
-    /// beside it, then test the field at `field.offset`/`field.length` from it
-    /// (e.g. EOCD disk number ≠ 0).
-    private func matchesMarker(_ marker: SplitMarkerDto, in bytes: [UInt8]) -> Bool {
-        let sig = marker.bytes
-        guard !sig.isEmpty, bytes.count >= sig.count else { return false }
+    /// The last occurrence of the end record's signature with room for the whole
+    /// record after it — where 7-Zip looks too. One further back is another
+    /// archive's, stored inside this one.
+    private func endRecordStart(_ end: SplitEndRecordDto, in bytes: [UInt8]) -> Int? {
+        stride(from: bytes.count - end.length, through: 0, by: -1).first { has(end.bytes, at: $0, in: bytes) }
+    }
 
-        var sigStart: Int? = nil
-        var i = bytes.count - sig.count
-        while i >= 0 {
-            if has(sig, at: i, in: bytes),
-               marker.with.map({ has($0.bytes, at: i + $0.offset, in: bytes) }) ?? true {
-                sigStart = i; break
-            }
-            i -= 1
-        }
-        guard let s = sigStart else { return false }
+    /// Test the field at `field.offset`/`field.length` from the end record at
+    /// `end` (e.g. EOCD disk number ≠ 0), if `marker.with` sits where it says.
+    private func matchesMarker(_ marker: SplitMarkerDto, at end: Int, in bytes: [UInt8]) -> Bool {
+        if let with = marker.with, !has(with.bytes, at: end + with.offset, in: bytes) { return false }
 
-        let fStart = s + marker.field.offset, fEnd = fStart + marker.field.length
+        let fStart = end + marker.field.offset, fEnd = fStart + marker.field.length
         guard fStart >= 0, fEnd <= bytes.count else { return false }
         let field = bytes[fStart..<fEnd]
         switch marker.field.match {
-        case "nonzero": return field.contains { $0 != 0 }
         case "nonzeroBelowMax": return field.contains { $0 != 0 } && field.contains { $0 != 0xFF }
         case "aboveOne": return field.dropFirst().contains { $0 != 0 } || (field.first ?? 0) > 1
         default: return false
