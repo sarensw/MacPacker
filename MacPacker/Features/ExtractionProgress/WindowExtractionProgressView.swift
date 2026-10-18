@@ -51,24 +51,34 @@ struct WindowExtractionProgressView: View {
         .task(id: allJobs.map(\.id)) {
             // jobs that are gone are forgotten
             shown.formIntersection(allJobs.map(\.id))
-            let pending = allJobs.filter { !shown.contains($0.id) }.map(\.id)
-            guard !pending.isEmpty else { return }
-            do {
-                try await Task.sleep(for: .seconds(0.6))
-            } catch {
-                return
-            }
-            for id in pending {
-                guard let job = allJobs.first(where: { $0.id == id }) else { continue }
-                if !job.isFinished {
-                    shown.insert(id)
-                } else if !Self.hasFailed(job) {
-                    // done before it was ever shown
-                    center.dismiss(id)
+            // Each job is timed from its own start, so that one starting a
+            // moment later never holds back one that is already running.
+            while true {
+                let pending = allJobs.filter { !shown.contains($0.id) }
+                guard let due = pending.map({ $0.startedAt.addingTimeInterval(Self.showAfter) }).min() else { return }
+                if due.timeIntervalSinceNow > 0 {
+                    do {
+                        try await Task.sleep(for: .seconds(due.timeIntervalSinceNow))
+                    } catch {
+                        return
+                    }
+                }
+                // as they are now, after the wait
+                let now = Date()
+                for job in allJobs where !shown.contains(job.id) && job.startedAt.addingTimeInterval(Self.showAfter) <= now {
+                    if !job.isFinished || Self.hasFailed(job) {
+                        shown.insert(job.id)
+                    } else {
+                        // done before it was ever shown
+                        center.dismiss(job.id)
+                    }
                 }
             }
         }
     }
+
+    /// How long a job runs before its row appears.
+    private static let showAfter: TimeInterval = 0.6
 
     private static func hasFailed(_ job: ExtractionJob) -> Bool {
         if case .failed = job.state { return true }
