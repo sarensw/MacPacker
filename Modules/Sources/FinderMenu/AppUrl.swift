@@ -100,6 +100,9 @@ public struct AppUrl: Equatable, Sendable {
         case invalidDate(String)
         /// `extractNextToArchive` for other than exactly one archive.
         case notOneArchive
+        /// An entry of `items` that does not decode. Dropping it instead could
+        /// leave no entries, which means the whole archive.
+        case invalidItems
     }
 
     /// Parses a url in the Finder extension's format; throws for anything else.
@@ -147,8 +150,11 @@ public struct AppUrl: Equatable, Sendable {
         } else {
             self.datedAt = nil
         }
-        // encoded twice, like the paths
-        self.items = (value("items") ?? "").split(separator: ",").compactMap { String($0).removingPercentEncoding }
+        // encoded twice, like the paths; one that does not decode refuses the url
+        let entries = (value("items") ?? "").split(separator: ",").map(String.init)
+        let decoded = entries.compactMap { $0.removingPercentEncoding }
+        guard decoded.count == entries.count else { throw .invalidItems }
+        self.items = decoded
         if action == .extractNextToArchive, self.files.count != 1 {
             throw .notOneArchive
         }

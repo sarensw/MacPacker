@@ -190,6 +190,18 @@ extension AllCoreTests {
             #expect(request.items.isEmpty)
         }
 
+        /// Entries are encoded twice. One that only survives the first decoding
+        /// refuses the whole url: dropping it could leave none, and no entries
+        /// means all of the archive.
+        @Test("An entry that does not decode refuses the url")
+        func undecodableItemIsRejected() {
+            let request = url("extractNextToArchive", files: ["/Users/me/Trip.zip"],
+                              extra: [URLQueryItem(name: "items", value: "bad%ZZ")])
+            #expect(throws: AppUrl.ParseError.invalidItems) {
+                try AppUrl(url: request, scheme: scheme)
+            }
+        }
+
         @Test("Extracting next to the archive is for one archive")
         func extractNextToArchiveOfTwoIsRejected() throws {
             let twoArchives = try #require(AppUrl(
