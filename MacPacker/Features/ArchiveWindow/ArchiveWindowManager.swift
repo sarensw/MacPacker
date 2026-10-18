@@ -50,10 +50,12 @@ class ArchiveWindowManager {
     ///   - url: url of the archive
     ///   - host: When given, the window opens as a tab of that one, whatever
     ///     Settings say about tabs: the user asked for a tab.
+    ///   - asWindow: The user asked for a window (File ▸ New Window): it opens
+    ///     as macOS's own preference has it, whatever Settings say about tabs.
     /// - Returns: the window's `ArchiveState`, so callers that need to drive it
     ///   (e.g. the debug screenshot launcher) can navigate and select afterwards.
     @discardableResult
-    fileprivate func createAndShowArchiveWindow(_ url: URL?, asTabOf host: NSWindow? = nil) -> ArchiveState {
+    fileprivate func createAndShowArchiveWindow(_ url: URL?, asTabOf host: NSWindow? = nil, asWindow: Bool = false) -> ArchiveState {
         log.notice("Creating window", context: ["url": url?.lastPathComponent ?? "(empty)"])
         if !hasOpenedWindow {
             hasOpenedWindow = true
@@ -101,8 +103,21 @@ class ArchiveWindowManager {
         if let host, let window = archiveWindowController.window, host !== window {
             host.addTabbedWindow(window, ordered: .above)
         }
+        // A window the user asked for goes by macOS's preference alone. Archives
+        // opened later can still become its tabs: they join it by its tabbing
+        // identifier, whatever its own mode.
+        if asWindow {
+            archiveWindowController.window?.tabbingMode = .automatic
+        }
         archiveWindowController.showWindow(nil)
         return archiveState
+    }
+
+    /// An empty window to open an archive in: the one in use, when it is
+    /// empty — the New Tab just opened, say — else the first one.
+    private var emptyWindowController: ArchiveWindowController? {
+        let empty = windowControllers.filter { $0.archiveState.hasArchive == false }
+        return empty.first { $0.window?.isMainWindow == true } ?? empty.first
     }
 
     /// The window a new one models itself on. Falls back to the newest when no
@@ -135,7 +150,7 @@ class ArchiveWindowManager {
     
     /// Opens a new empty window, regardless of whether there is any other window open right now
     func openNewArchiveWindow() {
-        createAndShowArchiveWindow(nil)
+        createAndShowArchiveWindow(nil, asWindow: true)
     }
 
     /// Opens the home screen in a new tab of the window in use — or in a
@@ -193,7 +208,7 @@ class ArchiveWindowManager {
     private func showWindow(for url: URL) -> ArchiveState {
         if let wc = focusWindow(holding: url) {
             return wc.archiveState
-        } else if let ewc = windowControllers.first(where: { $0.archiveState.hasArchive == false }) {
+        } else if let ewc = emptyWindowController {
             log.notice("Reusing empty window to open \(url.lastPathComponent)")
             ewc.archiveState.open(url: url)
             ewc.showWindow(nil)
