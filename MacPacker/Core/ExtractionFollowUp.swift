@@ -149,13 +149,15 @@ enum ExtractionFollowUp {
     /// Moves the archive to the Trash after an extraction of all of it, when
     /// the setting asks for it: only once that extraction has finished, never
     /// after one that was cancelled or failed, and never while the window holds
-    /// edits not yet saved into the archive. Every volume of a split archive
-    /// goes. Returns whether the archive's own file went.
+    /// edits not yet saved into the archive, or files still being added to it.
+    /// Every volume of a split archive goes. Returns whether the archive's own
+    /// file went.
     @discardableResult
     static func trashIfAsked(_ state: ArchiveState, after outcome: ExtractionJob.State) async -> Bool {
         guard UserDefaults.standard.bool(forKey: Keys.trashArchiveAfterExtraction),
               outcome == .done,
               !state.hasPendingChanges,
+              !state.isAddingItems,
               let archive = state.url else { return false }
         // Moving a file out of its folder is a change to that folder.
         guard await FolderAccessStore.shared.ensureAccess(forFileIn: archive) else {
