@@ -88,7 +88,7 @@ struct FormatSettingsView: View {
     
     func showInfoToSetAsDefault() {
         let alert = NSAlert()
-        alert.icon = NSImage(named: "AppIcon")
+        alert.icon = .appIcon(size: 64)
         alert.messageText = String(localized: .settingsMacpackerAsDefault)
         alert.informativeText = String(localized: .settingsDefaultAppHint)
         alert.alertStyle = .informational

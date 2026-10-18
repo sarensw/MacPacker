@@ -5,10 +5,28 @@
       "comment" : "Description of the FileFillet app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انسخ الملفات أو انقلها إلى مجلداتك المفضلة ومجلداتها الفرعية. لا حاجة لفتح نوافذ Finder جديدة."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia o mou fitxers a les teves carpetes preferides i a les seves subcarpetes. Sense obrir noves finestres del Finder."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kopiere oder verschiebe Dateien in deine Lieblingsordner und deren Unterordner. Ganz ohne neue Finder-Fenster."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Αντιγράψτε ή μετακινήστε αρχεία στους αγαπημένους σας φακέλους και στους υποφακέλους τους. Χωρίς να ανοίγετε νέα παράθυρα του Finder."
           }
         },
         "en" : {
@@ -59,6 +77,12 @@
             "value" : "Kopieer of verplaats bestanden naar je favoriete mappen en hun submappen. Zonder nieuwe Finder-vensters te openen."
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopier eller flytt filer til favorittmappene dine og undermappene deres. Uten å åpne nye Finder-vinduer."
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -100,6 +124,12 @@
             "state" : "translated",
             "value" : "将文件拷贝或移动到常用文件夹及其子文件夹，无需打开新的“访达”窗口。"
           }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將檔案拷貝或搬移到常用資料夾及其子資料夾，不必開啟新的 Finder 視窗。"
+          }
         }
       }
     },
@@ -107,10 +137,28 @@
       "comment" : "Short description of the FileFillet app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نظّم ملفاتك. بسرعة."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organitza fitxers. Ràpid."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dateien organisieren. Schnell."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Οργανώστε αρχεία. Γρήγορα."
           }
         },
         "en" : {
@@ -161,6 +209,12 @@
             "value" : "Bestanden ordenen. Snel."
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Organiser filer. Raskt."
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -202,6 +256,12 @@
             "state" : "translated",
             "value" : "快速整理文件。"
           }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速整理檔案。"
+          }
         }
       }
     },
@@ -209,10 +269,28 @@
       "comment" : "Description of the FlowMoose app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إملاء صوتي يحفظ الخصوصية، مصمَّم لنظامي macOS 26 و27"
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictat privat, dissenyat per al macOS 26 i 27"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Private Spracheingabe, entwickelt für macOS 26 und 27"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ιδιωτική υπαγόρευση, σχεδιασμένη για macOS 26 και 27"
           }
         },
         "en" : {
@@ -263,6 +341,12 @@
             "value" : "Privacyvriendelijke spraak-naar-tekst, ontworpen voor macOS 26 en 27"
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privat diktering, laget for macOS 26 og 27"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -304,6 +388,12 @@
             "state" : "translated",
             "value" : "专为 macOS 26 和 27 设计的私密语音转文字"
           }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "專為 macOS 26 和 27 設計的私密語音轉文字"
+          }
         }
       }
     },
@@ -311,10 +401,28 @@
       "comment" : "Short description of the FlowMoose app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إملاء صوتي يحفظ الخصوصية"
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictat privat"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Private Spracheingabe"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ιδιωτική υπαγόρευση"
           }
         },
         "en" : {
@@ -365,6 +473,12 @@
             "value" : "Privacyvriendelijke spraak-naar-tekst"
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privat diktering"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -406,6 +520,12 @@
             "state" : "translated",
             "value" : "私密语音转文字"
           }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私密語音轉文字"
+          }
         }
       }
     },
@@ -413,10 +533,28 @@
       "comment" : "Short description of the FrameBeast app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء أصول الوسائط وأتمتتها"
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creació i automatització de recursos multimèdia"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medien-Assets erstellen und automatisieren"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δημιουργία και αυτοματοποίηση πολυμέσων"
           }
         },
         "en" : {
@@ -467,6 +605,12 @@
             "value" : "Media-assets maken en automatiseren"
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oppretting og automatisering av medieressurser"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -507,6 +651,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "媒体素材创作与自动化"
+          }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "媒體素材製作與自動化"
           }
         }
       }
@@ -515,10 +665,28 @@
       "comment" : "Description to the FrameBeast app",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء أصول الوسائط وأتمتتها"
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creació i automatització de recursos multimèdia"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medien-Assets erstellen und automatisieren"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δημιουργία και αυτοματοποίηση πολυμέσων"
           }
         },
         "en" : {
@@ -569,6 +737,12 @@
             "value" : "Media-assets maken en automatiseren"
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oppretting og automatisering av medieressurser"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -610,6 +784,12 @@
             "state" : "translated",
             "value" : "媒体素材创作与自动化"
           }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "媒體素材製作與自動化"
+          }
         }
       }
     },
@@ -617,10 +797,28 @@
       "comment" : "Hint to the user that the submenu contains links for more apps that they might like.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المزيد من التطبيقات"
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Més apps"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weitere Apps"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Περισσότερες εφαρμογές"
           }
         },
         "en" : {
@@ -671,6 +869,12 @@
             "value" : "Meer apps"
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flere apper"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -712,6 +916,12 @@
             "state" : "translated",
             "value" : "更多应用"
           }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多 App"
+          }
         }
       }
     },
@@ -719,10 +929,28 @@
       "comment" : "Link on the welcome window that opens the website of another app by the same developer. %@ is that app's name, e.g. FileFillet",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استكشف %@"
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descobreix %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ entdecken"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ανακαλύψτε το %@"
           }
         },
         "en" : {
@@ -773,6 +1001,12 @@
             "value" : "Ontdek %@"
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utforsk %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -814,6 +1048,12 @@
             "state" : "translated",
             "value" : "了解 %@"
           }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "探索 %@"
+          }
         }
       }
     },
@@ -821,10 +1061,28 @@
       "comment" : "Heading of the welcome window column that presents another app by the same developer. %@ is the app name, MacPacker.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "من مطوّر %@"
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Del creador de %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vom Entwickler von %@"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Από τον δημιουργό του %@"
           }
         },
         "en" : {
@@ -875,6 +1133,12 @@
             "value" : "Van de maker van %@"
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fra utvikleren bak %@"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -916,6 +1180,12 @@
             "state" : "translated",
             "value" : "来自 %@ 开发者"
           }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "來自 %@ 的開發者"
+          }
         }
       }
     },
@@ -923,10 +1193,28 @@
       "comment" : "Shown under 'From the maker of MacPacker' on the welcome window",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تطبيقاتي الأخرى تساعد في تمويل هذا المشروع مفتوح المصدر."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les meves altres apps ajuden a finançar aquest projecte de codi obert."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meine anderen Apps helfen, dieses Open-Source-Projekt zu finanzieren."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Οι άλλες εφαρμογές μου βοηθούν στη χρηματοδότηση αυτού του έργου ανοιχτού κώδικα."
           }
         },
         "en" : {
@@ -977,6 +1265,12 @@
             "value" : "Mijn andere apps helpen dit opensourceproject te financieren."
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mine andre apper bidrar til å finansiere dette prosjektet med åpen kildekode."
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1018,6 +1312,12 @@
             "state" : "translated",
             "value" : "我的其他应用为这个开源项目提供资金支持。"
           }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的其他 App 協助資助這個開放原始碼專案。"
+          }
         }
       }
     },
@@ -1025,10 +1325,28 @@
       "comment" : "Link on the welcome window that opens a website listing every app by the same developer",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عرض جميع تطبيقاتي"
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra totes les meves apps"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alle meine Apps ansehen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Δείτε όλες τις εφαρμογές μου"
           }
         },
         "en" : {
@@ -1079,6 +1397,12 @@
             "value" : "Bekijk al mijn apps"
           }
         },
+        "no" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se alle appene mine"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1119,6 +1443,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "查看我的所有应用"
+          }
+        },
+        "zh-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看我的所有 App"
           }
         }
       }
