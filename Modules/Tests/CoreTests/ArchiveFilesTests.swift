@@ -116,6 +116,22 @@ extension AllCoreTests {
             #expect(state.filesOnDisk().map(\.lastPathComponent) == ["trip.z01", "trip.z02", "trip.z03", "trip.zip"])
         }
 
+        /// Its folder unreadable, a split archive's other volumes cannot be
+        /// found: then none of its files is named, not just the one opened.
+        @Test func anArchiveWhoseFolderCannotBeReadHasNoFiles() async throws {
+            let dir = try makeFolder()
+            defer {
+                try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: dir.path)
+                try? FileManager.default.removeItem(at: dir)
+            }
+            try makeZip(in: dir, content: Data("hello".utf8))
+            let state = try await opened(dir.appendingPathComponent("trip.zip"))
+            // write and enter, but not list
+            try FileManager.default.setAttributes([.posixPermissions: 0o300], ofItemAtPath: dir.path)
+
+            #expect(state.filesOnDisk().isEmpty)
+        }
+
         @Test func aNeverSavedArchiveHasNoFiles() {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             #expect(state.filesOnDisk().isEmpty)

@@ -1118,15 +1118,18 @@ extension ArchiveState {
 
     /// The archive's files on disk: its own file or, when it is split into
     /// volumes, every volume of it (see `ArchiveFiles`). Empty for an archive
-    /// that has never been saved.
+    /// that has never been saved, and for one whose folder cannot be read: its
+    /// other volumes cannot be found then, and only some of them would be no
+    /// use to anyone.
     ///
     /// Reads the archive's folder, inside whatever grant covers it.
     public func filesOnDisk() -> [URL] {
         guard let url else { return [] }
         let folder = url.deletingLastPathComponent()
         let siblings = Sandbox.accessSync(url: folder) {
-            (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
+            try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)
         }
+        guard let siblings else { return [] }
         return ArchiveFiles.files(of: url, among: siblings, splits: catalog.allSplits())
     }
 

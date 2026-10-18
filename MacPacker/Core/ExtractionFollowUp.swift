@@ -166,18 +166,18 @@ enum ExtractionFollowUp {
         }
         let files = state.filesOnDisk()
         return await Sandbox.access(url: archive.deletingLastPathComponent()) {
-            // the archive's own file comes first
-            var archiveWent = false
-            for file in files {
+            // The archive's own file comes first. If it cannot go, nothing does:
+            // its other volumes alone would be good for nothing in the Trash.
+            for (index, file) in files.enumerated() {
                 do {
                     try FileManager.default.trashItem(at: file, resultingItemURL: nil)
-                    if file == files.first { archiveWent = true }
                     log.notice("Moved the extracted archive to the Trash", context: ["file": file.lastPathComponent])
                 } catch {
                     log.error("Could not move \(file.lastPathComponent) to the Trash", context: ["error": error.localizedDescription])
+                    if index == 0 { return false }
                 }
             }
-            return archiveWent
+            return !files.isEmpty
         }
     }
 
