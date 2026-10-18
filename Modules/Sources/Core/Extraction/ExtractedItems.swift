@@ -29,7 +29,9 @@ public enum ExtractedItems {
         if !added.isEmpty {
             return added.sorted { $0.lastPathComponent < $1.lastPathComponent }
         }
+        // hidden ones left out here too, as from `contents(of:)`
         return names
+            .filter { !$0.hasPrefix(".") }
             .map { folder.appendingPathComponent($0) }
             .filter { FileManager.default.fileExists(atPath: $0.path) }
     }

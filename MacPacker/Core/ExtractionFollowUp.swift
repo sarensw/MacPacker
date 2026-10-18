@@ -101,6 +101,7 @@ enum ExtractionFollowUp {
                 && UserDefaults.standard.bool(forKey: Keys.closeWindowAfterExtraction)
                 && outcome == .done
                 && !state.hasPendingChanges
+                && !state.isAddingItems
             if closesAfter {
                 closeWindow(showing: state)
             }

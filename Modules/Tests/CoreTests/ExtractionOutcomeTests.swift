@@ -91,6 +91,18 @@ extension AllCoreTests {
             #expect(ExtractedItems.find(in: dir, before: before, names: ["a.txt", "gone.txt"]).map(\.lastPathComponent) == ["a.txt"])
         }
 
+        /// Extracted over what was there, a hidden name among them: it is not
+        /// taken for what was extracted either.
+        @Test func overWhatWasThereAHiddenNameIsNotTaken() throws {
+            let dir = try makeFolder()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            try Data().write(to: dir.appendingPathComponent(".DS_Store"))
+            try Data("new".utf8).write(to: dir.appendingPathComponent("a.txt"))
+            let before = ExtractedItems.contents(of: dir)
+
+            #expect(ExtractedItems.find(in: dir, before: before, names: [".DS_Store", "a.txt"]).map(\.lastPathComponent) == ["a.txt"])
+        }
+
         @Test func extractingNextToTheArchiveIsOffUntilTurnedOn() {
             let defaults = isolatedDefaults()
             #expect(!Keys.extractNextToArchiveEnabled(in: defaults))

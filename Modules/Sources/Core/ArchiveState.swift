@@ -941,6 +941,10 @@ extension ArchiveState {
     /// Whether there are unsaved changes (pending additions/removals).
     public var hasPendingChanges: Bool { !diff.isEmpty }
 
+    /// Whether items dropped or added are still being read: not yet among the
+    /// unsaved changes, but on their way to them.
+    public var isAddingItems: Bool { pendingAdds > 0 }
+
     /// Whether `items` can be removed: none of them is inside an archive opened
     /// within this one. The row of such an archive is this archive's own entry,
     /// and can go.
