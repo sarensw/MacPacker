@@ -8,6 +8,7 @@
 //  Fixtures (in the bundled `zip/` dir), each containing a single `lorem.txt`:
 //   - spanned zip (Info-Zip `zip -s`): split_pk.z01, split_pk.z02, split_pk.zip
 //   - spanned Zip64 (zip.js):          split_zipjs64.z01 … split_zipjs64.zip
+//     and with a 65,535-byte comment:  split_zipjs64comment.z01 … .zip
 //   - numeric split (7-Zip volumes):   split_7zz.zip.001 … split_7zz.zip.003
 //  and one that is no split at all: zipstreamer64.zip (Nextcloud's Zip64).
 //
@@ -83,8 +84,18 @@ extension AllCoreTests {
             // Taken for a disk number, it made the single file the last volume of
             // a set and the open failed on a `.z01` that never existed (#348).
             #expect(detector.detect(for: dir.appendingPathComponent("zipstreamer64.zip"))?.split == nil)
-            // The Zip64 record has the real number: the last of three volumes.
+            // Zip64's locator has the real count: three volumes.
             #expect(detector.detect(for: dir.appendingPathComponent("split_zipjs64.zip"))?.split?.scheme == "spanned")
+            // Also when the longest comment a zip allows pushes it 64 KiB away
+            // from the end of the file.
+            #expect(detector.detect(for: dir.appendingPathComponent("split_zipjs64comment.zip"))?.split?.scheme == "spanned")
+        }
+
+        @Test func detectorSkipsLocatorWithoutEndRecord() {
+            // A stored file holding the bytes of a Zip64 locator that says
+            // "3 disks", with no end record after them: no locator of this plain zip.
+            let detector = ArchiveTypeDetector(catalog: ArchiveTypeCatalog())
+            #expect(detector.detect(for: zipDir().appendingPathComponent("zip64LocatorDecoy.zip"))?.split == nil)
         }
 
         @Test func catalogDeclaresZipSplits() throws {
@@ -96,7 +107,7 @@ extension AllCoreTests {
 
             let spanned = try #require(zipSplits.first(where: { $0.scheme == "spanned" }))
             #expect(spanned.firstVolume.replacement == ".z01")
-            // spanned carries content markers (the EOCD, the Zip64 record) so a
+            // spanned carries content markers (the EOCD, Zip64's locator) so a
             // bare `.zip` is recognized from its bytes; numeric is name-only.
             #expect(spanned.markers?.isEmpty == false)
             let numeric = try #require(zipSplits.first(where: { $0.scheme == "numeric" }))
@@ -145,7 +156,7 @@ extension AllCoreTests {
 
         // MARK: - End-to-end: opening ANY part surfaces the real file (lorem.txt)
 
-        @Test(arguments: ["split_pk", "split_zipjs64"])
+        @Test(arguments: ["split_pk", "split_zipjs64", "split_zipjs64comment"])
         func openSpannedZipViaAnyPart(set: String) async throws {
             for part in ["\(set).z01", "\(set).z02", "\(set).zip"] {
                 let state = try await openPart(part)

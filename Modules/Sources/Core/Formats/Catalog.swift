@@ -59,18 +59,36 @@ public struct SplitTypeDto: Codable, Sendable {
 /// Content signal: locate `bytes` (a signature) in the file's tail, then test a
 /// field relative to it — e.g. the zip EOCD "number of this disk", non-zero when
 /// the archive spans more than one volume. In Zip64 that field can be all ones,
-/// "see the Zip64 record", which then carries the number in a field of its own.
+/// "see the Zip64 records"; Zip64's locator, right before the EOCD, then says how
+/// many volumes there are.
 public struct SplitMarkerDto: Codable, Sendable {
     public let bytes: [UInt8]
+    /// Optional: a signature that must sit `offset` bytes from `bytes`, which pins
+    /// the record down — Zip64's locator is the one right before the EOCD.
+    public let with: SplitSignatureDto?
     public let field: SplitFieldDto
 
-    enum CodingKeys: String, CodingKey { case bytes, field }
+    enum CodingKeys: String, CodingKey { case bytes, with, field }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let hex = try c.decode(String.self, forKey: .bytes)
         bytes = hex.split(separator: " ").compactMap { UInt8($0, radix: 16) }
+        with = try c.decodeIfPresent(SplitSignatureDto.self, forKey: .with)
         field = try c.decode(SplitFieldDto.self, forKey: .field)
+    }
+}
+
+public struct SplitSignatureDto: Codable, Sendable {
+    public let offset: Int
+    public let bytes: [UInt8]
+
+    enum CodingKeys: String, CodingKey { case offset, bytes }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        offset = try c.decode(Int.self, forKey: .offset)
+        bytes = RuleTestDto.hexToBytes(try c.decode(String.self, forKey: .bytes))
     }
 }
 
@@ -78,7 +96,8 @@ public struct SplitFieldDto: Codable, Sendable {
     public let offset: Int
     public let length: Int
     /// "nonzero" → the field must be non-zero to match; "nonzeroBelowMax" → and
-    /// not all ones either, a value that stands for one kept elsewhere
+    /// not all ones either, a value that stands for one kept elsewhere;
+    /// "aboveOne" → read little-endian, as zip stores numbers, it is 2 or more
     public let match: String
 }
 

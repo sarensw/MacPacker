@@ -156,7 +156,7 @@ final public class ArchiveTypeDetector: Sendable {
     // MARK: - Phase 3: content split probe (the ambiguous bare `.zip`)
 
     /// For a plain-format match with no split yet, test that format's split types'
-    /// content `markers` — e.g. the zip EOCD disk field, or the Zip64 record's —
+    /// content `markers` — e.g. the zip EOCD disk field, or Zip64's locator —
     /// so a bare `.zip` that is really a spanned terminal volume is recognized.
     private func attachSplitMarker(_ result: DetectionResult, url: URL) -> DetectionResult {
         guard result.split == nil else { return result }
@@ -174,8 +174,9 @@ final public class ArchiveTypeDetector: Sendable {
         return result
     }
 
-    /// Find the last occurrence of `marker.bytes` in the tail, then test the field
-    /// at `field.offset`/`field.length` from it (e.g. EOCD disk number ≠ 0).
+    /// Find the last occurrence of `marker.bytes` in the tail that has `marker.with`
+    /// beside it, then test the field at `field.offset`/`field.length` from it
+    /// (e.g. EOCD disk number ≠ 0).
     private func matchesMarker(_ marker: SplitMarkerDto, in bytes: [UInt8]) -> Bool {
         let sig = marker.bytes
         guard !sig.isEmpty, bytes.count >= sig.count else { return false }
@@ -183,7 +184,10 @@ final public class ArchiveTypeDetector: Sendable {
         var sigStart: Int? = nil
         var i = bytes.count - sig.count
         while i >= 0 {
-            if Array(bytes[i..<i + sig.count]) == sig { sigStart = i; break }
+            if has(sig, at: i, in: bytes),
+               marker.with.map({ has($0.bytes, at: i + $0.offset, in: bytes) }) ?? true {
+                sigStart = i; break
+            }
             i -= 1
         }
         guard let s = sigStart else { return false }
@@ -194,8 +198,13 @@ final public class ArchiveTypeDetector: Sendable {
         switch marker.field.match {
         case "nonzero": return field.contains { $0 != 0 }
         case "nonzeroBelowMax": return field.contains { $0 != 0 } && field.contains { $0 != 0xFF }
+        case "aboveOne": return field.dropFirst().contains { $0 != 0 } || (field.first ?? 0) > 1
         default: return false
         }
+    }
+
+    private func has(_ sig: [UInt8], at index: Int, in bytes: [UInt8]) -> Bool {
+        index >= 0 && index + sig.count <= bytes.count && bytes[index..<index + sig.count].elementsEqual(sig)
     }
 
     // MARK: - Phase 2: magic-number format identity
@@ -260,11 +269,12 @@ final public class ArchiveTypeDetector: Sendable {
         }
     }
 
-    /// Reads up to `maxBytes` from the end of the file, for a split `marker`
-    /// (the zip EOCD can sit anywhere in the last 64 KiB + comment).
+    /// Reads up to `maxBytes` from the end of the file, for the split `markers`:
+    /// a zip comment of up to 65,535 bytes, the 22-byte EOCD before it, and
+    /// before that Zip64's 20-byte locator.
     /// Same bookmark caveat as `detectByMagicNumber` — a tail read that silently
     /// fails costs the split marker, so a spanned set would load as a lone volume.
-    private func readTail(of url: URL, maxBytes: Int = 65557) -> [UInt8]? {
+    private func readTail(of url: URL, maxBytes: Int = 65535 + 22 + 20) -> [UInt8]? {
         Sandbox.accessSync(url: url) { readTailInScope(of: url, maxBytes: maxBytes) }
     }
 
