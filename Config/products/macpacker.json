@@ -40,35 +40,6 @@
         "items": [
           {
             "type": "feat",
-            "title": {
-                "en": "Extraction progress shown in Finder",
-                "zh-Hans": "在 Finder 中显示解压进度",
-                "fr": "Progression de l’extraction visible dans le Finder",
-                "de": "Entpack-Fortschritt im Finder sichtbar",
-                "it": "Avanzamento dell’estrazione visibile nel Finder",
-                "ja": "Finder に展開の進行状況を表示",
-                "fa": "نمایش پیشرفت استخراج در Finder",
-                "pl": "Postęp wypakowywania widoczny w Finderze",
-                "pt-BR": "Progresso da extração visível no Finder",
-                "ru": "Ход распаковки виден в Finder",
-                "uk": "Перебіг розпакування видно у Finder",
-                "es-MX": "Progreso de la extracción visible en el Finder",
-                "ko": "Finder에 압축 해제 진행 상황 표시",
-                "nl": "Voortgang van uitpakken zichtbaar in de Finder",
-                "tr": "Çıkarma ilerlemesi Finder’da görünür",
-                "vi": "Tiến trình giải nén hiển thị trong Finder",
-                "ar": "عرض تقدّم الاستخراج في Finder",
-                "ca": "Progrés de l’extracció visible al Finder",
-                "el": "Εμφάνιση προόδου εξαγωγής στο Finder",
-                "nb": "Utpakkingsfremdrift vises i Finder",
-                "zh-TW": "在 Finder 中顯示解壓縮進度"
-            },
-            "issues": [
-                "338"
-            ]
-          },
-          {
-            "type": "feat",
             "highlight": true,
             "title": {
                 "en": "Progress window when compressing from Finder",
@@ -245,64 +216,6 @@
             },
             "issues": [
                 "275"
-            ]
-          },
-          {
-            "type": "fix",
-            "title": {
-                "en": "Leftovers after quitting mid-extraction",
-                "zh-Hans": "解压中途退出后留下残留文件",
-                "fr": "Des restes après un arrêt en pleine extraction",
-                "de": "Reste nach Beenden während des Entpackens",
-                "it": "Residui dopo l’uscita durante un’estrazione",
-                "ja": "展開中に終了すると残骸が残る",
-                "fa": "باقی‌مانده‌ها پس از خروج در میانه استخراج",
-                "pl": "Pozostałości po zamknięciu w trakcie wypakowywania",
-                "pt-BR": "Restos ao sair no meio de uma extração",
-                "ru": "Остатки после выхода во время распаковки",
-                "uk": "Залишки після виходу посеред розпакування",
-                "es-MX": "Restos al salir a mitad de una extracción",
-                "ko": "압축 해제 중 종료하면 남는 잔여물",
-                "nl": "Restanten na afsluiten tijdens het uitpakken",
-                "tr": "Çıkarma sırasında kapatınca kalan artıklar",
-                "vi": "Tệp thừa khi thoát giữa lúc giải nén",
-                "ar": "بقايا بعد الإنهاء أثناء الاستخراج",
-                "ca": "Restes en sortir a mitja extracció",
-                "el": "Υπολείμματα μετά από τερματισμό κατά την εξαγωγή",
-                "nb": "Rester etter avslutning midt i utpakking",
-                "zh-TW": "解壓縮途中結束 App 後留下殘餘檔案"
-            },
-            "issues": [
-                "350"
-            ]
-          },
-          {
-            "type": "fix",
-            "title": {
-                "en": "Cancelled extraction leaves files behind",
-                "zh-Hans": "取消解压后会留下文件",
-                "fr": "Une extraction annulée laisse des fichiers",
-                "de": "Abgebrochenes Entpacken hinterlässt Dateien",
-                "it": "Un’estrazione annullata lascia dei file",
-                "ja": "展開をキャンセルしてもファイルが残る",
-                "fa": "استخراج لغوشده فایل‌هایی به‌جا می‌گذارد",
-                "pl": "Anulowane wypakowywanie zostawia pliki",
-                "pt-BR": "Extração cancelada deixa arquivos para trás",
-                "ru": "Отменённая распаковка оставляет файлы",
-                "uk": "Скасоване розпакування залишає файли",
-                "es-MX": "La extracción cancelada deja archivos",
-                "ko": "압축 해제를 취소해도 파일이 남음",
-                "nl": "Geannuleerd uitpakken laat bestanden achter",
-                "tr": "İptal edilen çıkarma dosya bırakıyor",
-                "vi": "Hủy giải nén vẫn để lại tệp",
-                "ar": "الاستخراج الملغى يترك ملفات خلفه",
-                "ca": "Una extracció cancel·lada deixa fitxers",
-                "el": "Η ακυρωμένη εξαγωγή αφήνει αρχεία πίσω",
-                "nb": "Avbrutt utpakking etterlater filer",
-                "zh-TW": "取消解壓縮後會留下檔案"
-            },
-            "issues": [
-                "338"
             ]
           },
           {
