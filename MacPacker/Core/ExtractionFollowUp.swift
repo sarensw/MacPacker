@@ -164,6 +164,12 @@ enum ExtractionFollowUp {
             log.notice("No access to the archive's folder — it stays where it is")
             return false
         }
+        // Asking for access can show a panel and wait for it. Meanwhile the
+        // window may have opened another archive, or started adding files.
+        guard state.url == archive, !state.hasPendingChanges, !state.isAddingItems else {
+            log.notice("The window changed while access was asked for — the archive stays where it is")
+            return false
+        }
         let files = state.filesOnDisk()
         return await Sandbox.access(url: archive.deletingLastPathComponent()) {
             // The archive's own file comes first. If it cannot go, nothing does:
