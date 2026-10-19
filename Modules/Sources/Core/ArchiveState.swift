@@ -1712,6 +1712,9 @@ extension ArchiveState {
                     to: target,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
+                // A Cancel the engine did not see, too late for it or never
+                // looked for, still ends the run as cancelled.
+                try Task.checkCancellation()
                 tempDirectories.append(contentsOf: result.tempDirs)
                 outcome = .done
             } catch is CancellationError {
@@ -1803,6 +1806,9 @@ extension ArchiveState {
                     to: target,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
+                // A Cancel the engine did not see, too late for it or never
+                // looked for, still ends the run as cancelled.
+                try Task.checkCancellation()
                 outcome = .done
             } catch is CancellationError {
                 outcome = .cancelled

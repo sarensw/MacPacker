@@ -56,6 +56,38 @@ extension AllCoreTests {
             }
         }
 
+        /// Cancel clicked as the engine finishes, or with one that never looks
+        /// for it: the run still ends as cancelled, so nothing that follows it
+        /// — moving the archive to the Trash, closing the window — acts as if
+        /// it had finished.
+        @Test(arguments: [false, true])
+        func aCancelTheEngineMissedStillCancels(wholeArchive: Bool) async throws {
+            let engine = EngineIgnoringCancel()
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: SelectorIgnoringCancel(engine: engine))
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+            let folderURL = try #require(Bundle.module.url(forResource: "defaultArchives", withExtension: nil))
+            state.open(url: folderURL.appendingPathComponent("defaultArchive.zip"))
+            try await state.openTask?.value
+            let dest = try makeFolder()
+            defer { try? FileManager.default.removeItem(at: dest) }
+
+            let run: Task<ExtractionJob.State, Never>
+            if wholeArchive {
+                run = state.extract(to: dest, smart: false)
+            } else {
+                let item = try #require(state.entries.values.first { $0.type == .file && $0.uncompressedSize > 0 })
+                run = state.extract(items: [item], to: dest, smart: false)
+            }
+            // the engine is at work; Cancel now, then let it end normally
+            await engine.hasStarted()
+            let job = try #require(center.jobs.first)
+            center.requestCancel(job.id)
+            engine.letItEnd()
+
+            #expect(await run.value == .cancelled)
+        }
+
         // MARK: - What it put there
 
         @Test func whatIsNewIsWhatItPutThere() throws {
@@ -110,4 +142,54 @@ extension AllCoreTests {
             #expect(Keys.extractNextToArchiveEnabled(in: defaults))
         }
     }
+}
+
+
+/// An engine whose extractions wait until they are let go, then end normally
+/// whether or not they were cancelled meanwhile: one that never looks at its
+/// progress callback. Opening is 7-Zip's.
+private final class EngineIgnoringCancel: ArchiveEngine, @unchecked Sendable {
+    private let real = Archive7ZipEngine()
+    private let started = AsyncStream<Void>.makeStream()
+    private let gate = AsyncStream<Void>.makeStream()
+
+    /// Returns once an extraction has begun.
+    func hasStarted() async {
+        for await _ in started.stream { return }
+    }
+
+    /// Lets the extraction that is waiting end.
+    func letItEnd() {
+        gate.continuation.yield()
+    }
+
+    private func work() async {
+        started.continuation.yield()
+        // a cancel ends the wait as well, and the extraction still ends normally
+        for await _ in gate.stream { return }
+    }
+
+    func statusStream() async -> AsyncStream<EngineStatus> { await real.statusStream() }
+    func cancel() async {}
+    func loadArchive(url: URL, passwordResolver: @escaping ArchivePasswordResolver) async throws -> ArchiveEngineLoadResult {
+        try await real.loadArchive(url: url, passwordResolver: passwordResolver)
+    }
+    func extract(items: [ArchiveItem], from url: URL, to destination: URL, passwordResolver: @escaping ArchivePasswordResolver) async throws -> ArchiveExtractionResult {
+        let result = try await real.extract(items: items, from: url, to: destination, passwordResolver: passwordResolver)
+        await work()
+        return result
+    }
+    func extract(item: ArchiveItem, from url: URL, to destination: URL, passwordResolver: @escaping ArchivePasswordResolver) async throws -> URL {
+        try await real.extract(item: item, from: url, to: destination, passwordResolver: passwordResolver)
+    }
+    func extract(_ url: URL, to destination: URL, passwordResolver: @escaping ArchivePasswordResolver) async throws {
+        await work()
+    }
+}
+
+private struct SelectorIgnoringCancel: ArchiveEngineSelectorProtocol {
+    let engine: EngineIgnoringCancel
+    func engine(for id: String) -> (any ArchiveEngine)? { engine }
+    func engine(for type: ArchiveEngineType) -> any ArchiveEngine { engine }
+    func engineType(for id: String) -> ArchiveEngineType? { .`7zip` }
 }
