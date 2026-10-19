@@ -40,64 +40,6 @@
         "items": [
           {
             "type": "feat",
-            "title": {
-                "en": "Extraction progress shown in Finder",
-                "zh-Hans": "在 Finder 中显示解压进度",
-                "fr": "Progression de l’extraction visible dans le Finder",
-                "de": "Entpack-Fortschritt im Finder sichtbar",
-                "it": "Avanzamento dell’estrazione visibile nel Finder",
-                "ja": "Finder に展開の進行状況を表示",
-                "fa": "نمایش پیشرفت استخراج در Finder",
-                "pl": "Postęp wypakowywania widoczny w Finderze",
-                "pt-BR": "Progresso da extração visível no Finder",
-                "ru": "Ход распаковки виден в Finder",
-                "uk": "Перебіг розпакування видно у Finder",
-                "es-MX": "Progreso de la extracción visible en el Finder",
-                "ko": "Finder에 압축 해제 진행 상황 표시",
-                "nl": "Voortgang van uitpakken zichtbaar in de Finder",
-                "tr": "Çıkarma ilerlemesi Finder’da görünür",
-                "vi": "Tiến trình giải nén hiển thị trong Finder",
-                "ar": "عرض تقدّم الاستخراج في Finder",
-                "ca": "Progrés de l’extracció visible al Finder",
-                "el": "Εμφάνιση προόδου εξαγωγής στο Finder",
-                "nb": "Utpakkingsfremdrift vises i Finder",
-                "zh-TW": "在 Finder 中顯示解壓縮進度"
-            },
-            "issues": [
-                "338"
-            ]
-          },
-          {
-            "type": "feat",
-            "title": {
-                "en": "Choose what to do when a name is taken",
-                "zh-Hans": "可选择名称冲突时的处理方式",
-                "fr": "Choisir quoi faire quand un nom est déjà pris",
-                "de": "Festlegen, was bei belegtem Namen passiert",
-                "it": "Scegliere cosa fare se un nome è già in uso",
-                "ja": "名前が使われているときの動作を選択",
-                "fa": "انتخاب رفتار هنگام تکراری بودن نام",
-                "pl": "Wybór działania, gdy nazwa jest zajęta",
-                "pt-BR": "Escolher o que fazer quando um nome já existe",
-                "ru": "Выбор действия, если имя уже занято",
-                "uk": "Вибір дії, якщо назва вже зайнята",
-                "es-MX": "Elegir qué hacer si un nombre ya existe",
-                "ko": "이름이 이미 있을 때의 동작 선택",
-                "nl": "Kiezen wat er gebeurt als een naam bezet is",
-                "tr": "Ad zaten varsa ne yapılacağını seçme",
-                "vi": "Chọn cách xử lý khi tên đã tồn tại",
-                "ar": "اختيار ما يحدث عندما يكون الاسم مستخدمًا",
-                "ca": "Tria què fer quan un nom ja existeix",
-                "el": "Επιλογή ενέργειας όταν ένα όνομα υπάρχει ήδη",
-                "nb": "Velg hva som skjer når et navn er i bruk",
-                "zh-TW": "選擇名稱已被使用時的處理方式"
-            },
-            "issues": [
-                "140"
-            ]
-          },
-          {
-            "type": "feat",
             "highlight": true,
             "title": {
                 "en": "Progress window when compressing from Finder",
@@ -274,64 +216,6 @@
             },
             "issues": [
                 "275"
-            ]
-          },
-          {
-            "type": "fix",
-            "title": {
-                "en": "Cancelled extraction leaves files behind",
-                "zh-Hans": "取消解压后会留下文件",
-                "fr": "Une extraction annulée laisse des fichiers",
-                "de": "Abgebrochenes Entpacken hinterlässt Dateien",
-                "it": "Un’estrazione annullata lascia dei file",
-                "ja": "展開をキャンセルしてもファイルが残る",
-                "fa": "استخراج لغوشده فایل‌هایی به‌جا می‌گذارد",
-                "pl": "Anulowane wypakowywanie zostawia pliki",
-                "pt-BR": "Extração cancelada deixa arquivos para trás",
-                "ru": "Отменённая распаковка оставляет файлы",
-                "uk": "Скасоване розпакування залишає файли",
-                "es-MX": "La extracción cancelada deja archivos",
-                "ko": "압축 해제를 취소해도 파일이 남음",
-                "nl": "Geannuleerd uitpakken laat bestanden achter",
-                "tr": "İptal edilen çıkarma dosya bırakıyor",
-                "vi": "Hủy giải nén vẫn để lại tệp",
-                "ar": "الاستخراج الملغى يترك ملفات خلفه",
-                "ca": "Una extracció cancel·lada deixa fitxers",
-                "el": "Η ακυρωμένη εξαγωγή αφήνει αρχεία πίσω",
-                "nb": "Avbrutt utpakking etterlater filer",
-                "zh-TW": "取消解壓縮後會留下檔案"
-            },
-            "issues": [
-                "338"
-            ]
-          },
-          {
-            "type": "fix",
-            "title": {
-                "en": "Extract selected fails when a file exists",
-                "zh-Hans": "已有同名文件时“解压选中项”失败",
-                "fr": "« Extraire la sélection » échoue si le fichier existe",
-                "de": "„Auswahl entpacken“ scheitert bei vorhandener Datei",
-                "it": "“Estrai elementi selezionati” fallisce se il file esiste",
-                "ja": "同名のファイルがあると「選択した項目を抽出」が失敗する",
-                "fa": "«استخراج کردن موارد انتخاب شده» با وجود فایل هم‌نام شکست می‌خورد",
-                "pl": "„Rozpakuj zaznaczone” zawodzi, gdy plik istnieje",
-                "pt-BR": "“Extrair seleção” falha quando o arquivo já existe",
-                "ru": "«Распаковать выбранное» сбоит, если файл уже есть",
-                "uk": "«Розпакувати вибране» не спрацьовує, якщо файл уже є",
-                "es-MX": "“Extraer selección” falla si el archivo ya existe",
-                "ko": "같은 이름의 파일이 있으면 ‘선택 항목 압축 풀기’ 실패",
-                "nl": "‘Extract selected’ mislukt als het bestand al bestaat",
-                "tr": "Dosya varsa “Seçilenleri Çıkar” başarısız oluyor",
-                "vi": "“Giải nén các mục đã chọn” lỗi khi tệp đã tồn tại",
-                "ar": "يفشل استخراج المحدد عند وجود ملف بالاسم نفسه",
-                "ca": "Extreure la selecció falla si ja hi ha un fitxer",
-                "el": "Η εξαγωγή επιλεγμένων αποτυγχάνει όταν υπάρχει αρχείο",
-                "nb": "Utpakking av valgte feiler når en fil finnes",
-                "zh-TW": "已有同名檔案時，解壓縮所選項目會失敗"
-            },
-            "issues": [
-                "350"
             ]
           },
           {
