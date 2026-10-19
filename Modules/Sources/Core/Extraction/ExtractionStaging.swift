@@ -231,20 +231,34 @@ struct ExtractionStaging: Sendable {
     /// that Finder still shows as being written (`busyDate`), which nothing
     /// else gives one — and never one in the Trash. A note whose folder is
     /// gone, or no longer that, is simply dropped.
-    static func removeLeftovers(in store: UserDefaults = .standard) {
+    static func removeLeftovers(
+        in store: UserDefaults = .standard,
+        isMounted: (URL) -> Bool = ExtractionStaging.volumeIsMounted
+    ) {
         let noted = ledgerLock.withLock {
             store.dictionary(forKey: ledgerKey) as? [String: [String: Any]] ?? [:]
         }
         for (path, entry) in noted where entry["by"] as? String != thisStart {
-            defer { unnote(URL(fileURLWithPath: path), in: store) }
-            guard let bookmark = entry["in"] as? Data, let name = entry["name"] as? String else { continue }
+            let note = URL(fileURLWithPath: path)
+            guard let bookmark = entry["in"] as? Data, let name = entry["name"] as? String else {
+                unnote(note, in: store)
+                continue
+            }
             // a volume that is not there is not asked for
             var stale = false
             guard let folder = (try? URL(
                 resolvingBookmarkData: bookmark, options: [.withSecurityScope, .withoutMounting],
                 relativeTo: nil, bookmarkDataIsStale: &stale))
                 ?? (try? URL(resolvingBookmarkData: bookmark, options: [.withoutMounting], relativeTo: nil, bookmarkDataIsStale: &stale))
-            else { continue }
+            else {
+                // On a volume that is not mounted now — an external drive — the
+                // note waits for it to come back. Otherwise the folder is gone,
+                // and so is the note.
+                if let volume = volume(ofBookmark: bookmark), !isMounted(volume) { continue }
+                unnote(note, in: store)
+                continue
+            }
+            defer { unnote(note, in: store) }
             let scoped = folder.startAccessingSecurityScopedResource()
             defer { if scoped { folder.stopAccessingSecurityScopedResource() } }
 
@@ -253,6 +267,18 @@ struct ExtractionStaging: Sendable {
             removeTree(leftover)
             log.notice("Removed what an extraction left when the app stopped", context: ["folder": leftover.path])
         }
+    }
+
+    /// The volume the folder of a note's bookmark is on, as the bookmark
+    /// records it — known while that volume is not mounted, too.
+    static func volume(ofBookmark bookmark: Data) -> URL? {
+        URL.resourceValues(forKeys: [.volumeURLKey], fromBookmarkData: bookmark)?.volume
+    }
+
+    /// Whether `volume` is mounted now.
+    static func volumeIsMounted(_ volume: URL) -> Bool {
+        let mounted = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil, options: []) ?? []
+        return mounted.contains { $0.standardizedFileURL.path == volume.standardizedFileURL.path }
     }
 
     /// Whether `url` is still an unfinished work folder.

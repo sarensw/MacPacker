@@ -100,6 +100,36 @@ extension AllCoreTests {
             #expect(noted(store).isEmpty)
         }
 
+        /// The folder a leftover was in is gone, on a volume that is there: the
+        /// note goes too. On a volume that is not mounted — an external drive
+        /// not plugged in yet — it waits for the drive to come back.
+        @Test(arguments: [true, false])
+        func aNoteWhoseVolumeIsAwayIsKept(volumeMounted: Bool) throws {
+            let dir = try makeFolder()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let store = isolatedDefaults()
+            let inside = dir.appendingPathComponent("inside", isDirectory: true)
+            try FileManager.default.createDirectory(at: inside, withIntermediateDirectories: true)
+            let folder = try leftover(in: inside)
+            ExtractionStaging.note(folder, in: store, by: earlierStart)
+            // the bookmark no longer resolves, as for a drive that is not there
+            try FileManager.default.removeItem(at: inside)
+
+            ExtractionStaging.removeLeftovers(in: store, isMounted: { _ in volumeMounted })
+            #expect(noted(store).isEmpty == volumeMounted)
+        }
+
+        /// The real look-up: the volume a bookmark names is found, and the one
+        /// the temporary folder is on counts as mounted — so on it, a note whose
+        /// folder is gone does go.
+        @Test func theVolumeOfABookmarkIsFound() throws {
+            let dir = try makeFolder()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let bookmark = try dir.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)
+            let volume = try #require(ExtractionStaging.volume(ofBookmark: bookmark))
+            #expect(ExtractionStaging.volumeIsMounted(volume))
+        }
+
         /// A run that ends — whichever way — takes its note away: there is
         /// nothing for the next start to do.
         @Test(arguments: [true, false])
