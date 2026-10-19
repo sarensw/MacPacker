@@ -100,8 +100,8 @@ public struct AppUrl: Equatable, Sendable {
         case invalidDate(String)
         /// `extractNextToArchive` for other than exactly one archive.
         case notOneArchive
-        /// An entry of `items` that does not decode. Dropping it instead could
-        /// leave no entries, which means the whole archive.
+        /// An entry of `items` that is empty or does not decode. Dropping it
+        /// instead could leave no entries, which means the whole archive.
         case invalidItems
     }
 
@@ -150,11 +150,17 @@ public struct AppUrl: Equatable, Sendable {
         } else {
             self.datedAt = nil
         }
-        // encoded twice, like the paths; one that does not decode refuses the url
-        let entries = (value("items") ?? "").split(separator: ",").map(String.init)
-        let decoded = entries.compactMap { $0.removingPercentEncoding }
-        guard decoded.count == entries.count else { throw .invalidItems }
-        self.items = decoded
+        // Encoded twice, like the paths. No entries means all of the archive,
+        // which only a url without `items` may say: an entry that is empty, or
+        // does not decode, refuses the url.
+        if items.contains(where: { $0.name == "items" }) {
+            let entries = (value("items") ?? "").split(separator: ",", omittingEmptySubsequences: false).map(String.init)
+            let decoded = entries.compactMap { $0.removingPercentEncoding }
+            guard decoded.count == entries.count, !decoded.contains(where: \.isEmpty) else { throw .invalidItems }
+            self.items = decoded
+        } else {
+            self.items = []
+        }
         if action == .extractNextToArchive, self.files.count != 1 {
             throw .notOneArchive
         }

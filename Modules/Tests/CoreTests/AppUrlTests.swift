@@ -202,6 +202,17 @@ extension AllCoreTests {
             }
         }
 
+        /// Only a url without `items` asks for all of the archive: one with an
+        /// empty list, or an empty entry in it, is refused.
+        @Test("An empty entry list, or an empty entry, refuses the url", arguments: ["", ",", "docs,,photos", "docs,"])
+        func emptyItemsAreRejected(items: String) {
+            let request = url("extractNextToArchive", files: ["/Users/me/Trip.zip"],
+                              extra: [URLQueryItem(name: "items", value: items)])
+            #expect(throws: AppUrl.ParseError.invalidItems) {
+                try AppUrl(url: request, scheme: scheme)
+            }
+        }
+
         @Test("Extracting next to the archive is for one archive")
         func extractNextToArchiveOfTwoIsRejected() throws {
             let twoArchives = try #require(AppUrl(
