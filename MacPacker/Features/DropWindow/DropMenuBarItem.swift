@@ -58,14 +58,14 @@ final class DropMenuBarItem {
 
     /// A template image: `isTemplate` lets AppKit recolour the flat black vector,
     /// so it follows light/dark, the click highlight and Reduce Transparency.
-    /// 16pt tall in the 22pt bar; width from the artwork's own aspect, never
+    /// 18pt tall in the 22pt bar; width from the artwork's own aspect, never
     /// hardcoded — swapping the asset means changing `artwork` and nothing else.
     /// The asset's viewBox, so the glyph is never stretched.
-    private static let artwork = NSSize(width: 15.19, height: 15.19)
+    private static let artwork = NSSize(width: 16, height: 16)
 
     private static let icon: NSImage? = {
         guard let image = NSImage(named: "MenuBarIcon") else { return nil }
-        let height: CGFloat = 16
+        let height: CGFloat = 18
         image.size = NSSize(width: (height * artwork.width / artwork.height).rounded(),
                             height: height)
         image.isTemplate = true

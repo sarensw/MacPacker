@@ -95,6 +95,19 @@ extension AllCoreTests {
             #expect(fixture.reports == [[home, drive], [home]])
         }
 
+        /// Seen in a VM: the system still listed the volume when its unmount
+        /// was announced, so it was never taken out, and Finder, which drops
+        /// the root by itself, lost the menu on it once it was mounted again.
+        @Test("An ejected volume is removed even while the system still lists it")
+        func ejectWhileStillListed() {
+            let fixture = Fixture(volumes: [drive])
+            fixture.center.post(
+                name: NSWorkspace.didUnmountNotification, object: nil,
+                userInfo: [NSWorkspace.volumeURLUserInfoKey: URL(fileURLWithPath: "/Volumes/Drive/")]
+            )
+            #expect(fixture.reports == [[home, drive], [home]])
+        }
+
         /// Finder follows a renamed volume by itself. Looking again here read
         /// the old name, and handing that over lost the menu on a volume that
         /// was renamed back.

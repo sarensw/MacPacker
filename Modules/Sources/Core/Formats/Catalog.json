@@ -608,7 +608,12 @@
   "splits": [
     { "id": "zip-spanned", "name": "Spanned ZIP", "format": "zip", "scheme": "spanned",
       "pattern": "\\.z[0-9]{2,}$",
-      "marker": { "bytes": "50 4B 05 06", "field": { "offset": 4, "length": 2, "match": "nonzero" } },
+      "endRecord": { "bytes": "50 4B 05 06", "length": 22 },
+      "markers": [
+        { "field": { "offset": 4, "length": 2, "match": "nonzeroBelowMax" } },
+        { "with": { "offset": -20, "bytes": "50 4B 06 07" },
+          "field": { "offset": -4, "length": 4, "match": "aboveOne" } }
+      ],
       "firstVolume": { "pattern": "\\.(z[0-9]{2,}|zip)$", "replacement": ".z01" },
       "label": ".zip" },
 
