@@ -115,7 +115,7 @@ extension AllCoreTests {
             // the bookmark no longer resolves, as for a drive that is not there
             try FileManager.default.removeItem(at: inside)
 
-            ExtractionStaging.removeLeftovers(in: store, isMounted: { _ in volumeMounted })
+            ExtractionStaging.removeLeftovers(in: store, isMounted: { _, _ in volumeMounted })
             #expect(noted(store).isEmpty == volumeMounted)
         }
 
@@ -127,7 +127,23 @@ extension AllCoreTests {
             defer { try? FileManager.default.removeItem(at: dir) }
             let bookmark = try dir.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)
             let volume = try #require(ExtractionStaging.volume(ofBookmark: bookmark))
-            #expect(ExtractionStaging.volumeIsMounted(volume))
+            #expect(ExtractionStaging.volumeIsMounted(volume, identifier: ExtractionStaging.volumeIdentifier(ofBookmark: bookmark)))
+        }
+
+        /// Another volume can be mounted where the noted one was — a drive of
+        /// the same name. It is told apart by its identifier, so the note waits
+        /// for the right drive; a volume without one (a network share) still
+        /// goes by where it is mounted.
+        @Test func aVolumeIsKnownByItsIdentifierNotOnlyItsPath() throws {
+            let dir = try makeFolder()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let bookmark = try dir.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)
+            let volume = try #require(ExtractionStaging.volume(ofBookmark: bookmark))
+            let identifier = try #require(ExtractionStaging.volumeIdentifier(ofBookmark: bookmark))
+
+            #expect(ExtractionStaging.volumeIsMounted(volume, identifier: identifier))
+            #expect(!ExtractionStaging.volumeIsMounted(volume, identifier: UUID().uuidString))
+            #expect(ExtractionStaging.volumeIsMounted(volume, identifier: nil))
         }
 
         /// A run that ends — whichever way — takes its note away: there is

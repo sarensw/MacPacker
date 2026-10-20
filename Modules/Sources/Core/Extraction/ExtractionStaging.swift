@@ -233,7 +233,7 @@ struct ExtractionStaging: Sendable {
     /// gone, or no longer that, is simply dropped.
     static func removeLeftovers(
         in store: UserDefaults = .standard,
-        isMounted: (URL) -> Bool = ExtractionStaging.volumeIsMounted
+        isMounted: (URL, String?) -> Bool = ExtractionStaging.volumeIsMounted
     ) {
         let noted = ledgerLock.withLock {
             store.dictionary(forKey: ledgerKey) as? [String: [String: Any]] ?? [:]
@@ -254,7 +254,8 @@ struct ExtractionStaging: Sendable {
                 // On a volume that is not mounted now — an external drive — the
                 // note waits for it to come back. Otherwise the folder is gone,
                 // and so is the note.
-                if let volume = volume(ofBookmark: bookmark), !isMounted(volume) { continue }
+                if let volume = volume(ofBookmark: bookmark),
+                   !isMounted(volume, volumeIdentifier(ofBookmark: bookmark)) { continue }
                 unnote(note, in: store)
                 continue
             }
@@ -275,9 +276,24 @@ struct ExtractionStaging: Sendable {
         URL.resourceValues(forKeys: [.volumeURLKey], fromBookmarkData: bookmark)?.volume
     }
 
-    /// Whether `volume` is mounted now.
-    static func volumeIsMounted(_ volume: URL) -> Bool {
-        let mounted = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil, options: []) ?? []
+    /// That volume's identifier, as the bookmark records it, when the volume
+    /// has one — a network share has none.
+    static func volumeIdentifier(ofBookmark bookmark: Data) -> String? {
+        URL.resourceValues(forKeys: [.volumeUUIDStringKey], fromBookmarkData: bookmark)?.volumeUUIDString
+    }
+
+    /// Whether the noted volume is mounted now: the one with `identifier`,
+    /// wherever it is mounted, since another volume can be mounted where it
+    /// was — a drive of the same name. A volume without an identifier is
+    /// known only by where it is mounted, `volume`.
+    static func volumeIsMounted(_ volume: URL, identifier: String?) -> Bool {
+        let mounted = FileManager.default.mountedVolumeURLs(
+            includingResourceValuesForKeys: [.volumeUUIDStringKey], options: []) ?? []
+        if let identifier {
+            return mounted.contains {
+                (try? $0.resourceValues(forKeys: [.volumeUUIDStringKey]))?.volumeUUIDString == identifier
+            }
+        }
         return mounted.contains { $0.standardizedFileURL.path == volume.standardizedFileURL.path }
     }
 
