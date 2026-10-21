@@ -21,6 +21,26 @@ protocol AppUrlHandler {
 }
 
 extension AppUrlHandler {
+    /// Picking a destination also grants access to it in the sandbox.
+    func chooseExtractionDestination(startingIn folder: URL) async -> URL? {
+        await withCheckedContinuation { continuation in
+            let panel = NSOpenPanel()
+            panel.canChooseFiles = false
+            panel.canChooseDirectories = true
+            panel.canCreateDirectories = true
+            panel.allowsMultipleSelection = false
+            panel.directoryURL = folder
+            panel.prompt = String(localized: .commonExtract)
+            panel.message = String(localized: .archiveExtractChooseDestination)
+            panel.level = .floating
+            NSApp.activate(ignoringOtherApps: true)
+
+            panel.begin { response in
+                continuation.resume(returning: response == .OK ? panel.url : nil)
+            }
+        }
+    }
+
     /// Opens `archive`, extracts all of it into `destination` and waits for
     /// the job to end. Returns what the extraction added to `destination`, so
     /// the caller can select it in Finder.
@@ -35,6 +55,7 @@ extension AppUrlHandler {
         _ archive: URL,
         into destination: URL,
         smart: Bool,
+        preservingExistingFiles: Bool = false,
         catalog: ArchiveTypeCatalog,
         engineSelector: ArchiveEngineSelectorProtocol
     ) async -> [URL] {
@@ -55,10 +76,11 @@ extension AppUrlHandler {
 
         // extract(to:) raises isBusy before it returns and lowers it once the
         // job ends — done, cancelled or failed
-        state.extract(to: destination, smart: smart)
+        state.extract(to: destination, smart: smart, preservingExistingFiles: preservingExistingFiles)
         for await busy in state.$isBusy.values where !busy {
             break
         }
+        guard state.error == nil else { return [] }
 
         let added = folderContents(destination).filter { !before.contains($0) }
         if !added.isEmpty {
@@ -66,12 +88,16 @@ extension AppUrlHandler {
         }
         // extracted over existing items: nothing is new, so point at what the
         // archive holds
-        return topLevel
-            .map { destination.appendingPathComponent($0) }
-            .filter { FileManager.default.fileExists(atPath: $0.path) }
+        return Sandbox.accessSync(url: destination) {
+            topLevel
+                .map { destination.appendingPathComponent($0) }
+                .filter { FileManager.default.fileExists(atPath: $0.path) }
+        }
     }
 }
 
 private func folderContents(_ folder: URL) -> [URL] {
-    (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
+    Sandbox.accessSync(url: folder) {
+        (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
+    }
 }

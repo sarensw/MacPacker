@@ -31,6 +31,8 @@ public struct Launch: Sendable {
         case openWith
         /// A request from the Finder extension, for an entry of its menu.
         case finderExtension
+        /// An archive opened from Finder with automatic extraction enabled.
+        case oneClickExtraction
     }
 
     /// What the launch was started for, once that is known.
@@ -49,7 +51,7 @@ public struct Launch: Sendable {
             return true
         // A Finder action extracts or compresses and leaves the screen as it
         // was, or opens the one window it is about (#279).
-        case .launchParameters, .finderExtension:
+        case .launchParameters, .finderExtension, .oneClickExtraction:
             return false
         }
     }
@@ -63,7 +65,7 @@ public struct Launch: Sendable {
         switch reason {
         case .app, .launchParameters, .openWith:
             true
-        case .finderExtension:
+        case .finderExtension, .oneClickExtraction:
             usedAsApp
         // not known yet: the url of a Finder action can still be on its way
         case nil:
@@ -82,6 +84,7 @@ public struct Launch: Sendable {
     ///   - somethingOnScreen: a window is up, or about to be: progress, an
     ///     error, a question
     public func isOver(usedAsApp: Bool, actionUnderWay: Bool, somethingOnScreen: Bool) -> Bool {
-        reason == .finderExtension && !usedAsApp && !actionUnderWay && !somethingOnScreen
+        (reason == .finderExtension || reason == .oneClickExtraction)
+            && !usedAsApp && !actionUnderWay && !somethingOnScreen
     }
 }

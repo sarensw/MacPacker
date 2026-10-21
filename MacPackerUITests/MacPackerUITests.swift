@@ -103,6 +103,98 @@ final class MacPackerUITests: XCTestCase {
 
     // MARK: - Tests
 
+    /// Use the existing archive fixture rather than generating a new archive.
+    private func copyOneClickFixture(into directory: URL) throws -> URL {
+        let source = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Modules/Tests/CoreTests/TestArchives/defaultArchives/defaultArchive.zip")
+        let archive = directory.appendingPathComponent("Photos.zip")
+        try FileManager.default.copyItem(at: source, to: archive)
+        return archive
+    }
+
+    private func openForOneClickExtraction(_ archive: URL, destination: String, enabled: Bool = true) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.terminate()
+        app.launchArguments = [
+            "-DisableUpdateChecks", "YES",
+            "-oneClickExtraction", enabled ? "YES" : "NO",
+            "-oneClickExtractionDestination", destination,
+            "-\(quitOnLastWindowClosedKey)", "YES",
+        ]
+        app.open(archive)
+        return app
+    }
+
+    func testOneClickExtractsBesideArchive() throws {
+        let directory = try makeWorkDir("one-click-here")
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let archive = try copyOneClickFixture(into: directory)
+        let app = openForOneClickExtraction(archive, destination: "sameFolder")
+        defer { app.terminate() }
+        confirmAccessPanel(app, button: "Grant Access")
+
+        XCTAssertTrue(waitForFile(directory.appendingPathComponent("hello world.txt")))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent("Photos").path))
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 10), "Extraction should finish without leaving an archive window")
+    }
+
+    func testOneClickExtractsIntoArchiveNamedFolder() throws {
+        let directory = try makeWorkDir("one-click-folder")
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let archive = try copyOneClickFixture(into: directory)
+        let app = openForOneClickExtraction(archive, destination: "archiveFolder")
+        defer { app.terminate() }
+        confirmAccessPanel(app, button: "Grant Access")
+
+        XCTAssertTrue(waitForFile(directory.appendingPathComponent("Photos/hello world.txt")))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent("hello world.txt").path))
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 10))
+    }
+
+    func testOneClickAsksForDestination() throws {
+        let directory = try makeWorkDir("one-click-choose")
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let archive = try copyOneClickFixture(into: directory)
+        let app = openForOneClickExtraction(archive, destination: "chooseFolder")
+        defer { app.terminate() }
+        let extract = app.windows.buttons["Extract"].firstMatch
+        XCTAssertTrue(extract.waitForExistence(timeout: 10))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent("hello world.txt").path))
+        // The panel starts in the source folder. Picking it is also the grant;
+        // no second permissions panel should be needed before extraction.
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(waitForFile(directory.appendingPathComponent("hello world.txt")))
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 10))
+    }
+
+    func testCancellingOneClickDestinationLeavesArchiveUntouched() throws {
+        let directory = try makeWorkDir("one-click-cancel")
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let archive = try copyOneClickFixture(into: directory)
+        let original = try Data(contentsOf: archive)
+        let app = openForOneClickExtraction(archive, destination: "chooseFolder")
+        defer { app.terminate() }
+        let cancel = app.windows.buttons["Cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 10))
+        cancel.click()
+
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 10))
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), ["Photos.zip"])
+        XCTAssertEqual(try Data(contentsOf: archive), original)
+    }
+
+    func testOneClickDisabledOpensArchiveBrowser() throws {
+        let directory = try makeWorkDir("one-click-disabled")
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let archive = try copyOneClickFixture(into: directory)
+        let app = openForOneClickExtraction(archive, destination: "sameFolder", enabled: false)
+        defer { app.terminate() }
+
+        XCTAssertTrue(app.staticTexts["hello world.txt"].firstMatch.waitForExistence(timeout: 15))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent("hello world.txt").path))
+    }
+
     /// A file can be deleted from an existing zip through the UI:
     /// select row → toolbar Delete → ⌘S Save → zip on disk updated.
     func testDeleteFileFromZip() throws {

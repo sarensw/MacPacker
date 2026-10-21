@@ -207,10 +207,12 @@ final actor ArchiveExtractor {
     ///   - url: archive to extract
     ///   - archiveEngineType: type of engine
     ///   - destination: destination directory
+    ///   - preservingExistingFiles: keep existing items and number conflicting output names
     public func extractAll(
         _ url: URL,
         archiveTypeId: String,
         to destination: URL,
+        preservingExistingFiles: Bool = false,
         onProgress: ArchiveExtractionProgress? = nil
     ) async throws {
         _ = destination.startAccessingSecurityScopedResource()
@@ -220,8 +222,55 @@ final actor ArchiveExtractor {
             throw ArchiveError.extractionFailed("Could not determine archive engine for \(archiveTypeId).")
         }
 
-        try await Sandbox.access(url: url) {
-            try await engine.extract(url, to: destination, passwordResolver: passwordResolver, onProgress: onProgress)
+        if preservingExistingFiles {
+            // Decode away from the user's files: direct extraction can truncate
+            // a matching file, or fail when a file and directory share a name.
+            // Move whole top-level items afterwards so bundles and nested trees
+            // stay intact, and never merge into an existing directory.
+            // Keep staging on the destination volume so the final moves do not
+            // copy large archives through the system's temporary disk.
+            let staging = destination.appendingPathComponent(".MacPacker-extract-\(UUID().uuidString)", isDirectory: true)
+            try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: staging) }
+            try await Sandbox.access(url: url) {
+                try await engine.extract(url, to: staging, passwordResolver: passwordResolver, onProgress: onProgress)
+            }
+            for item in try FileManager.default.contentsOfDirectory(
+                at: staging, includingPropertiesForKeys: [.isDirectoryKey, .isPackageKey]
+            ).sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+                try Task.checkCancellation()
+                try movePreservingExistingItem(item, to: destination)
+            }
+        } else {
+            try await Sandbox.access(url: url) {
+                try await engine.extract(url, to: destination, passwordResolver: passwordResolver, onProgress: onProgress)
+            }
+        }
+    }
+
+    private func movePreservingExistingItem(_ item: URL, to destination: URL) throws {
+        let fm = FileManager.default
+        let values = try item.resourceValues(forKeys: [.isDirectoryKey, .isPackageKey])
+        let isFolder = values.isDirectory == true && values.isPackage != true
+        let ext = isFolder ? "" : item.pathExtension
+        let stem = ext.isEmpty ? item.lastPathComponent : item.deletingPathExtension().lastPathComponent
+        let suffix = ext.isEmpty ? "" : ".\(ext)"
+        var number = 1
+        while true {
+            let name = number == 1 ? item.lastPathComponent : "\(stem) (\(number))\(suffix)"
+            let target = destination.appendingPathComponent(name)
+            // Unlike fileExists, attributesOfItem also sees dangling symlinks.
+            if (try? fm.attributesOfItem(atPath: target.path)) != nil {
+                number += 1
+                continue
+            }
+            do {
+                try fm.moveItem(at: item, to: target)
+                return
+            } catch let error as NSError where error.domain == NSCocoaErrorDomain && error.code == NSFileWriteFileExistsError {
+                // Another extraction may have taken this name since the probe.
+                number += 1
+            }
         }
     }
 }

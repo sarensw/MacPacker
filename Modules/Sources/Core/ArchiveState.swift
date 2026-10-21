@@ -1735,7 +1735,8 @@ extension ArchiveState {
     /// - Parameters:
     ///   - destination: destination folder
     ///   - smart: see `extract(items:to:smart:)`
-    public func extract(to destination: URL, smart: Bool) {
+    ///   - preservingExistingFiles: stage output, then number conflicting top-level names
+    public func extract(to destination: URL, smart: Bool, preservingExistingFiles: Bool = false) {
         isBusy = true
         updateStatus(.processing)
 
@@ -1786,6 +1787,7 @@ extension ArchiveState {
                     archiveUrl,
                     archiveTypeId: archiveTypeId,
                     to: target,
+                    preservingExistingFiles: preservingExistingFiles,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 progressCenter.finish(jobId, .done)

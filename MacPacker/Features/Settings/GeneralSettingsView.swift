@@ -20,6 +20,8 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
+    @AppStorage(Keys.oneClickExtraction) var oneClickExtraction: Bool = false
+    @AppStorage(Keys.oneClickExtractionDestination) var oneClickDestination: OneClickExtractionDestination = .archiveFolder
 
     var body: some View {
         VStack(spacing: 8) {
@@ -108,6 +110,31 @@ struct GeneralSettingsView: View {
             }
 
             Divider()
+
+            HStack(alignment: .top) {
+                Text("One-click extraction", comment: "General settings label for automatically extracting archives opened from Finder.")
+                    .frame(width: 200, alignment: .trailing)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle(isOn: $oneClickExtraction) {
+                        Text("Extract archives when opened", comment: "General settings toggle. Opening a recognized archive from Finder extracts it instead of showing the archive browser.")
+                    }
+                    Picker(selection: $oneClickDestination) {
+                        Text("Same folder as the archive", comment: "One-click extraction destination: put the contents directly beside the archive.")
+                            .tag(OneClickExtractionDestination.sameFolder)
+                        Text("Folder named after the archive", comment: "One-click extraction destination: create a folder beside the archive using the archive's name.")
+                            .tag(OneClickExtractionDestination.archiveFolder)
+                        Text("Ask for a location", comment: "One-click extraction destination: show a folder picker each time archives are opened.")
+                            .tag(OneClickExtractionDestination.chooseFolder)
+                    } label: {
+                        Text("Extract to", comment: "Label for the one-click extraction destination picker in General settings.")
+                    }
+                    .labelsHidden()
+                    .disabled(!oneClickExtraction)
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
 
             HStack(alignment: .top) {
                 Text(.settingsSmartExtraction)

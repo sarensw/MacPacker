@@ -24,6 +24,18 @@ extension AllCoreTests {
             #expect(!shown)
         }
 
+        @Test func oneClickExtractionHasNoLaunchWindowsAndQuitsWhenDone() {
+            var launch = Launch()
+            let shown = launch.started(for: .oneClickExtraction)
+            #expect(!shown)
+            #expect(!launch.checksForUpdates(usedAsApp: false))
+            #expect(launch.checksForUpdates(usedAsApp: true))
+            #expect(launch.isOver(usedAsApp: false, actionUnderWay: false, somethingOnScreen: false))
+            #expect(!launch.isOver(usedAsApp: false, actionUnderWay: true, somethingOnScreen: false))
+            #expect(!launch.isOver(usedAsApp: false, actionUnderWay: false, somethingOnScreen: true))
+            #expect(!launch.isOver(usedAsApp: true, actionUnderWay: false, somethingOnScreen: false))
+        }
+
         @Test func openingTheAppShowsTheLaunchWindows() {
             var launch = Launch()
             let shown = launch.started(for: .app)
@@ -47,7 +59,7 @@ extension AllCoreTests {
         /// Only the launch decides. A Finder action sent to the running app
         /// does not bring the launch windows up a second time, and an archive
         /// opened after a Finder launch does not bring them up at all.
-        @Test(arguments: [Launch.Reason.app, .openWith, .finderExtension, .launchParameters])
+        @Test(arguments: [Launch.Reason.app, .openWith, .finderExtension, .launchParameters, .oneClickExtraction])
         func whatComesAfterTheLaunchShowsNoLaunchWindows(first: Launch.Reason) {
             var launch = Launch()
             _ = launch.started(for: first)

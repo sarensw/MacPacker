@@ -23,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("updateBetaChannelOn") var updateBetaChannelOn: Bool = false
     @AppStorage("checkForUpdates") var checkForUpdates: SettingUpdateCheck = .automatically
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
+    @AppStorage(Keys.oneClickExtraction) private var oneClickExtraction: Bool = false
     private var archiveWindowManager: ArchiveWindowManager? = nil
     private var extractionProgressWindowController: ExtractionProgressWindowController? = nil
     private var dropMenuBarItem: DropMenuBarItem? = nil
@@ -88,11 +89,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
         // first check if this is an app url, and handle it accordingly
         let appUrl: AppUrl? = urls.first.flatMap { UrlParser().parse(appUrl: $0) }
+        let detector = ArchiveTypeDetector(catalog: appState.catalog)
+        let archivesToExtract = oneClickExtraction && appUrl == nil
+            ? urls.filter { $0.isFileURL && detector.detect(for: $0) != nil }
+            : []
 
         // On a cold start this is what the launch was started for, so it
         // decides the launch windows. The welcome window goes on top of what
         // opens below.
-        let showsLaunchWindows = launch.started(for: appUrl == nil ? .openWith : .finderExtension)
+        let reason: Launch.Reason = appUrl != nil ? .finderExtension
+            : archivesToExtract.isEmpty ? .openWith : .oneClickExtraction
+        let showsLaunchWindows = launch.started(for: reason)
         if showsLaunchWindows {
             openLaunchWindow()
         }
@@ -154,9 +161,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             return
         }
 
+        if let first = archivesToExtract.first, let archiveWindowManager {
+            let handler = AppUrlOneClickExtractionHandler(
+                destination: .saved(), catalog: appState.catalog, engineSelector: appState.engineSelector)
+            let request = AppUrl(action: .open, files: archivesToExtract, target: first.deletingLastPathComponent())
+            Task {
+                await ExtractionProgressCenter.shared.run {
+                    await handler.handle(appUrl: request, archiveWindowManager: archiveWindowManager)
+                }
+                if finderLaunchIsOver { NSApp.terminate(nil) }
+            }
+        }
+
         // it is not an app url, therefore the assumption is that the app
         // was opened via Finder > right click > Open with...
-        for url in urls {
+        for url in urls where !archivesToExtract.contains(url) {
             log.notice("Open-with: opening \(url.lastPathComponent)")
             archiveWindowManager?.openArchiveWindow(for: url)
         }

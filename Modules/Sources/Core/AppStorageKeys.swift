@@ -19,6 +19,10 @@ public enum Keys {
     /// Whether extraction decides on its own that the result needs a container
     /// folder named after the archive. On by default.
     public static let smartExtraction = "smartExtraction"
+    /// Extract archives opened from Finder instead of showing their contents.
+    /// Off by default; the destination is remembered independently of the toggle.
+    public static let oneClickExtraction = "oneClickExtraction"
+    public static let oneClickExtractionDestination = "oneClickExtractionDestination"
 
     /// `smartExtraction`, read from the app group so the Quick Look extension —
     /// a separate process with its own `.standard` — sees what the app wrote.

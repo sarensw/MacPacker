@@ -29,7 +29,7 @@ class AppUrlExtractToChosenFolderHandler: AppUrlHandler {
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.notice("Extract-to handler: \(appUrl.files.count) archive(s)")
 
-        guard let destination = await chooseDestination(startingIn: appUrl.target) else {
+        guard let destination = await chooseExtractionDestination(startingIn: appUrl.target) else {
             log.notice("Extract-to cancelled")
             return
         }
@@ -52,26 +52,6 @@ class AppUrlExtractToChosenFolderHandler: AppUrlHandler {
         }
         if !extracted.isEmpty {
             NSWorkspace.shared.activateFileViewerSelecting(extracted)
-        }
-    }
-
-    /// Asks where to extract. `nil` when the panel is cancelled.
-    private func chooseDestination(startingIn folder: URL) async -> URL? {
-        await withCheckedContinuation { continuation in
-            let panel = NSOpenPanel()
-            panel.canChooseFiles = false
-            panel.canChooseDirectories = true
-            panel.canCreateDirectories = true
-            panel.allowsMultipleSelection = false
-            panel.directoryURL = folder
-            panel.prompt = String(localized: .commonExtract)
-            panel.message = String(localized: .archiveExtractChooseDestination)
-            panel.level = .floating
-            NSApp.activate(ignoringOtherApps: true)
-
-            panel.begin { response in
-                continuation.resume(returning: response == .OK ? panel.url : nil)
-            }
         }
     }
 }
