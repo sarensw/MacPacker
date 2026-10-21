@@ -1,4 +1,4 @@
-# ── Per-app beta shell (workflows-macos v0.5.9, product-file model) ───────────
+# ── Per-app beta shell (workflows-macos v0.5.10, product-file model) ──────────
 # Fires on push to main. The orchestrator discovers Config/products/*.json and
 # cuts a beta for each product whose OWN file changed and whose version is still
 # unreleased (primary MacPacker → bare v<ver>-beta.N). Channel toggles and the
@@ -32,7 +32,7 @@ jobs:
     # Make sure the beta job only runs in our own repo, not any fork repo. A
     # manual run from any branch but main would publish that branch as a beta.
     if: github.repository == 'sarensw/MacPacker' && github.ref == 'refs/heads/main'
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.5.9
+    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.5.10
     secrets:
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
