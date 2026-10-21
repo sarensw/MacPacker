@@ -36,6 +36,70 @@
     },
     "versions": [
       {
+        "version": "1.2.0",
+        "items": [
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Open and extract LZMA files",
+                "zh-Hans": "打开并解压 LZMA 文件",
+                "fr": "Ouvrir et extraire les fichiers LZMA",
+                "de": "LZMA-Dateien öffnen und entpacken",
+                "it": "Aprire ed estrarre i file LZMA",
+                "ja": "LZMA ファイルを開いて展開",
+                "fa": "باز کردن و استخراج فایل‌های LZMA",
+                "pl": "Otwieranie i wypakowywanie plików LZMA",
+                "pt-BR": "Abrir e extrair arquivos LZMA",
+                "ru": "Открытие и извлечение файлов LZMA",
+                "uk": "Відкриття та розпакування файлів LZMA",
+                "es-MX": "Abrir y extraer archivos LZMA",
+                "ko": "LZMA 파일 열기 및 압축 해제",
+                "nl": "LZMA-bestanden openen en uitpakken",
+                "tr": "LZMA dosyalarını açma ve çıkarma",
+                "vi": "Mở và giải nén tệp LZMA",
+                "ar": "فتح ملفات LZMA واستخراجها",
+                "ca": "Obre i extreu fitxers LZMA",
+                "el": "Άνοιγμα και εξαγωγή αρχείων LZMA",
+                "nb": "Åpne og pakk ut LZMA-filer",
+                "zh-TW": "開啟並解壓縮 LZMA 檔案"
+            },
+            "issues": [
+                "340"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Deb files open as one “unknown” file",
+                "zh-Hans": "deb 文件打开后只有一个“unknown”文件",
+                "fr": "Les fichiers deb s’ouvrent en un seul fichier « unknown »",
+                "de": "Deb-Dateien öffnen sich als eine Datei „unknown“",
+                "it": "I file deb si aprono come un unico file «unknown»",
+                "ja": "deb ファイルを開くと「unknown」だけが表示される",
+                "fa": "فایل‌های deb فقط به‌صورت یک فایل «unknown» باز می‌شوند",
+                "pl": "Pliki deb otwierają się jako jeden plik „unknown”",
+                "pt-BR": "Arquivos deb abrem como um único arquivo “unknown”",
+                "ru": "Deb-файлы открываются как один файл «unknown»",
+                "uk": "Deb-файли відкриваються як один файл «unknown»",
+                "es-MX": "Los archivos deb se abren como un solo archivo «unknown»",
+                "ko": "deb 파일이 “unknown” 파일 하나로 열림",
+                "nl": "Deb-bestanden openen als één bestand “unknown”",
+                "tr": "Deb dosyaları tek bir “unknown” dosyası olarak açılıyor",
+                "vi": "Tệp deb mở ra chỉ với một tệp “unknown”",
+                "ar": "ملفات deb تُفتح كملف واحد باسم «unknown»",
+                "ca": "Els fitxers deb s’obren com un sol fitxer «unknown»",
+                "el": "Τα αρχεία deb ανοίγουν ως ένα μόνο αρχείο «unknown»",
+                "nb": "Deb-filer åpnes som én fil kalt «unknown»",
+                "zh-TW": "deb 檔案開啟後只有一個「unknown」檔案"
+            },
+            "issues": [
+                "340"
+            ]
+          }
+        ]
+      },
+      {
         "version": "1.1.0",
         "items": [
           {
