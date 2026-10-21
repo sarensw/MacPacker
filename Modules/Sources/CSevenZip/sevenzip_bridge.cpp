@@ -1214,42 +1214,46 @@ SZArchiveRef sz_open(const char *path, const char *password,
         for (int depth = 0; depth < kMaxNestingDepth; depth++) {
             IInArchive *currentArc = handle->levels.back().archive;
 
-            // The stream 7-Zip names through kpidMainSubfile.
-            CMyComPtr<IInStream> subStream;
-
             // Do not drill into a deb: its payload is a tar under a compression
             // wrapper whose level has no usable kpidPath, which would render a
             // lone entry named "unknown" instead of the deb's members.
             NWindows::NCOM::CPropVariant ownExt;
             currentArc->GetArchiveProperty(kpidExtension, &ownExt);
-            const bool isDeb = ownExt.vt == VT_BSTR && ownExt.bstrVal
-                && wcscmp(ownExt.bstrVal, L"deb") == 0;
+            if (ownExt.vt == VT_BSTR && ownExt.bstrVal
+                && wcscmp(ownExt.bstrVal, L"deb") == 0)
+                break;
 
+            // Check if this archive signals a nested container
             NWindows::NCOM::CPropVariant prop;
             currentArc->GetArchiveProperty(kpidMainSubfile, &prop);
-            if (!isDeb && prop.vt == VT_UI4) {
-                UInt32 mainSubfile = prop.ulVal;
+            if (prop.vt != VT_UI4)
+                break;
+            UInt32 mainSubfile = prop.ulVal;
 
-                UInt32 itemCount = 0;
-                currentArc->GetNumberOfItems(&itemCount);
-                if (mainSubfile < itemCount) {
-                    CMyComPtr<IInArchiveGetStream> getStream;
-                    if (currentArc->QueryInterface(
-                            IID_IInArchiveGetStream_Local,
-                            (void **)&getStream) == S_OK && getStream) {
-                        CMyComPtr<ISequentialInStream> subSeqStream;
-                        if (getStream->GetStream(mainSubfile, &subSeqStream) == S_OK
-                            && subSeqStream) {
-                            CMyComPtr<IInStream> in;
-                            if (subSeqStream->QueryInterface(
-                                    IID_IInStream_Local, (void **)&in) == S_OK && in)
-                                subStream = in;
-                        }
-                    }
-                }
-            }
+            // Validate index
+            UInt32 itemCount = 0;
+            currentArc->GetNumberOfItems(&itemCount);
+            if (mainSubfile >= itemCount)
+                break;
 
-            if (!subStream)
+            // Get IInArchiveGetStream from current archive
+            CMyComPtr<IInArchiveGetStream> getStream;
+            if (currentArc->QueryInterface(
+                    IID_IInArchiveGetStream_Local,
+                    (void **)&getStream) != S_OK || !getStream)
+                break;
+
+            // Extract the sub-stream
+            CMyComPtr<ISequentialInStream> subSeqStream;
+            if (getStream->GetStream(mainSubfile, &subSeqStream) != S_OK
+                || !subSeqStream)
+                break;
+
+            // Need seekable IInStream for archive opening
+            CMyComPtr<IInStream> subStream;
+            if (subSeqStream->QueryInterface(
+                    IID_IInStream_Local,
+                    (void **)&subStream) != S_OK || !subStream)
                 break;
 
             // Try to open the sub-stream as a new archive, with the password: a 7z

@@ -68,11 +68,13 @@ extension AllCoreTests {
             // compounds
             ("tar.bz2", "tar", 5, 2),
             ("tar.gz", "tar", 5, 2),
+            ("tar.lzma", "tar", 5, 2),
             ("tar.xz", "tar", 5, 2),
             ("tar.Z", "tar", 5, 2),
             // comounds with one ending
             ("tbz2", "tar", 5, 2),
             ("tgz", "tar", 5, 2),
+            ("tlzma", "tar", 5, 2),
             ("txz", "tar", 5, 2),
             ("taz", "tar", 5, 2)
         ])
@@ -95,6 +97,27 @@ extension AllCoreTests {
             #expect(state.entries.count == entries)
             #expect(state.root?.children?.count == rootChildren)
             #expect(state.root === state.selectedItem)
+        }
+        
+        /// A deb lists its members, not a lone "unknown". dpkg-deb names the
+        /// first member `debian-binary`, and 7-Zip then offers the compressed
+        /// `data.tar.*` as the main subfile, whose one nameless stream was all
+        /// that showed. fpm names it `debian-binary/`, which 7-Zip reads as a
+        /// plain ar, so that deb always listed its members.
+        @Test(arguments: [
+            ("defaultarchive-dpkg.deb", ["control.tar.xz", "data.tar.xz"]),
+            ("defaultarchive.deb", ["control.tar.gz", "data.tar.gz", "debian-binary"])
+        ])
+        func debListsItsMembers(arg: (String, [String])) async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let url = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+                .appendingPathComponent(arg.0)
+
+            state.open(url: url)
+            try await state.openTask?.value
+
+            let names = state.root?.children?.compactMap { state.entries[$0]?.name }.sorted()
+            #expect(names == arg.1)
         }
         
         @Test("Test all defaultArchives on xad", arguments: [

@@ -586,8 +586,8 @@
     {
       "id": "tar.lzma",
       "name": "LZMA Tar Archive",
-      "uti": [],
-      "extensions": ["tar.lzma"],
+      "uti": ["org.tukaani.tar-lzma-archive"],
+      "extensions": ["tlzma", "tar.lzma"],
       "components": ["tar","lzma"]
     },
     {
