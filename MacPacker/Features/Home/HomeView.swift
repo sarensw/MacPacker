@@ -56,6 +56,18 @@ struct HomeView: View {
 
     private let maxRecents = 4
 
+    /// On macOS 26 and later the page stops this far below the toolbar and tab
+    /// bar, so it never scrolls under them: the window draws no title bar
+    /// background there to hide it (see `ArchiveWindowController`). The page's
+    /// own top padding gives the point back, so nothing moves.
+    private static var clearanceBelowBars: CGFloat {
+        if #available(macOS 26, *) {
+            return 1
+        } else {
+            return 0
+        }
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 36) {
@@ -78,10 +90,11 @@ struct HomeView: View {
             // room to breathe, but the whole page still has to clear a 500pt window
             // (less toolbar, tab bar and status bar) without scrolling
             .padding(.horizontal, 32)
-            .padding(.top, 24)
+            .padding(.top, 24 - Self.clearanceBelowBars)
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .padding(.top, Self.clearanceBelowBars)
         .onAppear {
             recents = Array(RecentArchives.urls.prefix(maxRecents))
             #if DEBUG

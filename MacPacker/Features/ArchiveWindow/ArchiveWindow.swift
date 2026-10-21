@@ -66,6 +66,15 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         window.tabbingMode = UserDefaults.standard.bool(forKey: Keys.openArchivesInTabs) ? .preferred : .automatic
 
         window.toolbarStyle = .unified
+        // On macOS 26 and later, no title bar background of its own: the tab
+        // bar over that background, while a scroll view runs under it, leaves
+        // stale separators behind each time a tab is added or closed (seen on
+        // macOS 27). The content already fills the window behind the bars, and
+        // the home page stops short of them (HomeView), so nothing has to be
+        // hidden there.
+        if #available(macOS 26, *) {
+            window.titlebarAppearsTransparent = true
+        }
 
         // show the content view
         let contentView = ContentView()
