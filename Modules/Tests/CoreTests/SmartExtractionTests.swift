@@ -21,6 +21,16 @@ import Foundation
 import Testing
 @testable import Core
 
+/// Answers the password prompt once, wrongly, and cancels it after that.
+private actor OneWrongAnswer {
+    private var asked = false
+
+    func next() -> String? {
+        defer { asked = true }
+        return asked ? nil : "wrong"
+    }
+}
+
 extension AllCoreTests {
     @MainActor struct SmartExtractionTests {
 
@@ -264,6 +274,140 @@ extension AllCoreTests {
 
             let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
             #expect(contents == ["a.txt"], "partial selection extracts flat, got \(contents)")
+        }
+
+        // MARK: - What is already there stays untouched
+
+        private func read(_ url: URL) -> String? {
+            try? String(contentsOf: url, encoding: .utf8)
+        }
+
+        /// Archive Utility's numbering: the extension stays last, a folder is
+        /// not split at a dot, and a taken number is skipped.
+        @Test func freeNamesNumberLikeArchiveUtility() throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+            for name in ["notes.txt", "notes 2.txt", "README", "photos.2024", "archive.tar.gz"] {
+                try "".write(to: dir.appending(path: name), atomically: true, encoding: .utf8)
+            }
+
+            #expect(SmartExtraction.freeName("new.txt", in: dir, isDirectory: false) == "new.txt")
+            #expect(SmartExtraction.freeName("notes.txt", in: dir, isDirectory: false) == "notes 3.txt")
+            #expect(SmartExtraction.freeName("README", in: dir, isDirectory: false) == "README 2")
+            #expect(SmartExtraction.freeName("photos.2024", in: dir, isDirectory: true) == "photos.2024 2")
+            #expect(SmartExtraction.freeName("archive.tar.gz", in: dir, isDirectory: false) == "archive 2.tar.gz")
+        }
+
+        /// An item whose name is taken in the destination comes out under the
+        /// next free one, as Archive Utility names a second copy. Extracting
+        /// used to write over the file that was there.
+        @Test func aTakenNameGetsTheNextFreeOne() async throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let zip = try makeZip(in: dir, name: "single", entries: ["a.txt"])
+            let dest = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
+            try "mine".write(to: dest.appending(path: "a.txt"), atomically: true, encoding: .utf8)
+
+            try await extractFull(newState(), zip, to: dest)
+
+            let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
+            #expect(contents == ["a 2.txt", "a.txt"], "got \(contents)")
+            #expect(read(dest.appending(path: "a.txt")) == "mine", "the file that was there changed")
+        }
+
+        /// Without smart extraction every item goes into the destination
+        /// itself, so any of them can meet a name that is taken.
+        @Test func smartOffKeepsWhatIsThere() async throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let zip = try makeZip(in: dir, name: "scatter", entries: ["a.txt", "b.txt", "c.txt"])
+            let dest = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
+            try "mine".write(to: dest.appending(path: "a.txt"), atomically: true, encoding: .utf8)
+            try "mine".write(to: dest.appending(path: "b.txt"), atomically: true, encoding: .utf8)
+
+            try await extractFull(newState(), zip, to: dest, smart: false)
+
+            let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
+            #expect(contents == ["a 2.txt", "a.txt", "b 2.txt", "b.txt", "c.txt"], "got \(contents)")
+            #expect(read(dest.appending(path: "a.txt")) == "mine", "a.txt changed")
+            #expect(read(dest.appending(path: "b.txt")) == "mine", "b.txt changed")
+        }
+
+        /// Extracting the same archive again gives it a folder of its own,
+        /// numbered as Archive Utility numbers it rather than "scatter (2)".
+        @Test func aSecondContainerIsNumberedLikeArchiveUtility() async throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let zip = try makeZip(in: dir, name: "scatter", entries: ["a.txt", "b.txt"])
+            let dest = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
+
+            try await extractFull(newState(), zip, to: dest)
+            try await extractFull(newState(), zip, to: dest)
+
+            let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
+            #expect(contents == ["scatter", "scatter 2"], "got \(contents)")
+        }
+
+        /// "Extract selected" moves what it extracted into the destination, and
+        /// a name that was taken there made the move fail.
+        @Test func extractSelectedIntoATakenNameGetsTheNextFreeOne() async throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+
+            let zip = try makeZip(in: dir, name: "partial", entries: ["a.txt", "b.txt"])
+            let dest = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
+            try "mine".write(to: dest.appending(path: "a.txt"), atomically: true, encoding: .utf8)
+
+            let state = newState()
+            state.open(url: zip)
+            try await state.openTask?.value
+            let a = try #require(state.entries.values.first { $0.name == "a.txt" && $0.parent == state.root?.id })
+
+            await withCheckedContinuation { continuation in
+                state.onStatusChange = { status in
+                    if status == .done { continuation.resume() }
+                }
+                state.extract(items: [a], to: dest, smart: true)
+            }
+
+            let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
+            #expect(contents == ["a 2.txt", "a.txt"], "got \(contents)")
+            #expect(read(dest.appending(path: "a.txt")) == "mine", "the file that was there changed")
+        }
+
+        /// The data loss: an entry that did not decode had what was written for
+        /// it deleted, and with the password wrong that was the user's own file
+        /// whenever the entry had its name. Cancelling the second prompt left
+        /// the destination without it.
+        @Test func aWrongPasswordLeavesTheFileOfTheSameNameAlone() async throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+            try "mine".write(to: dir.appending(path: "hello world.txt"), atomically: true, encoding: .utf8)
+
+            let state = newState()
+            let answers = OneWrongAnswer()
+            state.passwordProvider = { _ in await answers.next() }
+            let zip = try #require(Bundle.module.url(forResource: "password", withExtension: nil))
+                .appending(path: "zip_zipcrypto.zip")
+
+            try await extractFull(state, zip, to: dir, smart: false)
+
+            #expect(read(dir.appending(path: "hello world.txt")) == "mine", "the file that was there is gone or changed")
+            let contents = try FileManager.default.contentsOfDirectory(atPath: dir.path).sorted()
+            #expect(contents == ["hello world.txt"], "the cancelled extraction left something behind: \(contents)")
         }
     }
 }
