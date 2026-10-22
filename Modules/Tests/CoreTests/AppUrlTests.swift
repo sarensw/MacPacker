@@ -179,5 +179,22 @@ extension AllCoreTests {
                 #expect(!action.honorsSmartExtraction, "\(action) does not extract")
             }
         }
+
+        /// Archives opened with "Extract archives on open" on go through
+        /// Extract Here, which writes into one folder. Opened from a search
+        /// result they can come from several, and each lands next to itself
+        /// (#280).
+        @Test func openedArchivesExtractNextToThemselves() throws {
+            let photos = URL(fileURLWithPath: "/Users/me/Photos/photos.zip")
+            let more = URL(fileURLWithPath: "/Users/me/Photos/more.7z")
+            let docs = URL(fileURLWithPath: "/Users/me/Documents/docs.zip")
+
+            let requests = AppUrl.extractHere([photos, docs, more])
+
+            #expect(requests.allSatisfy { $0.action == .extractHere })
+            try #require(requests.count == 2)
+            let byFolder = Dictionary(uniqueKeysWithValues: requests.map { ($0.target.path, $0.files) })
+            #expect(byFolder == ["/Users/me/Photos": [photos, more], "/Users/me/Documents": [docs]])
+        }
 }
 }

@@ -29,6 +29,11 @@ public enum Keys {
         defaults.object(forKey: smartExtraction) as? Bool ?? true
     }
     
+    /// Whether an archive opened from Finder — a double click, Open With — is
+    /// extracted next to itself, as Extract Here does, instead of opened in a
+    /// window (#280). Off by default.
+    public static let extractOnOpen = "extractOnOpen"
+
     // table settings
     public static let showParentRow = "showParentRow"
     public static let showColumnCompressedSize = "showColumnCompressedSize"
