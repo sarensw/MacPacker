@@ -101,6 +101,9 @@ class ArchiveWindowManager {
             self?.windowControllers.removeAll { $0 === archiveWindowController }
         }
         if let host, let window = archiveWindowController.window, host !== window {
+            // both know the tab bar is coming before it slides in
+            (host.windowController as? ArchiveWindowController)?.tabBarPresence.show(true)
+            archiveWindowController.tabBarPresence.show(true)
             host.addTabbedWindow(window, ordered: .above)
         }
         // A window the user asked for goes by macOS's preference alone. Archives

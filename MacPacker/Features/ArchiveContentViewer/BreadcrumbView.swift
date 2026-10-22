@@ -51,12 +51,9 @@ struct BreadcrumbView: View {
     @EnvironmentObject private var archiveState: ArchiveState
 
     private let selectedItem: ArchiveItem
-    /// At the top of the window, right under the toolbar and tab bar.
-    private let underBars: Bool
 
-    init(for selectedItem: ArchiveItem, underBars: Bool = false) {
+    init(for selectedItem: ArchiveItem) {
         self.selectedItem = selectedItem
-        self.underBars = underBars
     }
 
     private var items: [ArchiveItem] {
@@ -100,21 +97,6 @@ struct BreadcrumbView: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 2)
-        .modifier(PathBarBackground(underBars: underBars))
-    }
-}
-
-/// Right under the bars, on macOS 26 and later, the path bar is part of the band
-/// behind them (see `BarsBand`): the same material, reaching up under them.
-/// Anywhere else it keeps its own fill, which stays out from under the bars.
-private struct PathBarBackground: ViewModifier {
-    let underBars: Bool
-
-    func body(content: Content) -> some View {
-        if underBars, #available(macOS 26, *) {
-            content.background(.bar, ignoresSafeAreaEdges: .top)
-        } else {
-            content.background(Color(NSColor.controlBackgroundColor), ignoresSafeAreaEdges: BarsBand.edgesBelowIt)
-        }
+        .background(Color(NSColor.controlBackgroundColor))
     }
 }
