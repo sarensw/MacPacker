@@ -96,6 +96,35 @@
             "issues": [
                 "340"
             ]
+          },
+          {
+            "type": "core",
+            "title": {
+                "en": "Launch parameter to skip the welcome window",
+                "zh-Hans": "用于跳过欢迎窗口的启动参数",
+                "fr": "Paramètre de lancement pour ignorer la fenêtre de bienvenue",
+                "de": "Startparameter zum Überspringen des Willkommensfensters",
+                "it": "Parametro di avvio per saltare la finestra di benvenuto",
+                "ja": "ウェルカムウインドウをスキップする起動パラメータ",
+                "fa": "پارامتر راه‌اندازی برای رد کردن پنجرهٔ خوش‌آمدگویی",
+                "pl": "Parametr uruchamiania pomijający okno powitalne",
+                "pt-BR": "Parâmetro de inicialização para pular a janela de boas-vindas",
+                "ru": "Параметр запуска для пропуска окна приветствия",
+                "uk": "Параметр запуску для пропуску вікна привітання",
+                "es-MX": "Parámetro de inicio para omitir la ventana de bienvenida",
+                "ko": "환영 창을 건너뛰는 실행 매개변수",
+                "nl": "Startparameter om het welkomstvenster over te slaan",
+                "tr": "Karşılama penceresini atlamak için başlatma parametresi",
+                "vi": "Tham số khởi chạy để bỏ qua cửa sổ chào mừng",
+                "ar": "معامل تشغيل لتخطي نافذة الترحيب",
+                "ca": "Paràmetre d’inici per ometre la finestra de benvinguda",
+                "el": "Παράμετρος εκκίνησης για παράλειψη του παραθύρου καλωσορίσματος",
+                "nb": "Startparameter for å hoppe over velkomstvinduet",
+                "zh-TW": "用於略過歡迎視窗的啟動參數"
+            },
+            "issues": [
+                "360"
+            ]
           }
         ]
       },
