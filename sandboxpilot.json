@@ -1,9 +1,15 @@
 {
     "schema": 1,
-    "description": "SandboxPilot (github.com/LeanBytes/SandboxPilot) screenshot plan for MacPacker. MacPacker's launch parameters (-ArchivePath / -NavigatePath / -SearchQuery / -SelectItem / -NewArchive) are a general feature — a way to open an archive and jump to a file inside it from the command line, a script, or automation, not tied to any screenshot tool. This file is simply the first consumer: it tells a screenshot driver which parameters, scenarios and appearances produce MacPacker's localized screenshots. -DisableUpdateChecks, -ExtractDemo and -DropZone are automation/preview flags used only for the shots. A scenario has two halves: `arguments` are launch parameters and decide the app's *state*, while `actions` drive its *UI* afterwards, each naming one control by accessibility identifier for SandboxPilotKit to act on inside MacPacker — which needs no Accessibility permission, and keeps this file the only place that knows what MacPacker's controls are called. Identifiers rather than labels, because labels are translated and these shots run in fourteen languages. The archives the scenarios name all live in ~/Downloads/MacPacker-Demo, the only place the sandbox can read without a file picker, and assets/screenshots/make_demo_archives.py puts them there: it generates the large handoff bundles, which are too big to commit, and copies markdown-kit.zip, which is committed to the MacPacker-TestArchives submodule because it is a real, buildable repository rather than filler. A debug build resolves them all from there by file name. Scenarios are numbered to match the media-kit frames they feed — FrameBison composes background, pointers and dragged files on top, since a drag itself cannot be simulated, which is what -DropZone stands in for. Finder integration is deliberately absent: it runs in another process that SandboxPilot cannot drive or capture. Quick Look runs in another process too, so 09-preview captures only MacPacker's window with the file selected and FrameBison composes the preview panel on top of it.",
+    "description": "SandboxPilot (github.com/LeanBytes/SandboxPilot) screenshot plan for MacPacker. MacPacker's launch parameters (-ArchivePath / -NavigatePath / -SearchQuery / -SelectItem / -NewArchive) are a general feature — a way to open an archive and jump to a file inside it from the command line, a script, or automation, not tied to any screenshot tool. This file is simply the first consumer: it tells a screenshot driver which parameters, scenarios and appearances produce MacPacker's localized screenshots. -DisableUpdateChecks, -ExtractDemo, -DropZone and -RecentArchives are automation/preview flags used only for the shots. An argument named after one of MacPacker's preferences (-dropWindowFormat zip) pins it for that launch only, as any command-line argument does, so a shot shows the default rather than whatever this Mac chose last; nothing is saved. A scenario has three parts: `arguments` are launch parameters and decide the app's *state*, `actions` drive its *UI* afterwards, each naming one control by accessibility identifier for SandboxPilotKit to act on inside MacPacker — which needs no Accessibility permission, and keeps this file the only place that knows what MacPacker's controls are called — and `window` names the window to capture the same way, so a shot never depends on which window happens to be largest. Identifiers rather than labels or titles, because those are translated and these shots run in every language the app ships. `testAssets` names every archive and file the scenarios use, and `{name}` stands for its path in any argument. They all live in ~/Downloads/MacPacker-Demo, the only place the sandbox can read without a file picker, and assets/screenshots/make_demo_archives.py puts them there: it generates the large handoff bundles, which are too big to commit, and Client Documents.zip with the password-protected Confidential.zip inside (password: macpacker), and copies markdown-kit.zip, which is committed to the MacPacker-TestArchives submodule because it is a real, buildable repository rather than filler. A debug build resolves them all from there by file name. Scenarios are numbered to match the media-kit frames they feed — FrameBison composes background, pointers and dragged files on top, since a drag itself cannot be simulated, which is what -DropZone stands in for. Finder integration is deliberately absent: it runs in another process that SandboxPilot cannot drive or capture. Quick Look runs in another process too, so 09-preview captures only MacPacker's window with the file selected and FrameBison composes the preview panel on top of it.",
     "bundleId": "com.sarensx.MacPacker.debug",
     "testAssets": {
-        "archive": "assets/screenshots/demo/Handoff.zip"
+        "archive": "assets/screenshots/demo/Handoff.zip",
+        "photos": "assets/screenshots/demo/Photo Delivery.zip",
+        "mdkit": "assets/screenshots/demo/markdown-kit.zip",
+        "clientDocs": "assets/screenshots/demo/Client Documents.zip",
+        "handoverNotes": "assets/screenshots/demo/extra/Handover Notes.pdf",
+        "finalLogo": "assets/screenshots/demo/extra/Final Logo.png",
+        "amendment": "assets/screenshots/demo/extra/Amendment.docx"
     },
     "languages": "all",
     "appearances": ["light", "dark"],
@@ -11,48 +17,75 @@
         {
             "name": "01-browse",
             "description": "Archive browser — the handoff archive open at its root, one file selected",
+            "window": "archive.window",
             "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{archive}", "-SelectItem", "Brand Guidelines.pdf"]
         },
         {
             "name": "02-nested",
             "description": "Browsing nested archives — navigated into an archive inside the archive, a file in it selected",
-            "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "assets/screenshots/demo/Photo Delivery.zip", "-NavigatePath", "Raw Files.zip", "-SelectItem", "DSC_0143.dng"]
+            "window": "archive.window",
+            "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{photos}", "-NavigatePath", "Raw Files.zip", "-SelectItem", "DSC_0143.dng"]
         },
         {
             "name": "03-edit",
             "description": "Creating and editing ZIP archives — an existing zip with a file added to it and not yet saved, so the window reads 'Edited'",
-            "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{archive}", "-AddFiles", "assets/screenshots/demo/extra/Handover Notes.pdf"]
+            "window": "archive.window",
+            "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{archive}", "-AddFiles", "{handoverNotes}"]
         },
         {
             "name": "04-search",
-            "description": "Searching inside an archive — the toolbar filter showing matches from every level at once, with the field active as it would be mid-search",
-            "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{archive}", "-SearchQuery", "pdf"],
+            "description": "Searching inside an archive — the toolbar filter on a source project, showing matches from every folder at once, with the field active as it would be mid-search",
+            "window": "archive.window",
+            "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{mdkit}", "-SearchQuery", "js"],
             "actions": [{ "action": "focus", "element": "archive.searchField" }]
         },
         {
             "name": "05-new-archive",
             "description": "Creating a new archive — a fresh archive filled with files and not yet saved (empty would show nothing at all)",
-            "arguments": ["-DisableUpdateChecks", "YES", "-NewArchive", "1", "-AddFiles", "assets/screenshots/demo/extra/Handover Notes.pdf,assets/screenshots/demo/extra/Final Logo.png,assets/screenshots/demo/extra/Amendment.docx"]
+            "window": "archive.window",
+            "arguments": ["-DisableUpdateChecks", "YES", "-NewArchive", "1", "-AddFiles", "{handoverNotes},{finalLogo},{amendment}"]
         },
         {
             "name": "06-extract-selection",
             "description": "Selective extraction — two files selected, ready to be dragged out (FrameBison adds the pointer and the dragged file)",
+            "window": "archive.window",
             "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{archive}", "-NavigatePath", "Photos", "-SelectItem", "Launch-01.jpg,Launch-02.jpg"]
         },
         {
             "name": "07-drop-add",
             "description": "Drag & drop — the drop-zone overlay pinned with the 'add' zone highlighted (FrameBison adds the pointer and the dragged file)",
+            "window": "archive.window",
             "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{archive}", "-DropZone", "add"]
         },
         {
             "name": "08-extraction-progress",
             "description": "Extraction progress window at 1/3 of a large file, details expanded so the speed chart is visible (uses the -ExtractDemo preview flag)",
+            "window": "progress.window",
             "arguments": ["-DisableUpdateChecks", "YES", "-ExtractDemo", "1"]
         },
         {
             "name": "09-preview",
             "description": "Previewing a file — a source project open at its root with README.md selected (FrameBison composes the Quick Look panel on top, since it runs in another process)",
-            "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "assets/screenshots/demo/markdown-kit.zip", "-SelectItem", "README.md"]
+            "window": "archive.window",
+            "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{mdkit}", "-SelectItem", "README.md"]
+        },
+        {
+            "name": "10-home",
+            "description": "Start page — open, new, Quick Compress and two recent archives. -RecentArchives lists them in place of whatever this Mac opened last",
+            "window": "archive.window",
+            "arguments": ["-DisableUpdateChecks", "YES", "-RecentArchives", "{archive},{mdkit}", "-dropWindowFormat", "zip"]
+        },
+        {
+            "name": "11-quick-compress",
+            "description": "Quick Compress — the floating drop window on its own, waiting for files (FrameBison adds the pointer and the dragged files)",
+            "window": "quickCompress.window",
+            "arguments": ["-DisableUpdateChecks", "YES", "-DropWindow", "1", "-dropWindowFormat", "zip", "-dropWindowOptionsExpanded", "NO", "-dropWindowFloats", "YES"]
+        },
+        {
+            "name": "12-password",
+            "description": "Password-protected archive — opening the protected archive inside a delivery, so the prompt asks for its password with the delivery still listed behind it (a protected archive opened on its own shows an empty list there)",
+            "window": "archive.window",
+            "arguments": ["-DisableUpdateChecks", "YES", "-ArchivePath", "{clientDocs}", "-NavigatePath", "Confidential.zip"]
         }
     ]
 }

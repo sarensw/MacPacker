@@ -22,7 +22,9 @@ import datetime
 import hashlib
 import os
 import shutil
+import subprocess
 import sys
+import tempfile
 import zipfile
 
 MB = 1024 * 1024
@@ -67,6 +69,14 @@ PHOTO_DELIVERY = [
     ("Selects/", 0), ("Selects/Frame-014.jpg", 6), ("Selects/Frame-027.jpg", 7),
 ]
 RAW_FILES = [("DSC_0142.dng", 12), ("DSC_0143.dng", 13), ("Contact Sheet.pdf", 3)]
+
+# The password shot: a delivery holding one protected archive. MacPacker asks for
+# the password as soon as an archive with encrypted entries opens, so opening the
+# nested one asks with the delivery still listed behind the prompt; a protected
+# archive opened directly would show an empty list there.
+CLIENT_DOCUMENTS = [("Project Brief.pdf", 3), ("Invoice 2026-031.pdf", 1), ("Meeting Notes.md", 1)]
+CONFIDENTIAL = [("Contract Signed.pdf", 4), ("Passport Scan.pdf", 3), ("Tax Return 2025.pdf", 2)]
+PASSWORD = "macpacker"
 
 # Loose files for the -AddFiles shots: filling a new archive, and adding to an
 # existing one. Names deliberately absent from HANDOFF, so an added entry reads
@@ -117,7 +127,8 @@ def keep(path: str) -> bool:
     return False
 
 
-def build(filename: str, entries, nested=None) -> None:
+def build(filename: str, entries, nested=None, password=None) -> None:
+    """`password` encrypts the entries of the nested archive."""
     path = os.path.join(DEST, filename)
     if keep(path):
         return
@@ -127,9 +138,12 @@ def build(filename: str, entries, nested=None) -> None:
         if nested:
             inner_name, inner_entries = nested
             inner_path = os.path.join(DEST, ".inner.zip")
-            with zipfile.ZipFile(inner_path, "w") as inner:
-                for index, (name, size) in enumerate(inner_entries):
-                    write(inner, name, size, index)
+            if password:
+                build_encrypted(inner_path, inner_entries, password)
+            else:
+                with zipfile.ZipFile(inner_path, "w") as inner:
+                    for index, (name, size) in enumerate(inner_entries):
+                        write(inner, name, size, index)
             # stored: a zip inside a zip is already compressed, and deflating it
             # again would only make the entry bigger
             nested_info = info(inner_name, len(entries))
@@ -138,6 +152,25 @@ def build(filename: str, entries, nested=None) -> None:
                 zf.writestr(nested_info, f.read())
             os.remove(inner_path)
     print(f"wrote  {filename} ({os.path.getsize(path) // MB} MB)")
+
+
+def build_encrypted(path: str, entries, password: str) -> None:
+    """A zip of `entries`, each encrypted with `password`. Python's zipfile cannot
+    encrypt, so the files go to disk and /usr/bin/zip packs them — the one
+    encrypting zip writer on every Mac. Its encryption header is random, so unlike
+    the rest a rebuild is not byte-identical; names, sizes and dates are."""
+    with tempfile.TemporaryDirectory() as tmp:
+        for index, (name, size) in enumerate(entries):
+            file = os.path.join(tmp, name)
+            with open(file, "wb") as f:
+                f.write(filler(size * MB, name))
+            # the same staggered date info() gives every other entry
+            stamp = datetime.datetime(*BASE_DATE).timestamp() - index % 8 * 3600
+            os.utime(file, (stamp, stamp))
+        if os.path.exists(path):
+            os.remove(path)   # zip adds to an existing archive rather than replacing it
+        subprocess.run(["/usr/bin/zip", "-q", "-X", "-P", password, path, *(name for name, _ in entries)],
+                       cwd=tmp, check=True)
 
 
 def stage(relative_path: str) -> None:
@@ -158,6 +191,7 @@ if __name__ == "__main__":
     os.makedirs(os.path.join(DEST, "extra"), exist_ok=True)
     build("Handoff.zip", HANDOFF)
     build("Photo Delivery.zip", PHOTO_DELIVERY, nested=("Raw Files.zip", RAW_FILES))
+    build("Client Documents.zip", CLIENT_DOCUMENTS, nested=("Confidential.zip", CONFIDENTIAL), password=PASSWORD)
     stage(FIXTURE)
     stamp = datetime.datetime(*BASE_DATE).timestamp()
     for name, size in EXTRAS:
