@@ -71,9 +71,9 @@
         },
         {
             "name": "10-home",
-            "description": "Start page — open, new, Quick Compress and two recent archives. -RecentArchives lists them in place of whatever this Mac opened last",
+            "description": "Start page — open, new, Quick Compress and two recent archives. -RecentArchives lists them in place of whatever this Mac opened last, and -rememberRecentArchives YES shows them on a Mac that has that setting off",
             "window": "archive.window",
-            "arguments": ["-DisableUpdateChecks", "YES", "-RecentArchives", "{archive},{mdkit}", "-dropWindowFormat", "zip"]
+            "arguments": ["-DisableUpdateChecks", "YES", "-RecentArchives", "{archive},{mdkit}", "-rememberRecentArchives", "YES", "-dropWindowFormat", "zip"]
         },
         {
             "name": "11-quick-compress",
