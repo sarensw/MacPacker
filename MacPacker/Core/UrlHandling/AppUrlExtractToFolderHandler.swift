@@ -39,7 +39,11 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
             let folderName = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
             let folderUrl = appUrl.target.appendingPathComponent(folderName)
             do {
-                try FileManager.default.createDirectory(at: folderUrl, withIntermediateDirectories: true)
+                // through the target's stored grant, which may be from an
+                // earlier launch
+                try Sandbox.accessSync(url: folderUrl) {
+                    try FileManager.default.createDirectory(at: folderUrl, withIntermediateDirectories: true)
+                }
             } catch {
                 log.error(error.localizedDescription)
                 continue
