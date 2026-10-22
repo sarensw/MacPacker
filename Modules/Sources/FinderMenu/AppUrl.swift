@@ -23,8 +23,8 @@ public extension AppUrlAction {
     /// Whether the smart-extraction setting gets a say in where this action's
     /// output lands.
     ///
-    /// `extractToFolder` is named after the folder it creates, and creates it
-    /// itself — the question is already answered, and letting the rule wrap a
+    /// `extractToFolder` is named after the folder it extracts into, which is
+    /// made for it — the question is already answered, and letting the rule wrap a
     /// second container inside would give exactly the `Photos/Photos` nesting
     /// smart extraction exists to prevent. Every other extracting action hands
     /// the user's own destination to the extractor, and there the setting
