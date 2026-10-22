@@ -69,6 +69,36 @@
             ]
           },
           {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Extract archives on open",
+                "zh-Hans": "打开压缩包时自动解压",
+                "fr": "Extraire les archives à l’ouverture",
+                "de": "Archive beim Öffnen entpacken",
+                "it": "Estrarre gli archivi all’apertura",
+                "ja": "アーカイブを開くときに展開",
+                "fa": "استخراج آرشیوها هنگام باز کردن",
+                "pl": "Wypakowywanie archiwów przy otwieraniu",
+                "pt-BR": "Extrair arquivos compactados ao abrir",
+                "ru": "Извлечение архивов при открытии",
+                "uk": "Розпакування архівів під час відкриття",
+                "es-MX": "Extraer archivos comprimidos al abrirlos",
+                "ko": "아카이브를 열 때 압축 해제",
+                "nl": "Archieven uitpakken bij openen",
+                "tr": "Arşivleri açarken çıkarma",
+                "vi": "Giải nén tệp nén khi mở",
+                "ar": "استخراج الأرشيفات عند فتحها",
+                "ca": "Extreu els arxius en obrir-los",
+                "el": "Εξαγωγή συμπιεσμένων αρχείων κατά το άνοιγμα",
+                "nb": "Pakk ut arkiver ved åpning",
+                "zh-TW": "開啟壓縮檔時自動解壓縮"
+            },
+            "issues": [
+                "280"
+            ]
+          },
+          {
             "type": "fix",
             "title": {
                 "en": "Deb files open as one “unknown” file",
