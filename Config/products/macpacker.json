@@ -98,6 +98,35 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Extract Here fails in a folder granted before",
+                "zh-Hans": "在已授权的文件夹中“解压到当前位置”失败",
+                "fr": "« Extraire ici » échoue dans un dossier déjà autorisé",
+                "de": "„Hier entpacken“ scheitert in zuvor freigegebenem Ordner",
+                "it": "«Estrai qui» fallisce in una cartella già autorizzata",
+                "ja": "許可済みのフォルダで「ここに展開」が失敗する",
+                "fa": "«استخراج در اینجا» در پوشه‌ای که قبلاً مجاز شده ناموفق است",
+                "pl": "„Wypakuj tutaj” zawodzi w folderze z nadanym wcześniej dostępem",
+                "pt-BR": "“Extrair aqui” falha em uma pasta já autorizada",
+                "ru": "«Распаковать здесь» не работает в ранее разрешённой папке",
+                "uk": "«Розпакувати тут» не працює в раніше дозволеній теці",
+                "es-MX": "«Extraer aquí» falla en una carpeta ya autorizada",
+                "ko": "이전에 허용한 폴더에서 “여기에 압축 풀기” 실패",
+                "nl": "“Hier uitpakken” mislukt in een eerder toegestane map",
+                "tr": "Önceden izin verilen klasörde “Buraya Çıkar” başarısız",
+                "vi": "“Giải nén tại đây” thất bại trong thư mục đã cấp quyền trước đó",
+                "ar": "«استخرج هنا» يفشل في مجلد مُنح الإذن سابقًا",
+                "ca": "«Extreu aquí» falla en una carpeta ja autoritzada",
+                "el": "Το «Εξαγωγή εδώ» αποτυγχάνει σε φάκελο με άδεια από πριν",
+                "nb": "«Pakk ut her» mislykkes i en mappe med tilgang fra før",
+                "zh-TW": "在已授權的資料夾中「解壓縮到這裡」失敗"
+            },
+            "issues": [
+                "370"
+            ]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Launch parameter to skip the welcome window",
