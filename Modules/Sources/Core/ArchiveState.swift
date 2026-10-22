@@ -232,9 +232,9 @@ extension ArchiveState {
     /// How a `passwordCancelled` should be reported.
     ///
     /// Dismissing the prompt is the user's own choice, so the job just ends as
-    /// cancelled. Having no prompt at all is different: Finder's "Extract Here"
-    /// and QuickLook build an ArchiveState with no `passwordProvider`, so an
-    /// encrypted archive used to fail there with nothing shown and nothing
+    /// cancelled. Having no prompt at all is different: an ArchiveState built
+    /// with no `passwordProvider`, as Finder's "Extract Here" and QuickLook once
+    /// were, used to fail on an encrypted archive with nothing shown and nothing
     /// extracted. That needs to be a failure with a message that says what to do.
     private func passwordCancelledOutcome() -> ExtractionJob.State {
         guard passwordProvider == nil else { return .cancelled }
