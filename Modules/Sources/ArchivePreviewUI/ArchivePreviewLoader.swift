@@ -20,6 +20,9 @@ enum ArchivePreviewLoader {
         let catalog = ArchiveTypeCatalog()
         let configStore = ArchiveEngineConfigStore(catalog: catalog, defaults: .macPackerShared)
         let selector = ArchiveEngineSelector(catalog: catalog, configStore: configStore)
-        return ArchiveState(catalog: catalog, engineSelector: selector)
+        let state = ArchiveState(catalog: catalog, engineSelector: selector)
+        // a name already taken where the preview extracts to: as Settings say
+        state.nameClash = { NameClash.current() }
+        return state
     }
 }
