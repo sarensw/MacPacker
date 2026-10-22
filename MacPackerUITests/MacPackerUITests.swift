@@ -286,12 +286,19 @@ final class MacPackerUITests: XCTestCase {
     func testFinderExtractsIntoAFolderGrantedOnAnEarlierLaunch() throws {
         let dir = try makeWorkDir("finder-granted-before")
         defer { try? FileManager.default.removeItem(at: dir) }
-        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
-        try "two".write(to: dir.appendingPathComponent("two.txt"), atomically: true, encoding: .utf8)
-        // two entries each, so that each archive lands in a folder of its own
-        for name in ["first", "second", "third"] {
-            try run("/usr/bin/zip", [dir.appendingPathComponent("\(name).zip").path, "one.txt", "two.txt"], cwd: dir)
+        // Extract Here's archives hold a folder of their own, so each lands in
+        // it whether smart extraction is on or off: that setting lives in the
+        // app group, out of reach of launch arguments. Extract to "name" makes
+        // its folder either way.
+        for name in ["first", "second"] {
+            let folder = dir.appendingPathComponent(name)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            try "one".write(to: folder.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+            try run("/usr/bin/zip", ["-r", dir.appendingPathComponent("\(name).zip").path, name], cwd: dir)
+            try FileManager.default.removeItem(at: folder)
         }
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        try run("/usr/bin/zip", [dir.appendingPathComponent("third.zip").path, "one.txt"], cwd: dir)
 
         // the first launch asks for the folder
         let first = launchApp(finderAction: "extractHere", files: [dir.appendingPathComponent("first.zip")], target: dir)
