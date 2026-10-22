@@ -127,6 +127,35 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Extracting overwrites files of the same name",
+                "zh-Hans": "解压会覆盖同名文件",
+                "fr": "L’extraction écrase les fichiers du même nom",
+                "de": "Entpacken überschreibt gleichnamige Dateien",
+                "it": "L’estrazione sovrascrive i file con lo stesso nome",
+                "ja": "展開すると同じ名前のファイルが上書きされる",
+                "fa": "استخراج، فایل‌های هم‌نام را بازنویسی می‌کند",
+                "pl": "Wypakowywanie nadpisuje pliki o tej samej nazwie",
+                "pt-BR": "A extração sobrescreve arquivos com o mesmo nome",
+                "ru": "Распаковка перезаписывает файлы с тем же именем",
+                "uk": "Розпакування перезаписує файли з тією самою назвою",
+                "es-MX": "La extracción sobrescribe archivos con el mismo nombre",
+                "ko": "압축 해제 시 같은 이름의 파일을 덮어씀",
+                "nl": "Uitpakken overschrijft bestanden met dezelfde naam",
+                "tr": "Çıkarma, aynı adlı dosyaların üzerine yazıyor",
+                "vi": "Giải nén ghi đè tệp trùng tên",
+                "ar": "الاستخراج يستبدل الملفات التي تحمل الاسم نفسه",
+                "ca": "L’extracció sobreescriu fitxers amb el mateix nom",
+                "el": "Η εξαγωγή αντικαθιστά αρχεία με το ίδιο όνομα",
+                "nb": "Utpakking overskriver filer med samme navn",
+                "zh-TW": "解壓縮會覆寫同名檔案"
+            },
+            "issues": [
+                "371"
+            ]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Launch parameter to skip the welcome window",
