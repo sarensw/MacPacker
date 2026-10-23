@@ -194,7 +194,7 @@ struct HomeView: View {
 
     private var learnSection: some View {
         section(LocalizedStringResource.commonLearn) {
-            DocLinkRow(icon: "book", title: String(localized: .homeLearnToUse(Bundle.main.displayName)),
+            DocLinkRow(icon: "book", title: String(localized: .homeLearnToUse(Constants.appName)),
                        detail: String(localized: .homeDocs),
                        url: Constants.docsURL)
             DocLinkRow(icon: "sparkles", title: String(localized: .commonWhatsNew),

@@ -5,8 +5,8 @@
 
 import AppKit
 
-/// Stable names for the controls that something other than a mouse needs to
-/// address: VoiceOver, the XCUITests, and the screenshot plan.
+/// Stable names for the windows and controls that something other than a mouse
+/// needs to address: VoiceOver, the XCUITests, and the screenshot plan.
 ///
 /// An identifier is not a label. Labels are translated, so anything matching on
 /// one breaks in fourteen languages; identifiers never change, which is exactly
@@ -15,6 +15,14 @@ import AppKit
 enum AccessibilityIdentifier {
     /// The toolbar search field that `.searchable` builds in `ContentView`.
     static let searchField = "archive.searchField"
+
+    /// An archive window, which is the start page while it holds no archive.
+    static let archiveWindow = "archive.window"
+    static let welcomeWindow = "welcome.window"
+    /// The floating Quick Compress (drop) window.
+    static let quickCompressWindow = "quickCompress.window"
+    /// The extraction and compression progress window.
+    static let progressWindow = "progress.window"
 }
 
 extension NSWindow {

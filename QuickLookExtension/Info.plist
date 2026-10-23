@@ -37,6 +37,7 @@
                 <string>org.gnu.gnu-zip-archive</string>
                 <string>org.gnu.gnu-zip-tar-archive</string>
                 <string>org.tukaani.lzma-archive</string>
+                <string>org.tukaani.tar-lzma-archive</string>
                 <string>org.tukaani.tar-xz-archive</string>
                 <string>org.tukaani.xz-archive</string>
                 <string>public.archive</string>

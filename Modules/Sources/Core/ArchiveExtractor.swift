@@ -65,7 +65,9 @@ final actor ArchiveExtractor {
             // destination and collide on any repeated leaf name (#175).
             if let parentID = item.parent, itemsById[parentID] != nil { continue }
 
-            let targetURL = destination.appending(component: item.name)
+            let isDirectory = item.type == .directory || item.type == .virtual
+            let targetURL = destination.appending(
+                component: SmartExtraction.freeName(item.name, in: destination, isDirectory: isDirectory))
             try FileManager.default.moveItem(at: sourceURL, to: targetURL)
         }
     }
@@ -202,15 +204,24 @@ final actor ArchiveExtractor {
         )
     }
     
-    /// Extracts the given archive fully
+    /// Extracts the given archive fully, leaving alone what `destination`
+    /// already holds. The engine writes into a hidden folder of its own inside
+    /// `destination`, and what it extracted moves out from there under names
+    /// still free: the same volume, so moving is a rename, and a failed or
+    /// cancelled extraction, a wrong password included, only ever loses that
+    /// folder. The engine itself deletes an entry that did not decode, which in
+    /// `destination` would be a file of the same name that was there before.
     /// - Parameters:
     ///   - url: archive to extract
     ///   - archiveEngineType: type of engine
     ///   - destination: destination directory
+    ///   - containerName: when given, all of it goes into one folder of that
+    ///     name: the container of smart extraction.
     public func extractAll(
         _ url: URL,
         archiveTypeId: String,
         to destination: URL,
+        containerName: String? = nil,
         onProgress: ArchiveExtractionProgress? = nil
     ) async throws {
         _ = destination.startAccessingSecurityScopedResource()
@@ -220,8 +231,48 @@ final actor ArchiveExtractor {
             throw ArchiveError.extractionFailed("Could not determine archive engine for \(archiveTypeId).")
         }
 
+        let staging = destination.appending(component: ".MacPacker-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: false)
+        defer { try? FileManager.default.removeItem(at: staging) }
+
         try await Sandbox.access(url: url) {
-            try await engine.extract(url, to: destination, passwordResolver: passwordResolver, onProgress: onProgress)
+            try await engine.extract(url, to: staging, passwordResolver: passwordResolver, onProgress: onProgress)
+        }
+
+        if let containerName {
+            let name = SmartExtraction.freeName(containerName, in: destination, isDirectory: true)
+            try FileManager.default.moveItem(at: staging, to: destination.appending(component: name))
+            return
+        }
+        for item in try allItems(in: staging) {
+            let isDirectory = (try? item.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+            let name = SmartExtraction.freeName(item.lastPathComponent, in: destination, isDirectory: isDirectory)
+            try FileManager.default.moveItem(at: item, to: destination.appending(component: name))
+        }
+    }
+
+    /// Everything in `directory`. Foundation's listings leave out every name
+    /// that starts with "._", and an archive can hold files named like that:
+    /// one that is no AppleDouble, or the sidecar of a file it does not hold.
+    private func allItems(in directory: URL) throws -> [URL] {
+        guard let stream = opendir(directory.path) else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+        defer { closedir(stream) }
+        var items: [URL] = []
+        while true {
+            // nil is the end and an error alike: only errno tells them apart
+            errno = 0
+            guard let entry = readdir(stream) else {
+                guard errno == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
+                return items
+            }
+            let name = withUnsafeBytes(of: entry.pointee.d_name) {
+                String(decoding: $0.prefix(Int(entry.pointee.d_namlen)), as: UTF8.self)
+            }
+            if name != "." && name != ".." {
+                items.append(directory.appending(component: name))
+            }
         }
     }
 }

@@ -1708,21 +1708,19 @@ extension ArchiveState {
                 // The smart folder is created below, before the extractor starts
                 // access on it — so the user-picked destination has to be held
                 // accessible from here on, or the directory creation fails for
-                // sandboxed destinations.
-                let didAccessDestination = destination.startAccessingSecurityScopedResource()
-                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
+                // sandboxed destinations. A folder granted on an earlier launch
+                // is reached through its stored bookmark: on its own, the plain
+                // url grants nothing.
+                let scopedDestination = Sandbox.securityScopedURL(for: destination) ?? destination
+                let didAccessDestination = scopedDestination.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { scopedDestination.stopAccessingSecurityScopedResource() } }
 
                 var target = destination
-                if smart, coversWholeArchive(items) {
-                    let archiveUrl = url
-                    target = SmartExtraction.containerFolder(
-                        for: entries,
-                        archiveName: archiveUrl.map { archiveTypeDetector.getNameWithoutExtension(for: $0) } ?? "Archive",
-                        destination: destination
-                    ) ?? destination
-                    if target != destination {
-                        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
-                    }
+                if smart, coversWholeArchive(items), SmartExtraction.needsContainer(entries) {
+                    let archiveName = url.map { archiveTypeDetector.getNameWithoutExtension(for: $0) } ?? "Archive"
+                    target = destination.appending(
+                        component: SmartExtraction.freeName(archiveName, in: destination, isDirectory: true))
+                    try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
                 }
                 let result = try await extractor.extract(
                     batches: batches,
@@ -1791,27 +1789,22 @@ extension ArchiveState {
                     throw ArchiveError.extractionFailed("No archive handler found")
                 }
 
-                // The smart folder is created below, before the extractor starts
-                // access on it — so the user-picked destination has to be held
-                // accessible from here on, or the directory creation fails for
-                // sandboxed destinations.
-                let didAccessDestination = destination.startAccessingSecurityScopedResource()
-                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
+                // The extractor creates its own folder in the destination before
+                // it starts access on it — so the user-picked destination has to
+                // be held accessible from here on, or that fails for sandboxed
+                // destinations. A folder granted on an earlier launch is reached
+                // through its stored bookmark: on its own, the plain url grants
+                // nothing.
+                let scopedDestination = Sandbox.securityScopedURL(for: destination) ?? destination
+                let didAccessDestination = scopedDestination.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { scopedDestination.stopAccessingSecurityScopedResource() } }
 
-                var target = destination
-                if smart {
-                    // Folder name from the archive file, extension stripped —
-                    // compounds (tar.gz) and split parts included — so it
-                    // matches the "Extract to …" folder naming.
-                    target = SmartExtraction.containerFolder(
-                        for: entries,
-                        archiveName: archiveTypeDetector.getNameWithoutExtension(for: archiveUrl),
-                        destination: destination
-                    ) ?? destination
-                    if target != destination {
-                        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
-                    }
-                }
+                // Folder name from the archive file, extension stripped —
+                // compounds (tar.gz) and split parts included — so it matches
+                // the "Extract to …" folder naming.
+                let containerName = smart && SmartExtraction.needsContainer(entries)
+                    ? archiveTypeDetector.getNameWithoutExtension(for: archiveUrl)
+                    : nil
 
                 let extractor = ArchiveExtractor(
                     archiveEngineSelector: effectiveEngineSelector,
@@ -1820,7 +1813,8 @@ extension ArchiveState {
                 try await extractor.extractAll(
                     archiveUrl,
                     archiveTypeId: archiveTypeId,
-                    to: target,
+                    to: destination,
+                    containerName: containerName,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 // A Cancel the engine did not see, too late for it or never

@@ -325,6 +325,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
 
     private func showWelcomeWindowIfDue() {
+        // -SkipWelcome leaves it due: the next launch without it shows it
+        guard !LaunchParameters.skipsWelcome else { return }
         guard welcomeScreenShownInVersion != Bundle.main.appVersionLong || Bundle.main.appVersionLong.contains("0.0.0-dev") else {
             return
         }
