@@ -23,7 +23,8 @@ protocol AppUrlHandler {
 extension AppUrlHandler {
     /// Opens `archive`, extracts all of it into `destination` and waits for
     /// the job to end. Returns what the extraction added to `destination`, so
-    /// the caller can select it in Finder.
+    /// the caller can select it in Finder. Extracting never writes over what
+    /// is there, so that is nothing when it failed or was cancelled.
     ///
     /// `smart` is the caller's: an entry that already created the folder it
     /// named passes `false`, so the extraction does not wrap a second one.
@@ -52,7 +53,6 @@ extension AppUrlHandler {
         }
 
         let before = Set(folderContents(destination))
-        let topLevel = state.root?.children?.compactMap { state.entries[$0]?.name } ?? []
 
         // extract(to:) raises isBusy before it returns and lowers it once the
         // job ends — done, cancelled or failed
@@ -61,15 +61,7 @@ extension AppUrlHandler {
             break
         }
 
-        let added = folderContents(destination).filter { !before.contains($0) }
-        if !added.isEmpty {
-            return added
-        }
-        // extracted over existing items: nothing is new, so point at what the
-        // archive holds
-        return topLevel
-            .map { destination.appendingPathComponent($0) }
-            .filter { FileManager.default.fileExists(atPath: $0.path) }
+        return folderContents(destination).filter { !before.contains($0) }
     }
 }
 
