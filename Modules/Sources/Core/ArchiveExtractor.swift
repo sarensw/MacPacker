@@ -260,7 +260,13 @@ final actor ArchiveExtractor {
         }
         defer { closedir(stream) }
         var items: [URL] = []
-        while let entry = readdir(stream) {
+        while true {
+            // nil is the end and an error alike: only errno tells them apart
+            errno = 0
+            guard let entry = readdir(stream) else {
+                guard errno == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
+                return items
+            }
             let name = withUnsafeBytes(of: entry.pointee.d_name) {
                 String(decoding: $0.prefix(Int(entry.pointee.d_namlen)), as: UTF8.self)
             }
@@ -268,6 +274,5 @@ final actor ArchiveExtractor {
                 items.append(directory.appending(component: name))
             }
         }
-        return items
     }
 }
