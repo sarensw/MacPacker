@@ -1682,9 +1682,12 @@ extension ArchiveState {
                 // The smart folder is created below, before the extractor starts
                 // access on it — so the user-picked destination has to be held
                 // accessible from here on, or the directory creation fails for
-                // sandboxed destinations.
-                let didAccessDestination = destination.startAccessingSecurityScopedResource()
-                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
+                // sandboxed destinations. A folder granted on an earlier launch
+                // is reached through its stored bookmark: on its own, the plain
+                // url grants nothing.
+                let scopedDestination = Sandbox.securityScopedURL(for: destination) ?? destination
+                let didAccessDestination = scopedDestination.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { scopedDestination.stopAccessingSecurityScopedResource() } }
 
                 var target = destination
                 if smart, coversWholeArchive(items) {
@@ -1759,9 +1762,12 @@ extension ArchiveState {
                 // The smart folder is created below, before the extractor starts
                 // access on it — so the user-picked destination has to be held
                 // accessible from here on, or the directory creation fails for
-                // sandboxed destinations.
-                let didAccessDestination = destination.startAccessingSecurityScopedResource()
-                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
+                // sandboxed destinations. A folder granted on an earlier launch
+                // is reached through its stored bookmark: on its own, the plain
+                // url grants nothing.
+                let scopedDestination = Sandbox.securityScopedURL(for: destination) ?? destination
+                let didAccessDestination = scopedDestination.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { scopedDestination.stopAccessingSecurityScopedResource() } }
 
                 var target = destination
                 if smart {

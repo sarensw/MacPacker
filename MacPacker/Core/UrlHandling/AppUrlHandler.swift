@@ -73,5 +73,8 @@ extension AppUrlHandler {
 }
 
 private func folderContents(_ folder: URL) -> [URL] {
-    (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
+    // a folder granted on an earlier launch is listed through its stored grant
+    Sandbox.accessSync(url: folder) {
+        (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
+    }
 }
