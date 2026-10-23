@@ -409,5 +409,27 @@ extension AllCoreTests {
             let contents = try FileManager.default.contentsOfDirectory(atPath: dir.path).sorted()
             #expect(contents == ["hello world.txt"], "the cancelled extraction left something behind: \(contents)")
         }
+
+        // MARK: - Everything arrives
+
+        /// Foundation's directory listings skip every name that starts with
+        /// "._". The archive's listing takes `._notadouble.txt` for the sidecar
+        /// of `notadouble.txt`, so smart extraction puts the archive flat into
+        /// the destination too, and extraction writes it out as the plain file
+        /// it is. Moving out what a listing of the staging folder returned
+        /// left it behind, to be deleted with that folder.
+        @Test(arguments: [true, false])
+        func aFileNamedLikeASidecarArrivesToo(smart: Bool) async throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try #require(Bundle.module.url(forResource: "zip", withExtension: nil))
+                .appending(path: "dotUnderscoreDecoy.zip")
+
+            try await extractFull(newState(), zip, to: dir, smart: smart)
+
+            #expect(read(dir.appending(path: "notadouble.txt")) == "The sibling that makes the decoy tempting.\n")
+            #expect(read(dir.appending(path: "._notadouble.txt")) == "A real file that merely starts with dot-underscore.\n")
+        }
     }
 }

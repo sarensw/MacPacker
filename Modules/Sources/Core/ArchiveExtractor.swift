@@ -244,10 +244,30 @@ final actor ArchiveExtractor {
             try FileManager.default.moveItem(at: staging, to: destination.appending(component: name))
             return
         }
-        for item in try FileManager.default.contentsOfDirectory(at: staging, includingPropertiesForKeys: [.isDirectoryKey]) {
+        for item in try allItems(in: staging) {
             let isDirectory = (try? item.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
             let name = SmartExtraction.freeName(item.lastPathComponent, in: destination, isDirectory: isDirectory)
             try FileManager.default.moveItem(at: item, to: destination.appending(component: name))
         }
+    }
+
+    /// Everything in `directory`. Foundation's listings leave out every name
+    /// that starts with "._", and an archive can hold files named like that:
+    /// one that is no AppleDouble, or the sidecar of a file it does not hold.
+    private func allItems(in directory: URL) throws -> [URL] {
+        guard let stream = opendir(directory.path) else {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+        defer { closedir(stream) }
+        var items: [URL] = []
+        while let entry = readdir(stream) {
+            let name = withUnsafeBytes(of: entry.pointee.d_name) {
+                String(decoding: $0.prefix(Int(entry.pointee.d_namlen)), as: UTF8.self)
+            }
+            if name != "." && name != ".." {
+                items.append(directory.appending(component: name))
+            }
+        }
+        return items
     }
 }
