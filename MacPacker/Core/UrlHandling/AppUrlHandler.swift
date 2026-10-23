@@ -43,9 +43,19 @@ extension AppUrlHandler {
         // source-folder access itself, via the provider — like a password.
         let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
         state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
-        state.passwordProvider = { await PasswordWindow.ask($0) }
+        // Cancel ends the action. Opening goes on without a password, as a
+        // zip lists its names without one, and extracting would ask again.
+        let prompt = PasswordPrompt()
+        state.passwordProvider = { @MainActor request in
+            let password = await PasswordWindow.ask(request)
+            if password == nil { prompt.wasCancelled = true }
+            return password
+        }
         state.open(url: archive)
         _ = try? await state.openTask?.value
+        if prompt.wasCancelled {
+            return []
+        }
         // a failed open throws nothing: its reason is in openError, and the
         // extraction would only fail on the empty state with a reason of its own
         if let reason = state.openError {
@@ -66,6 +76,12 @@ extension AppUrlHandler {
 
         return folderContents(destination).filter { !before.contains($0) }
     }
+}
+
+/// Whether a password prompt was cancelled.
+@MainActor
+private final class PasswordPrompt {
+    var wasCancelled = false
 }
 
 private func folderContents(_ folder: URL) -> [URL] {
