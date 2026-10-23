@@ -179,5 +179,52 @@ extension AllCoreTests {
                 #expect(!action.honorsSmartExtraction, "\(action) does not extract")
             }
         }
+
+        /// Finder's window shows `Downloads`, with `Demo` expanded in list view;
+        /// one archive is selected in each. What comes out of each goes next to
+        /// it — it went into `Downloads` for both.
+        @Test("An extracting action puts what comes out next to the archive, not in the window's folder")
+        func extractedNextToTheArchive() {
+            let request = AppUrl(
+                action: .extractHere,
+                files: [URL(fileURLWithPath: "/Users/me/Downloads/Demo/a.zip"), URL(fileURLWithPath: "/Users/me/Downloads/b.zip")],
+                target: URL(fileURLWithPath: "/Users/me/Downloads"))
+            #expect(request.files.map(request.folder(of:)).map(\.path) == ["/Users/me/Downloads/Demo", "/Users/me/Downloads"])
+        }
+
+        /// Selecting what lies in an expanded subfolder would open a second
+        /// Finder window; the window shows it already.
+        @Test("Only what lands in the window's own folder is selected")
+        func onlyTheWindowsOwnFolderIsSelected() {
+            let request = AppUrl(
+                action: .extractHere,
+                files: [URL(fileURLWithPath: "/Users/me/Downloads/Demo/a.zip"), URL(fileURLWithPath: "/Users/me/Downloads/b.zip")],
+                target: URL(fileURLWithPath: "/Users/me/Downloads/"))
+            let placed = [URL(fileURLWithPath: "/Users/me/Downloads/Demo/a"), URL(fileURLWithPath: "/Users/me/Downloads/b")]
+            #expect(request.itemsToSelect(placed).map(\.path) == ["/Users/me/Downloads/b"])
+        }
+
+        /// Compressing several items makes one archive in the folder they sit
+        /// in, named after it — the subfolder when all of them are in one
+        /// expanded in list view. It went into `Downloads`, as `Downloads.zip`.
+        @Test("Compressing items of an expanded folder puts the archive in that folder", arguments: [
+            (["/Users/me/Downloads/Demo/a.txt", "/Users/me/Downloads/Demo/b.txt"], "/Users/me/Downloads/Demo"),
+            (["/Users/me/Downloads/Demo/a.txt", "/Users/me/Downloads/b.txt"], "/Users/me/Downloads"),
+            (["/Users/me/Downloads/Demo/Old/a.txt", "/Users/me/Downloads/Demo/b.txt"], "/Users/me/Downloads/Demo"),
+            (["/Users/me/Downloads/Demo/a.txt"], "/Users/me/Downloads/Demo"),
+        ])
+        func compressedInTheItemsFolder(items: [String], folder: String) {
+            let request = AppUrl(
+                action: .compress,
+                files: items.map { URL(fileURLWithPath: $0) },
+                target: URL(fileURLWithPath: "/Users/me/Downloads"))
+            #expect(request.folderOfFiles.path == folder)
+            #expect(AppUrl.folder(containing: request.files)?.path == folder)
+        }
+
+        @Test("No items, no folder")
+        func noItemsNoFolder() {
+            #expect(AppUrl.folder(containing: []) == nil)
+        }
 }
 }

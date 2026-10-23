@@ -14,7 +14,7 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Finder action "Extract Here": extracts every selected archive next to it,
-/// then selects what came out in Finder.
+/// then selects in Finder what came out in the window's own folder.
 class AppUrlExtractHereHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
@@ -27,19 +27,24 @@ class AppUrlExtractHereHandler: AppUrlHandler {
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.debug("Extracting \(appUrl.files.count) archive(s) here: \(appUrl.target)")
 
-        // the selected archives share one folder: a single grant covers
-        // reading them and writing next to them, and it is asked for only
-        // when no stored grant covers it already
-        guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
-            log.error("No access to \(appUrl.target.lastPathComponent) — cannot extract here")
-            return
+        // Each archive goes next to itself: in the window's folder, or in a
+        // folder expanded in it. A grant covers reading an archive and writing
+        // next to it, and is asked for only when no stored one covers it —
+        // one on the window's folder covers those expanded in it.
+        for folder in Set(appUrl.files.map(appUrl.folder(of:))).sorted(by: { $0.path < $1.path }) {
+            guard await FolderAccessStore.shared.ensureAccess(forFolder: folder) else {
+                log.error("No access to \(folder.lastPathComponent) — cannot extract here")
+                return
+            }
         }
         var extracted: [URL] = []
         for fileUrl in appUrl.files {
-            extracted += await self.extractArchive(fileUrl, into: appUrl.target, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
+            extracted += await self.extractArchive(fileUrl, into: appUrl.folder(of: fileUrl), smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
         }
-        if !extracted.isEmpty {
-            NSWorkspace.shared.activateFileViewerSelecting(extracted)
+        // only where it takes no second Finder window
+        let selected = appUrl.itemsToSelect(extracted)
+        if !selected.isEmpty {
+            NSWorkspace.shared.activateFileViewerSelecting(selected)
         }
     }
 }
