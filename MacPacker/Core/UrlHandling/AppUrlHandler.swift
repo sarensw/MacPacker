@@ -45,10 +45,13 @@ extension AppUrlHandler {
         state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
         state.passwordProvider = { await PasswordWindow.ask($0) }
         state.open(url: archive)
-        do {
-            try await state.openTask?.value
-        } catch {
-            log.error("Could not open \(archive.lastPathComponent)", context: ["error": error.localizedDescription])
+        _ = try? await state.openTask?.value
+        // a failed open throws nothing: its reason is in openError, and the
+        // extraction would only fail on the empty state with a reason of its own
+        if let reason = state.openError {
+            log.error("Could not open \(archive.lastPathComponent)", context: ["error": reason])
+            let job = ExtractionProgressCenter.shared.begin(archiveName: archive.lastPathComponent, destination: destination, itemCount: 0, totalBytes: nil)
+            ExtractionProgressCenter.shared.finish(job, .failed(reason))
             return []
         }
 
