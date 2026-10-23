@@ -165,6 +165,67 @@ extension AllCoreTests {
             #expect(try AppUrl(url: url, scheme: scheme) == request)
         }
     
+        /// The Quick Look preview's selection, with commas, spaces and accents
+        /// in its entries' paths, comes through as it was sent.
+        @Test("A selection of entries survives the trip through its url")
+        func itemsRoundTrip() throws {
+            let request = AppUrl(
+                action: .extractNextToArchive,
+                files: [URL(fileURLWithPath: "/Users/me/Trip.zip")],
+                target: URL(fileURLWithPath: "/Users/me"),
+                items: ["photos/a,b.jpg", "notes/été 100%.txt", "docs"]
+            )
+            let url = try #require(request.url(scheme: scheme))
+            #expect(try AppUrl(url: url, scheme: scheme) == request)
+            #expect(!AppUrlAction.extractNextToArchive.bringsAppToFront)
+            #expect(AppUrlAction.extractNextToArchive.honorsSmartExtraction)
+        }
+
+        /// The preview's "Extract archive" names no entries: all of it.
+        @Test("Extracting next to the archive without entries takes all of it")
+        func wholeArchiveNextToItself() throws {
+            let request = try AppUrl(url: url("extractNextToArchive", files: ["/Users/me/Trip.zip"]), scheme: scheme)
+            #expect(request.action == .extractNextToArchive)
+            #expect(request.files == [URL(fileURLWithPath: "/Users/me/Trip.zip")])
+            #expect(request.items.isEmpty)
+        }
+
+        /// Entries are encoded twice. One that only survives the first decoding
+        /// refuses the whole url: dropping it could leave none, and no entries
+        /// means all of the archive.
+        @Test("An entry that does not decode refuses the url")
+        func undecodableItemIsRejected() {
+            let request = url("extractNextToArchive", files: ["/Users/me/Trip.zip"],
+                              extra: [URLQueryItem(name: "items", value: "bad%ZZ")])
+            #expect(throws: AppUrl.ParseError.invalidItems) {
+                try AppUrl(url: request, scheme: scheme)
+            }
+        }
+
+        /// Only a url without `items` asks for all of the archive: one with an
+        /// empty list, or an empty entry in it, is refused.
+        @Test("An empty entry list, or an empty entry, refuses the url", arguments: ["", ",", "docs,,photos", "docs,"])
+        func emptyItemsAreRejected(items: String) {
+            let request = url("extractNextToArchive", files: ["/Users/me/Trip.zip"],
+                              extra: [URLQueryItem(name: "items", value: items)])
+            #expect(throws: AppUrl.ParseError.invalidItems) {
+                try AppUrl(url: request, scheme: scheme)
+            }
+        }
+
+        @Test("Extracting next to the archive is for one archive")
+        func extractNextToArchiveOfTwoIsRejected() throws {
+            let twoArchives = try #require(AppUrl(
+                action: .extractNextToArchive,
+                files: [URL(fileURLWithPath: "/Users/me/a.zip"), URL(fileURLWithPath: "/Users/me/b.zip")],
+                target: URL(fileURLWithPath: "/Users/me"),
+                items: ["x"]
+            ).url(scheme: scheme))
+            #expect(throws: AppUrl.ParseError.notOneArchive) {
+                try AppUrl(url: twoArchives, scheme: scheme)
+            }
+        }
+
         /// Only the entry that creates and names its own folder opts out of the
         /// smart rule — everything else lets the setting decide. Nesting a
         /// container inside `Extract to "Photos"` gives `Photos/Photos`.

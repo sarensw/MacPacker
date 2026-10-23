@@ -427,21 +427,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         }
 
         @objc func contextExtract(_ sender: Any?) {
-            let state = parent.archiveState
-            let items = state.selectedItems
-            guard !items.isEmpty else { return }
-            let panel = NSOpenPanel()
-            panel.canChooseFiles = false
-            panel.canChooseDirectories = true
-            panel.canCreateDirectories = true
-            panel.allowsMultipleSelection = false
-            panel.prompt = String(localized: .commonExtract)
-            panel.begin { response in
-                guard response == .OK, let url = panel.url else { return }
-                Task { @MainActor in
-                    state.extract(items: items, to: url, smart: Keys.smartExtractionEnabled())
-                }
-            }
+            ExtractionFollowUp.extractSelectedAskingIfNeeded(parent.archiveState, in: contextTableView?.window)
         }
 
         @objc func contextDelete(_ sender: Any?) {

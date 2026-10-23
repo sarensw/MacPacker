@@ -28,6 +28,21 @@ public enum Keys {
     public static func smartExtractionEnabled(in defaults: UserDefaults = .macPackerShared) -> Bool {
         defaults.object(forKey: smartExtraction) as? Bool ?? true
     }
+
+    /// Whether the archive window's Extract buttons — and the Quick Look
+    /// preview's — extract next to the archive, in its own folder, rather than
+    /// asking where to. Off by default. Kept in the app group, like
+    /// `smartExtraction`, for the preview to read.
+    public static let extractNextToArchive = "extractNextToArchive"
+
+    /// `extractNextToArchive`, read from the app group. Unset is off.
+    public static func extractNextToArchiveEnabled(in defaults: UserDefaults = .macPackerShared) -> Bool {
+        defaults.bool(forKey: extractNextToArchive)
+    }
+
+    /// With `extractNextToArchive`: the window closes once all of the archive
+    /// has been extracted next to it. Off by default.
+    public static let closeWindowAfterExtraction = "closeWindowAfterExtraction"
     
     // table settings
     public static let showParentRow = "showParentRow"
