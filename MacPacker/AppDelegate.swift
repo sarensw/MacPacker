@@ -125,6 +125,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 handler = AppUrlCompressEachHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             case .compressContents:
                 handler = AppUrlCompressContentsHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+            case .extractNextToArchive:
+                handler = AppUrlExtractNextToArchiveHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
             }
 
             guard let handler else {

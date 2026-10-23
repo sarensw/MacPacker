@@ -54,6 +54,24 @@ struct ArchiveCommands: Commands {
             }
             .keyboardShortcut("s", modifiers: [.command, .shift])
 
+            Divider()
+
+            Button {
+                guard let state = Self.frontArchiveState(), state.hasArchive else { return }
+                ExtractionFollowUp.extractArchiveAskingIfNeeded(state, in: NSApp.keyWindow)
+            } label: {
+                Text(.commonExtractArchive)
+            }
+            .keyboardShortcut("e", modifiers: [.command])
+
+            Button {
+                guard let state = Self.frontArchiveState(), state.hasArchive else { return }
+                ExtractionFollowUp.extractSelectedAskingIfNeeded(state, in: NSApp.keyWindow)
+            } label: {
+                Text(.commonExtractSelected)
+            }
+            .keyboardShortcut("e", modifiers: [.command, .option])
+
             // Deletion is the standard Edit ▸ Delete menu item, handled by the
             // archive table (ArchiveTableView.delete(_:)) — not a File command.
         }
