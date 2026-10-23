@@ -280,6 +280,41 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// A folder granted once stays granted. Every Finder action starts the app
+    /// anew, and on a later launch the stored grant went unused: extracting
+    /// into that folder failed for want of permission.
+    func testFinderExtractsIntoAFolderGrantedOnAnEarlierLaunch() throws {
+        let dir = try makeWorkDir("finder-granted-before")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        // Extract Here's archives hold a folder of their own, so each lands in
+        // it whether smart extraction is on or off: that setting lives in the
+        // app group, out of reach of launch arguments. Extract to "name" makes
+        // its folder either way.
+        for name in ["first", "second"] {
+            let folder = dir.appendingPathComponent(name)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            try "one".write(to: folder.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+            try run("/usr/bin/zip", ["-r", dir.appendingPathComponent("\(name).zip").path, name], cwd: dir)
+            try FileManager.default.removeItem(at: folder)
+        }
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        try run("/usr/bin/zip", [dir.appendingPathComponent("third.zip").path, "one.txt"], cwd: dir)
+
+        // the first launch asks for the folder
+        let first = launchApp(finderAction: "extractHere", files: [dir.appendingPathComponent("first.zip")], target: dir)
+        confirmAccessPanel(first, button: "Grant Access")
+        XCTAssertTrue(waitForFile(dir.appendingPathComponent("first/one.txt")), "first.zip was not extracted")
+        XCTAssertTrue(first.wait(for: .notRunning, timeout: 10), "the app stayed after its Finder action")
+
+        // later ones go on the grant it stored
+        for (action, name) in [("extractHere", "second"), ("extractToFolder", "third")] {
+            let app = launchApp(finderAction: action, files: [dir.appendingPathComponent("\(name).zip")], target: dir)
+            XCTAssertTrue(waitForFile(dir.appendingPathComponent("\(name)/one.txt")),
+                          "\(action) did not extract \(name).zip on a later launch")
+            XCTAssertTrue(app.wait(for: .notRunning, timeout: 10), "the app stayed after \(action)")
+        }
+    }
+
     /// An empty window shows the home screen, lists the archives opened before,
     /// and opening one from that list loads it in that very window — unless
     /// another window has it open already: that one comes forward (#256).
