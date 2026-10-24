@@ -23,7 +23,8 @@ protocol AppUrlHandler {
 extension AppUrlHandler {
     /// Opens `archive`, extracts all of it into `destination` and waits for
     /// the job to end. Returns what the extraction added to `destination`, so
-    /// the caller can select it in Finder.
+    /// the caller can select it in Finder. Extracting never writes over what
+    /// is there, so that is nothing when it failed or was cancelled.
     ///
     /// `smart` is the caller's: an entry that already created the folder it
     /// named passes `false`, so the extraction does not wrap a second one.
@@ -42,16 +43,29 @@ extension AppUrlHandler {
         // source-folder access itself, via the provider — like a password.
         let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
         state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
+        // Cancel ends the action. Opening goes on without a password, as a
+        // zip lists its names without one, and extracting would ask again.
+        let prompt = PasswordPrompt()
+        state.passwordProvider = { @MainActor request in
+            let password = await PasswordWindow.ask(request)
+            if password == nil { prompt.wasCancelled = true }
+            return password
+        }
         state.open(url: archive)
-        do {
-            try await state.openTask?.value
-        } catch {
-            log.error("Could not open \(archive.lastPathComponent)", context: ["error": error.localizedDescription])
+        _ = try? await state.openTask?.value
+        if prompt.wasCancelled {
+            return []
+        }
+        // a failed open throws nothing: its reason is in openError, and the
+        // extraction would only fail on the empty state with a reason of its own
+        if let reason = state.openError {
+            log.error("Could not open \(archive.lastPathComponent)", context: ["error": reason])
+            let job = ExtractionProgressCenter.shared.begin(archiveName: archive.lastPathComponent, destination: destination, itemCount: 0, totalBytes: nil)
+            ExtractionProgressCenter.shared.finish(job, .failed(reason))
             return []
         }
 
         let before = Set(folderContents(destination))
-        let topLevel = state.root?.children?.compactMap { state.entries[$0]?.name } ?? []
 
         // extract(to:) raises isBusy before it returns and lowers it once the
         // job ends — done, cancelled or failed
@@ -60,16 +74,14 @@ extension AppUrlHandler {
             break
         }
 
-        let added = folderContents(destination).filter { !before.contains($0) }
-        if !added.isEmpty {
-            return added
-        }
-        // extracted over existing items: nothing is new, so point at what the
-        // archive holds
-        return topLevel
-            .map { destination.appendingPathComponent($0) }
-            .filter { FileManager.default.fileExists(atPath: $0.path) }
+        return folderContents(destination).filter { !before.contains($0) }
     }
+}
+
+/// Whether a password prompt was cancelled.
+@MainActor
+private final class PasswordPrompt {
+    var wasCancelled = false
 }
 
 private func folderContents(_ folder: URL) -> [URL] {

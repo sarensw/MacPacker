@@ -23,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("updateBetaChannelOn") var updateBetaChannelOn: Bool = false
     @AppStorage("checkForUpdates") var checkForUpdates: SettingUpdateCheck = .automatically
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
+    @AppStorage(Keys.extractOnOpen) private var extractOnOpen: Bool = false
     private var archiveWindowManager: ArchiveWindowManager? = nil
     private var extractionProgressWindowController: ExtractionProgressWindowController? = nil
     private var dropMenuBarItem: DropMenuBarItem? = nil
@@ -88,11 +89,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
         // first check if this is an app url, and handle it accordingly
         let appUrl: AppUrl? = urls.first.flatMap { UrlParser().parse(appUrl: $0) }
+        // With "Extract archives on open" on, the archives among what is to
+        // be opened are extracted next to themselves instead, as Extract Here
+        // does (#280). What MacPacker cannot open still gets its window.
+        let detector = ArchiveTypeDetector(catalog: appState.catalog)
+        let archivesToExtract = appUrl == nil && extractOnOpen ? urls.filter { detector.detect(for: $0) != nil } : []
 
         // On a cold start this is what the launch was started for, so it
         // decides the launch windows. The welcome window goes on top of what
         // opens below.
-        let showsLaunchWindows = launch.started(for: appUrl == nil ? .openWith : .finderExtension)
+        let showsLaunchWindows = launch.started(for: appUrl == nil && archivesToExtract.isEmpty ? .openWith : .finderExtension)
         if showsLaunchWindows {
             openLaunchWindow()
         }
@@ -136,29 +142,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 return
             }
 
-            // We have all the url info, start the handlers now. The action
-            // counts as under way until all of it is done, so that the app
-            // does not quit in the middle of it: see
-            // `applicationShouldTerminateAfterLastWindowClosed`.
-            Task {
-                await ExtractionProgressCenter.shared.run {
-                    await handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
-                }
-                if finderLaunchIsOver {
-                    log.notice("Launched for a Finder action, which is done — quitting")
-                    NSApp.terminate(nil)
-                }
-            }
+            // We have all the url info, start the handlers now.
+            run(handler, for: [appUrl], in: archiveWindowManager)
 
             // no need to move further here as it was an app url
             return
         }
 
+        if !archivesToExtract.isEmpty, let archiveWindowManager {
+            log.notice("Extracting \(archivesToExtract.count) opened archive(s) instead")
+            let handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+            run(handler, for: AppUrl.extractHere(archivesToExtract), in: archiveWindowManager)
+        }
+
         // it is not an app url, therefore the assumption is that the app
         // was opened via Finder > right click > Open with...
-        for url in urls {
+        for url in urls where !archivesToExtract.contains(url) {
             log.notice("Open-with: opening \(url.lastPathComponent)")
             archiveWindowManager?.openArchiveWindow(for: url)
+        }
+    }
+
+    /// Runs a Finder action to its end. It counts as under way until all of
+    /// it is done, so that the app does not quit in the middle of it: see
+    /// `applicationShouldTerminateAfterLastWindowClosed`.
+    private func run(_ handler: AppUrlHandler, for appUrls: [AppUrl], in archiveWindowManager: ArchiveWindowManager) {
+        Task {
+            await ExtractionProgressCenter.shared.run {
+                for appUrl in appUrls {
+                    await handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
+                }
+            }
+            if finderLaunchIsOver {
+                log.notice("Launched for a Finder action, which is done — quitting")
+                NSApp.terminate(nil)
+            }
         }
     }
     

@@ -21726,6 +21726,18 @@
         }
       }
     },
+    "settingsExtractOnOpen": {
+      "comment": "Setting: an archive opened from Finder (double-click, Open With) is extracted next to itself, like Extract Here, instead of being shown in a MacPacker window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        }
+      }
+    },
     "settingsExtractToChosenFolder": {
       "comment": "Context menu entry in the settings list: asks where to extract, then extracts there",
       "extractionState": "manual",

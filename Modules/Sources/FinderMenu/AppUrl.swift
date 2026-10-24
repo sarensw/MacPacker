@@ -137,6 +137,14 @@ public struct AppUrl: Equatable, Sendable {
         }
     }
 
+    /// Extract Here for archives the app was handed to open, when it extracts
+    /// them instead (#280): one request per folder, as the menu entry sends
+    /// for a selection, so that each archive lands next to itself.
+    public static func extractHere(_ archives: [URL]) -> [AppUrl] {
+        Dictionary(grouping: archives) { $0.deletingLastPathComponent() }
+            .map { AppUrl(action: .extractHere, files: $0.value, target: $0.key) }
+    }
+
     /// The archive's file name for this request: `base` as the compress rule
     /// builds it, plus the menu's moment when the dated entry sent it.
     public func archiveName(_ base: String, extension ext: String) -> String {

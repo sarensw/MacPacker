@@ -14,7 +14,8 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Finder action "Extract to "<name>"": extracts each selected archive into a
-/// new folder named after it, then selects those folders in Finder.
+/// new folder named after it, then selects those folders in Finder. A folder
+/// that nothing was extracted into is removed again.
 class AppUrlExtractToFolderHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
@@ -55,7 +56,12 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
             // it is named after has just been created, so wrapping a second
             // one inside would be the `Photos/Photos` nesting the smart rule
             // exists to avoid.
-            _ = await self.extractArchive(fileUrl, into: folderUrl, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
+            let added = await self.extractArchive(fileUrl, into: folderUrl, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
+            // A failed or cancelled extraction adds nothing, and the folder
+            // made for it goes again. rmdir removes it only while it is empty.
+            if added.isEmpty && Sandbox.accessSync(url: folderUrl, perform: { rmdir(folderUrl.path) }) == 0 {
+                continue
+            }
             folders.append(folderUrl)
         }
         if !folders.isEmpty {

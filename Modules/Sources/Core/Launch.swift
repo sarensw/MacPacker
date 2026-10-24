@@ -29,7 +29,9 @@ public struct Launch: Sendable {
         /// drop on the Dock icon, `open` in Terminal. The first archive
         /// takes the launch window.
         case openWith
-        /// A request from the Finder extension, for an entry of its menu.
+        /// A request from the Finder extension, for an entry of its menu. Or
+        /// archives handed over to open while "Extract archives on open" is
+        /// on, which then go through its Extract Here (#280).
         case finderExtension
     }
 
