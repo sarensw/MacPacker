@@ -31,6 +31,13 @@ extension AllCoreTests {
             withExtendedLifetime(controller) {}
         }
 
+        @Test func headerAcceptsClicksInNonKeyQuickLookPanel() async throws {
+            let (controller, outline, _) = try await makePreview()
+            let header = try #require(outline.headerView)
+            #expect(header.acceptsFirstMouse(for: nil))
+            withExtendedLifetime(controller) {}
+        }
+
         @Test func columnSortingPreservesExpansionAndSelection() async throws {
             let (controller, outline, state) = try await makePreview()
             let folder = try #require(state.entries.values.first { $0.name == "folder" })
