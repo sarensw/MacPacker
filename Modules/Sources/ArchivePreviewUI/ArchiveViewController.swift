@@ -12,6 +12,7 @@ import UniformTypeIdentifiers
 class ArchiveViewController: NSViewController {
     var state: ArchiveState? {
         didSet {
+            sortedChildren.removeAll()
             outlineView.reloadData()
         }
     }
@@ -20,6 +21,8 @@ class ArchiveViewController: NSViewController {
     /// while it happens — reading one means unpacking it first, which is not
     /// instant for a large archive.
     private var loadingItems: Set<UUID> = []
+
+    private var sortedChildren: [UUID: [ArchiveItem]] = [:]
 
     var selectedItems: [ArchiveItem]? {
         guard outlineView.selectedRowIndexes.count > 0 else {
@@ -61,6 +64,7 @@ class ArchiveViewController: NSViewController {
         outlineView.gridStyleMask = []
         
         createColumns(outlineView)
+        outlineView.sortDescriptors = [NSSortDescriptor(key: ArchiveSortOrder.name.rawValue, ascending: true)]
         
         view = NSView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -96,6 +100,10 @@ class ArchiveViewController: NSViewController {
         colModDate.title = String(localized: "Date Modified", bundle: .module, comment: "Column that shows the date the file was modified")
         colModDate.width = 150
         outlineView.addTableColumn(colModDate)
+
+        for column in outlineView.tableColumns {
+            column.sortDescriptorPrototype = NSSortDescriptor(key: column.identifier.rawValue, ascending: true)
+        }
     }
 }
 
@@ -111,9 +119,26 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
     /// is why the preview showed empty, non-expandable rows.
     private func resolvedChildren(of item: Any?) -> [ArchiveItem] {
         guard let state else { return [] }
-        let node = (item as? ArchiveItem) ?? state.root
-        guard let childIDs = node?.children else { return [] }
-        return childIDs.compactMap { state.entries[$0] }
+        guard let node = (item as? ArchiveItem) ?? state.root else { return [] }
+        if let children = sortedChildren[node.id] { return children }
+        guard let childIDs = node.children else { return [] }
+        let descriptor = outlineView.sortDescriptors.first
+        let order = descriptor?.key.flatMap(ArchiveSortOrder.init(rawValue:)) ?? .name
+        let children = state.sortedForDisplay(
+            childIDs.compactMap { state.entries[$0] },
+            order: order,
+            ascending: descriptor?.ascending ?? true
+        )
+        sortedChildren[node.id] = children
+        return children
+    }
+
+    func outlineView(_ outlineView: NSOutlineView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
+        let selection = selectedItems ?? []
+        sortedChildren.removeAll()
+        outlineView.reloadData()
+        let rows = selection.map { outlineView.row(forItem: $0) }.filter { $0 >= 0 }
+        outlineView.selectRowIndexes(IndexSet(rows), byExtendingSelection: false)
     }
 
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
@@ -170,6 +195,7 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
                 ])
             }
             loadingItems.remove(item.id)
+            sortedChildren.removeAll()
             outlineView.reloadItem(item, reloadChildren: true)
             if !resolvedChildren(of: item).isEmpty {
                 outlineView.expandItem(item)
