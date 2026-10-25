@@ -48,7 +48,7 @@ class ArchiveViewController: NSViewController {
         scrollView.hasVerticalScroller = true
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         
-        outlineView.headerView = NSTableHeaderView()
+        outlineView.headerView = PreviewTableHeaderView()
         outlineView.allowsColumnReordering = false
         outlineView.allowsColumnResizing = true
         outlineView.allowsMultipleSelection = true
@@ -105,6 +105,11 @@ class ArchiveViewController: NSViewController {
             column.sortDescriptorPrototype = NSSortDescriptor(key: column.identifier.rawValue, ascending: true)
         }
     }
+}
+
+/// Finder keeps key focus while its Quick Look panel hosts the preview.
+private final class PreviewTableHeaderView: NSTableHeaderView {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }
 
 extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
