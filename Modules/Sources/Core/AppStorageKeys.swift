@@ -36,6 +36,16 @@ public enum Keys {
 
     // table settings
     public static let showParentRow = "showParentRow"
+    /// Whether the archive window and Quick Look list the files Finder hides,
+    /// greyed out as Finder shows them. Off by default (#304).
+    public static let showHiddenFiles = "showHiddenFiles"
+
+    /// `showHiddenFiles`, read from the app group so the Quick Look extension
+    /// sees what the app wrote. Unset is off.
+    public static func showHiddenFilesEnabled(in defaults: UserDefaults = .macPackerShared) -> Bool {
+        defaults.bool(forKey: showHiddenFiles)
+    }
+
     public static let showColumnCompressedSize = "showColumnCompressedSize"
     public static let showColumnUncompressedSize = "showColumnUncompressedSize"
     public static let showColumnModificationDate = "showColumnModificationDate"

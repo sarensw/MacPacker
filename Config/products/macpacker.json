@@ -101,6 +101,37 @@
             ]
           },
           {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Hide hidden files, as Finder does",
+                "zh-Hans": "像 Finder 一样不显示隐藏文件",
+                "fr": "Masquer les fichiers cachés, comme le Finder",
+                "de": "Versteckte Dateien ausblenden, wie im Finder",
+                "it": "Nascondere i file nascosti, come il Finder",
+                "ja": "Finder と同じく隠しファイルを非表示に",
+                "fa": "پنهان کردن فایل‌های پنهان، مانند Finder",
+                "pl": "Ukrywanie ukrytych plików, jak w Finderze",
+                "pt-BR": "Ocultar arquivos ocultos, como o Finder",
+                "ru": "Скрытие скрытых файлов, как в Finder",
+                "uk": "Приховування прихованих файлів, як у Finder",
+                "es-MX": "Ocultar archivos ocultos, como el Finder",
+                "ko": "Finder처럼 숨김 파일 숨기기",
+                "nl": "Verborgen bestanden verbergen, zoals de Finder",
+                "tr": "Gizli dosyaları gizleme, Finder’daki gibi",
+                "vi": "Ẩn tệp ẩn, giống như Finder",
+                "ar": "إخفاء الملفات المخفية كما في Finder",
+                "ca": "Oculta els fitxers ocults, com el Finder",
+                "el": "Απόκρυψη κρυφών αρχείων, όπως στο Finder",
+                "nb": "Skjul skjulte filer, slik Finder gjør",
+                "zh-TW": "像 Finder 一樣不顯示隱藏檔案",
+                "hi": "Finder की तरह छिपी फ़ाइलें छिपाएँ"
+            },
+            "issues": [
+                "304"
+            ]
+          },
+          {
             "type": "fix",
             "title": {
                 "en": "Deb files open as one “unknown” file",

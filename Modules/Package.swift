@@ -451,6 +451,7 @@ let package = Package(
             name: "CoreTests",
             dependencies: [
                 "Core",
+                "ArchivePreviewUI",
                 "FinderMenu",
                 .product(name: "tb", package: "TailBeatKit")
             ],

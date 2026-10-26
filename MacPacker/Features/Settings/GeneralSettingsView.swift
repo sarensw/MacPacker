@@ -16,6 +16,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
+    @AppStorage(Keys.showHiddenFiles, store: .macPackerShared) var showHiddenFiles: Bool = false
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
@@ -53,6 +54,18 @@ struct GeneralSettingsView: View {
 
                 HStack {
                     Toggle(isOn: $showParentRow) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            HStack(alignment: .top) {
+                Text(.settingsShowHiddenFiles)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $showHiddenFiles) {}
+                        .accessibilityIdentifier(AccessibilityIdentifier.showHiddenFilesSetting)
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)

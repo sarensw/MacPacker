@@ -25470,6 +25470,18 @@
         }
       }
     },
+    "settingsShowHiddenFiles": {
+      "comment": "Setting: also list the files Finder hides, such as .DS_Store, in the archive window and in Quick Look, greyed out as in Finder. Off by default.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show hidden files"
+          }
+        }
+      }
+    },
     "settingsShowInMenuBar": {
       "comment": "Setting that adds a MacPacker icon to the menu bar, which opens the Quick Compress window",
       "extractionState": "manual",
