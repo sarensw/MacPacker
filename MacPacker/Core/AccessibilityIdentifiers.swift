@@ -23,6 +23,9 @@ enum AccessibilityIdentifier {
     static let quickCompressWindow = "quickCompress.window"
     /// The extraction and compression progress window.
     static let progressWindow = "progress.window"
+    /// Settings ▸ General ▸ Show hidden files. Its row label is a separate text,
+    /// so the toggle itself has no name to find it by.
+    static let showHiddenFilesSetting = "settings.showHiddenFiles"
 }
 
 extension NSWindow {

@@ -478,6 +478,46 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// A `.DS_Store` stays out of the archive window, as in Finder, until
+    /// Settings ▸ General ▸ Show hidden files is on — and a window already open
+    /// follows the setting (#304). Shown, it is greyed out, which only a look at
+    /// the screen tells: the test keeps a screenshot.
+    func testShowHiddenFilesSettingReachesAnOpenWindow() throws {
+        let dir = try makeWorkDir("hidden")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "one".write(to: dir.appendingPathComponent("one.txt"), atomically: true, encoding: .utf8)
+        try "finder".write(to: dir.appendingPathComponent(".DS_Store"), atomically: true, encoding: .utf8)
+        let zip = dir.appendingPathComponent("fixture.zip")
+        try run("/usr/bin/zip", ["-X", zip.path, "one.txt", ".DS_Store"], cwd: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", zip.path])
+        XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
+
+        app.typeKey(",", modifierFlags: .command)
+        // Spelled out, as AccessibilityIdentifier.showHiddenFilesSetting.
+        let setting = app.descendants(matching: .any).matching(identifier: "settings.showHiddenFiles").firstMatch
+        XCTAssertTrue(setting.waitForExistence(timeout: 10), "no Show hidden files setting")
+        XCTAssertFalse(setting.label.isEmpty, "the setting has no name for VoiceOver")
+        // The setting lives in the app group, so what this Mac chose last leaks
+        // in. A launch argument cannot pin it: it would win over the toggle too.
+        if isOn(setting) { setting.click() }
+        XCTAssertTrue(app.staticTexts[".DS_Store"].waitForNonExistence(timeout: 10),
+                      "the open window lists the hidden file while the setting is off")
+
+        setting.click()
+        XCTAssertTrue(app.staticTexts[".DS_Store"].waitForExistence(timeout: 10),
+                      "the open window does not list the hidden file once the setting is on")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "hidden files shown"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+
+        setting.click()
+        XCTAssertTrue(app.staticTexts[".DS_Store"].waitForNonExistence(timeout: 10),
+                      "the open window still lists the hidden file once the setting is off")
+        app.terminate()
+    }
+
     /// Dragging a file from Finder onto the upper half of an editable archive adds
     /// it — the drop zones replaced the old ⌥-modifier gesture, so the plain drag
     /// has to land in the archive without any key held.
