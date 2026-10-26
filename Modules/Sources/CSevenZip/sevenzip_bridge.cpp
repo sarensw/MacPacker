@@ -123,6 +123,10 @@ struct SZArchiveHandle {
     UInt32 numItems;
     std::string password;
     bool hasPassword = false;
+    /// What the innermost level was read from: the archive file, or for a
+    /// nested level the entry of the level around it. Names an entry that has
+    /// no path of its own, see entryPath().
+    UString sourceName;
 
     /// Entries that are AppleDouble sidecars for some other entry in this
     /// archive, and so are metadata rather than files of their own. Kept out of
@@ -368,6 +372,28 @@ HRESULT sz_open_stream(
     return S_FALSE;
 }
 
+/// The path of entry `index`, or for an entry without one the name 7-Zip's own
+/// client gives it: `sourceName`'s file name less its extension, so
+/// `notes.txt.xz` holds `notes.txt`. bzip2, xz, lzma and compress store no
+/// name and gzip only optionally; an rpm's payload is such a stream too.
+static UString entryPath(IInArchive *archive, UInt32 index, const UString &sourceName)
+{
+    NWindows::NCOM::CPropVariant prop;
+    archive->GetProperty(index, kpidPath, &prop);
+    if (prop.vt == VT_BSTR && prop.bstrVal && prop.bstrVal[0])
+        return UString(prop.bstrVal);
+
+    // ponytail: 7-Zip's client also gives a `tgz`, `txz`, ... back its `.tar` and
+    // appends the entry's kpidExtension (GetDefaultName2, GetItem_DefaultPath).
+    // A compound lists its tar, not this level; add them once a listing needs them.
+    const UString name = ExtractFileNameFromPath(sourceName);
+    const int dot = name.ReverseFind_Dot();
+    // no extension to drop: 7-Zip's `~` keeps the entry from taking the archive's name
+    UString path = dot > 0 ? name.Left((unsigned)dot) : name + L'~';
+    path.TrimRight();
+    return path;
+}
+
 /// The modification time an archive gives an entry.
 ///
 /// kpidMTime is a FILETIME: 100-nanosecond ticks since 1601-01-01 UTC. An entry
@@ -456,11 +482,11 @@ class CExtractCallback final :
     Z7_COM_UNKNOWN_IMP_2(IArchiveExtractCallback, ICryptoGetTextPassword)
 
 public:
-    CExtractCallback(IInArchive *archive, const FString &destDir,
+    CExtractCallback(IInArchive *archive, const UString &sourceName, const FString &destDir,
                      const std::string &password, bool hasPassword,
                      sz_progress_callback progress = nullptr,
                      void *progressContext = nullptr)
-        : _archive(archive), _destDir(destDir), _outFileStream(nullptr),
+        : _archive(archive), _sourceName(sourceName), _destDir(destDir), _outFileStream(nullptr),
           _password(password), _hasPassword(hasPassword),
           _progress(progress), _progressContext(progressContext) {}
 
@@ -525,6 +551,7 @@ private:
     void createDirsRecordingNew(const FString &dir);
 
     IInArchive *_archive;
+    UString _sourceName;  // names an entry without a path, see entryPath()
     FString _destDir;
     CMyComPtr<ISequentialOutStream> _outFileStream;
     FString _currentFilePath;
@@ -562,16 +589,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
     if (askExtractMode != NArchive::NExtract::NAskMode::kExtract)
         return S_OK;
 
-    // Get the path property
-    NWindows::NCOM::CPropVariant prop;
-    HRESULT hr = _archive->GetProperty(index, kpidPath, &prop);
-    if (hr != S_OK) return hr;
-
-    UString filePath;
-    if (prop.vt == VT_BSTR && prop.bstrVal)
-        filePath = prop.bstrVal;
-    else
-        filePath = L"unknown";
+    const UString filePath = entryPath(_archive, index, _sourceName);
 
     // Check if directory
     NWindows::NCOM::CPropVariant propIsDir;
@@ -1131,8 +1149,8 @@ static void sz_indexAppleDoubleSidecars(SZArchiveHandle *handle) {
 /// containers (disk images containing filesystems) up to a fixed depth via
 /// the `kpidMainSubfile` stream. A `deb` level is not drilled into: its
 /// payload is a tar under a compression wrapper with no usable entry paths,
-/// which would otherwise list as a lone entry named "unknown" instead of the
-/// deb's members.
+/// which would otherwise list as a lone `data.tar` instead of the deb's
+/// members.
 ///
 /// @param path  Filesystem path of the archive (UTF-8).
 /// @param password  Password for reading encrypted headers (7z `-mhe=on`,
@@ -1170,6 +1188,7 @@ SZArchiveRef sz_open(const char *path, const char *password,
             UString upath;
             ConvertUTF8ToUnicode(apath, upath);
             fpath = us2fs(upath);
+            handle->sourceName = upath;
         }
 
         if (!fileStreamSpec->Open(fpath)) {
@@ -1216,7 +1235,7 @@ SZArchiveRef sz_open(const char *path, const char *password,
 
             // Do not drill into a deb: its payload is a tar under a compression
             // wrapper whose level has no usable kpidPath, which would render a
-            // lone entry named "unknown" instead of the deb's members.
+            // lone `data.tar` instead of the deb's members.
             NWindows::NCOM::CPropVariant ownExt;
             currentArc->GetArchiveProperty(kpidExtension, &ownExt);
             if (ownExt.vt == VT_BSTR && ownExt.bstrVal
@@ -1273,6 +1292,9 @@ SZArchiveRef sz_open(const char *path, const char *password,
                 }
                 break;
             }
+
+            // the main subfile is what the new level was read from
+            handle->sourceName = entryPath(currentArc, mainSubfile, handle->sourceName);
 
             // Push the new level
             SZArchiveLevel level;
@@ -1416,11 +1438,8 @@ bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
         entry_out->mtime = -1;
         entry_out->is_alt_stream = false;
 
-        // Path
-        NWindows::NCOM::CPropVariant propPath;
-        arc->GetProperty(index, kpidPath, &propPath);
-        std::string pathStr = PropVariantToUTF8(propPath);
-        if (pathStr.empty()) pathStr = "unknown";  // match CExtractCallback fallback
+        // Path, named as CExtractCallback names the file it writes
+        const std::string pathStr = UStringToUTF8(entryPath(arc, index, handle->sourceName));
         entry_out->path = handle->storeString(pathStr);
 
         // Parent index and name (tree-aware)
@@ -1528,7 +1547,7 @@ int sz_extract_entry(SZArchiveRef archive, uint32_t index,
         ConvertUTF8ToUnicode(aDest, uDest);
         FString fDest = us2fs(uDest);
 
-        auto *callback = new CExtractCallback(handle->activeArchive(), fDest,
+        auto *callback = new CExtractCallback(handle->activeArchive(), handle->sourceName, fDest,
                                                 handle->password, handle->hasPassword);
         CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
 
@@ -1559,7 +1578,7 @@ int sz_extract_entries(SZArchiveRef archive, const uint32_t *indices,
         ConvertUTF8ToUnicode(aDest, uDest);
         FString fDest = us2fs(uDest);
 
-        auto *callback = new CExtractCallback(handle->activeArchive(), fDest,
+        auto *callback = new CExtractCallback(handle->activeArchive(), handle->sourceName, fDest,
                                                 handle->password, handle->hasPassword,
                                                 progress, progress_context);
         CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
@@ -1594,7 +1613,7 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
         ConvertUTF8ToUnicode(aDest, uDest);
         FString fDest = us2fs(uDest);
 
-        auto *callback = new CExtractCallback(handle->activeArchive(), fDest,
+        auto *callback = new CExtractCallback(handle->activeArchive(), handle->sourceName, fDest,
                                                 handle->password, handle->hasPassword,
                                                 progress, progress_context);
         CMyComPtr<IArchiveExtractCallback> callbackRef(callback);

@@ -120,6 +120,37 @@ extension AllCoreTests {
             #expect(names == arg.1)
         }
         
+        /// An entry the archive gives no name lists and extracts under the name
+        /// 7-Zip's own client gives it, not as "unknown": the archive's, less the
+        /// compression extension. bzip2, xz, lzma and compress store no name, and
+        /// gzip only optionally. An rpm's payload is such a stream, one level in,
+        /// so it is named after the payload the rpm describes.
+        @Test(arguments: [
+            ("compressed/hello world.txt.gz", "hello world.txt"),
+            ("compressed/hello world.txt.bz2", "hello world.txt"),
+            ("compressed/hello world.txt.xz", "hello world.txt"),
+            ("compressed/hello world.txt.lzma", "hello world.txt"),
+            ("compressed/hello world.txt.Z", "hello world.txt"),
+            ("defaultArchives/defaultArchive.rpm", "defaultArchive-1.0-1.aarch64.cpio")
+        ])
+        func namelessEntryIsNamedAfterTheArchive(arg: (String, String)) async throws {
+            let parts = arg.0.split(separator: "/")
+            let url = Bundle.module.url(forResource: String(parts[0]), withExtension: nil)!
+                .appendingPathComponent(String(parts[1]))
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: url)
+            try await state.openTask?.value
+            #expect(state.root?.children?.compactMap { state.entries[$0]?.name } == [arg.1])
+
+            let destination = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: destination) }
+            try await Archive7ZipEngine().extract(url, to: destination, passwordResolver: { _ in nil })
+            let written = try FileManager.default.contentsOfDirectory(atPath: destination.path)
+            #expect(written == [arg.1])
+        }
+
         @Test("Test all defaultArchives on xad", arguments: [
             ("zip", "zip"),
             ("7z", "7zip"),
