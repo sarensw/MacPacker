@@ -53,6 +53,12 @@
             "value" : "Copiez ou déplacez des fichiers vers vos dossiers favoris et leurs sous-dossiers. Sans ouvrir de nouvelles fenêtres Finder."
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ाइलों को अपने पसंदीदा फ़ोल्डर और उनके सबफ़ोल्डर में कॉपी या मूव करें। नई Finder विंडो खोलने की ज़रूरत नहीं।"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -183,6 +189,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Organisez vos fichiers. Vite."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ाइलें व्यवस्थित करें। तेज़ी से।"
           }
         },
         "it" : {
@@ -317,6 +329,12 @@
             "value" : "Dictée vocale privée, conçue pour macOS 26 et 27"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गोपनीय वॉइस-टू-टेक्स्ट, macOS 26 और 27 के लिए डिज़ाइन किया गया"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -447,6 +465,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dictée vocale privée"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गोपनीय वॉइस-टू-टेक्स्ट"
           }
         },
         "it" : {
@@ -581,6 +605,12 @@
             "value" : "Création et automatisation de médias"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मीडिया एसेट का निर्माण और ऑटोमेशन"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -711,6 +741,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Création et automatisation de médias"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मीडिया एसेट का निर्माण और ऑटोमेशन"
           }
         },
         "it" : {
@@ -845,6 +881,12 @@
             "value" : "Plus d’apps"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "और ऐप्स"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -975,6 +1017,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Découvrir %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ एक्सप्लोर करें"
           }
         },
         "it" : {
@@ -1109,6 +1157,12 @@
             "value" : "Du créateur de %@"
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ के डेवलपर की ओर से"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1241,6 +1295,12 @@
             "value" : "Mes autres apps aident à financer ce projet open source."
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मेरे अन्य ऐप्स इस ओपन-सोर्स प्रोजेक्ट को फ़ंड करने में मदद करते हैं।"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1371,6 +1431,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voir toutes mes apps"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मेरे सभी ऐप्स देखें"
           }
         },
         "it" : {
