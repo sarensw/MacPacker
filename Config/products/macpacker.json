@@ -39,6 +39,35 @@
         "version": "1.2.0",
         "items": [
           {
+            "type": "fix",
+            "title": {
+              "en": "Sort files in Quick Look",
+              "zh-Hans": "在 Quick Look 中排序文件",
+              "fr": "Trier les fichiers dans Quick Look",
+              "de": "Dateien in Quick Look sortieren",
+              "it": "Ordinare i file in Quick Look",
+              "ja": "Quick Lookでファイルを並べ替え",
+              "fa": "مرتب‌سازی فایل‌ها در Quick Look",
+              "pl": "Sortowanie plików w Quick Look",
+              "pt-BR": "Ordenar arquivos no Quick Look",
+              "ru": "Сортировка файлов в Quick Look",
+              "uk": "Сортування файлів у Quick Look",
+              "es-MX": "Ordenar archivos en Quick Look",
+              "ko": "Quick Look에서 파일 정렬",
+              "nl": "Bestanden sorteren in Quick Look",
+              "tr": "Quick Look'ta dosyaları sıralama",
+              "vi": "Sắp xếp tệp trong Quick Look",
+              "ar": "ترتيب الملفات في Quick Look",
+              "ca": "Ordena els fitxers al Quick Look",
+              "el": "Ταξινόμηση αρχείων στο Quick Look",
+              "nb": "Sorter filer i Quick Look",
+              "zh-TW": "在 Quick Look 中排序檔案"
+            },
+            "issues": [
+              "374"
+            ]
+          },
+          {
             "type": "feat",
             "highlight": true,
             "title": {

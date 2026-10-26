@@ -447,48 +447,59 @@ extension ArchiveState {
 
     private func sortedForDisplay(_ items: [ArchiveItem]) -> [ArchiveItem] {
         let defaultOrderColumn = UserDefaults.standard.string(forKey: Keys.defaultOrderColumn)
+            .flatMap(ArchiveSortOrder.init(rawValue:))
         let defaultOrderColumnAscending = UserDefaults.standard.bool(forKey: Keys.defaultOrderColumnAscending)
 
+        return sortedForDisplay(items, order: defaultOrderColumn, ascending: defaultOrderColumnAscending)
+    }
+
+    /// Shared ordering for the app's table and the Quick Look outline.  An
+    /// explicit order lets the preview sort without changing app preferences.
+    public func sortedForDisplay(
+        _ items: [ArchiveItem],
+        order: ArchiveSortOrder?,
+        ascending: Bool
+    ) -> [ArchiveItem] {
         return items.sorted { a, b in
-                switch defaultOrderColumn {
-                case ArchiveSortOrder.name.rawValue:
+                switch order {
+                case .name:
                     if a.isFolder != b.isFolder {
                         return a.isFolder
                     }
 
                     let cmp = a.name.localizedStandardCompare(b.name)
                     if cmp != .orderedSame {
-                        return defaultOrderColumnAscending ? cmp == .orderedAscending : cmp == .orderedDescending
+                        return ascending ? cmp == .orderedAscending : cmp == .orderedDescending
                     }
 
-                case ArchiveSortOrder.modificationDate.rawValue:
+                case .modificationDate:
                     let lhs = a.modificationDate ?? .distantPast
                     let rhs = b.modificationDate ?? .distantPast
 
                     if lhs != rhs {
-                        return defaultOrderColumnAscending ? lhs < rhs : lhs > rhs
+                        return ascending ? lhs < rhs : lhs > rhs
                     }
 
-                case ArchiveSortOrder.uncompressedSize.rawValue:
+                case .uncompressedSize:
                     if a.uncompressedSize != b.uncompressedSize {
-                        return defaultOrderColumnAscending
+                        return ascending
                         ? a.uncompressedSize < b.uncompressedSize
                         : a.uncompressedSize > b.uncompressedSize
                     }
 
-                case ArchiveSortOrder.compressedSize.rawValue:
+                case .compressedSize:
                     if a.compressedSize != b.compressedSize {
-                        return defaultOrderColumnAscending
+                        return ascending
                         ? a.compressedSize < b.compressedSize
                         : a.compressedSize > b.compressedSize
                     }
 
-                case ArchiveSortOrder.posixPermissions.rawValue:
+                case .posixPermissions:
                     let lhs = a.posixPermissions ?? 0
                     let rhs = b.posixPermissions ?? 0
 
                     if lhs != rhs {
-                        return defaultOrderColumnAscending ? lhs < rhs : lhs > rhs
+                        return ascending ? lhs < rhs : lhs > rhs
                     }
 
                 default:
