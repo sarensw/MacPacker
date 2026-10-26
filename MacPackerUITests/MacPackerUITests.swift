@@ -492,13 +492,17 @@ final class MacPackerUITests: XCTestCase {
 
         let app = launchApp(arguments: ["-ArchivePath", zip.path])
         XCTAssertTrue(app.staticTexts["one.txt"].waitForExistence(timeout: 15), "archive did not load")
-        XCTAssertFalse(app.staticTexts[".DS_Store"].exists, "a hidden file is listed by default")
 
         app.typeKey(",", modifierFlags: .command)
         // Spelled out, as AccessibilityIdentifier.showHiddenFilesSetting.
         let setting = app.descendants(matching: .any).matching(identifier: "settings.showHiddenFiles").firstMatch
         XCTAssertTrue(setting.waitForExistence(timeout: 10), "no Show hidden files setting")
-        XCTAssertFalse(isOn(setting), "Show hidden files is on by default")
+        XCTAssertFalse(setting.label.isEmpty, "the setting has no name for VoiceOver")
+        // The setting lives in the app group, so what this Mac chose last leaks
+        // in. A launch argument cannot pin it: it would win over the toggle too.
+        if isOn(setting) { setting.click() }
+        XCTAssertTrue(app.staticTexts[".DS_Store"].waitForNonExistence(timeout: 10),
+                      "the open window lists the hidden file while the setting is off")
 
         setting.click()
         XCTAssertTrue(app.staticTexts[".DS_Store"].waitForExistence(timeout: 10),

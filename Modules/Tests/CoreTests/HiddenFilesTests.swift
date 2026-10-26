@@ -30,6 +30,16 @@ extension AllCoreTests {
             (items ?? []).map(\.name).sorted()
         }
 
+        /// Unset means hidden, in the app and in the Quick Look extension alike.
+        @Test func hiddenFilesStayHiddenWhenUnset() {
+            let defaults = isolatedDefaults()
+
+            #expect(!Keys.showHiddenFilesEnabled(in: defaults))
+
+            defaults.set(true, forKey: Keys.showHiddenFiles)
+            #expect(Keys.showHiddenFilesEnabled(in: defaults))
+        }
+
         @Test func hiddenFilesAreLeftOut() async throws {
             let state = try await open("hiddenFiles.zip")
             #expect(names(state.childItems) == ["folder", "readme.txt"])

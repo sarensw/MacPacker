@@ -64,8 +64,11 @@ struct GeneralSettingsView: View {
                     .frame(width: 200, alignment: .trailing)
 
                 HStack {
-                    Toggle(isOn: $showHiddenFiles) {}
-                        .accessibilityIdentifier(AccessibilityIdentifier.showHiddenFilesSetting)
+                    Toggle(isOn: $showHiddenFiles) {
+                        Text(.settingsShowHiddenFiles)
+                    }
+                    .labelsHidden()
+                    .accessibilityIdentifier(AccessibilityIdentifier.showHiddenFilesSetting)
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
