@@ -441,8 +441,9 @@ extension ArchiveState {
         return a.id.uuidString < b.id.uuidString
     }
 
-    /// Whether `item` is hidden, or inside a folder that is: browsing never
-    /// reaches what a hidden folder holds, a search over all entries would.
+    /// Whether `item` is hidden, or inside a folder that is. A search over all
+    /// entries would find what hidden folders hold; browsing does not list
+    /// them, though a window already inside one stays there.
     private func isInHiddenPath(_ item: ArchiveItem) -> Bool {
         var node: ArchiveItem? = item
         while let current = node, current.type != .root {
