@@ -223,6 +223,36 @@
             ]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Some tar files open into a “.” folder",
+                "zh-Hans": "部分 tar 文件打开后只有一个“.”文件夹",
+                "fr": "Certains fichiers tar s’ouvrent sur un dossier « . »",
+                "de": "Manche tar-Dateien öffnen sich als Ordner „.“",
+                "it": "Alcuni file tar si aprono come una cartella «.»",
+                "ja": "一部の tar ファイルを開くと「.」フォルダが表示される",
+                "fa": "برخی فایل‌های tar به‌صورت یک پوشه «.» باز می‌شوند",
+                "pl": "Niektóre pliki tar otwierają się jako folder „.”",
+                "pt-BR": "Alguns arquivos tar abrem como uma pasta “.”",
+                "ru": "Некоторые tar-файлы открываются как папка «.»",
+                "uk": "Деякі tar-файли відкриваються як тека «.»",
+                "es-MX": "Algunos archivos tar se abren como una carpeta «.»",
+                "ko": "일부 tar 파일이 “.” 폴더로 열림",
+                "nl": "Sommige tar-bestanden openen als map “.”",
+                "tr": "Bazı tar dosyaları “.” klasörü olarak açılıyor",
+                "vi": "Một số tệp tar mở ra thành thư mục “.”",
+                "ar": "بعض ملفات tar تُفتح كمجلد باسم «.»",
+                "ca": "Alguns fitxers tar s’obren com una carpeta «.»",
+                "el": "Ορισμένα αρχεία tar ανοίγουν ως φάκελος «.»",
+                "nb": "Noen tar-filer åpnes som en mappe kalt «.»",
+                "zh-TW": "部分 tar 檔案開啟後只有一個「.」資料夾",
+                "hi": "कुछ tar फ़ाइलें “.” फ़ोल्डर के रूप में खुलती हैं"
+            },
+            "issues": [
+                "362"
+            ]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Launch parameter to skip the welcome window",
