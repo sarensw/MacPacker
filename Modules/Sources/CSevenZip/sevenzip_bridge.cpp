@@ -614,8 +614,13 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
             safePath.Add_PathSepar();
         safePath += part;
     }
-    if (safePath.IsEmpty())
+    if (safePath.IsEmpty()) {
+        // A folder with no path left is the destination itself -- the "./" a
+        // tar of "." starts with. Nothing to create.
+        if (isDir)
+            return S_OK;
         safePath = L"unknown";
+    }
 
     FString fullPath = _destDir;
     fullPath += FCHAR_PATH_SEPARATOR;

@@ -151,6 +151,25 @@ extension AllCoreTests {
             #expect(written == [arg.1])
         }
 
+        /// `tar -C dir .` stores every entry under "./", and "./" itself as a
+        /// folder; dpkg-deb writes the data.tar of every deb that way. Read as
+        /// written, "." was the archive's one folder, with everything in it.
+        @Test(arguments: [ArchiveEngineType.`7zip`, .xad])
+        func aTarOfDotListsWhatIsInIt(engine: ArchiveEngineType) async throws {
+            let selector: any ArchiveEngineSelectorProtocol = engine == .xad
+                ? ArchiveEngineSelectorXad() : ArchiveEngineSelector7zip()
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: selector)
+            let url = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+                .appendingPathComponent("defaultArchive-dotslash.tar")
+
+            state.open(url: url)
+            try await state.openTask?.value
+
+            let names = state.root?.children?.compactMap { state.entries[$0]?.name }.sorted()
+            #expect(names == ["folder", "hello world.txt"])
+            #expect(state.entries.count == 5) // the root and four entries, no "."
+        }
+
         @Test("Test all defaultArchives on xad", arguments: [
             ("zip", "zip"),
             ("7z", "7zip"),
