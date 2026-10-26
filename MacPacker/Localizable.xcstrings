@@ -50,7 +50,13 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "A compression is still in progress"
+            "value": "Une compression est en cours"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संपीड़न प्रक्रिया अभी भी जारी है।"
           }
         },
         "it": {
@@ -74,19 +80,19 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "A compression is still in progress"
+            "value": "Er is nog een compressie aan de gang"
           }
         },
         "no": {
           "stringUnit": {
             "state": "translated",
-            "value": "A compression is still in progress"
+            "value": "En komprimering pågår fortsatt"
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "A compression is still in progress"
+            "value": "Kompresja w toku"
           }
         },
         "pt-br": {
@@ -122,7 +128,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "A compression is still in progress"
+            "value": "压缩仍在进行中"
           }
         },
         "zh-TW": {
@@ -185,6 +191,12 @@
             "value": "Une extraction est encore en cours"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "खुदाई का काम अभी भी जारी है"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -206,7 +218,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "An extraction is still in progress"
+            "value": "Er is nog een uitpakbewerking bezig"
           }
         },
         "no": {
@@ -315,6 +327,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quitter quand même"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "फिर भी छोड़ दो"
           }
         },
         "it": {
@@ -446,7 +464,13 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quitting stops the compression."
+            "value": "Quitter arrête la compression."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बंद करने से संपीड़न रुक जाता है।"
           }
         },
         "it": {
@@ -470,19 +494,19 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quitting stops the compression."
+            "value": "Afsluiten stopt de compressie."
           }
         },
         "no": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quitting stops the compression."
+            "value": "Hvis du avslutter, stopper komprimeringen."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quitting stops the compression."
+            "value": "Zamknięcie programu powoduje zatrzymanie kompresji."
           }
         },
         "pt-br": {
@@ -518,7 +542,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quitting stops the compression."
+            "value": "退出将停止压缩。"
           }
         },
         "zh-TW": {
@@ -581,6 +605,12 @@
             "value": "Quitter maintenant arrêtera l'extraction et pourra laisser des fichiers incomplets dans la destination."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अभी छोड़ने से निष्कर्षण प्रक्रिया रुक जाएगी और गंतव्य स्थान पर अधूरी फाइलें रह सकती हैं।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -602,7 +632,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quitting now stops the extraction and may leave incomplete files at the destination."
+            "value": "Afsluiten stopt het uitpakken en laat mogelijk onvolledige bestanden op de bestemming achter."
           }
         },
         "no": {
@@ -712,6 +742,12 @@
             "value": "Supprimer l'élément sélectionné de l'archive"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संग्रह से चयनित आइटम हटाएँ"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -733,7 +769,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Delete the selected items from the archive"
+            "value": "Verwijder de geselecteerde items uit het archief"
           }
         },
         "no": {
@@ -842,6 +878,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modifié"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संशोधित"
           }
         },
         "it": {
@@ -976,6 +1018,12 @@
             "value": "Dossier parent"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संलग्न फ़ोल्डर"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -1106,6 +1154,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouvrir dans une nouvelle fenêtre"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नई विंडो में खोलें"
           }
         },
         "it": {
@@ -1240,6 +1294,12 @@
             "value": "Coup d’œil"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "त्वरित अवलोकन"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -1261,7 +1321,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quick Look"
+            "value": "Snel bekijken"
           }
         },
         "no": {
@@ -1370,6 +1430,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Déposer ici pour compresser"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संपीड़ित करने के लिए यहां छोड़ें"
           }
         },
         "it": {
@@ -1504,6 +1570,12 @@
             "value": "Compresser ici"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यहां संपीड़ित करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -1634,6 +1706,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Garder au premier plan"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सबसे आगे रहें"
           }
         },
         "it": {
@@ -1767,6 +1845,12 @@
             "value": "Rajouter des fichiers ou dossiers à l'archive"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आर्काइव में फ़ाइलें या फ़ोल्डर जोड़ें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -1788,7 +1872,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add files or folders to the archive"
+            "value": "Voeg bestanden of mappen toe aan het archief"
           }
         },
         "no": {
@@ -1899,6 +1983,12 @@
             "value": "Informations de l’archive"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पुरालेख जानकारी"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -1920,7 +2010,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archive info"
+            "value": "Archiveer info"
           }
         },
         "no": {
@@ -2029,6 +2119,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Automatique"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्वचालित"
           }
         },
         "it": {
@@ -2163,6 +2259,12 @@
             "value": "Changer le mot de passe..."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "विकल्पों के अंतर्गत पासवर्ड बदलें…"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -2184,7 +2286,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Change the password under Options…"
+            "value": "Wijzig het wachtwoord onder Opties…"
           }
         },
         "no": {
@@ -2295,6 +2397,12 @@
             "value": "Un mot de passe zip ne contient que des lettres, des chiffres, des espaces et quelques symboles courants. 7z peut utiliser tous les mots de passe"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ज़िप पासवर्ड में केवल अक्षर A–Z, अंक, रिक्त स्थान और सामान्य चिह्न ही इस्तेमाल किए जा सकते हैं। 7z पासवर्ड किसी भी प्रकार का हो सकता है।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -2316,7 +2424,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "A zip password can only use letters A–Z, digits, spaces and common symbols. 7z takes any password."
+            "value": "Een zip-wachtwoord kan alleen letters A–Z, cijfers, spaties en gangbare symbolen gebruiken. 7z accepteert elk wachtwoord."
           }
         },
         "no": {
@@ -2427,6 +2535,12 @@
             "value": "Nouvelle archive"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नया संग्रह बनाएँ"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -2448,7 +2562,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Create a new archive"
+            "value": "Maak een nieuw archief"
           }
         },
         "no": {
@@ -2559,6 +2673,12 @@
             "value": "Choisissez où extraire"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "निकालने का स्थान चुनें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -2580,7 +2700,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose where to extract"
+            "value": "Kies waar je wilt uitpakken"
           }
         },
         "no": {
@@ -2691,6 +2811,12 @@
             "value": "Encore %@"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ बाएं"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -2712,7 +2838,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ left"
+            "value": "nog %@"
           }
         },
         "no": {
@@ -2823,6 +2949,12 @@
             "value": "Avec AES-256, le mot de passe zip est limité à %lld caractères."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AES-256 के साथ, ज़िप पासवर्ड अधिकतम %lld वर्णों तक लंबा हो सकता है।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -2844,7 +2976,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "With AES-256, a zip password can be at most %lld characters long."
+            "value": "Met AES-256 mag een zip-wachtwoord maximaal %lld tekens lang zijn."
           }
         },
         "no": {
@@ -2955,6 +3087,12 @@
             "value": "ZipCrypto est facile à casser. Utiliser seulement pour les outils incompatibles avec AES-256."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ZipCrypto को आसानी से हैक किया जा सकता है। इसे केवल उन टूल्स के लिए चुनें जो AES-256 को ओपन नहीं कर सकते।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -2976,7 +3114,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "ZipCrypto is easily broken. Pick it only for tools that cannot open AES-256."
+            "value": "ZipCrypto is makkelijk te kraken. Kies het alleen voor tools die AES-256 niet kunnen openen."
           }
         },
         "no": {
@@ -3087,6 +3225,12 @@
             "value": "l'archive"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अभिलेखागार"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -3108,7 +3252,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "the archive"
+            "value": "het archief"
           }
         },
         "no": {
@@ -3217,6 +3361,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Taille du dictionnaire"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शब्दकोश का आकार"
           }
         },
         "it": {
@@ -3351,6 +3501,12 @@
             "value": "Ne pas enregistrer"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बचत न करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -3483,6 +3639,12 @@
             "value": "Ne pas découper"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बंटवारा मत करो"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -3504,7 +3666,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Don't split"
+            "value": "Niet splitsen"
           }
         },
         "no": {
@@ -3613,6 +3775,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Chiffrer les noms de fichiers"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "फ़ाइल नामों को एन्क्रिप्ट करें"
           }
         },
         "it": {
@@ -3747,6 +3915,12 @@
             "value": "Les noms de fichiers restent visible dans une archive zip. 7z peut les masquer."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ज़िप आर्काइव में फ़ाइल नाम पठनीय रहते हैं। 7z उन्हें एन्क्रिप्ट भी कर सकता है।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -3768,7 +3942,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "File names stay readable in a zip archive. 7z can encrypt them too."
+            "value": "Bestandsnamen blijven leesbaar in een zip-archief. 7z kan ze ook versleutelen."
           }
         },
         "no": {
@@ -3877,6 +4051,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Méthode de chiffrement"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एन्क्रिप्शन विधि"
           }
         },
         "it": {
@@ -4011,6 +4191,12 @@
             "value": "Ignorer les fichiers .DS_Store"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".DS_Store फ़ाइलों को बाहर रखें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -4032,7 +4218,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Exclude .DS_Store files"
+            "value": "Sluit .DS_Store-bestanden uit"
           }
         },
         "no": {
@@ -4141,6 +4327,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Format"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रारूप"
           }
         },
         "it": {
@@ -4275,6 +4467,12 @@
             "value": "Rapide"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तेज़"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -4405,6 +4603,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Le plus rapide"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सबसे तेजी से"
           }
         },
         "it": {
@@ -4539,6 +4743,12 @@
             "value": "Maximum"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अधिकतम"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -4669,6 +4879,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Normal"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सामान्य"
           }
         },
         "it": {
@@ -4803,6 +5019,12 @@
             "value": "Sans compression"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इकट्ठा करना"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -4933,6 +5155,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ultra"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अत्यंत"
           }
         },
         "it": {
@@ -5067,6 +5295,12 @@
             "value": "Méthode"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तरीका"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -5197,6 +5431,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Non-solide"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "गैर ठोस"
           }
         },
         "it": {
@@ -5331,6 +5571,12 @@
             "value": "Répéter"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "दोहराना"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -5461,6 +5707,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Solide"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ठोस"
           }
         },
         "it": {
@@ -5595,6 +5847,12 @@
             "value": "Taille de bloc solide"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ठोस ब्लॉक का आकार"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -5727,6 +5985,12 @@
             "value": "Découper en plusieurs morceaux"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "खंडों में विभाजित"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -5748,7 +6012,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Split into volumes"
+            "value": "Splits in delen"
           }
         },
         "no": {
@@ -5859,6 +6123,12 @@
             "value": "Enregistrer les changements faits dans  “%@” ?"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्या आप “%@” में किए गए बदलावों को सहेजना चाहते हैं?"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -5880,7 +6150,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Do you want to save the changes you made to “%@”?"
+            "value": "Wil je de wijzigingen die je hebt aangebracht in “%@” opslaan?"
           }
         },
         "no": {
@@ -5991,6 +6261,12 @@
             "value": "Les changements seront perdu s'ils ne sont pas enregistrés."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यदि आप अपने बदलावों को सेव नहीं करेंगे तो वे खो जाएंगे।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -6012,7 +6288,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your changes will be lost if you don’t save them."
+            "value": "Je wijzigingen gaan verloren als je ze niet opslaat."
           }
         },
         "no": {
@@ -6121,6 +6397,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Taille des mots"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शब्द का आकार"
           }
         },
         "it": {
@@ -6255,6 +6537,12 @@
             "value": "Date de modification"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "डेटा संशोधित"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -6276,7 +6564,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Date Modified"
+            "value": "Datum gewijzigd"
           }
         },
         "no": {
@@ -6387,6 +6675,12 @@
             "value": "Nom"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नाम"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -6408,7 +6702,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Name"
+            "value": "Naam"
           }
         },
         "no": {
@@ -6519,6 +6813,12 @@
             "value": "Taille compressée"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पैक्ड साइज़"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -6540,7 +6840,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Packed Size"
+            "value": "Gecomprimeerde grootte"
           }
         },
         "no": {
@@ -6651,6 +6951,12 @@
             "value": "Autorisations"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अनुमतियां"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -6672,7 +6978,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Permissions"
+            "value": "Rechten"
           }
         },
         "no": {
@@ -6783,6 +7089,12 @@
             "value": "Taille"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आकार"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -6804,7 +7116,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Size"
+            "value": "Grootte"
           }
         },
         "no": {
@@ -6915,6 +7227,12 @@
             "value": "À propos de %@"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "के बारे में %@"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -6936,7 +7254,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "About %@"
+            "value": "Over %@"
           }
         },
         "no": {
@@ -7047,6 +7365,12 @@
             "value": "Remerciements"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्वीकृतियाँ"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -7068,7 +7392,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Acknowledgements"
+            "value": "Dankbetuigingen"
           }
         },
         "no": {
@@ -7179,6 +7503,12 @@
             "value": "Ajouter"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जोड़ना"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -7200,7 +7530,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add"
+            "value": "Toevoegen"
           }
         },
         "no": {
@@ -7309,6 +7639,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ajouter à l'archive..."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संग्रह में जोड़..."
           }
         },
         "it": {
@@ -7443,6 +7779,12 @@
             "value": "Ajouter à « %@ »"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इसमें जोड़ें \"%@\""
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -7464,7 +7806,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add to “%@”"
+            "value": "Toevoegen aan “%@”"
           }
         },
         "no": {
@@ -7573,6 +7915,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Précédent"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पीछे"
           }
         },
         "it": {
@@ -7707,6 +8055,12 @@
             "value": "En bas"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तल"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -7837,6 +8191,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Annuler"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "रद्द करना"
           }
         },
         "it": {
@@ -7971,6 +8331,12 @@
             "value": "Vider"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्पष्ट"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -7992,7 +8358,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Clear"
+            "value": "Wissen"
           }
         },
         "no": {
@@ -8102,6 +8468,12 @@
             "value": "Compresser le contenu vers \"%@\""
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "\"%@\" की सामग्री को संपीड़ित करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -8123,7 +8495,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compress Contents of \"%@\""
+            "value": "Comprimeer inhoud van \"%@\""
           }
         },
         "no": {
@@ -8233,6 +8605,12 @@
             "value": "Compresser vers \"%@\""
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "में दबाएं \"%@\""
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -8254,7 +8632,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compress to \"%@\""
+            "value": "Comprimeer naar \"%@\""
           }
         },
         "no": {
@@ -8363,6 +8741,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Compression en cours"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "को संपीड़ित"
           }
         },
         "it": {
@@ -8497,6 +8881,12 @@
             "value": "Compression"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "दबाव"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -8629,6 +9019,12 @@
             "value": "Continuer"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जारी रखना"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -8650,7 +9046,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Continue"
+            "value": "Doorgaan"
           }
         },
         "no": {
@@ -8759,6 +9155,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Supprimer"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मिटाना"
           }
         },
         "it": {
@@ -8893,6 +9295,12 @@
             "value": "Désactivé"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अक्षम"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -8914,7 +9322,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Disabled"
+            "value": "Uitgeschakeld"
           }
         },
         "no": {
@@ -9023,6 +9431,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Terminé"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हो गया"
           }
         },
         "it": {
@@ -9157,6 +9571,12 @@
             "value": "Activées"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सक्रिय"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -9178,7 +9598,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "enabled"
+            "value": "ingeschakeld"
           }
         },
         "no": {
@@ -9287,6 +9707,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Extraire"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "निकालना"
           }
         },
         "it": {
@@ -9421,6 +9847,12 @@
             "value": "Extraire l’archive"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संग्रह निकालें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -9442,7 +9874,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Extract archive"
+            "value": "Archief uitpakken"
           }
         },
         "no": {
@@ -9551,6 +9983,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Extraire Ici"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यहाँ निकालें"
           }
         },
         "it": {
@@ -9685,6 +10123,12 @@
             "value": "Extraire la sélection"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "चयनित अंश निकालें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -9706,7 +10150,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Extract selected"
+            "value": "Geselecteerde uitpakken"
           }
         },
         "no": {
@@ -9816,6 +10260,12 @@
             "value": "Extraire vers \"%@\""
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "में उद्धरण करना \"%@\""
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -9837,7 +10287,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Extract to \"%@\""
+            "value": "Pak uit naar \"%@\""
           }
         },
         "no": {
@@ -9948,6 +10398,12 @@
             "value": "Extraction en cours"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "निकाला जा रहा है"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -9969,7 +10425,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Extracting"
+            "value": "Uitpakken"
           }
         },
         "no": {
@@ -10078,6 +10534,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rechercher"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "खोजो"
           }
         },
         "it": {
@@ -10212,6 +10674,12 @@
             "value": "Donner l'accès"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अनुदान पहुँच"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -10233,7 +10701,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Grant Access"
+            "value": "Verleen toegang"
           }
         },
         "no": {
@@ -10344,6 +10812,12 @@
             "value": "Aider pour la traduction"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अनुवाद में सहायता करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -10365,7 +10839,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Help with translation"
+            "value": "Help met vertalen"
           }
         },
         "no": {
@@ -10474,6 +10948,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mentions légales"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कानूनी नोटिस"
           }
         },
         "it": {
@@ -10740,6 +11220,24 @@
             }
           }
         },
+        "hi": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld आइटम"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": ""
+                }
+              }
+            }
+          }
+        },
         "it": {
           "variations": {
             "plural": {
@@ -10800,7 +11298,7 @@
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": ""
+                  "value": "%lld items"
                 }
               }
             }
@@ -11046,6 +11544,12 @@
             "value": "En savoir plus…"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "और अधिक जानें…"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -11178,6 +11682,12 @@
             "value": "Plus"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अधिक"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -11199,7 +11709,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "More"
+            "value": "Meer"
           }
         },
         "no": {
@@ -11308,6 +11818,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nouvelle Archive"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नया संग्रह"
           }
         },
         "it": {
@@ -11442,6 +11958,12 @@
             "value": "Nouvelle fenêtre %@"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नई %@ विंडो"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -11463,7 +11985,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "New %@ Window"
+            "value": "Nieuw %@-venster"
           }
         },
         "no": {
@@ -11572,6 +12094,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aucun"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कोई नहीं"
           }
         },
         "it": {
@@ -11703,6 +12231,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rien n’est sélectionné"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कुछ भी चयनित नहीं"
           }
         },
         "it": {
@@ -11837,6 +12371,12 @@
             "value": "OK"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ठीक है"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -11967,6 +12507,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ouvrir"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "खुला"
           }
         },
         "it": {
@@ -12101,6 +12647,12 @@
             "value": "Ouvrir une archive"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आर्काइव खोलो"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -12232,6 +12784,12 @@
             "value": "Ouvrir %lld archives"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ओपन %lld आर्काइव्स"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -12253,7 +12811,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open %lld Archives"
+            "value": "Open %lld archieven"
           }
         },
         "no": {
@@ -12362,6 +12920,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Options"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "विकल्प"
           }
         },
         "it": {
@@ -12496,6 +13060,12 @@
             "value": "Mot de passe:"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पासवर्ड:"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -12628,6 +13198,12 @@
             "value": "« %@ » est protégé par mot de passe."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” पासवर्ड से सुरक्षित है।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -12649,7 +13225,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "“%@” is password protected."
+            "value": "“%@” is beveiligd met een wachtwoord."
           }
         },
         "no": {
@@ -12760,6 +13336,12 @@
             "value": "Aperçu"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पूर्व दर्शन"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -12781,7 +13363,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Preview"
+            "value": "Voorbeeld"
           }
         },
         "no": {
@@ -12890,6 +13472,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Confidentialité"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "गोपनीयता"
           }
         },
         "it": {
@@ -13024,6 +13612,12 @@
             "value": "Compression rapide"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "त्वरित संपीड़न"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -13045,7 +13639,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quick Compress"
+            "value": "Snel comprimeren"
           }
         },
         "no": {
@@ -13156,6 +13750,12 @@
             "value": "Nouvelle fenêtre de compression rapide"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "त्वरित संपीड़न विंडो"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -13177,7 +13777,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quick Compress Window"
+            "value": "Venster Snel comprimeren"
           }
         },
         "no": {
@@ -13288,6 +13888,12 @@
             "value": "Rafraîchir"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ताज़ा करना"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -13309,7 +13915,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Refresh"
+            "value": "Vernieuwen"
           }
         },
         "no": {
@@ -13420,6 +14026,12 @@
             "value": "Enregistrer"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बचाना"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -13441,7 +14053,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "save"
+            "value": "opslaan"
           }
         },
         "no": {
@@ -13550,6 +14162,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enregistrer sous…"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "के रूप रक्षित करें…"
           }
         },
         "it": {
@@ -13816,6 +14434,24 @@
             }
           }
         },
+        "hi": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld चयनित"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": ""
+                }
+              }
+            }
+          }
+        },
         "it": {
           "variations": {
             "plural": {
@@ -13870,13 +14506,13 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld selected"
+                  "value": "%lld geselecteerd"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": ""
+                  "value": "%lld geselecteerd"
                 }
               }
             }
@@ -14122,6 +14758,12 @@
             "value": "Réglages…"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सेटिंग्स..."
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -14143,7 +14785,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Settings..."
+            "value": "Instellingen..."
           }
         },
         "no": {
@@ -14252,6 +14894,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Démarrer"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शुरू"
           }
         },
         "it": {
@@ -14386,6 +15034,12 @@
             "value": "Conditions générales"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नियम एवं शर्तें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -14516,6 +15170,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "En haut"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "शीर्ष"
           }
         },
         "it": {
@@ -14650,6 +15310,12 @@
             "value": "Site web"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "वेबसाइट"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -14782,6 +15448,12 @@
             "value": "Nouveautés"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "नया क्या है"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -14803,7 +15475,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "What's new"
+            "value": "Wat is er nieuw"
           }
         },
         "no": {
@@ -14914,6 +15586,12 @@
             "value": "Contactez-nous"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हमसे संपर्क करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -14935,7 +15613,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Contact us"
+            "value": "Neem contact op"
           }
         },
         "no": {
@@ -15046,6 +15724,12 @@
             "value": "… signaler un problème"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "... बग रिपोर्ट करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -15067,7 +15751,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "... raise a Bug"
+            "value": "... meld een bug"
           }
         },
         "no": {
@@ -15178,6 +15862,12 @@
             "value": "… envoyer un e‑mail à %@"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "... %@ को मेल भेजें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -15199,7 +15889,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "... send a mail to %@"
+            "value": "... stuur een e-mail naar %@"
           }
         },
         "no": {
@@ -15310,6 +16000,12 @@
             "value": "… suggérer une fonctionnalité"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "... किसी फ़ीचर का अनुरोध करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -15331,7 +16027,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "... request a Feature"
+            "value": "... vraag functionaliteit aan"
           }
         },
         "no": {
@@ -15442,6 +16138,12 @@
             "value": "Allez ici pour …"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यहां जाएं..."
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -15463,7 +16165,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Go here to ..."
+            "value": "Ga hiernaartoe om ..."
           }
         },
         "no": {
@@ -15574,6 +16276,12 @@
             "value": "Échec de l'exportation"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "निर्यात विफल रहा"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -15595,7 +16303,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Export failed"
+            "value": "Exporteren mislukt"
           }
         },
         "no": {
@@ -15706,6 +16414,12 @@
             "value": "Impossible d'ouvrir l'archive"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आर्काइव नहीं खुल सका"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -15727,7 +16441,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Could not open archive"
+            "value": "Het archief kon niet worden geopend"
           }
         },
         "no": {
@@ -15838,6 +16552,12 @@
             "value": "Mot de passe incorrect. Essayez à nouveau."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "वह पासवर्ड गलत है। कृपया पुनः प्रयास करें।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -15859,7 +16579,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "That password is incorrect. Try again."
+            "value": "Dat wachtwoord is onjuist. Doe een nieuwe poging."
           }
         },
         "no": {
@@ -15968,6 +16688,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Les mots de passe ne correspondent pas"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सांकेतिक शब्द मेल नहीं खाते"
           }
         },
         "it": {
@@ -16102,6 +16828,12 @@
             "value": "Impossible d'enregistrer l'archive"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संग्रह सहेजा नहीं जा सका"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -16123,7 +16855,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Could not save archive"
+            "value": "Archief kon niet worden opgeslagen"
           }
         },
         "no": {
@@ -16234,6 +16966,12 @@
             "value": "Annulé - pas d'accès à ce dossier"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "रद्द कर दिया गया - उस फ़ोल्डर तक पहुंच नहीं है"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -16255,7 +16993,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cancelled - no access to that folder"
+            "value": "Geannuleerd - geen toegang tot die map"
           }
         },
         "no": {
@@ -16366,6 +17104,12 @@
             "value": "Laisser un avis sur l’App Store"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ऐप स्टोर में समीक्षा लिखें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -16387,7 +17131,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Leave a review in the App Store"
+            "value": "Laat een recensie achter in de App Store"
           }
         },
         "no": {
@@ -16498,6 +17242,12 @@
             "value": "Suivre"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Follow"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -16519,7 +17269,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Follow"
+            "value": "Volgen"
           }
         },
         "no": {
@@ -16630,6 +17380,12 @@
             "value": "Avis"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "समीक्षा"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -16651,7 +17407,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Review"
+            "value": "Beoordelen"
           }
         },
         "no": {
@@ -16762,6 +17518,12 @@
             "value": "Envoyer un sourire"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एक मुस्कान भेजो"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -16783,7 +17545,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Send a smile"
+            "value": "Stuur een glimlach"
           }
         },
         "no": {
@@ -16894,6 +17656,12 @@
             "value": "Étoile"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तारा"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -16915,7 +17683,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Star"
+            "value": "Ster"
           }
         },
         "no": {
@@ -17026,6 +17794,12 @@
             "value": "Mettre une étoile au dépôt sur GitHub"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub पर रिपॉजिटरी को स्टार करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -17047,7 +17821,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Star the repository on GitHub"
+            "value": "Geef de repository een ster op GitHub"
           }
         },
         "no": {
@@ -17158,6 +17932,12 @@
             "value": "Soutenir le développement…"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "विकास में सहयोग करें..."
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -17179,7 +17959,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Support the development..."
+            "value": "Steun de ontwikkeling..."
           }
         },
         "no": {
@@ -17288,6 +18068,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Traduire"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अनुवाद"
           }
         },
         "it": {
@@ -17422,6 +18208,12 @@
             "value": "Guides et documentation"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "गाइड और दस्तावेज़"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -17554,6 +18346,12 @@
             "value": "Comment utiliser %@"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ का उपयोग करना सीखें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -17575,7 +18373,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Learn to use %@"
+            "value": "Leer om %@ te gebruiken"
           }
         },
         "no": {
@@ -17686,6 +18484,12 @@
             "value": "Pas d'archives récentes."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हाल के कोई अभिलेख उपलब्ध नहीं हैं।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -17707,7 +18511,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "No recent archives."
+            "value": "Geen recente archieven."
           }
         },
         "no": {
@@ -17816,6 +18620,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Récents"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हाल ही का"
           }
         },
         "it": {
@@ -17950,6 +18760,12 @@
             "value": "Notes de mise à jour"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "रिलीज नोट्स"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -18082,6 +18898,12 @@
             "value": "%@ a besoin d'accéder à %@"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ को %@ तक पहुंच की आवश्यकता है"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -18103,7 +18925,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ needs access to %@"
+            "value": "%@ heeft toegang nodig tot %@"
           }
         },
         "no": {
@@ -18214,6 +19036,12 @@
             "value": "Informations"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "के बारे में"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -18235,7 +19063,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "About"
+            "value": "Over"
           }
         },
         "no": {
@@ -18346,6 +19174,12 @@
             "value": "Accès accordé"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पहुँच दी गई"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -18367,7 +19201,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Access granted"
+            "value": "Toegang verleend"
           }
         },
         "no": {
@@ -18476,6 +19310,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Avancé"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "विकसित"
           }
         },
         "it": {
@@ -18610,6 +19450,12 @@
             "value": "Formats d'archives"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संग्रह प्रारूप"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -18631,7 +19477,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Archive Formats"
+            "value": "Archiefformaten"
           }
         },
         "no": {
@@ -18742,6 +19588,12 @@
             "value": "Choix du moteur automatique"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्वचालित इंजन चयन"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -18763,7 +19615,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Automatic engine selection"
+            "value": "Automatische engine-selectie"
           }
         },
         "no": {
@@ -18874,6 +19726,12 @@
             "value": "MacPacker choisit le moteur pour chaque archive et en essaie un autre si le premier ne parvient pas à la lire. Désactivez cette option pour choisir vous-même les moteurs."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacPacker प्रत्येक आर्काइव के लिए इंजन का चयन करता है, और यदि पहला इंजन उसे पढ़ नहीं पाता है तो दूसरे इंजन को आज़माता है। इंजन का चयन स्वयं करने के लिए इसे बंद कर दें।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -18895,7 +19753,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "MacPacker chooses the engine for each archive, and tries another one if the first can't read it. Turn this off to choose engines yourself."
+            "value": "MacPacker kiest de engine voor elk archief en probeert een andere als de eerste het niet kan lezen. Schakel dit uit om zelf engines te kiezen."
           }
         },
         "no": {
@@ -19006,6 +19864,12 @@
             "value": "Rechercher les mises à jour automatiquement"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अपडेट के लिए स्वचालित रूप से जांच करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -19027,7 +19891,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Automatically check for updates"
+            "value": "Automatisch controleren op updates"
           }
         },
         "no": {
@@ -19138,6 +20002,12 @@
             "value": "Position du fil d’Ariane"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ब्रेडक्रम्ब स्थिति"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -19159,7 +20029,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Breadcrumb position"
+            "value": "Positie van broodkruimelpad"
           }
         },
         "no": {
@@ -19268,6 +20138,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cache"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कैश"
           }
         },
         "it": {
@@ -19402,6 +20278,12 @@
             "value": "Vider le cache"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कैश को साफ़ करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -19423,7 +20305,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Clear cache"
+            "value": "Cache wissen"
           }
         },
         "no": {
@@ -19534,6 +20416,12 @@
             "value": "Effacer tout le contenu du cache."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कैश से सभी सामग्री साफ़ करता है"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -19555,7 +20443,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Clears all content from the cache"
+            "value": "Verwijdert alle inhoud uit de cache"
           }
         },
         "no": {
@@ -19666,6 +20554,12 @@
             "value": "Colonnes"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कॉलम"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -19687,7 +20581,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Columns"
+            "value": "Kolommen"
           }
         },
         "no": {
@@ -19798,6 +20692,12 @@
             "value": "Compresser chaque élément séparément"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "प्रत्येक वस्तु को अलग-अलग संपीड़ित करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -19819,7 +20719,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compress each item separately"
+            "value": "Elk item afzonderlijk comprimeren"
           }
         },
         "no": {
@@ -19930,6 +20830,12 @@
             "value": "Compresser le contenu du dossier"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "किसी फ़ोल्डर की सामग्री को संपीड़ित करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -19951,7 +20857,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compress a folder’s contents"
+            "value": "Inhoud van een map comprimeren"
           }
         },
         "no": {
@@ -20062,6 +20968,12 @@
             "value": "Compresser au format 7z"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7z तक संपीड़ित करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -20083,7 +20995,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compress to 7z"
+            "value": "Comprimeren naar 7z"
           }
         },
         "no": {
@@ -20194,6 +21106,12 @@
             "value": "Compresser au format zip"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ज़िप में संपीड़ित करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -20215,7 +21133,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compress to zip"
+            "value": "Comprimeren naar zip"
           }
         },
         "no": {
@@ -20326,6 +21244,12 @@
             "value": "Compresser au format zip avec date et heure"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "दिनांक और समय सहित ज़िप फ़ाइल में संपीड़ित करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -20347,7 +21271,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compress to zip with date and time"
+            "value": "Comprimeren naar zip met datum en tijd"
           }
         },
         "no": {
@@ -20456,6 +21380,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Menu contextuel"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "संदर्भ मेनू"
           }
         },
         "it": {
@@ -20590,6 +21520,12 @@
             "value": "Pour définir MacPacker comme application par défaut pour un type de fichier : cliquez avec le bouton droit sur un fichier → “Lire les informations” → choisissez MacPacker sous “Ouvrir avec” → cliquez sur “Tout modifier…” pour l’appliquer à toutes les archives similaires."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "किसी फ़ाइल प्रकार के लिए MacPacker को डिफ़ॉल्ट बनाने के लिए: फ़ाइल पर राइट-क्लिक करें → 'जानकारी प्राप्त करें' → 'इसके साथ खोलें:' के अंतर्गत MacPacker चुनें → सभी समान आर्काइव पर लागू करने के लिए 'सभी बदलें...' पर क्लिक करें।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -20611,7 +21547,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "To make MacPacker the default for a file type: Right-click a file → 'Get Info' → choose MacPacker under 'Open with:' → click 'Change All…' to apply it to all similar archives."
+            "value": "Om MacPacker de standaard te maken voor een bestandstype: klik met de rechtermuisknop op een bestand → 'Informatie' → kies MacPacker onder 'Openen met:' → klik op 'Alles wijzigen…' om het op alle vergelijkbare archieven toe te passen."
           }
         },
         "no": {
@@ -20722,6 +21658,12 @@
             "value": "Formats associés et paramètres de moteur"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "डिफ़ॉल्ट स्थिति और इंजन सेटिंग्स"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -20743,7 +21685,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Default status & engine settings"
+            "value": "Standaardinstellingen voor status en engine"
           }
         },
         "no": {
@@ -20854,6 +21796,12 @@
             "value": "Peut modifier les archives, pas seulement les ouvrir"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "यह अभिलेखों को संपादित करता है, न कि केवल उन्हें खोलता है।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -20875,7 +21823,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Edits archives, not only opens them"
+            "value": "Bewerkt archieven, opent ze niet alleen"
           }
         },
         "no": {
@@ -20984,6 +21932,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Moteur"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इंजन"
           }
         },
         "it": {
@@ -21118,6 +22072,12 @@
             "value": "MacPacker utilise plusieurs moteurs d'archivage. Le moteur par défaut est recommandé; d'autres moteurs peuvent résoudre des problèmes spécifiques à certains formats. Notez que la compatibilité des moteurs varie selon le format.\n"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacPacker में कई आर्काइव इंजन शामिल हैं। डिफ़ॉल्ट इंजन की अनुशंसा की जाती है; वैकल्पिक इंजन फ़ॉर्मेट-विशिष्ट समस्याओं को हल करने में सहायक हो सकते हैं। ध्यान रखें कि इंजन सपोर्ट फ़ॉर्मेट के अनुसार भिन्न होता है।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -21139,7 +22099,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "MacPacker includes several archive engines. The default is recommended; alternative engines can help with format-specific problems. Keep in mind that engine support varies by format."
+            "value": "MacPacker bevat verschillende archiefengines. De standaard wordt aanbevolen; alternatieve engines kunnen helpen bij formaatspecifieke problemen. Houd er rekening mee dat de engine ondersteuning verschilt per formaat."
           }
         },
         "no": {
@@ -21250,6 +22210,12 @@
             "value": "Exporter les historiques"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लॉग निर्यात करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -21271,7 +22237,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Export Logs"
+            "value": "Logboeken exporteren"
           }
         },
         "no": {
@@ -21382,6 +22348,12 @@
             "value": "Extensions"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एक्सटेंशन"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -21403,7 +22375,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Extensions"
+            "value": "Extensies"
           }
         },
         "no": {
@@ -21512,6 +22484,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Volumes externes"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बाह्य आयतन"
           }
         },
         "it": {
@@ -21646,6 +22624,12 @@
             "value": "Accès aux clés USB, cartes mémoire et partages réseau, qui sont dans /Volumes"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इसमें यूएसबी ड्राइव, मेमोरी कार्ड और नेटवर्क शेयर शामिल हैं, जो /Volumes में दिखाई देते हैं।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -21667,7 +22651,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Covers USB drives, memory cards and network shares, which appear in /Volumes."
+            "value": "Omvat USB-sticks, geheugenkaarten en netwerkshares die in /Volumes staan."
           }
         },
         "no": {
@@ -21730,7 +22714,133 @@
       "comment": "Setting: an archive opened from Finder (double-click, Open With) is extracted next to itself, like Extract Here, instead of being shown in a MacPacker window.",
       "extractionState": "manual",
       "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "ca": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archive beim Öffnen entpacken"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
         "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "es-mx": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "nl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "no": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "pl": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "pt-br": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "vi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract archives on open"
+          }
+        },
+        "zh-TW": {
           "stringUnit": {
             "state": "translated",
             "value": "Extract archives on open"
@@ -21788,6 +22898,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Extraire vers…"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "में उद्धरण करना…"
           }
         },
         "it": {
@@ -21922,6 +23038,12 @@
             "value": "Extraire dans un dossier"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "फ़ोल्डर में निकालें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -21943,7 +23065,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Extract to folder"
+            "value": "Uitpakken naar map"
           }
         },
         "no": {
@@ -22052,6 +23174,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Format de fichier"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "फ़ाइल फ़ारमैट"
           }
         },
         "it": {
@@ -22186,6 +23314,12 @@
             "value": "Extension du fournisseur de fichiers"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "फ़ाइल प्रदाता एक्सटेंशन"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -22207,7 +23341,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "File provider extension"
+            "value": "Extensie voor bestandsprovider"
           }
         },
         "no": {
@@ -22318,6 +23452,12 @@
             "value": "macOS laisse %@ accéder aux fichiers uniquement là où vous l'autorisez. Cochez ces deux options pour supprimer les demandes ponctuelles d'autorisation d'accès à un dossier."
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS केवल उन्हीं जगहों पर फ़ाइलें खोलने और लिखने की अनुमति देता है जहाँ आप अनुमति देते हैं, इसीलिए कभी-कभी फ़ोल्डर एक्सेस पैनल दिखाई देता है। अनुमति देने से आपके द्वारा चुने गए फ़ोल्डर के अंदर की सभी चीज़ें कवर हो जाती हैं, इसलिए इन दोनों को अनुमति देने से बार-बार पूछने की ज़रूरत नहीं पड़ती।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -22339,7 +23479,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "macOS lets %@ open and write files only where you allow it, which is why a folder-access panel shows up now and then. A grant covers everything inside the folder you pick, so allowing these two puts an end to the asking."
+            "value": "macOS staat %@ alleen toe bestanden te openen en te schrijven waar jij dat toestaat, daarom verschijnt af en toe een paneel voor maptoegang. Een toegang geldt voor alles in de map die je kiest, dus door deze twee toe te staan hoeft er niet verder gevraagd te worden."
           }
         },
         "no": {
@@ -22450,6 +23590,12 @@
             "value": "Général"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सामान्य"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -22471,7 +23617,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "General"
+            "value": "Algemeen"
           }
         },
         "no": {
@@ -22580,6 +23726,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dossier Départ"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "होम फ़ोल्डर"
           }
         },
         "it": {
@@ -22714,6 +23866,12 @@
             "value": "Accès aux dossiers Bureau, Documents, Téléchargement et tout dans votre dossier Départ"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इसमें डेस्कटॉप, डॉक्यूमेंट्स, डाउनलोड्स और आपके होम फोल्डर में मौजूद बाकी सब कुछ शामिल है।"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -22735,7 +23893,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Covers the Desktop, Documents, Downloads and everything else in your home folder."
+            "value": "Omvat het Bureaublad, Documenten, Downloads en al het andere in je thuismap."
           }
         },
         "no": {
@@ -22846,6 +24004,12 @@
             "value": "Comment définir %@ par défaut?"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ को डिफ़ॉल्ट कैसे सेट करें?"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -22867,7 +24031,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "How to set %@ as default?"
+            "value": "Hoe stel ik %@ in als standaard?"
           }
         },
         "no": {
@@ -22978,6 +24142,12 @@
             "value": "Autoriser les versions Beta"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बीटा अपडेट शामिल करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -22999,7 +24169,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Include Beta updates"
+            "value": "Bètaversies meenemen"
           }
         },
         "no": {
@@ -23110,6 +24280,12 @@
             "value": "Info sur les moteurs"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "इंजनों के बारे में जानकारी"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -23131,7 +24307,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Info on Engines"
+            "value": "Info over engines"
           }
         },
         "no": {
@@ -23242,6 +24418,12 @@
             "value": "Historiques"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "लॉग्स"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -23263,7 +24445,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Logs"
+            "value": "Logboeken"
           }
         },
         "no": {
@@ -23374,6 +24556,12 @@
             "value": "Définir MacPacker comme application par défaut"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MacPacker को डिफ़ॉल्ट ऐप के रूप में सेट करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -23395,7 +24583,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Set MacPacker as the default app"
+            "value": "Stel MacPacker in als standaardapp"
           }
         },
         "no": {
@@ -23506,6 +24694,12 @@
             "value": "Gérer dans les paramètres système"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सिस्टम सेटिंग्स में प्रबंधित करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -23527,7 +24721,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Manage in System Settings"
+            "value": "Beheren in Systeeminstellingen"
           }
         },
         "no": {
@@ -23638,6 +24832,12 @@
             "value": "Regrouper dans un sous-menu"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सबमेनू में क्रियाओं को नेस्ट करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -23659,7 +24859,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nest actions in a submenu"
+            "value": "Acties in een submenu plaatsen"
           }
         },
         "no": {
@@ -23770,6 +24970,12 @@
             "value": "Ouvrir le dossier du cache"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "कैश निर्देशिका खोलें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -23791,7 +24997,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open cache directory"
+            "value": "Cachemap openen"
           }
         },
         "no": {
@@ -23902,6 +25108,12 @@
             "value": "Quitter en fermant la dernière fenêtre"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अंतिम विंडो बंद होने पर बाहर निकलें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -23923,7 +25135,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quit on last window closed"
+            "value": "Afsluiten wanneer het laatste venster wordt gesloten"
           }
         },
         "no": {
@@ -24034,6 +25246,12 @@
             "value": "Garder les archives récentes"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हाल के अभिलेखागारों को याद रखें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -24055,7 +25273,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Remember recent archives"
+            "value": "Onthoud recente archieven"
           }
         },
         "no": {
@@ -24166,6 +25384,12 @@
             "value": "Afficher le dossier «Application Support»"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एप्लिकेशन सपोर्ट फ़ोल्डर दिखाएँ"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -24187,7 +25411,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show application support folder"
+            "value": "Toon map voor applicatieondersteuning"
           }
         },
         "no": {
@@ -24296,6 +25520,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Afficher dans la barre des menus"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "मेनू बार में दिखाएँ"
           }
         },
         "it": {
@@ -24430,6 +25660,12 @@
             "value": "Afficher le dossier parent (“..”)"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पैरेंट फ़ोल्डर प्रविष्टि (“..”) दिखाएँ"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -24451,7 +25687,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show parent folder entry (“..”)"
+            "value": "Item voor bovenliggende map tonen (“..”)"
           }
         },
         "no": {
@@ -24562,6 +25798,12 @@
             "value": "Extraction automatique"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्मार्ट निष्कर्षण"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -24583,7 +25825,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Smart extraction"
+            "value": "Slim uitpakken"
           }
         },
         "no": {
@@ -24694,6 +25936,12 @@
             "value": "Rechercher des mises à jour…"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अद्यतन के लिए जाँच…"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -24715,7 +25963,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Check for Updates…"
+            "value": "Controleer op updates..."
           }
         },
         "no": {
@@ -24826,6 +26074,12 @@
             "value": "Modifications"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "बदलाव का"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -24847,7 +26101,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Changelog"
+            "value": "Wijzigingslogboek"
           }
         },
         "no": {
@@ -24958,6 +26212,12 @@
             "value": "Bientôt"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "अगला आ रहा है"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -24979,7 +26239,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Coming next"
+            "value": "Volgende"
           }
         },
         "no": {
@@ -25088,6 +26348,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nouveautés principales"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "रिलीज़ की मुख्य बातें"
           }
         },
         "it": {
@@ -25222,6 +26488,12 @@
             "value": "Soutenir %@"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सहायता %@"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -25352,6 +26624,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Votre don soutient le développement continu."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपका दान निरंतर विकास कार्यों में सहयोग प्रदान करता है।"
           }
         },
         "it": {
@@ -25486,6 +26764,12 @@
             "value": "Aidez %@ à évoluer"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ को बढ़ते रहने में मदद करें"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -25618,6 +26902,12 @@
             "value": "Bienvenue sur %@"
           }
         },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "आपका स्वागत है %@"
+          }
+        },
         "it": {
           "stringUnit": {
             "state": "translated",
@@ -25639,7 +26929,7 @@
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Welcome to %@"
+            "value": "Welkom bij %@"
           }
         },
         "no": {
@@ -25748,6 +27038,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Voir tous les changements"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सभी बदलाव देखें"
           }
         },
         "it": {

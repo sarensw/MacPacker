@@ -62,7 +62,8 @@
                 "ca": "Obre i extreu fitxers LZMA",
                 "el": "Άνοιγμα και εξαγωγή αρχείων LZMA",
                 "nb": "Åpne og pakk ut LZMA-filer",
-                "zh-TW": "開啟並解壓縮 LZMA 檔案"
+                "zh-TW": "開啟並解壓縮 LZMA 檔案",
+                "hi": "LZMA फ़ाइलें खोलें और निकालें"
             },
             "issues": [
                 "340"
@@ -92,7 +93,8 @@
                 "ca": "Extreu els arxius en obrir-los",
                 "el": "Εξαγωγή συμπιεσμένων αρχείων κατά το άνοιγμα",
                 "nb": "Pakk ut arkiver ved åpning",
-                "zh-TW": "開啟壓縮檔時自動解壓縮"
+                "zh-TW": "開啟壓縮檔時自動解壓縮",
+                "hi": "खोलने पर आर्काइव निकालें"
             },
             "issues": [
                 "280"
@@ -121,7 +123,8 @@
                 "ca": "Els fitxers deb s’obren com un sol fitxer «unknown»",
                 "el": "Τα αρχεία deb ανοίγουν ως ένα μόνο αρχείο «unknown»",
                 "nb": "Deb-filer åpnes som én fil kalt «unknown»",
-                "zh-TW": "deb 檔案開啟後只有一個「unknown」檔案"
+                "zh-TW": "deb 檔案開啟後只有一個「unknown」檔案",
+                "hi": "deb फ़ाइलें एक “unknown” फ़ाइल के रूप में खुलती हैं"
             },
             "issues": [
                 "340"
@@ -150,7 +153,8 @@
                 "ca": "«Extreu aquí» falla en una carpeta ja autoritzada",
                 "el": "Το «Εξαγωγή εδώ» αποτυγχάνει σε φάκελο με άδεια από πριν",
                 "nb": "«Pakk ut her» mislykkes i en mappe med tilgang fra før",
-                "zh-TW": "在已授權的資料夾中「解壓縮到這裡」失敗"
+                "zh-TW": "在已授權的資料夾中「解壓縮到這裡」失敗",
+                "hi": "“यहाँ निकालें” पहले से पहुँच वाले फ़ोल्डर में विफल होता है"
             },
             "issues": [
                 "370"
@@ -179,7 +183,8 @@
                 "ca": "L’extracció sobreescriu fitxers amb el mateix nom",
                 "el": "Η εξαγωγή αντικαθιστά αρχεία με το ίδιο όνομα",
                 "nb": "Utpakking overskriver filer med samme navn",
-                "zh-TW": "解壓縮會覆寫同名檔案"
+                "zh-TW": "解壓縮會覆寫同名檔案",
+                "hi": "निकालने पर एक ही नाम वाली फ़ाइलें ओवरराइट हो जाती हैं"
             },
             "issues": [
                 "371"
@@ -208,7 +213,8 @@
                 "ca": "Paràmetre d’inici per ometre la finestra de benvinguda",
                 "el": "Παράμετρος εκκίνησης για παράλειψη του παραθύρου καλωσορίσματος",
                 "nb": "Startparameter for å hoppe over velkomstvinduet",
-                "zh-TW": "用於略過歡迎視窗的啟動參數"
+                "zh-TW": "用於略過歡迎視窗的啟動參數",
+                "hi": "स्वागत विंडो स्किप करने के लिए लॉन्च पैरामीटर"
             },
             "issues": [
                 "360"
@@ -237,10 +243,41 @@
                 "ca": "Actualització de 7-Zip a la versió 26.05",
                 "el": "Ενημέρωση του 7-Zip στην έκδοση 26.05",
                 "nb": "7-Zip oppdatert til versjon 26.05",
-                "zh-TW": "7-Zip 更新至 26.05 版"
+                "zh-TW": "7-Zip 更新至 26.05 版",
+                "hi": "7-Zip को संस्करण 26.05 में अपडेट किया गया"
             },
             "issues": [
                 "367"
+            ]
+          },
+          {
+            "type": "lang",
+            "title": {
+                "en": "Now available in Hindi",
+                "zh-Hans": "现已支持印地语",
+                "fr": "Désormais disponible en hindi",
+                "de": "Jetzt auch auf Hindi",
+                "it": "Ora disponibile anche in hindi",
+                "ja": "ヒンディー語にも対応しました",
+                "fa": "اکنون به زبان هندی نیز در دسترس است",
+                "pl": "Dostępne teraz również w języku hindi",
+                "pt-BR": "Agora disponível em hindi",
+                "ru": "Теперь доступно на хинди",
+                "uk": "Тепер доступно мовою гінді",
+                "es-MX": "Ahora disponible en hindi",
+                "ko": "이제 힌디어로도 제공됩니다",
+                "nl": "Nu ook beschikbaar in het Hindi",
+                "tr": "Artık Hintçe de mevcut",
+                "vi": "Hiện đã có tiếng Hindi",
+                "ar": "متوفر الآن باللغة الهندية",
+                "ca": "Ara disponible en hindi",
+                "el": "Πλέον διαθέσιμο στα χίντι",
+                "nb": "Nå tilgjengelig på hindi",
+                "zh-TW": "現已支援印地文",
+                "hi": "अब हिन्दी में उपलब्ध"
+            },
+            "issues": [
+                "375"
             ]
           }
         ]
