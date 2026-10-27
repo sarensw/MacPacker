@@ -431,5 +431,28 @@ extension AllCoreTests {
             #expect(read(dir.appending(path: "notadouble.txt")) == "The sibling that makes the decoy tempting.\n")
             #expect(read(dir.appending(path: "._notadouble.txt")) == "A real file that merely starts with dot-underscore.\n")
         }
+
+        /// A tar of "." (`tar -C dir .`, the data.tar of every deb) holds "./"
+        /// as an entry of its own. It came out as an empty folder named
+        /// "unknown", and smart extraction took "." for the archive's one
+        /// top-level folder, so the files landed loose in the destination.
+        @Test(arguments: [true, false])
+        func aTarOfDotExtractsWhatIsInIt(smart: Bool) async throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let tar = try #require(Bundle.module.url(forResource: "defaultArchives", withExtension: nil))
+                .appending(path: "defaultArchive-dotslash.tar")
+
+            try await extractFull(newState(), tar, to: dir, smart: smart)
+
+            let contents = try FileManager.default.contentsOfDirectory(atPath: dir.path).sorted()
+            let extracted = smart ? dir.appending(path: "defaultArchive-dotslash") : dir
+            if smart {
+                #expect(contents == ["defaultArchive-dotslash"], "got \(contents)")
+            }
+            let files = try FileManager.default.contentsOfDirectory(atPath: extracted.path).sorted()
+            #expect(files == ["folder", "hello world.txt"], "got \(files)")
+        }
     }
 }

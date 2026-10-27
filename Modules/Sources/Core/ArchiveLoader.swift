@@ -340,12 +340,10 @@ final actor ArchiveLoader {
     /// - Returns: tree of items
     func buildTree(at root: ArchiveItem) -> ArchiveLoaderBuildTreeResult {
 
+        // "./a" is "a", as it is to the bridge when extracting: a tar of "."
+        // (`tar -C dir .`, the data.tar of every deb) stores every entry so
         func normalizePath(_ vp: String) -> String {
-            var p = vp
-            if p.hasSuffix("/") { p = String(p.dropLast()) }
-            if p.isEmpty { return "/" }
-            if !p.hasPrefix("/") { p = "/" + p }
-            return p
+            "/" + vp.split(separator: "/").filter { $0 != "." }.joined(separator: "/")
         }
 
         func parentPath(of vp: String) -> String {
@@ -356,6 +354,9 @@ final actor ArchiveLoader {
             }
             return "/"
         }
+
+        // The "./" such a tar starts with is the archive itself, not a folder in it
+        entries = entries.filter { $0.value.type != .directory || $0.value.virtualPath.map(normalizePath) != "/" }
 
         var dirByPath: [String: ArchiveItem] = ["/": root]
 
