@@ -17,6 +17,9 @@ struct ExtractionProgressView: View {
     @ObservedObject var center: ExtractionProgressCenter
     @State private var expandedJobs: Set<UUID> = []
 
+    /// An open archive window shows its own jobs itself.
+    private var jobs: [ExtractionJob] { center.windowlessJobs }
+
     var body: some View {
         // The window follows the natural content height (the dialog grows
         // when details expand, like the Windows copy dialog). No measured
@@ -24,7 +27,7 @@ struct ExtractionProgressView: View {
         // window size while chart data ticks every 400 ms wedged SwiftUI
         // mid-transition — the chart froze until the next expand/collapse.
         VStack(alignment: .leading, spacing: 0) {
-            if center.jobs.count <= 4 {
+            if jobs.count <= 4 {
                 rows
             } else {
                 // many parallel extractions: cap the dialog, scroll inside
@@ -67,7 +70,7 @@ struct ExtractionProgressView: View {
     @ViewBuilder
     private var rows: some View {
         VStack(spacing: 0) {
-            ForEach(center.jobs) { job in
+            ForEach(jobs) { job in
                 ExtractionProgressRowView(
                     job: job,
                     isExpanded: expandedJobs.contains(job.id),
@@ -85,7 +88,7 @@ struct ExtractionProgressView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
 
-                if job.id != center.jobs.last?.id {
+                if job.id != jobs.last?.id {
                     Divider()
                         .padding(.leading, 20)
                 }
@@ -116,11 +119,16 @@ private struct FadeInOnAppear: ViewModifier {
     }
 }
 
-private struct ExtractionProgressRowView: View {
+/// One job: also what an archive window shows at its foot for its own
+/// (`WindowExtractionProgressView`).
+struct ExtractionProgressRowView: View {
     let job: ExtractionJob
     let isExpanded: Bool
     let onToggleExpanded: () -> Void
     let onCancel: () -> Void
+    /// Lets the user put away a failed job — in an archive window, which has
+    /// no close button of its own for it. `nil` in the progress window.
+    var onDismiss: (() -> Void)? = nil
 
     var body: some View {
         // collapsed: everything vertically centered on the badge line;
@@ -248,6 +256,13 @@ private struct ExtractionProgressRowView: View {
         case .failed:
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.red)
+            if let onDismiss {
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
         case .cancelled:
             Image(systemName: "slash.circle")
                 .foregroundStyle(.secondary)
