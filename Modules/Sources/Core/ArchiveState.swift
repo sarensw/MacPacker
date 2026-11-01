@@ -1317,10 +1317,12 @@ extension ArchiveState {
     public func readNames(as encoding: ArchiveNameEncoding?) {
         guard let url, !hasPendingChanges, !isBusy, encoding != chosenNameEncoding else { return }
         let known = passwords
+        let engines = pinnedEngines
         open(url: url)
-        // Like the password after a save: set after open(), which forgets them,
-        // and before the load gets to run.
+        // Like the password and the engine after a save: set after open(), which
+        // forgets them, and before the load gets to run.
         passwords = known
+        pinnedEngines = engines
         chosenNameEncoding = encoding
     }
 

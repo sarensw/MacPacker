@@ -261,7 +261,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
         let names = archive.storedNames
         guard let encoding = ArchiveNameEncoding.of(names.map(\.bytes), chosen: chosen) else { return nil }
         for name in names {
-            archive.setPath(encoding.read(name.bytes, storedAs: name.path), ofEntryAt: name.index)
+            archive.setPath(encoding.read(name.bytes, storedAs: name.path, picked: chosen != nil), ofEntryAt: name.index)
         }
         return encoding
     }

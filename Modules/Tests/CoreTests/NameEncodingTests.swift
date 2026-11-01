@@ -7,11 +7,29 @@
 //
 
 import Foundation
+import Swift7zip
 import Testing
 @testable import Core
 
 /// The engines that read these formats; 7-Zip is the default for all of them.
 private let engines: [any ArchiveEngineSelectorProtocol] = [ArchiveEngineSelector7zip(), ArchiveEngineSelectorXad()]
+
+/// Settings, which can name another engine while a window stays open.
+private final class ChangingSelector: ArchiveEngineSelectorProtocol, @unchecked Sendable {
+    var configured = ArchiveEngineType.`7zip`
+
+    func engine(for id: String) -> ArchiveEngine? { engine(for: configured) }
+
+    func engine(for type: ArchiveEngineType) -> ArchiveEngine {
+        switch type {
+        case .`7zip`: Archive7ZipEngine()
+        case .xad: ArchiveXadEngine()
+        case .swc: ArchiveSwcEngine()
+        }
+    }
+
+    func engineType(for id: String) -> ArchiveEngineType? { configured }
+}
 
 /// `gbk_sidecar.zip` on disk: the sidecar folded, the decoy still there.
 private let sidecarFiles = ["中文目录", "中文目录/._说明.txt", "中文目录/你好世界.txt", "中文目录/说明.txt"].sorted()
@@ -42,6 +60,8 @@ private let fixtures = [
     Fixture(file: "cp866.zip", tree: cp866Tree),
     Fixture(file: "gbk_mixed.zip", tree: [
         "中文目录", "中文目录/你好世界.txt", "新建文档.txt"]),
+    Fixture(file: "gbk_flagged.zip", tree: [
+        "中文目录", "中文目录/你好世界.txt", "Отчёт.txt", "Señor.txt", "Café.txt"]),
     Fixture(file: "gbk.tar", tree: [
         "中文目录", "中文目录/你好世界.txt", "图片", "图片/风景.txt", "一些.txt"]),
 ]
@@ -102,6 +122,13 @@ extension AllCoreTests {
                 state.extract(to: folder, smart: false)
             }
             state.onStatusChange = nil
+        }
+
+        /// Writes the archive and waits for it. Fails when no write starts: going
+        /// on from there, a test would look at the archive as it was.
+        private func save(_ state: ArchiveState, to destination: URL? = nil) async throws {
+            let saving = try #require(state.save(to: destination))
+            await saving.value
         }
 
         private func temporaryFolder() throws -> URL {
@@ -177,6 +204,14 @@ extension AllCoreTests {
             #expect(FileManager.default.fileExists(atPath: extracted.path))
         }
 
+        /// No flag vouches for `新建文档.txt`, and it decodes as GBK as well. Only
+        /// its bytes can tell it is UTF-8, as it takes three per character.
+        /// XADMaster reads a whole archive in one encoding, so 7-Zip only.
+        @Test func aRealUTF8NameWithoutAFlagStaysUTF8() async throws {
+            let state = try await open("gbk_unflagged.zip")
+            #expect(tree(of: state) == ["中文目录", "中文目录/你好世界.txt", "新建文档.txt"].sorted())
+        }
+
         /// Hidden from the listing, the sidecar is not in what a list of entries
         /// hands over, and it still has to land where its file did.
         @Test func aSidecarFoldsOntoItsFile() async throws {
@@ -199,7 +234,7 @@ extension AllCoreTests {
             defer { try? FileManager.default.removeItem(at: folder) }
             let state = try await open("gbk_sidecar.zip")
 
-            await state.save(to: folder.appendingPathComponent("copy.zip"))?.value
+            try await save(state, to: folder.appendingPathComponent("copy.zip"))
             #expect(state.error == nil)
 
             let out = folder.appendingPathComponent("out")
@@ -359,6 +394,39 @@ extension AllCoreTests {
             #expect(state.hasPendingChanges)
         }
 
+        /// A pick covers every name the archive leaves open, also one that happens
+        /// to be valid UTF-8: `сон` in CP866 is one Sundanese letter. The name the
+        /// archive declares stays, whatever was picked.
+        @Test(arguments: engines)
+        fileprivate func aPickReachesEveryNameTheArchiveLeavesOpen(selector: any ArchiveEngineSelectorProtocol) async throws {
+            let state = try await open("cp866_lookalike.zip", with: selector)
+            state.readNames(as: .dosCyrillic)
+            try await state.openTask?.value
+
+            let names = ["Café.txt", "Документы", "Документы/Отчёт.txt", "сад", "сад/том.txt", "сон.txt"].sorted()
+            #expect(tree(of: state) == names)
+
+            let folder = try temporaryFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            await extractAll(state, to: folder)
+            #expect(try files(in: folder) == names)
+        }
+
+        /// The archive stays with the engine that read it, as it does across a
+        /// save. Settings may have moved on to one that cannot read it at all.
+        @Test func aPickStaysWithTheEngineThatReadTheArchive() async throws {
+            let selector = ChangingSelector()
+            let state = try await open("gbk.zip", with: selector)
+            selector.configured = .swc
+
+            state.readNames(as: .big5)
+            try await state.openTask?.value
+
+            #expect(state.error == nil)
+            #expect(state.activeEngine == .`7zip`)
+            #expect(state.nameEncoding == .big5)
+        }
+
         // MARK: Passwords
 
         @Test func aPickDoesNotAskForThePasswordAgain() async throws {
@@ -416,7 +484,7 @@ extension AllCoreTests {
             let file = folder.appendingPathComponent("新建文档.txt")
             try Data("added".utf8).write(to: file)
             #expect(await state.add(url: file).value)
-            await state.save()?.value
+            try await save(state)
 
             #expect(state.error == nil)
             #expect(state.nameEncoding == .gb18030)
@@ -442,11 +510,34 @@ extension AllCoreTests {
                 try await state.openTask?.value
             }
 
-            await state.save(to: folder.appendingPathComponent("copy.zip"))?.value
+            try await save(state, to: folder.appendingPathComponent("copy.zip"))
 
             #expect(state.error == nil)
             #expect(state.nameEncoding == nil)
             #expect(tree(of: state) == fixture.2)
+        }
+
+        /// `../中文.txt`, `./中文.txt` and `中文.txt` land on one path, and a Save As
+        /// extracts everything before writing it again. Each has to go in with
+        /// its own content, or one file's bytes quietly replace the others'.
+        @Test func aSaveAsKeepsFilesThatLandOnOnePath() async throws {
+            let folder = try temporaryFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let copy = folder.appendingPathComponent("copy.zip")
+            let state = try await open("gbk_twins.zip")
+
+            try await save(state, to: copy)
+            #expect(state.error == nil)
+
+            let archive = try SevenZipArchive(url: copy)
+            var contents: [String] = []
+            for entry in try archive.entries {
+                let out = folder.appendingPathComponent("entry-\(entry.index)")
+                try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+                let landed = try #require(try archive.extract(index: entry.index, to: out)[entry.index])
+                contents.append(try String(contentsOf: landed, encoding: .utf8))
+            }
+            #expect(contents.sorted() == ["from above", "from here", "plain"])
         }
 
         /// The pick is the window's, so a save reopening the archive keeps it.
@@ -462,7 +553,7 @@ extension AllCoreTests {
             let file = folder.appendingPathComponent("added.txt")
             try Data("added".utf8).write(to: file)
             #expect(await state.add(url: file).value)
-            await state.save()?.value
+            try await save(state)
 
             #expect(state.chosenNameEncoding == .windowsCyrillic)
             #expect(tree(of: state) == (cp866Tree + ["added.txt"]).sorted())

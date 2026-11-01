@@ -161,29 +161,32 @@ extension ArchiveNameEncoding {
     /// where the folder's own entry reads, and the folder shows twice. `/` itself
     /// is safe to split at, as no multibyte character here has one inside it.
     ///
-    /// - Parameter stored: the path as it stands, which a part keeps when this
-    ///   encoding has no reading for it.
-    func read(_ bytes: Data, storedAs stored: String) -> String {
+    /// - Parameters:
+    ///   - stored: the path as it stands, which a part keeps when this encoding
+    ///     has no reading for it.
+    ///   - picked: whether the user chose this encoding, rather than detection.
+    func read(_ bytes: Data, storedAs stored: String, picked: Bool) -> String {
         zip(bytes.split(separator: 0x2F, omittingEmptySubsequences: false),
             stored.split(separator: "/", omittingEmptySubsequences: false))
-            .map { read(part: $0) ?? String($1) }
+            .map { read(part: $0, picked: picked) ?? String($1) }
             .joined(separator: "/")
     }
 
     /// How `bytes` read in this encoding, or `nil` to leave them as they are.
     ///
     /// A part that is not UTF-8 is in this encoding, or nothing can be done with
-    /// it. One that is valid UTF-8 can be either. It is real UTF-8 when something
-    /// that writes UTF-8 added it to the archive, and an accident when a short
-    /// GBK name happens to fit, as 图片 does: it would stay ͼƬ, and the folder
-    /// would show twice. Accidents come out as two-byte sequences, so as Greek or
-    /// Cyrillic, while East Asian text in UTF-8 takes three.
-    /// ponytail: a real Latin UTF-8 name in a GBK zip (Café) reads as GBK. Only a
-    /// zip knows better, by its flag: 7-Zip has it in kpidCharacts, if that ever
-    /// shows up in practice.
-    private func read(part bytes: Data) -> String? {
+    /// it, and so is any part the user picked this encoding for. Left to detection,
+    /// one that is valid UTF-8 can be either. It is real UTF-8 when something that
+    /// writes UTF-8 added it to the archive, and an accident when a short GBK name
+    /// happens to fit, as 图片 does: it would stay ͼƬ, and the folder would show
+    /// twice. Accidents come out as two-byte sequences, so as Greek or Cyrillic,
+    /// while East Asian text in UTF-8 takes three.
+    /// ponytail: with no flag to go by, a real Latin UTF-8 name beside GBK (Café
+    /// in a tar) reads as GBK, and a CP866 сон stays UTF-8 until picked. The bytes
+    /// do not tell, and a wrong guess here would break what reads right.
+    private func read(part bytes: Data, picked: Bool) -> String? {
         guard let decoded = String(data: bytes, encoding: stringEncoding) else { return nil }
-        guard let utf8 = String(data: bytes, encoding: .utf8) else { return decoded }
+        guard !picked, let utf8 = String(data: bytes, encoding: .utf8) else { return decoded }
         return !Self.isEastAsian(utf8) && Self.isEastAsian(decoded) ? decoded : nil
     }
 

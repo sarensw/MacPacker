@@ -1432,6 +1432,13 @@ bool sz_has_undecoded_paths(SZArchiveRef archive) {
     return false;
 }
 
+bool sz_entry_declares_utf8(SZArchiveRef archive, uint32_t index) {
+    const char *format = sz_format_name(archive);
+    if (!format || strcmp(format, "zip") != 0) return false;
+    const char *characts = entryString(archive, index, kpidCharacts);
+    return characts && strstr(characts, "UTF8");
+}
+
 void sz_set_entry_path(SZArchiveRef archive, uint32_t index, const char *path) {
     if (!archive || !path) return;
     auto *handle = static_cast<SZArchiveHandle *>(archive);

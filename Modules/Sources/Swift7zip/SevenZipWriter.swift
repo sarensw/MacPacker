@@ -326,12 +326,13 @@ extension SevenZipArchive {
         }
 
         // The scratch disk ignores case and Unicode normalization; archive names
-        // don't, so "Readme.txt" and "README.txt" would land on one file. Entries
-        // that collide are extracted one by one, each into a folder of its own.
+        // don't, so "Readme.txt" and "README.txt" would land on one file, as "a"
+        // and "../a" do anywhere. Entries that collide are extracted one by one,
+        // each into a folder of its own.
         var firstWithName: [String: UInt32] = [:]
         var loners: Set<UInt32> = []
         for (entry, _) in kept where !entry.isDirectory {
-            let key = entry.path.precomposedStringWithCanonicalMapping.lowercased()
+            let key = extractedPath(of: entry.path).precomposedStringWithCanonicalMapping.lowercased()
             if let first = firstWithName[key] {
                 loners.formUnion([first, entry.index])
             } else {
@@ -377,9 +378,7 @@ extension SevenZipArchive {
         // directory listings whenever a `._name` stands beside `name`.
         for index in hidden {
             guard let stored = sz_entry_path(archive.handle.ref, index) else { continue }
-            // sanitized the way the extraction does: no empty, "." or ".." parts
-            let relative = String(cString: stored).split(separator: "/")
-                .filter { $0 != "." && $0 != ".." }.joined(separator: "/")
+            let relative = extractedPath(of: String(cString: stored))
             let file = shared.appendingPathComponent(relative)
             guard !relative.isEmpty,
                   let attributes = try? fm.attributesOfItem(atPath: file.path),

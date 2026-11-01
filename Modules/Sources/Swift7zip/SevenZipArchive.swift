@@ -109,12 +109,13 @@ public class SevenZipArchive {
     /// The names as 7-Zip read them and the bytes the archive stores them in, by
     /// entry, when 7-Zip could not read one of them as UTF-8, and nothing
     /// otherwise. Every entry is in there that is not plain ASCII, the hidden
-    /// sidecars included: the archive does not say what they are in, so whoever
-    /// knows has to say for all of them.
+    /// sidecars included, unless it declares UTF-8 itself: the archive does not
+    /// say what the others are in, so whoever knows has to say for all of them.
     public var storedNames: [(index: UInt32, path: String, bytes: Data)] {
         guard sz_has_undecoded_paths(handle.ref) else { return [] }
         return (0..<UInt32(Swift.max(0, sz_entry_count(handle.ref)))).compactMap { index in
-            guard let stored = sz_entry_path(handle.ref, index) else { return nil }
+            guard !sz_entry_declares_utf8(handle.ref, index),
+                  let stored = sz_entry_path(handle.ref, index) else { return nil }
             let path = String(cString: stored)
             let bytes = Self.storedBytes(of: path)
             return bytes.contains { $0 >= 0x80 } ? (index, path, bytes) : nil
@@ -202,11 +203,14 @@ public class SevenZipArchive {
         return [index: Self.extractedURL(of: entry.path, in: destination)]
     }
 
-    /// Where an extraction into `destination` writes `path`: the bridge drops
-    /// every empty, "." and ".." part, so that nothing lands outside of it.
     private static func extractedURL(of path: String, in destination: URL) -> URL {
-        destination.appendingPathComponent(
-            path.split(separator: "/").filter { $0 != "." && $0 != ".." }.joined(separator: "/"))
+        destination.appendingPathComponent(extractedPath(of: path))
+    }
+
+    /// Where an extraction writes `path`, below its destination: the bridge drops
+    /// every empty, "." and ".." part, so that nothing lands outside of it.
+    static func extractedPath(of path: String) -> String {
+        path.split(separator: "/").filter { $0 != "." && $0 != ".." }.joined(separator: "/")
     }
 
     /// Byte progress during extraction, as reported by 7-Zip itself.
