@@ -119,6 +119,11 @@ public class ArchiveState: ObservableObject {
     /// window looks saved.
     @Published private(set) public var saveError: String? = nil
     @Published public var isReloadNeeded: Bool = false
+    /// What this archive's names are read in, for an archive that does not say
+    /// itself. `nil` when it does, and there is nothing to choose.
+    @Published private(set) public var nameEncoding: ArchiveNameEncoding? = nil
+    /// The encoding the user picked for the names; `nil` leaves it to detection.
+    @Published private(set) public var chosenNameEncoding: ArchiveNameEncoding? = nil
 
     // Listeners for non-ui
     @Published private(set) public var status: ArchiveStateStatus = .idle
@@ -141,9 +146,9 @@ public class ArchiveState: ObservableObject {
 
     /// The selector everything downstream should use.
     private var effectiveEngineSelector: ArchiveEngineSelectorProtocol {
-        pinnedEngines.isEmpty
+        pinnedEngines.isEmpty && chosenNameEncoding == nil
             ? archiveEngineSelector
-            : AutomaticEngineSelector(base: archiveEngineSelector, pinned: pinnedEngines)
+            : AutomaticEngineSelector(base: archiveEngineSelector, pinned: pinnedEngines, nameEncoding: chosenNameEncoding)
     }
     private let archiveTypeDetector: ArchiveTypeDetector
     
@@ -322,6 +327,8 @@ extension ArchiveState {
         self.passwords = [:]
         self.pinnedEngines = [:]
         self.activeEngine = nil
+        self.nameEncoding = nil
+        self.chosenNameEncoding = nil
         
         updateStatus(.idle)
         
@@ -1051,6 +1058,7 @@ extension ArchiveState {
             options: options ?? CompressionOptions(format: format),
             isSaveAs: destination != nil,
             sourcePassword: url.flatMap { passwords[$0] },
+            sourceNameEncoding: chosenNameEncoding,
             passwordResolver: makePasswordResolver(),
             folderAccessProvider: folderAccessProvider,
             onProgress: { [weak self, progressCenter] completed, total, date in
@@ -1082,6 +1090,7 @@ extension ArchiveState {
 
                 // reload from disk so entries and indices reflect the file
                 let engines = pinnedEngines
+                let chosenEncoding = chosenNameEncoding
                 open(url: saved.url)
                 // Known already — reopening must not ask again. Set after open(),
                 // which starts by forgetting every password, and before the first
@@ -1092,6 +1101,7 @@ extension ArchiveState {
                 // Likewise the engine: it is still the archive the window opened,
                 // whatever Settings have said since.
                 pinnedEngines = engines
+                chosenNameEncoding = chosenEncoding
                 _ = try? await openTask?.value
                 self.isSaving = false
                 return .written
@@ -1216,6 +1226,7 @@ extension ArchiveState {
                 
                 self.uncompressedSize = loaderResult.uncompressedSize
                 self.isEncrypted = loaderResult.isEncrypted
+                self.nameEncoding = loaderResult.nameEncoding
                 // The archive stays with the engine that read it (see
                 // `pinnedEngines`). That may be a fallback, when the configured
                 // engine cannot read this archive: the first extraction would
@@ -1299,6 +1310,20 @@ extension ArchiveState {
         }
     }
     
+    /// Lists the archive again with its names read in `encoding`, or as detected
+    /// for `nil`, from here on and for everything extracted from it. Nothing
+    /// changes in the file. Refused with changes pending: the listing they are
+    /// about goes.
+    public func readNames(as encoding: ArchiveNameEncoding?) {
+        guard let url, !hasPendingChanges, !isBusy, encoding != chosenNameEncoding else { return }
+        let known = passwords
+        open(url: url)
+        // Like the password after a save: set after open(), which forgets them,
+        // and before the load gets to run.
+        passwords = known
+        chosenNameEncoding = encoding
+    }
+
     public func open(item: ArchiveItem) {
         Task {
             do {

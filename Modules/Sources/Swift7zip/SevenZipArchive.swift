@@ -104,6 +104,42 @@ public class SevenZipArchive {
         }
     }
 
+    // MARK: - Names
+
+    /// The names as 7-Zip read them and the bytes the archive stores them in, by
+    /// entry, when 7-Zip could not read one of them as UTF-8, and nothing
+    /// otherwise. Every entry is in there that is not plain ASCII, the hidden
+    /// sidecars included: the archive does not say what they are in, so whoever
+    /// knows has to say for all of them.
+    public var storedNames: [(index: UInt32, path: String, bytes: Data)] {
+        guard sz_has_undecoded_paths(handle.ref) else { return [] }
+        return (0..<UInt32(Swift.max(0, sz_entry_count(handle.ref)))).compactMap { index in
+            guard let stored = sz_entry_path(handle.ref, index) else { return nil }
+            let path = String(cString: stored)
+            let bytes = Self.storedBytes(of: path)
+            return bytes.contains { $0 >= 0x80 } ? (index, path, bytes) : nil
+        }
+    }
+
+    /// Undoes what `sz_has_undecoded_paths` describes.
+    private static func storedBytes(of path: String) -> Data {
+        var bytes = Data()
+        for scalar in path.unicodeScalars {
+            if (0xEF80...0xEFFF).contains(scalar.value) {
+                bytes.append(UInt8(truncatingIfNeeded: scalar.value))
+            } else {
+                bytes.append(contentsOf: String(scalar).utf8)
+            }
+        }
+        return bytes
+    }
+
+    /// Lists and extracts the entry at `index` as `path`, for a name read in the
+    /// right code page. The archive stays as it is.
+    public func setPath(_ path: String, ofEntryAt index: UInt32) {
+        sz_set_entry_path(handle.ref, index, path)
+    }
+
     // MARK: - Password
 
     /// Sets the password used for extracting encrypted entries.
@@ -163,7 +199,14 @@ public class SevenZipArchive {
             handle.ref, index,
             destination.path, &errorPtr)
         try Self.check(result, errorPtr)
-        return [index: destination.appendingPathComponent(entry.path)]
+        return [index: Self.extractedURL(of: entry.path, in: destination)]
+    }
+
+    /// Where an extraction into `destination` writes `path`: the bridge drops
+    /// every empty, "." and ".." part, so that nothing lands outside of it.
+    private static func extractedURL(of path: String, in destination: URL) -> URL {
+        destination.appendingPathComponent(
+            path.split(separator: "/").filter { $0 != "." && $0 != ".." }.joined(separator: "/"))
     }
 
     /// Byte progress during extraction, as reported by 7-Zip itself.
@@ -235,7 +278,7 @@ public class SevenZipArchive {
         try Self.check(result, errorPtr)
         var result2: [UInt32: URL] = [:]
         for (idx, path) in indexPaths {
-            result2[idx] = destination.appendingPathComponent(path)
+            result2[idx] = Self.extractedURL(of: path, in: destination)
         }
         return result2
     }
@@ -272,7 +315,7 @@ public class SevenZipArchive {
         try Self.check(result, errorPtr)
         var result2: [UInt32: URL] = [:]
         for entry in allEntries {
-            result2[entry.index] = destination.appendingPathComponent(entry.path)
+            result2[entry.index] = Self.extractedURL(of: entry.path, in: destination)
         }
         return result2
     }

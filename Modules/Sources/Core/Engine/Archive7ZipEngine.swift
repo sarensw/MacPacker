@@ -9,7 +9,17 @@ import Foundation
 import Swift7zip
 
 final actor Archive7ZipEngine: ArchiveEngine {
+    /// What the user picked for this archive's names; `nil` leaves it to detection.
+    private let nameEncoding: ArchiveNameEncoding?
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
+
+    init(nameEncoding: ArchiveNameEncoding? = nil) {
+        self.nameEncoding = nameEncoding
+    }
+
+    nonisolated func readingNames(as encoding: ArchiveNameEncoding?) -> any ArchiveEngine {
+        Archive7ZipEngine(nameEncoding: encoding)
+    }
     
     func statusStream() -> AsyncStream<EngineStatus> {
         AsyncStream { continuation in
@@ -33,8 +43,10 @@ final actor Archive7ZipEngine: ArchiveEngine {
         // canonical entry (`.zip` for spanned, `.001` for numeric) and holds a
         // security-scoped grant on the containing folder, so the C bridge's
         // volume callback opens sibling volumes directly — no staging needed.
-        let szip = try await Self.open(
-            url: url, attempts: ArchivePasswordAttempts(url: url, resolver: passwordResolver))
+        let (szip, nameEncoding) = try await Self.open(
+            url: url,
+            attempts: ArchivePasswordAttempts(url: url, resolver: passwordResolver),
+            nameEncoding: nameEncoding)
 
         var items: [UUID: ArchiveItem] = [:]
         var uncompressedSizeOverall: Int64 = 0
@@ -92,7 +104,8 @@ final actor Archive7ZipEngine: ArchiveEngine {
             uncompressedSize: uncompressedSizeOverall,
             // A header-encrypted archive needed the password just to list, so
             // it counts as encrypted even if no entry flags itself.
-            isEncrypted: isEncrypted || szip.hasPassword
+            isEncrypted: isEncrypted || szip.hasPassword,
+            nameEncoding: nameEncoding
         )
     }
     
@@ -126,7 +139,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
         let sorted = indices.keys.sorted { $0 < $1 }
         
         let attempts = ArchivePasswordAttempts(url: url, resolver: passwordResolver)
-        let szip = try await Self.open(url: url, attempts: attempts)
+        let (szip, _) = try await Self.open(url: url, attempts: attempts, nameEncoding: nameEncoding)
 
         // The password is settled by the open above, but a wrong one only shows
         // up here: nothing in a 7z or a zip lets it be checked before an entry is
@@ -174,7 +187,7 @@ final actor Archive7ZipEngine: ArchiveEngine {
         onProgress: ArchiveExtractionProgress?
     ) async throws {
         let attempts = ArchivePasswordAttempts(url: url, resolver: passwordResolver)
-        let szip = try await Self.open(url: url, attempts: attempts)
+        let (szip, _) = try await Self.open(url: url, attempts: attempts, nameEncoding: nameEncoding)
 
         // Same retry shape as extract(items:): loop until the archive
         // extracts or the user cancels the password prompt.
@@ -208,10 +221,15 @@ final actor Archive7ZipEngine: ArchiveEngine {
     /// Nobody to ask is not a failure here. An archive whose names read without a
     /// password still lists them, which is what a Quick Look preview and Finder's
     /// "Extract Here" — neither of which carries a prompt — go on showing.
+    ///
+    /// - Parameter nameEncoding: what the user picked for the names, if anything.
+    /// - Returns: the archive, with its names read, and the encoding they were
+    ///   read in, for an archive that does not declare one.
     private static func open(
         url: URL,
-        attempts: ArchivePasswordAttempts
-    ) async throws -> SevenZipArchive {
+        attempts: ArchivePasswordAttempts,
+        nameEncoding: ArchiveNameEncoding?
+    ) async throws -> (SevenZipArchive, ArchiveNameEncoding?) {
         var password: String?
         let archive: SevenZipArchive = try await {
             while true {
@@ -227,7 +245,25 @@ final actor Archive7ZipEngine: ArchiveEngine {
            let password = try await attempts.nextIfOffered() {
             archive.setPassword(password)
         }
-        return archive
+        // blocking work, for as many names as the archive has
+        let encoding = try await runBlocking { readNames(of: archive, chosen: nameEncoding) }
+        return (archive, encoding)
+    }
+
+    /// Gives the entries of `archive` the names they have in `chosen`, or in the
+    /// encoding their bytes turn out to be in. Every open does this, so what is
+    /// listed is what an extraction writes. An archive that says what its names
+    /// are in has nothing to read here.
+    ///
+    /// - Returns: the encoding used, `nil` for an archive that declares its own.
+    @discardableResult
+    static func readNames(of archive: SevenZipArchive, chosen: ArchiveNameEncoding?) -> ArchiveNameEncoding? {
+        let names = archive.storedNames
+        guard let encoding = ArchiveNameEncoding.of(names.map(\.bytes), chosen: chosen) else { return nil }
+        for name in names {
+            archive.setPath(encoding.read(name.bytes, storedAs: name.path), ofEntryAt: name.index)
+        }
+        return encoding
     }
 
     /// Adapts the engine-level progress closure to the bridge's handler.

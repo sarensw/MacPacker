@@ -48,6 +48,20 @@ int32_t sz_sidecar_target(SZArchiveRef archive, uint32_t index);
 /// archive handle.
 const char *sz_entry_path(SZArchiveRef archive, uint32_t index);
 
+/// Whether any path holds bytes that are not UTF-8. A format that does not say
+/// what its names are in leaves them in the code page of the machine that wrote
+/// them. On this platform 7-Zip reads them as UTF-8 whatever code page it is
+/// given (g_ForceToUTF8), and keeps each byte that does not fit as U+EF00 plus
+/// that byte (UTF_ESCAPE in UTFConvert.cpp), so `sz_entry_path` shows it as such
+/// a character and nothing is lost.
+bool sz_has_undecoded_paths(SZArchiveRef archive);
+
+/// Gives `index` the path `path`, UTF-8, in place of the one it is stored under:
+/// the listing, `sz_entry_path` and every extraction use it from here on, and
+/// extraction sanitizes it as it does any path out of an archive. An update
+/// leaves what is stored as it is. For a name read in the right code page.
+void sz_set_entry_path(SZArchiveRef archive, uint32_t index, const char *path);
+
 /// How `index` is compressed, as 7-Zip names it -- "Deflate", "LZMA2:22",
 /// "PPMD:o6:mem24", "Copy", "Store" -- with the cipher added for an encrypted
 /// entry. NULL when the archive does not say. Lives as long as the handle.

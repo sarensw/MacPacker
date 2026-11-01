@@ -36,6 +36,10 @@ extension SevenZipArchive {
     ///   - destination: URL where the output archive will be written.
     ///   - items: The diff to apply (removals, moves, additions).
     ///   - options: Compression options. Defaults to 7z format, level 5.
+    ///   - readSourceNames: Called with the opened source, to give its entries
+    ///     the names they get when the archive is written again; see
+    ///     ``SevenZipArchive/storedNames``. Kept entries that are not rewritten
+    ///     keep their stored names whatever it does.
     /// - Throws: ``SevenZipError/writeFailed(_:)`` on failure.
     /// Byte progress during an archive write, as reported by 7-Zip.
     /// `completed`/`total` share the handler's processed-bytes unit. Return
@@ -49,6 +53,7 @@ extension SevenZipArchive {
         options: CompressionOptions = .init(),
         sourcePassword: String? = nil,
         rewrite: Bool = false,
+        readSourceNames: (SevenZipArchive) -> Void = { _ in },
         progress: WriteProgressHandler? = nil
     ) throws {
         var options = options
@@ -96,6 +101,7 @@ extension SevenZipArchive {
         do {
             // scoped, so the handle is closed again before anything is written
             let sourceArchive = try source.map { try SevenZipArchive(url: $0, password: sourcePassword) }
+            if let sourceArchive { readSourceNames(sourceArchive) }
             let locked = try sourceArchive?.entries.filter(\.isEncrypted) ?? []
             let encrypted = !locked.isEmpty
             // The source's format, from 7-Zip, which opened it — under the names

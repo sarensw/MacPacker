@@ -36,17 +36,22 @@ public struct ArchiveEngineLoadResult: Sendable {
     /// True when at least one entry is encrypted, so the UI can show the lock
     /// indicator before anything is extracted.
     let isEncrypted: Bool
+    /// What the names were read in, for an archive that does not say itself.
+    /// `nil` for one that does: there is nothing to choose then.
+    let nameEncoding: ArchiveNameEncoding?
 
     init(
         items: [UUID: ArchiveItem],
         hasTree: Bool,
         uncompressedSize: Int64,
-        isEncrypted: Bool = false
+        isEncrypted: Bool = false,
+        nameEncoding: ArchiveNameEncoding? = nil
     ) {
         self.items = items
         self.hasTree = hasTree
         self.uncompressedSize = uncompressedSize
         self.isEncrypted = isEncrypted
+        self.nameEncoding = nameEncoding
     }
 }
 
@@ -102,7 +107,12 @@ public protocol ArchiveEngine: Sendable {
     
     /// Allows the UI to cancel the current action
     func cancel() async
-    
+
+    /// This engine, reading the names of an archive that does not declare their
+    /// encoding in `encoding`, or working it out for `nil`. For the engines
+    /// whose formats can leave it open.
+    func readingNames(as encoding: ArchiveNameEncoding?) -> any ArchiveEngine
+
     /// Loads the given archive to retrieve all entries (in form of `ArchiveItem`)
     /// - Parameter url: url of the archive
     /// - Parameter passwordProvider: give the engine the possibility to request a password from the user
@@ -166,6 +176,8 @@ public protocol ArchiveEngine: Sendable {
 }
 
 public extension ArchiveEngine {
+    func readingNames(as encoding: ArchiveNameEncoding?) -> any ArchiveEngine { self }
+
     func extract(
         items: [ArchiveItem],
         from url: URL,
