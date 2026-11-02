@@ -259,9 +259,15 @@ final actor Archive7ZipEngine: ArchiveEngine {
     @discardableResult
     static func readNames(of archive: SevenZipArchive, chosen: ArchiveNameEncoding?) -> ArchiveNameEncoding? {
         let names = archive.storedNames
-        guard let encoding = ArchiveNameEncoding.of(names.map(\.bytes), chosen: chosen) else { return nil }
+        let bytes = names.map(\.bytes)
+        guard let encoding = ArchiveNameEncoding.of(bytes, chosen: chosen) else { return nil }
+        let validUTF8 = chosen == nil ? ArchiveNameEncoding.validUTF8(in: bytes) : .read
+        let slashesWereBackslashes = archive.slashesWereBackslashes
         for name in names {
-            archive.setPath(encoding.read(name.bytes, storedAs: name.path, picked: chosen != nil), ofEntryAt: name.index)
+            let path = encoding.read(
+                name.bytes, storedAs: name.path,
+                validUTF8: validUTF8, slashesWereBackslashes: slashesWereBackslashes)
+            archive.setPath(path, ofEntryAt: name.index)
         }
         return encoding
     }

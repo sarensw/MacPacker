@@ -371,13 +371,23 @@ private final class XADArchiveWithPasswordSupport: @unchecked Sendable {
     /// - Returns: the encoding used, `nil` when every name is declared or UTF-8.
     func readNames(chosen: ArchiveNameEncoding?) async throws -> ArchiveNameEncoding? {
         let encoding = try await read { archive -> ArchiveNameEncoding? in
-            let undeclared = (0..<archive.numberOfEntries()).compactMap { index -> Data? in
+            let undeclared = (0..<archive.numberOfEntries()).compactMap { index -> XADPath? in
                 let entry = archive.dataForkParserDictionary(forEntry: index)
                     ?? archive.resourceForkParserDictionary(forEntry: index)
                 guard let name = entry?[XADFileNameKey] as? XADPath, !name.encodingIsKnown() else { return nil }
-                return name.data()
+                return name
             }
-            let encoding = ArchiveNameEncoding.of(undeclared, chosen: chosen)
+            // StuffIt is the Mac's own, whatever the file is called: a `.sea` is one.
+            let western: ArchiveNameEncoding = archive.formatName()?.hasPrefix("StuffIt") == true ? .macRoman : .dosLatin
+            var encoding = ArchiveNameEncoding.of(undeclared.map { $0.data() }, chosen: chosen, western: western)
+            // XAD decodes a path whole, and one that fails comes back with its
+            // folders flattened into the name. Unreadable names in the right
+            // folders are better, as `Automatic` is what an archive opens with, and
+            // no byte fails in these two. A pick stays what it is: it can be undone.
+            if chosen == nil, let found = encoding,
+               !undeclared.allSatisfy({ $0.canDecode(withEncoding: found.stringEncoding.rawValue) }) {
+                encoding = western
+            }
             archive.setNameEncoding(encoding?.stringEncoding.rawValue ?? NSUTF8StringEncoding)
             return encoding
         }

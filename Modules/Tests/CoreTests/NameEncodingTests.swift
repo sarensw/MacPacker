@@ -43,6 +43,9 @@ private struct Fixture: Sendable, CustomTestStringConvertible {
     var testDescription: String { file }
 }
 
+/// `データ\\表示.txt` and so on, all four with a 0x5C inside a character.
+private let sjisBackslashTree = ["データ", "データ/表示.txt", "ソフト.txt", "能力表.txt", "予定", "予定/申請書.txt"]
+
 private let gbkTree = [
     "中文目录", "中文目录/你好世界.txt", "中文目录/说明文档.txt",
     "图片", "图片/风景.txt", "一些.txt", "readme.txt"]
@@ -64,7 +67,32 @@ private let fixtures = [
         "中文目录", "中文目录/你好世界.txt", "Отчёт.txt", "Señor.txt", "Café.txt"]),
     Fixture(file: "gbk.tar", tree: [
         "中文目录", "中文目录/你好世界.txt", "图片", "图片/风景.txt", "一些.txt"]),
+    Fixture(file: "gbk_combining.zip", tree: [
+        "工作", "工作/通知", "工作/通知/会议.txt", "工作/通知/计划.txt", "工作/说明.txt",
+        "中文目录", "中文目录/通知.txt", "中文目录/同学录.xls", "中文目录/你好世界.txt"]),
+    Fixture(file: "gbk_escape_bytes.zip", tree: [
+        "李静简历.doc", "杨静", "杨静/报告.txt", "李经理的报告.xlsx", "羁绊.txt", "说明.txt"]),
+    Fixture(file: "big5_escape_bytes.zip", tree: ["溫度控制器手冊.pdf", "說明.txt"]),
+    Fixture(file: "big5_windows.zip", tree: [
+        "恒生銀行", "恒生銀行/年度報告.txt", "宏碁", "宏碁/說明.txt"]),
+    Fixture(file: "gbk_unicode_path.zip", tree: [
+        "中文目录", "中文目录/你好世界.txt", "新建文档.txt", "Señor.txt", "Отчёт.txt"]),
+    Fixture(file: "gbk_cv.zip", tree: ["个人简历模板.doc"]),
+    Fixture(file: "gbk_forms.zip", tree: ["简历模板.doc", "报名表.xls"]),
+    Fixture(file: "cp866_symbols.zip", tree: [
+        "Документы", "Документы/Отчёт.txt", "Приказ №15.doc", "Новая папка", "Новая папка/Договор.txt",
+        "Письмо.txt", "Акт.doc", "Счёт.xls"]),
+    Fixture(file: "cp850_symbols.zip", tree: ["Übersicht.txt", "§ 34 Änderung.pdf", "Müller.doc"]),
+    Fixture(file: "sjis_backslash.lzh", tree: sjisBackslashTree),
+    Fixture(file: "sjis_backslash.rar", tree: sjisBackslashTree),
+    Fixture(file: "sjis_backslash.cab", tree: sjisBackslashTree),
 ]
+
+/// What is left of the UTF-8 in `utf8_stray_latin1.tar`, whatever its stray reads as.
+private let strayLatin1Tree = ["Müller", "Müller/Größe.txt", "Übersicht.txt", "Änderung.doc"].sorted()
+
+private let macRomanTree = [
+    "Bücher", "Bücher/Übersicht.txt", "Bücher/Größe.txt", "Prüfung.doc", "Résumé.doc", "Café.txt", "Señor.txt", "plain.txt"]
 
 extension AllCoreTests {
     @MainActor struct NameEncodingTests {
@@ -129,6 +157,7 @@ extension AllCoreTests {
         private func save(_ state: ArchiveState, to destination: URL? = nil) async throws {
             let saving = try #require(state.save(to: destination))
             await saving.value
+            #expect(state.saveError == nil)
         }
 
         private func temporaryFolder() throws -> URL {
@@ -212,6 +241,80 @@ extension AllCoreTests {
             #expect(tree(of: state) == ["中文目录", "中文目录/你好世界.txt", "新建文档.txt"].sorted())
         }
 
+        /// A tar's pax record declares the name, as the flag does in a zip.
+        /// XADMaster reads a whole archive in one encoding, so 7-Zip only.
+        @Test func aPaxNameStaysWhatItSays() async throws {
+            let state = try await open("gbk_pax.tar")
+            #expect(tree(of: state) == [
+                "中文目录", "中文目录/你好世界.txt", "新建文档.txt", "Señor.txt", "Отчёт.txt"].sorted())
+        }
+
+        /// The flag is on, as on anything a UTF-8 locale wrote, but the bytes are
+        /// GBK: the flag says nothing then, and the archive gets a menu.
+        @Test func aFlagOnBytesThatAreNotUTF8SaysNothing() async throws {
+            let state = try await open("gbk_flag_wrong.zip")
+            #expect(state.nameEncoding == .gb18030)
+            #expect(tree(of: state) == ["中文目录", "中文目录/你好世界.txt"])
+        }
+
+        /// One name in Latin-1 among UTF-8 does not make the rest GBK that only
+        /// looks like UTF-8, on disk least of all.
+        @Test func oneStrayNameLeavesTheRestOfTheUTF8() async throws {
+            let state = try await open("utf8_stray_latin1.tar")
+            #expect(Set(strayLatin1Tree).isSubset(of: tree(of: state)))
+
+            let folder = try temporaryFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            await extractAll(state, to: folder)
+            #expect(Set(strayLatin1Tree).isSubset(of: try files(in: folder)))
+        }
+
+        /// `sub/../` is `sub`, as far as it is anywhere. Shown as a folder named
+        /// `..` it is a hidden row with all of `sub` inside.
+        @Test func aFolderEntryOfDotsIsNoFolder() async throws {
+            let state = try await open("dotdot_entry.zip")
+            #expect(state.childItems?.map(\.name) == ["sub"])
+            #expect(tree(of: state) == ["sub", "sub/x.txt", "sub/y.txt"])
+
+            let folder = try temporaryFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            await extractAll(state, to: folder)
+            #expect(try files(in: folder) == ["sub", "sub/x.txt", "sub/y.txt"])
+        }
+
+        /// Each level detects on its own: the GBK inside a zip in CP1251 reads,
+        /// though nothing reads the zip around it.
+        @Test func anArchiveInsideReadsItsOwnNames() async throws {
+            let state = try await open("nested_gbk.zip")
+            let inner = try #require(state.entries.values.first { $0.name == "inner.zip" })
+
+            try await state.openAsync(item: inner)
+
+            #expect(tree(of: state).filter { $0.hasPrefix("inner.zip/") } == [
+                "inner.zip/中文目录", "inner.zip/中文目录/你好世界.txt", "inner.zip/图片", "inner.zip/图片/风景.txt"])
+        }
+
+        // MARK: Mac archives
+
+        /// The bytes of these names are letters in CP850 too, and 0x8E there is
+        /// `Ä`. Only the format says they are Mac Roman.
+        @Test func aStuffItArchiveIsInMacRoman() async throws {
+            let state = try await open("macroman.sit", with: ArchiveEngineSelectorXad())
+            #expect(state.nameEncoding == .macRoman)
+            #expect(tree(of: state) == macRomanTree.sorted())
+
+            let folder = try temporaryFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            await extractAll(state, to: folder)
+            #expect(try files(in: folder) == macRomanTree.sorted())
+        }
+
+        @Test func aJapaneseStuffItArchiveIsNotInMacRoman() async throws {
+            let state = try await open("macjapanese.sit", with: ArchiveEngineSelectorXad())
+            #expect(state.nameEncoding == .shiftJIS)
+            #expect(tree(of: state) == ["データ", "データ/日本語のファイル.txt", "説明書.txt", "写真.txt"].sorted())
+        }
+
         /// Hidden from the listing, the sidecar is not in what a list of entries
         /// hands over, and it still has to land where its file did.
         @Test func aSidecarFoldsOntoItsFile() async throws {
@@ -253,12 +356,29 @@ extension AllCoreTests {
             ("cp850.zip", .dosLatin),
             ("cp866.zip", .dosCyrillic),
             ("gbk.tar", .gb18030),
+            ("gbk_cv.zip", .gb18030),
+            ("gbk_forms.zip", .gb18030),
+            ("big5_windows.zip", .big5),
+            ("cp866_symbols.zip", .dosCyrillic),
+            ("cp850_symbols.zip", .dosLatin),
         ])
         fileprivate func tellsWhatItReadTheNamesIn(
             selector: any ArchiveEngineSelectorProtocol, fixture: (String, ArchiveNameEncoding)
         ) async throws {
             let state = try await open(fixture.0, with: selector)
             #expect(state.nameEncoding == fixture.1)
+        }
+
+        /// XADMaster reads a path whole, and one that fails loses its folders, so
+        /// an archive nothing can detect would open flat. The tree beats the name.
+        @Test func automaticKeepsTheFoldersOnXAD() async throws {
+            let state = try await open("cp1251.zip", with: ArchiveEngineSelectorXad())
+            #expect(state.nameEncoding == .dosLatin)
+            #expect(tree(of: state).map { $0.split(separator: "/").count }.sorted() == [1, 1, 2, 2])
+
+            state.readNames(as: .windowsCyrillic)
+            try await state.openTask?.value
+            #expect(tree(of: state) == cp866Tree)
         }
 
         /// Nothing to choose: these say what their names are in.
@@ -392,6 +512,38 @@ extension AllCoreTests {
 
             #expect(state.chosenNameEncoding == nil)
             #expect(state.hasPendingChanges)
+        }
+
+        /// Reading the names again clears what was extracted to show it.
+        @Test func aPickClosesThePreview() async throws {
+            let state = try await open("gbk.zip")
+            state.previewItemUrl = FileManager.default.temporaryDirectory.appendingPathComponent("shown.txt")
+
+            state.readNames(as: .big5)
+
+            #expect(state.previewItemUrl == nil)
+        }
+
+        /// It would clean the temp folder an extraction is writing to.
+        @Test func aPickWaitsForAnExtraction() async throws {
+            let state = try await open("gbk.zip")
+            let folder = try temporaryFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let item = try #require(state.entries.values.first { $0.type == .file })
+
+            await withCheckedContinuation { continuation in
+                state.onStatusChange = { status in
+                    if status == .done { continuation.resume() }
+                }
+                state.extract(items: [item], to: folder, smart: false)
+                state.readNames(as: .big5)
+                #expect(state.chosenNameEncoding == nil)
+            }
+            state.onStatusChange = nil
+
+            state.readNames(as: .big5)
+            #expect(state.chosenNameEncoding == .big5)
+            try await state.openTask?.value
         }
 
         /// A pick covers every name the archive leaves open, also one that happens
@@ -559,6 +711,64 @@ extension AllCoreTests {
             #expect(tree(of: state) == (cp866Tree + ["added.txt"]).sorted())
         }
 
+        /// `文档` alone reads as Korean, and a save that leaves only that changes
+        /// no byte of it.
+        @Test func aSaveDoesNotChangeHowTheNamesRead() async throws {
+            let folder = try temporaryFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: try copy("gbk_flip.zip", to: folder))
+            try await state.openTask?.value
+            #expect(state.nameEncoding == .gb18030)
+
+            let others = try #require(state.childItems?.filter { $0.name != "文档" })
+            state.remove(items: others)
+            try await save(state)
+
+            #expect(state.nameEncoding == .gb18030)
+            #expect(tree(of: state) == ["文档"])
+        }
+
+        /// To the archive around it, an archive is one entry, so what the names
+        /// inside it are read as cannot reach a file. It is the outer archive's
+        /// names a Save As writes, as the pick reads them.
+        @Test func aSaveLeavesAnArchiveInsideAlone() async throws {
+            let folder = try temporaryFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let archive = try copy("nested_gbk.zip", to: folder)
+
+            func inner(of path: URL) async throws -> Data {
+                let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+                state.open(url: path)
+                try await state.openTask?.value
+                let item = try #require(state.entries.values.first { $0.name == "inner.zip" })
+                let extracted = try await state.extractToTemp(item: item)
+                defer { try? FileManager.default.removeItem(at: extracted) }
+                return try Data(contentsOf: extracted)
+            }
+            let before = try await inner(of: archive)
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: archive)
+            try await state.openTask?.value
+            state.readNames(as: .windowsCyrillic)
+            try await state.openTask?.value
+            let nested = try #require(state.entries.values.first { $0.name == "inner.zip" })
+            try await state.openAsync(item: nested)
+            #expect(tree(of: state).contains("inner.zip/НјЖ¬"))
+            #expect(!state.canAddHere)
+            #expect(!state.canRemove((nested.children ?? []).compactMap { state.entries[$0] }))
+
+            let copy = folder.appendingPathComponent("copy.zip")
+            try await save(state, to: copy)
+            #expect(try await inner(of: copy) == before)
+
+            let reopened = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            reopened.open(url: copy)
+            try await reopened.openTask?.value
+            #expect(tree(of: reopened) == ["inner.zip", "Отчёт.txt"].sorted())
+        }
+
         // MARK: Detection
 
         private func bytes(_ names: [String], in encoding: ArchiveNameEncoding) throws -> [Data] {
@@ -571,6 +781,10 @@ extension AllCoreTests {
             (ArchiveNameEncoding.gb18030, [
                 "新建文件夹", "工作总结.docx", "项目计划书.pdf", "财务报表.xlsx", "合同扫描件.pdf", "会议纪要.doc",
                 "图片/风景照.jpg", "音乐/周杰伦.mp3", "安装说明.txt", "数据备份.sql", "客户名单.xls", "源代码"]),
+            // Chinese that stays in the bytes of everyday Korean from start to end.
+            (.gb18030, [
+                "个人简历模板.doc", "简历模板.doc", "报名表.xls", "年度报告.pdf", "计划表.xls", "价格表.xls",
+                "课程表.xls", "名单表.xls", "个人简历.doc", "报告模板.doc", "年度计划.doc", "报名表格.doc"]),
             (.big5, [
                 "新增資料夾", "工作報告.docx", "專案計畫書.pdf", "財務報表.xlsx", "合約掃描檔.pdf", "會議記錄.doc",
                 "圖片/風景.jpg", "音樂/周杰倫.mp3", "安裝說明.txt", "資料備份.sql", "客戶名單.xls", "原始碼"]),
@@ -593,7 +807,7 @@ extension AllCoreTests {
         @Test(arguments: [
             "Müller.txt", "Größe.txt", "Déjà vu.txt", "España/niño.doc", "Übersicht.pdf", "Café.txt", "résumé.pdf",
             "Straße.txt", "MÜLLER.TXT", "Änderung.doc", "Köln/Dom.jpg", "Señor (1).doc",
-            "São Paulo.txt", "Søren.txt", "Ángel.doc", "Ålesund.jpg",
+            "São Paulo.txt", "Søren.txt", "Ángel.doc", "Ålesund.jpg", "§ 34 Änderung.pdf", "Größe 20°.txt",
         ])
         fileprivate func takesOneWesternNameForWestern(name: String) throws {
             #expect(ArchiveNameEncoding.detect(in: try bytes([name], in: .dosLatin)) == .dosLatin)
@@ -603,7 +817,7 @@ extension AllCoreTests {
         @Test(arguments: [
             "Документы.txt", "Отчёт.doc", "Новая папка", "Фотографии/лето.jpg", "Договор.pdf", "Счёт на оплату.xlsx",
             "Презентация.ppt", "Музыка.mp3", "Инструкция.txt", "ДОГОВОР.PDF", "Прайс-лист.xlsx", "Фото_2023.jpg",
-            "Акт сверки.xls", "Отчёт (1).doc", "Письмо.txt",
+            "Акт сверки.xls", "Отчёт (1).doc", "Письмо.txt", "Приказ №15.doc", "Счёт №3.xls",
         ])
         fileprivate func takesOneRussianNameForRussian(name: String) throws {
             #expect(ArchiveNameEncoding.detect(in: try bytes([name], in: .dosCyrillic)) == .dosCyrillic)

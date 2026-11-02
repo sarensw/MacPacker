@@ -372,8 +372,14 @@ final actor ArchiveLoader {
             return "/"
         }
 
-        // The "./" such a tar starts with is the archive itself, not a folder in it
-        entries = entries.filter { $0.value.type != .directory || $0.value.virtualPath.map(normalizePath) != "/" }
+        // The "./" such a tar starts with is the archive itself, not a folder in it.
+        // A "sub/../" is no folder either: taken for `sub`, it would be that folder
+        // with ".." for a name, a hidden row with all of it inside.
+        entries = entries.filter { entry in
+            guard entry.value.type == .directory, let path = entry.value.virtualPath else { return true }
+            let last = path.split(separator: "/").last
+            return normalizePath(path) != "/" && last != "." && last != ".."
+        }
 
         var dirByPath: [String: ArchiveItem] = ["/": root]
 

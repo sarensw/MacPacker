@@ -1,6 +1,7 @@
 // sevenzip_bridge.cpp -- C bridge between 7-zip C++ internals and Swift.
 // All C++ exceptions are caught at the extern "C" boundary.
 
+#include <sstream>
 #include "StdAfx.h"
 
 #include "include/sevenzip_bridge.h"
@@ -79,8 +80,15 @@ STDAPI CreateArchiver(const GUID *clsid, const GUID *iid, void **outObject);
 // `us2fs()` falls back to wcstombs() -- which cannot represent non-ASCII bytes
 // and replaces them with '_'. macOS filesystem paths are always UTF-8, so we
 // force the flag on. Shared with the write bridge.
+//
+// MY_UTF8_RAW_NON_UTF8_SUPPORTED (Package.swift) is what makes a stray byte come
+// back as one escape, and a name that holds EE BE xx as three: without it those
+// bytes are the very character the escape of xx is, and two of them are gone. It
+// also has names written out with the escapes turned back into raw bytes, which
+// APFS refuses, so that way stays as it is without the define.
 void sz_force_utf8_paths(void) {
     g_ForceToUTF8 = true;
+    g_Unicode_To_UTF8_Flags = Z7_UTF_FLAG_TO_UTF8_SURROGATE_ERROR;
 }
 
 static std::string UStringToUTF8(const UString &src) {
@@ -1434,9 +1442,15 @@ bool sz_has_undecoded_paths(SZArchiveRef archive) {
 
 bool sz_entry_declares_utf8(SZArchiveRef archive, uint32_t index) {
     const char *format = sz_format_name(archive);
-    if (!format || strcmp(format, "zip") != 0) return false;
+    if (!format) return false;
+    const bool zip = strcmp(format, "zip") == 0, tar = strcmp(format, "tar") == 0;
+    if (!zip && !tar) return false;
     const char *characts = entryString(archive, index, kpidCharacts);
-    return characts && strstr(characts, "UTF8");
+    if (!characts) return false;
+    std::istringstream tokens(characts);
+    for (std::string token; tokens >> token;)
+        if (zip ? (token == "UTF8" || token == "up") : token == "pax_path") return true;
+    return false;
 }
 
 void sz_set_entry_path(SZArchiveRef archive, uint32_t index, const char *path) {

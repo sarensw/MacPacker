@@ -109,17 +109,27 @@ public class SevenZipArchive {
     /// The names as 7-Zip read them and the bytes the archive stores them in, by
     /// entry, when 7-Zip could not read one of them as UTF-8, and nothing
     /// otherwise. Every entry is in there that is not plain ASCII, the hidden
-    /// sidecars included, unless it declares UTF-8 itself: the archive does not
-    /// say what the others are in, so whoever knows has to say for all of them.
+    /// sidecars included, unless it declares UTF-8 itself and is: the archive does
+    /// not say what the others are in, so whoever knows has to say for all of
+    /// them. A flag on bytes that are not UTF-8 says nothing, as `bsdtar` sets it
+    /// whenever the locale is UTF-8, whatever the name is in.
     public var storedNames: [(index: UInt32, path: String, bytes: Data)] {
         guard sz_has_undecoded_paths(handle.ref) else { return [] }
         return (0..<UInt32(Swift.max(0, sz_entry_count(handle.ref)))).compactMap { index in
-            guard !sz_entry_declares_utf8(handle.ref, index),
-                  let stored = sz_entry_path(handle.ref, index) else { return nil }
+            guard let stored = sz_entry_path(handle.ref, index) else { return nil }
             let path = String(cString: stored)
             let bytes = Self.storedBytes(of: path)
-            return bytes.contains { $0 >= 0x80 } ? (index, path, bytes) : nil
+            guard bytes.contains(where: { $0 >= 0x80 }) else { return nil }
+            return sz_entry_declares_utf8(handle.ref, index) && String(data: bytes, encoding: .utf8) != nil
+                ? nil : (index, path, bytes)
         }
+    }
+
+    /// Whether a `/` in a stored name can be a 0x5C. The handlers of these formats
+    /// take every 0x5C for a path separator (`WinPathToOsPath`), also the second
+    /// byte of a character: ソ and 表 in Shift-JIS, 許 in Big5.
+    public var slashesWereBackslashes: Bool {
+        ["Lzh", "Rar", "Cab"].contains(formatName ?? "")
     }
 
     /// Undoes what `sz_has_undecoded_paths` describes.

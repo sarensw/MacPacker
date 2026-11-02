@@ -153,6 +153,9 @@ public class ArchiveState: ObservableObject {
     private let archiveTypeDetector: ArchiveTypeDetector
     
     private var tempDirectories: [URL] = []
+    /// Selections being extracted, which go on behind `isBusy`. Their temp files
+    /// must not go away under them.
+    private var runningExtractions = 0
     
     public var passwordProvider: ArchivePasswordUserProvider?
     public var folderAccessProvider: ArchiveFolderAccessUserProvider?
@@ -329,6 +332,8 @@ extension ArchiveState {
         self.activeEngine = nil
         self.nameEncoding = nil
         self.chosenNameEncoding = nil
+        // The file it shows goes with the temp directories below.
+        self.previewItemUrl = nil
         
         updateStatus(.idle)
         
@@ -1091,6 +1096,7 @@ extension ArchiveState {
                 // reload from disk so entries and indices reflect the file
                 let engines = pinnedEngines
                 let chosenEncoding = chosenNameEncoding
+                let readEncoding = nameEncoding
                 open(url: saved.url)
                 // Known already — reopening must not ask again. Set after open(),
                 // which starts by forgetting every password, and before the first
@@ -1103,6 +1109,13 @@ extension ArchiveState {
                 pinnedEngines = engines
                 chosenNameEncoding = chosenEncoding
                 _ = try? await openTask?.value
+                // Fewer names can tell a different story, while no byte of them
+                // changed: `文档` alone reads as Korean.
+                // ponytail: for this window. Opened anew, that is what it reads as.
+                if let readEncoding, let nameEncoding, nameEncoding != readEncoding {
+                    readNames(as: readEncoding)
+                    _ = try? await openTask?.value
+                }
                 self.isSaving = false
                 return .written
             } catch SevenZipError.cancelled {
@@ -1315,7 +1328,8 @@ extension ArchiveState {
     /// changes in the file. Refused with changes pending: the listing they are
     /// about goes.
     public func readNames(as encoding: ArchiveNameEncoding?) {
-        guard let url, !hasPendingChanges, !isBusy, encoding != chosenNameEncoding else { return }
+        guard let url, !hasPendingChanges, !isBusy, runningExtractions == 0, encoding != chosenNameEncoding
+        else { return }
         let known = passwords
         let engines = pinnedEngines
         open(url: url)
@@ -1734,7 +1748,9 @@ extension ArchiveState {
         )
 
         let cancelFlag = ExtractionCancelFlag()
+        runningExtractions += 1
         let task = Task {
+            defer { runningExtractions -= 1 }
             do {
                 let batches = try batchResolver.resolveBatches(for: items, in: entries, using: effectiveEngineSelector)
                 // "Extract selected" with the whole archive selected behaves

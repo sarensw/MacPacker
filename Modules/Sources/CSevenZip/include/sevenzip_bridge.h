@@ -56,9 +56,11 @@ const char *sz_entry_path(SZArchiveRef archive, uint32_t index);
 /// a character and nothing is lost.
 bool sz_has_undecoded_paths(SZArchiveRef archive);
 
-/// Whether the zip entry `index` declares its name as UTF-8 (general purpose bit
-/// 11), which settles what it is, however else its bytes could read. Only a zip
-/// has that: the "UTF8" 7-Zip reports for a tar entry is its own look at the bytes.
+/// Whether the entry `index` declares its name as UTF-8, which settles what it
+/// is, however else its bytes could read: a zip through general purpose bit 11 or
+/// an Info-ZIP Unicode path field, a tar through a pax `path` record. The "UTF8"
+/// 7-Zip reports for a tar entry is only its own look at the bytes, and RAR 4's
+/// flag does not come through at all.
 bool sz_entry_declares_utf8(SZArchiveRef archive, uint32_t index);
 
 /// Gives `index` the path `path`, UTF-8, in place of the one it is stored under:

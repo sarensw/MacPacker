@@ -14,6 +14,7 @@ import Foundation
 public enum ArchiveNameEncoding: String, CaseIterable, Identifiable, Sendable {
     case utf8
     case gb18030
+    /// CP950, Big5 as Windows writes it: the standard has no 恒 and no 碁.
     case big5
     case shiftJIS
     case korean
@@ -21,6 +22,8 @@ public enum ArchiveNameEncoding: String, CaseIterable, Identifiable, Sendable {
     /// of CP437, the code page the zip format names, at the same bytes.
     case dosLatin
     case windowsLatin
+    /// What a classic Mac writes. See `western` on `of(_:chosen:western:)`.
+    case macRoman
     case dosCyrillic
     case windowsCyrillic
 
@@ -33,11 +36,12 @@ public enum ArchiveNameEncoding: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .utf8: return .utf8
         case .gb18030: return encoding(.GB_18030_2000)
-        case .big5: return encoding(.big5)
+        case .big5: return encoding(.dosChineseTrad)
         case .shiftJIS: return encoding(.dosJapanese)
         case .korean: return encoding(.dosKorean)
         case .dosLatin: return encoding(.dosLatin1)
         case .windowsLatin: return .windowsCP1252
+        case .macRoman: return .macOSRoman
         case .dosCyrillic: return encoding(.dosRussian)
         case .windowsCyrillic: return .windowsCP1251
         }
@@ -64,27 +68,39 @@ extension ArchiveNameEncoding {
     /// More names tell nothing more, and Foundation takes a second per 6 MB.
     private static let detectionBytes = 1 << 16
 
+    /// Not letters, but everyday in a name: `Приказ №15`, `§ 34`, `20°`.
+    private static let symbolsInNames = "№°§".unicodeScalars
+
     /// The encoding of `names`, which the archive declares none for, or `chosen`
     /// when the user picked one. `nil` when every name is UTF-8 as far as anyone
     /// can tell: then there is nothing to read differently.
-    static func of(_ names: [Data], chosen: ArchiveNameEncoding?) -> ArchiveNameEncoding? {
+    ///
+    /// - Parameter western: what the format at hand writes Western names in. Every
+    ///   byte is a letter in CP850 and in Mac Roman alike (0x8E is `Ä` and `é`), so
+    ///   the format is all that tells them apart.
+    static func of(
+        _ names: [Data],
+        chosen: ArchiveNameEncoding?,
+        western: ArchiveNameEncoding = .dosLatin
+    ) -> ArchiveNameEncoding? {
         let legacy = names.filter { String(data: $0, encoding: .utf8) == nil }
         guard !legacy.isEmpty else { return nil }
-        return chosen ?? detect(in: legacy)
+        return chosen ?? detect(in: legacy, western: western)
     }
 
     /// Windows-1251 and the other code pages take a pick by hand: nothing tells
     /// their bytes from these reliably.
-    static func detect(in names: [Data]) -> ArchiveNameEncoding {
-        if names.allSatisfy(readsAsLatin) { return .dosLatin }
+    static func detect(in names: [Data], western: ArchiveNameEncoding = .dosLatin) -> ArchiveNameEncoding {
+        if names.allSatisfy({ reads($0, asLatin: western) }) { return western }
         if names.allSatisfy(readsAsCyrillic) { return .dosCyrillic }
-        if holdsOnlyHangul(names) { return .korean }
 
         var text = Data()
         for name in names where text.count < detectionBytes {
             text.append(name)
             text.append(0x0A)
         }
+        if holdsOnlyHangul(names), !readsAsChineseWords(text) { return .korean }
+
         var converted: NSString?
         var lossy: ObjCBool = false
         let found = NSString.stringEncoding(
@@ -116,8 +132,23 @@ extension ArchiveNameEncoding {
         return characters >= 6
     }
 
-    private static func readsAsLatin(_ name: Data) -> Bool {
-        reads(name, as: .dosLatin, alphabet: 0..<0x250, besideASCIILetters: true)
+    /// Whether `text` reads as words in Chinese. Foundation's word breaks know the
+    /// language: an everyday name comes apart into words of two characters and
+    /// more, while hangul taken for GBK make up single characters that form none.
+    private static func readsAsChineseWords(_ text: Data) -> Bool {
+        guard let chinese = String(data: text, encoding: gb18030.stringEncoding) else { return false }
+        var characters = 0
+        var inWords = 0
+        chinese.enumerateSubstrings(in: chinese.startIndex..., options: .byWords) { word, _, _, _ in
+            guard let word, isEastAsian(word) else { return }
+            characters += word.count
+            if word.count > 1 { inWords += word.count }
+        }
+        return inWords * 2 >= characters
+    }
+
+    private static func reads(_ name: Data, asLatin encoding: ArchiveNameEncoding) -> Bool {
+        reads(name, as: encoding, alphabet: 0..<0x250, besideASCIILetters: true)
     }
 
     /// A Russian name has no use for a Latin letter inside a word. Kana do: a lead
@@ -141,7 +172,7 @@ extension ArchiveNameEncoding {
         let scalars = Array(text.unicodeScalars)
         return scalars.indices.allSatisfy { index in
             let scalar = scalars[index]
-            guard !scalar.isASCII else { return true }
+            guard !scalar.isASCII, !symbolsInNames.contains(scalar) else { return true }
             guard scalar.properties.isAlphabetic, alphabet.contains(scalar.value) else { return false }
             guard index + 1 < scalars.count else { return true }
             let next = scalars[index + 1]
@@ -155,39 +186,115 @@ extension ArchiveNameEncoding {
 // MARK: - Reading a name
 
 extension ArchiveNameEncoding {
+    /// What happens to a part of a name that is valid UTF-8, which it can be in
+    /// this encoding too.
+    enum ValidUTF8: Sendable {
+        /// It is read in this encoding, as the user picked it for what the archive
+        /// does not declare.
+        case read
+        /// It is read in this encoding if it only looks like UTF-8 by accident: a
+        /// short GBK name can fit, as 图片 does, and would stay ͼƬ with the folder
+        /// showing twice. Accidents come out as two-byte sequences, so as Greek or
+        /// Cyrillic, while East Asian text in UTF-8 takes three.
+        case readIfAccident
+        /// It stays: this is UTF-8, and what is not was added by something else.
+        case left
+    }
+
+    /// Looking at this many names tells as much as looking at them all.
+    private static let namesToCompare = 1 << 12
+
+    /// What to make of the parts of `names` that are valid UTF-8, left to
+    /// detection. One name in Latin-1 among UTF-8 must not make accidents of the
+    /// others, as `Müller` in GBK is `M眉ller`. By parts, as one folder repeats in
+    /// every path below it, and a tie goes to the accident: in a small GBK archive
+    /// `图片/风景.txt` is one of each.
+    static func validUTF8(in names: [Data]) -> ValidUTF8 {
+        let parts = Set(names.prefix(namesToCompare)
+            .flatMap { $0.split(separator: 0x2F) }
+            .filter { $0.contains { $0 >= 0x80 } })
+        let valid = parts.count { String(data: $0, encoding: .utf8) != nil }
+        return valid > parts.count - valid ? .left : .readIfAccident
+    }
+
     /// How a path reads in this encoding, one part at a time. A folder has to come
     /// out the same in every path that holds it, and read whole it does not: a
     /// byte can be left waiting for its second half at the `/`, so a path fails
     /// where the folder's own entry reads, and the folder shows twice. `/` itself
     /// is safe to split at, as no multibyte character here has one inside it.
     ///
+    /// By scalars: `/` and a combining mark are one `Character`, which is what the
+    /// bytes of 通 (CD A8) stand for in UTF-8, and that slash would go unseen.
+    ///
     /// - Parameters:
     ///   - stored: the path as it stands, which a part keeps when this encoding
     ///     has no reading for it.
-    ///   - picked: whether the user chose this encoding, rather than detection.
-    func read(_ bytes: Data, storedAs stored: String, picked: Bool) -> String {
-        zip(bytes.split(separator: 0x2F, omittingEmptySubsequences: false),
-            stored.split(separator: "/", omittingEmptySubsequences: false))
-            .map { read(part: $0, picked: picked) ?? String($1) }
+    ///   - slashesWereBackslashes: see `SevenZipArchive.slashesWereBackslashes`.
+    func read(
+        _ bytes: Data,
+        storedAs stored: String,
+        validUTF8: ValidUTF8,
+        slashesWereBackslashes: Bool = false
+    ) -> String {
+        var parts = zip(bytes.split(separator: 0x2F, omittingEmptySubsequences: false),
+                        stored.unicodeScalars.split(separator: "/", omittingEmptySubsequences: false))
+            .map { Part(bytes: $0, stored: String($1)) }
+        if slashesWereBackslashes {
+            parts = joinedAtSecondBytes(parts)
+        }
+        return parts
+            .map { read(part: $0.bytes, validUTF8: validUTF8) ?? $0.stored }
             .joined(separator: "/")
+    }
+
+    private struct Part {
+        var bytes: Data
+        var stored: String
+    }
+
+    /// Puts together what a `/` split that was the second byte of a character:
+    /// such a part does not decode until it has the rest of the character. A part
+    /// that still does not at the end of the path stays as it was, as nothing
+    /// makes a character of it.
+    private func joinedAtSecondBytes(_ parts: [Part]) -> [Part] {
+        var joined: [Part] = []
+        var index = 0
+        while index < parts.count {
+            var part = parts[index]
+            var last = index
+            while !decodes(part.bytes), last + 1 < parts.count {
+                last += 1
+                part = Part(bytes: part.bytes + [0x5C] + parts[last].bytes,
+                            stored: part.stored + "\\" + parts[last].stored)
+            }
+            guard decodes(part.bytes) else {
+                joined.append(parts[index])
+                index += 1
+                continue
+            }
+            joined.append(part)
+            index = last + 1
+        }
+        return joined
+    }
+
+    private func decodes(_ bytes: Data) -> Bool {
+        String(data: bytes, encoding: stringEncoding) != nil
     }
 
     /// How `bytes` read in this encoding, or `nil` to leave them as they are.
     ///
-    /// A part that is not UTF-8 is in this encoding, or nothing can be done with
-    /// it, and so is any part the user picked this encoding for. Left to detection,
-    /// one that is valid UTF-8 can be either. It is real UTF-8 when something that
-    /// writes UTF-8 added it to the archive, and an accident when a short GBK name
-    /// happens to fit, as 图片 does: it would stay ͼƬ, and the folder would show
-    /// twice. Accidents come out as two-byte sequences, so as Greek or Cyrillic,
-    /// while East Asian text in UTF-8 takes three.
-    /// ponytail: with no flag to go by, a real Latin UTF-8 name beside GBK (Café
-    /// in a tar) reads as GBK, and a CP866 сон stays UTF-8 until picked. The bytes
-    /// do not tell, and a wrong guess here would break what reads right.
-    private func read(part bytes: Data, picked: Bool) -> String? {
+    /// ponytail: with no flag to go by, a real Latin UTF-8 name beside as much GBK
+    /// (Café in a tar) reads as GBK, and a CP866 сон stays UTF-8 until picked. The
+    /// bytes do not tell, and a wrong guess here would break what reads right.
+    private func read(part bytes: Data, validUTF8: ValidUTF8) -> String? {
         guard let decoded = String(data: bytes, encoding: stringEncoding) else { return nil }
-        guard !picked, let utf8 = String(data: bytes, encoding: .utf8) else { return decoded }
-        return !Self.isEastAsian(utf8) && Self.isEastAsian(decoded) ? decoded : nil
+        guard let utf8 = String(data: bytes, encoding: .utf8) else { return decoded }
+        switch validUTF8 {
+        case .read: return decoded
+        case .readIfAccident: return !Self.isEastAsian(utf8) && Self.isEastAsian(decoded) ? decoded : nil
+        case .left: return nil
+        }
     }
 
     /// Kana, hangul and ideographs all sit above U+3000.
