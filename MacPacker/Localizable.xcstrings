@@ -2078,7 +2078,7 @@
       }
     },
     "archiveContentViewerAutomatic": {
-      "comment": "Picker entry: the app decides by itself. Used for compression settings, left to the archive format and level, and for how the file names of an archive are read, left to detection.",
+      "comment": "Picker entry that leaves a compression setting to the archive format and level",
       "extractionState": "manual",
       "localizations": {
         "ar": {
