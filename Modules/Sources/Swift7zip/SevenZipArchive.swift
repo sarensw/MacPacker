@@ -107,14 +107,14 @@ public class SevenZipArchive {
     // MARK: - Names
 
     /// The names as 7-Zip read them and the bytes the archive stores them in, by
-    /// entry, when 7-Zip could not read one of them as UTF-8, and nothing
-    /// otherwise. Every entry is in there that is not plain ASCII, the hidden
+    /// entry, when one of them can be in a code page, and nothing otherwise. Every
+    /// entry is in there that is not plain ASCII, the hidden
     /// sidecars included, unless it declares UTF-8 itself and is: the archive does
     /// not say what the others are in, so whoever knows has to say for all of
     /// them. A flag on bytes that are not UTF-8 says nothing, as `bsdtar` sets it
     /// whenever the locale is UTF-8, whatever the name is in.
     public var storedNames: [(index: UInt32, path: String, bytes: Data)] {
-        guard sz_has_undecoded_paths(handle.ref) else { return [] }
+        guard sz_has_undecoded_paths(handle.ref) || canHideCodePages else { return [] }
         return (0..<UInt32(Swift.max(0, sz_entry_count(handle.ref)))).compactMap { index in
             guard let stored = sz_entry_path(handle.ref, index) else { return nil }
             let path = String(cString: stored)
@@ -123,6 +123,14 @@ public class SevenZipArchive {
             return sz_entry_declares_utf8(handle.ref, index) && String(data: bytes, encoding: .utf8) != nil
                 ? nil : (index, path, bytes)
         }
+    }
+
+    /// Whether names 7-Zip read as UTF-8 can be in a code page all the same, as
+    /// `图片` in GBK happens to be valid UTF-8. A 7z or a RAR5 stores Unicode, and
+    /// 7-Zip does not say which is which: these two are where it says of a name.
+    // ponytail: zip and tar. In LZH, CAB and the like a code page takes a name that does not read.
+    private var canHideCodePages: Bool {
+        ["zip", "tar"].contains(formatName ?? "") && sz_has_non_ascii_paths(handle.ref)
     }
 
     /// Whether a `/` in a stored name can be a 0x5C. The handlers of these formats

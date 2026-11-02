@@ -72,8 +72,9 @@ extension ArchiveNameEncoding {
     private static let symbolsInNames = "№°§".unicodeScalars
 
     /// The encoding of `names`, which the archive declares none for, or `chosen`
-    /// when the user picked one. `nil` when every name is UTF-8 as far as anyone
-    /// can tell: then there is nothing to read differently.
+    /// when the user picked one. `.utf8` when every name reads as UTF-8, which
+    /// proves nothing: `图片` in GBK does too, so a pick stays open. `nil` when there
+    /// are no such names: then there is nothing to read differently.
     ///
     /// - Parameter western: what the format at hand writes Western names in. Every
     ///   byte is a letter in CP850 and in Mac Roman alike (0x8E is `Ä` and `é`), so
@@ -83,9 +84,10 @@ extension ArchiveNameEncoding {
         chosen: ArchiveNameEncoding?,
         western: ArchiveNameEncoding = .dosLatin
     ) -> ArchiveNameEncoding? {
+        guard !names.isEmpty else { return nil }
+        if let chosen { return chosen }
         let legacy = names.filter { String(data: $0, encoding: .utf8) == nil }
-        guard !legacy.isEmpty else { return nil }
-        return chosen ?? detect(in: legacy, western: western)
+        return legacy.isEmpty ? .utf8 : detect(in: legacy, western: western)
     }
 
     /// Windows-1251 and the other code pages take a pick by hand: nothing tells

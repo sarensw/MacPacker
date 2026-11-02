@@ -98,7 +98,7 @@ extension AllCoreTests {
     @MainActor struct NameEncodingTests {
         private func url(of file: String) throws -> URL {
             try #require(Bundle.module.url(forResource: "encodings", withExtension: nil))
-                .appendingPathComponent(file)
+                .appendingPathComponent(file).standardizedFileURL
         }
 
         private func open(
@@ -382,7 +382,7 @@ extension AllCoreTests {
         }
 
         /// Nothing to choose: these say what their names are in.
-        @Test(arguments: engines, ["zip/utf_你好.zip", "defaultArchives/defaultArchive.zip", "defaultArchives/defaultArchive.7z"])
+        @Test(arguments: engines, ["defaultArchives/defaultArchive.zip", "defaultArchives/defaultArchive.7z", "encodings/unicode.7z"])
         fileprivate func anArchiveThatSaysHasNoEncoding(selector: any ArchiveEngineSelectorProtocol, file: String) async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: selector)
             let parts = file.split(separator: "/").map(String.init)
@@ -392,6 +392,39 @@ extension AllCoreTests {
 
             #expect(state.error == nil)
             #expect(state.nameEncoding == nil)
+        }
+
+        /// Bytes that happen to be valid UTF-8 say nothing: 图片 in GBK reads ͼƬ, and
+        /// only someone who sees the names can tell. The pick has to be there for them.
+        @Test(arguments: engines, ["gbk_accident.zip", "gbk_accident.tar"])
+        fileprivate func aNameThatOnlyLooksLikeUTF8TakesAPick(selector: any ArchiveEngineSelectorProtocol, file: String) async throws {
+            let state = try await open(file, with: selector)
+            #expect(state.nameEncoding == .utf8)
+            #expect(tree(of: state) == ["ͼƬ.txt", "һЩ.txt"].sorted())
+
+            state.readNames(as: .gb18030)
+            try await state.openTask?.value
+
+            #expect(state.error == nil)
+            #expect(state.nameEncoding == .gb18030)
+            #expect(tree(of: state) == ["图片.txt", "一些.txt"].sorted())
+
+            let folder = try temporaryFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            await extractAll(state, to: folder)
+            #expect(try files(in: folder) == ["图片.txt", "一些.txt"].sorted())
+        }
+
+        /// Real UTF-8 with nothing to say so, which is every zip a Mac writes: neither
+        /// `ditto` nor `zip` sets the flag. It reads as it is, and says what it was read in.
+        @Test(arguments: engines, [
+            ("utf8_unflagged.zip", ["Größe.txt", "日本語.txt"]),
+            ("../zip/utf_你好.zip", ["utf_你好.txt"]),
+        ])
+        fileprivate func unflaggedUTF8ReadsAsItIs(selector: any ArchiveEngineSelectorProtocol, fixture: (String, [String])) async throws {
+            let state = try await open(fixture.0, with: selector)
+            #expect(state.nameEncoding == .utf8)
+            #expect(tree(of: state) == fixture.1.sorted())
         }
 
         // MARK: Picking one

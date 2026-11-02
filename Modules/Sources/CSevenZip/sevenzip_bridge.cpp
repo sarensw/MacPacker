@@ -1440,6 +1440,15 @@ bool sz_has_undecoded_paths(SZArchiveRef archive) {
     return false;
 }
 
+bool sz_has_non_ascii_paths(SZArchiveRef archive) {
+    if (!archive) return false;
+    auto *handle = static_cast<SZArchiveHandle *>(archive);
+    for (const std::string &path : handle->pathByIndex)
+        for (const unsigned char byte : path)
+            if (byte >= 0x80) return true;
+    return false;
+}
+
 bool sz_entry_declares_utf8(SZArchiveRef archive, uint32_t index) {
     const char *format = sz_format_name(archive);
     if (!format) return false;

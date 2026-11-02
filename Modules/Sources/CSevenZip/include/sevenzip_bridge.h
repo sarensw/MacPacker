@@ -56,6 +56,9 @@ const char *sz_entry_path(SZArchiveRef archive, uint32_t index);
 /// a character and nothing is lost.
 bool sz_has_undecoded_paths(SZArchiveRef archive);
 
+/// Whether any path holds more than ASCII.
+bool sz_has_non_ascii_paths(SZArchiveRef archive);
+
 /// Whether the entry `index` declares its name as UTF-8, which settles what it
 /// is, however else its bytes could read: a zip through general purpose bit 11 or
 /// an Info-ZIP Unicode path field, a tar through a pax `path` record. The "UTF8"
