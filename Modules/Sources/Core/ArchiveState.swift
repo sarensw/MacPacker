@@ -119,8 +119,8 @@ public class ArchiveState: ObservableObject {
     /// window looks saved.
     @Published private(set) public var saveError: String? = nil
     @Published public var isReloadNeeded: Bool = false
-    /// What this archive's names are read in, for an archive that does not say
-    /// itself. `nil` when it does, and there is nothing to choose.
+    /// What this archive's names are read in, where they could be in something
+    /// else. `nil` when the archive says, or they are ASCII: nothing to choose.
     @Published private(set) public var nameEncoding: ArchiveNameEncoding? = nil
     /// The encoding the user picked for the names; `nil` leaves it to detection.
     @Published private(set) public var chosenNameEncoding: ArchiveNameEncoding? = nil

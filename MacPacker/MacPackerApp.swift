@@ -108,6 +108,10 @@ struct MacPackerApp: App {
                         Image(systemName: "arrow.up.right.square")
                     }
                 }
+
+                Divider()
+
+                FilenameEncodingMenu()
             }
         }
     }

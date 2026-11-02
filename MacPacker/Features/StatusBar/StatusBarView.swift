@@ -101,11 +101,7 @@ struct StatusBarView: View {
                         if let uncompressedSize = archiveState.uncompressedSize {
                             Text(verbatim: " • \(SystemHelper.shared.format(bytes: uncompressedSize))")
                         }
-                        if let nameEncoding = archiveState.nameEncoding {
-                            Text(verbatim: " • ")
-                            NameEncodingMenu(current: nameEncoding)
-                        }
-                        
+
                         Spacer()
                         
                         if archiveState.selectedItems.count == 0 {
@@ -128,47 +124,5 @@ struct StatusBarView: View {
         }
         .padding(.windowSafeHorizontal)
         .frame(height: 27)
-    }
-}
-
-/// What the names of an archive that does not say itself are read in, and the
-/// way to read them in something else when detection got it wrong. Only an
-/// archive like that has this: for all others there is nothing to choose.
-private struct NameEncodingMenu: View {
-    @EnvironmentObject var archiveState: ArchiveState
-    let current: ArchiveNameEncoding
-
-    var body: some View {
-        Menu {
-            Picker(selection: Binding(
-                get: { archiveState.chosenNameEncoding },
-                set: { archiveState.readNames(as: $0) }
-            )) {
-                Text(.archiveContentViewerAutomatic).tag(ArchiveNameEncoding?.none)
-                Divider()
-                ForEach(ArchiveNameEncoding.allCases) { encoding in
-                    Text(verbatim: encoding.localizedName).tag(ArchiveNameEncoding?.some(encoding))
-                }
-            } label: {
-                EmptyView()
-            }
-            .pickerStyle(.inline)
-        } label: {
-            HStack(spacing: 2) {
-                Text(verbatim: current.localizedName)
-                Image(systemName: "chevron.up.chevron.down")
-                    .imageScale(.small)
-                    .accessibilityHidden(true)
-            }
-        }
-        // Plain, so the label takes the look of the status bar around it. It
-        // then has no indicator of its own.
-        .menuStyle(.button)
-        .buttonStyle(.plain)
-        .fixedSize()
-        // Reading the names again lists the archive anew, and pending changes
-        // are about the listing there is now.
-        .disabled(archiveState.hasPendingChanges)
-        .accessibilityIdentifier(AccessibilityIdentifier.nameEncodingMenu)
     }
 }

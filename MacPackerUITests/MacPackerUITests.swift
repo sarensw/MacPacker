@@ -518,9 +518,9 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
-    /// An archive that does not say what its names are in gets a menu in the
-    /// status bar, and picking an encoding there reads the names anew (#373). An
-    /// archive that does say has nothing to choose, and no menu.
+    /// File ▸ Filename Encoding reads the names of an archive that does not say what
+    /// they are in anew (#373). An archive with only ASCII names has nothing to
+    /// choose, and the menu is off.
     func testPickingAnEncodingReadsTheNames() throws {
         let dir = try makeWorkDir("encoding")
         defer { try? FileManager.default.removeItem(at: dir) }
@@ -528,14 +528,15 @@ final class MacPackerUITests: XCTestCase {
         let plain = dir.appendingPathComponent("plain.zip")
         try run("/usr/bin/zip", ["-X", plain.path, "abcde.txt"], cwd: dir)
 
-        // Spelled out, as AccessibilityIdentifier.nameEncodingMenu.
-        func encodingMenu(_ app: XCUIApplication) -> XCUIElement {
-            app.descendants(matching: .any).matching(identifier: "archive.nameEncodingMenu").firstMatch
+        func openEncodingMenu(_ app: XCUIApplication) {
+            app.menuBars.menuBarItems["File"].click()
+            app.menuBars.menuItems["Filename Encoding"].click()
         }
 
         var app = launchApp(arguments: ["-ArchivePath", plain.path])
         XCTAssertTrue(app.staticTexts["abcde.txt"].waitForExistence(timeout: 15), "archive did not load")
-        XCTAssertFalse(encodingMenu(app).exists, "an archive with nothing to choose shows the menu")
+        openEncodingMenu(app)
+        XCTAssertFalse(app.menuItems["Detect Automatically"].isEnabled, "an archive with nothing to choose offers the menu")
         app.terminate()
 
         // "Отчёт" in Windows-1251. `zip` cannot write it, since APFS holds no such
@@ -550,11 +551,11 @@ final class MacPackerUITests: XCTestCase {
         try bytes.write(to: zip)
 
         app = launchApp(arguments: ["-ArchivePath", zip.path])
-        let menu = encodingMenu(app)
-        XCTAssertTrue(menu.waitForExistence(timeout: 15), "no encoding menu in the status bar")
+        XCTAssertTrue(app.staticTexts["1 item"].waitForExistence(timeout: 15), "archive did not load")
         XCTAssertFalse(app.staticTexts["Отчёт.txt"].exists, "the name read as Cyrillic before anything was picked")
 
-        menu.click()
+        openEncodingMenu(app)
+        XCTAssertTrue(app.menuItems["Detect Automatically"].isEnabled, "the menu is off for an archive that does not say")
         // The name the app asks macOS for, in the language of the machine.
         let cyrillic = app.menuItems[String.localizedName(of: .windowsCP1251)]
         XCTAssertTrue(cyrillic.waitForExistence(timeout: 5), "the menu does not offer Cyrillic")

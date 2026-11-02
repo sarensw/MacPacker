@@ -26,9 +26,6 @@ enum AccessibilityIdentifier {
     /// Settings ▸ General ▸ Show hidden files. Its row label is a separate text,
     /// so the toggle itself has no name to find it by.
     static let showHiddenFilesSetting = "settings.showHiddenFiles"
-    /// The status bar menu that reads an archive's names in another encoding.
-    /// Its label is the current encoding, in the user's language.
-    static let nameEncodingMenu = "archive.nameEncodingMenu"
 }
 
 extension NSWindow {
