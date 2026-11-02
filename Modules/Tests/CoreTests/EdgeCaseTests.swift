@@ -217,6 +217,33 @@ extension AllCoreTests {
             }
         }
 
+        /// Detection and the engines never see a file that is gone, so every
+        /// engine ends the same way, and so does a type only its content could
+        /// have told.
+        @Test func fileThatIsGoneStopsBeforeAnyEngine() async throws {
+            let selectors: [any ArchiveEngineSelectorProtocol] = [
+                ArchiveEngineSelector7zip(), ArchiveEngineSelectorXad(), ArchiveEngineSelectorSwc()
+            ]
+            let detector = ArchiveTypeDetector(catalog: ArchiveTypeCatalog())
+
+            for selector in selectors {
+                for ext in ["zip", "xyz"] {
+                    let loader = ArchiveLoader(
+                        archiveTypeDetector: detector,
+                        archiveEngineSelector: selector,
+                        passwordResolver: { _ in nil }
+                    )
+                    let url = FileManager.default.temporaryDirectory
+                        .appendingPathComponent("\(UUID().uuidString).\(ext)")
+
+                    let error = await #expect(throws: ArchiveError.self, "\(selector) .\(ext)") {
+                        try await loader.loadEntries(url: url)
+                    }
+                    #expect(error?.errorDescription == "\(url.lastPathComponent) no longer exists.")
+                }
+            }
+        }
+
         @Test func loadArchiveWithUnknownFormat() async throws {
             let catalog = ArchiveTypeCatalog()
             let detector = ArchiveTypeDetector(catalog: catalog)
@@ -273,6 +300,19 @@ extension AllCoreTests {
 
             // Should show the second archive
             #expect(state.type?.id == "7zip")
+        }
+
+        /// A Recent entry outlives its file. With XAD selected, opening one
+        /// aborted the app instead of ending in the alert.
+        @Test func openingAFileThatIsGoneEndsInTheOpenError() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelectorXad())
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).zip")
+
+            state.open(url: url)
+            try await state.openTask?.value
+
+            #expect(state.hasArchive == false)
+            #expect(state.openError == "\(url.lastPathComponent) no longer exists.")
         }
 
         @Test func loadChildrenWithNilSelectedItem() {
@@ -335,8 +375,57 @@ extension AllCoreTests {
 
     @MainActor struct ArchiveXadEngineEdgeCaseTests {
 
-        // NOTE: loadNonExistentArchiveXad removed — XAD library raises
-        // an uncatchable NSException for non-existent files.
+        /// Asking XADMaster to open a file it can't read raises an NSException,
+        /// which Swift can't catch, so each of these aborted the app. None is a
+        /// password problem either, so nothing may ask for one.
+        @Test func fileThatCannotBeReadThrows() async throws {
+            let fm = FileManager.default
+            let dir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: dir) }
+
+            let gone = dir.appendingPathComponent("gone.zip")
+            let locked = dir.appendingPathComponent("locked.zip")
+            fm.createFile(atPath: locked.path, contents: Data("PK".utf8), attributes: [.posixPermissions: 0o000])
+            let folder = dir.appendingPathComponent("folder.zip")
+            try fm.createDirectory(at: folder, withIntermediateDirectories: true)
+
+            for url in [gone, locked, folder] {
+                await confirmation("password asked for \(url.lastPathComponent)", expectedCount: 0) { asked in
+                    let error = await #expect(throws: ArchiveError.self, "\(url.lastPathComponent)") {
+                        try await ArchiveXadEngine().loadArchive(url: url, passwordResolver: { _ in
+                            asked()
+                            return nil
+                        })
+                    }
+                    #expect(error?.errorDescription == "\(url.lastPathComponent) could not be read.")
+                }
+            }
+        }
+
+        /// A window goes on listing an archive after its file is gone, and
+        /// extracting from it opens the file again.
+        @Test func extractingAnArchiveDeletedAfterListingThrows() async throws {
+            let fm = FileManager.default
+            let dir = fm.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? fm.removeItem(at: dir) }
+
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = dir.appendingPathComponent("defaultArchive.zip")
+            try fm.copyItem(at: folderURL.appendingPathComponent("defaultArchive.zip"), to: url)
+
+            let engine = ArchiveXadEngine()
+            let items = Array(try await engine.loadArchive(url: url, passwordResolver: { _ in nil }).items.values)
+            try fm.removeItem(at: url)
+
+            await #expect(throws: ArchiveError.self) {
+                try await engine.extract(items: items, from: url, to: dir, passwordResolver: { _ in nil })
+            }
+            await #expect(throws: ArchiveError.self) {
+                try await engine.extract(url, to: dir, passwordResolver: { _ in nil })
+            }
+        }
 
         @Test func extractMultipleItemsAtOnce() async throws {
             let engine = ArchiveXadEngine()
