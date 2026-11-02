@@ -29,6 +29,10 @@ struct ArchiveCommands: Commands {
         CommandGroup(after: .newItem) {
             Divider()
 
+            FilenameEncodingMenu()
+
+            Divider()
+
             Button {
                 guard let state = Self.frontArchiveState(),
                       state.canBeEdited, state.hasPendingChanges, !state.isSaving else { return }
@@ -87,7 +91,7 @@ struct ArchiveCommands: Commands {
 /// for when they come out garbled. It sits here and not in the window because
 /// hardly anyone needs it, and only for an archive that does not say what its
 /// names are in. A menu stays where it is; a control in the window would come and go.
-struct FilenameEncodingMenu: View {
+private struct FilenameEncodingMenu: View {
     @StateObject private var front = FrontArchiveNames()
 
     private static let encodings = ArchiveNameEncoding.allCases.sorted {
