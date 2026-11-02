@@ -26,6 +26,21 @@ public enum ArchiveNameEncoding: String, CaseIterable, Identifiable, Sendable {
     case macRoman
     case dosCyrillic
     case windowsCyrillic
+    // Nothing detects these: their bytes read as letters in any other code page, so
+    // a pick is the only way to them. A zip from Windows is in the DOS one; some
+    // tools write the Windows one instead.
+    case dosCentralEuropean
+    case windowsCentralEuropean
+    case dosGreek
+    case windowsGreek
+    case dosTurkish
+    case windowsTurkish
+    case dosHebrew
+    case windowsHebrew
+    case windowsArabic
+    case thai
+    case dosBaltic
+    case windowsBaltic
 
     public var id: Self { self }
 
@@ -44,6 +59,18 @@ public enum ArchiveNameEncoding: String, CaseIterable, Identifiable, Sendable {
         case .macRoman: return .macOSRoman
         case .dosCyrillic: return encoding(.dosRussian)
         case .windowsCyrillic: return .windowsCP1251
+        case .dosCentralEuropean: return encoding(.dosLatin2)
+        case .windowsCentralEuropean: return .windowsCP1250
+        case .dosGreek: return encoding(.dosGreek)
+        case .windowsGreek: return .windowsCP1253
+        case .dosTurkish: return encoding(.dosTurkish)
+        case .windowsTurkish: return .windowsCP1254
+        case .dosHebrew: return encoding(.dosHebrew)
+        case .windowsHebrew: return encoding(.windowsHebrew)
+        case .windowsArabic: return encoding(.windowsArabic)
+        case .thai: return encoding(.dosThai)
+        case .dosBaltic: return encoding(.dosBalticRim)
+        case .windowsBaltic: return encoding(.windowsBalticRim)
         }
     }
 

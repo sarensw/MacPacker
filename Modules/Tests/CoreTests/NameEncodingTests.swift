@@ -457,6 +457,26 @@ extension AllCoreTests {
             #expect(try files(in: folder) == cp866Tree)
         }
 
+        /// Nothing detects these, so a wrong code page behind an entry would go
+        /// unnoticed. The bytes are what Python's own codecs write, not Foundation's.
+        @Test(arguments: [
+            (ArchiveNameEncoding.dosCentralEuropean, [0x9D, 0xA2, 0x64, 0xAB] as [UInt8], "Łódź"),
+            (.windowsCentralEuropean, [0xA3, 0xF3, 0x64, 0x9F], "Łódź"),
+            (.dosGreek, [0x84, 0xA2, 0xA2, 0x9E, 0xA4, 0xA0, 0xA1, 0xE1], "Ελληνικά"),
+            (.windowsGreek, [0xC5, 0xEB, 0xEB, 0xE7, 0xED, 0xE9, 0xEA, 0xDC], "Ελληνικά"),
+            (.dosTurkish, [0x49, 0x9F, 0x8D, 0x6B], "Işık"),
+            (.windowsTurkish, [0x49, 0xFE, 0xFD, 0x6B], "Işık"),
+            (.dosHebrew, [0x92, 0x81, 0x98, 0x89, 0x9A], "עברית"),
+            (.windowsHebrew, [0xF2, 0xE1, 0xF8, 0xE9, 0xFA], "עברית"),
+            (.windowsArabic, [0xDA, 0xD1, 0xC8, 0xED], "عربي"),
+            (.thai, [0xE4, 0xB7, 0xC2], "ไทย"),
+            (.dosBaltic, [0x52, 0x8C, 0x67, 0x61], "Rīga"),
+            (.windowsBaltic, [0x52, 0xEE, 0x67, 0x61], "Rīga"),
+        ])
+        fileprivate func aCodePageNothingDetectsReadsItsOwnBytes(entry: (ArchiveNameEncoding, [UInt8], String)) {
+            #expect(entry.0.read(Data(entry.1), storedAs: "", validUTF8: .read) == entry.2)
+        }
+
         /// A wrong encoding reads the names wrong, not the tree. Read a whole path
         /// at a time, one that fails stays as stored while the entry of its
         /// folder reads, and the folder shows twice. What the list shows is also
