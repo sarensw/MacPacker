@@ -68,6 +68,35 @@
             "issues": ["373"]
           },
           {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Open and extract Zstandard files",
+                "zh-Hans": "打开并解压 Zstandard 文件",
+                "fr": "Ouvrir et extraire les fichiers Zstandard",
+                "de": "Zstandard-Dateien öffnen und entpacken",
+                "it": "Aprire ed estrarre i file Zstandard",
+                "ja": "Zstandard ファイルを開いて展開",
+                "fa": "باز کردن و استخراج فایل‌های Zstandard",
+                "pl": "Otwieranie i wypakowywanie plików Zstandard",
+                "pt-BR": "Abrir e extrair arquivos Zstandard",
+                "ru": "Открытие и извлечение файлов Zstandard",
+                "uk": "Відкриття та розпакування файлів Zstandard",
+                "es-MX": "Abrir y extraer archivos Zstandard",
+                "ko": "Zstandard 파일 열기 및 압축 해제",
+                "nl": "Zstandard-bestanden openen en uitpakken",
+                "tr": "Zstandard dosyalarını açma ve çıkarma",
+                "vi": "Mở và giải nén tệp Zstandard",
+                "ar": "فتح ملفات Zstandard واستخراجها",
+                "ca": "Obre i extreu fitxers Zstandard",
+                "el": "Άνοιγμα και εξαγωγή αρχείων Zstandard",
+                "nb": "Åpne og pakk ut Zstandard-filer",
+                "zh-TW": "開啟並解壓縮 Zstandard 檔案",
+                "hi": "Zstandard फ़ाइलें खोलें और निकालें"
+            },
+            "issues": ["363"]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

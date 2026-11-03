@@ -23,6 +23,8 @@ extension AllCoreTests {
             ("tar", "tar"),
             ("xar", "pkg"), // additional `[TOC].xml`
             ("zip", "zip"),
+            // compression: the stream, not the tar inside it
+            ("tar.zst", "zstd"),
             // installers
             ("rpm", "rpm"),
             // disk images
