@@ -97,6 +97,34 @@
             "issues": [
                 "388"
             ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "App Store version installs as MacPackerStore",
+                "zh-Hans": "App Store 版本安装后名为 MacPackerStore",
+                "fr": "La version App Store s’installe sous le nom MacPackerStore",
+                "de": "App Store-Version wird als MacPackerStore installiert",
+                "it": "La versione App Store si installa come MacPackerStore",
+                "ja": "App Store版がMacPackerStoreとしてインストールされる",
+                "fa": "نسخه App Store با نام MacPackerStore نصب می‌شود",
+                "pl": "Wersja z App Store instaluje się jako MacPackerStore",
+                "pt-BR": "A versão da App Store é instalada como MacPackerStore",
+                "ru": "Версия из App Store устанавливается как MacPackerStore",
+                "uk": "Версія з App Store встановлюється як MacPackerStore",
+                "es-MX": "La versión de App Store se instala como MacPackerStore",
+                "ko": "App Store 버전이 MacPackerStore로 설치됨",
+                "nl": "App Store-versie wordt geïnstalleerd als MacPackerStore",
+                "tr": "App Store sürümü MacPackerStore olarak yükleniyor",
+                "vi": "Phiên bản App Store được cài đặt với tên MacPackerStore",
+                "ar": "إصدار App Store يُثبَّت باسم MacPackerStore",
+                "ca": "La versió de l’App Store s’instal·la com a MacPackerStore",
+                "el": "Η έκδοση του App Store εγκαθίσταται ως MacPackerStore",
+                "nb": "App Store-versjonen installeres som MacPackerStore",
+                "zh-TW": "App Store 版本安裝後名為 MacPackerStore",
+                "hi": "App Store संस्करण MacPackerStore नाम से इंस्टॉल होता है"
+            },
+            "issues": ["258"]
           }
         ]
       },
