@@ -47,6 +47,7 @@ extension AllCoreTests {
             "7z", "arj", "ar", "cab", "cpio", "lzh", "rar", "tar", "xar", "zip", "jar",
             "rpm", "exe", "dmg", "fat", "iso", "qcow2", "squashfs", "vdi", "vhd", "vhdx",
             "vmdk", "wim", "tar.bz2", "tar.gz", "tar.lzma", "tar.xz", "tar.Z", "tgz", "txz",
+            "tar.zst", "tzst",
         ])
         func aWholeArchiveTestsWhole(ext: String) async throws {
             let job = try await test(fixture("defaultArchives/defaultArchive.\(ext)"))
