@@ -23,6 +23,8 @@ struct ArchiveLoaderLoadResult: Sendable {
     let hasTree: Bool
     /// True when at least one entry in the archive is encrypted.
     let isEncrypted: Bool
+    /// What the names were read in, for an archive that does not say itself.
+    let nameEncoding: ArchiveNameEncoding?
     /// The engine that actually read the archive. Differs from the configured
     /// one when the loader had to fall back; the caller pins it so extraction
     /// uses the same engine.
@@ -241,7 +243,13 @@ final actor ArchiveLoader {
         )
         self.entries = engineLoadResult.items
         yield(.processing(progress: nil, activity: .entriesFound(self.entries.count)))
-        
+        if let nameEncoding = engineLoadResult.nameEncoding {
+            log.info("Names read in an encoding the archive does not declare", context: [
+                "file": url.lastPathComponent,
+                "encoding": nameEncoding.rawValue
+            ])
+        }
+
         // build the hierarchy
         let root = ArchiveItem(name: url.lastPathComponent, type: .root)
         root.set(url: archiveUrl, typeId: detectorResult.type.id)
@@ -266,6 +274,7 @@ final actor ArchiveLoader {
             uncompressedSize: engineLoadResult.uncompressedSize,
             hasTree: engineLoadResult.hasTree,
             isEncrypted: engineLoadResult.isEncrypted,
+            nameEncoding: engineLoadResult.nameEncoding,
             engineType: usedEngine,
             firstVolumeURL: firstVolumeURL
         )
@@ -347,9 +356,11 @@ final actor ArchiveLoader {
     func buildTree(at root: ArchiveItem) -> ArchiveLoaderBuildTreeResult {
 
         // "./a" is "a", as it is to the bridge when extracting: a tar of "."
-        // (`tar -C dir .`, the data.tar of every deb) stores every entry so
+        // (`tar -C dir .`, the data.tar of every deb) stores every entry so. And
+        // "../a" is "a" too: the bridge drops the way up, so that is where it
+        // lands, and shown as a folder ".." is a hidden row with all of it inside.
         func normalizePath(_ vp: String) -> String {
-            "/" + vp.split(separator: "/").filter { $0 != "." }.joined(separator: "/")
+            "/" + vp.split(separator: "/").filter { $0 != "." && $0 != ".." }.joined(separator: "/")
         }
 
         func parentPath(of vp: String) -> String {
@@ -361,8 +372,14 @@ final actor ArchiveLoader {
             return "/"
         }
 
-        // The "./" such a tar starts with is the archive itself, not a folder in it
-        entries = entries.filter { $0.value.type != .directory || $0.value.virtualPath.map(normalizePath) != "/" }
+        // The "./" such a tar starts with is the archive itself, not a folder in it.
+        // A "sub/../" is no folder either: taken for `sub`, it would be that folder
+        // with ".." for a name, a hidden row with all of it inside.
+        entries = entries.filter { entry in
+            guard entry.value.type == .directory, let path = entry.value.virtualPath else { return true }
+            let last = path.split(separator: "/").last
+            return normalizePath(path) != "/" && last != "." && last != ".."
+        }
 
         var dirByPath: [String: ArchiveItem] = ["/": root]
 

@@ -1,6 +1,14 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Detect Automatically": {
+      "comment": "File ▸ Filename Encoding, first entry: the app works out how the file names inside the archive are written, as opposed to the encodings listed below it.",
+      "extractionState": "manual"
+    },
+    "Filename Encoding": {
+      "comment": "File menu, submenu: how the file names inside the open archive are read. For archives from another system whose names show up garbled.",
+      "extractionState": "manual"
+    },
     "appCompressionInProgress": {
       "comment": "Title of the alert shown when the user quits while Finder's \"Compress to …\" is still writing an archive.",
       "extractionState": "manual",

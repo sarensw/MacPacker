@@ -120,6 +120,8 @@ private final class XADArchiveWithPasswordSupport: @unchecked Sendable {
     /// Replaced whenever the archive has to be opened again under a new
     /// password, which is also what rebuilds `indicesByPath`.
     private var archive: XADArchive
+    /// Set on the archive by `readNames`, and again on one opened anew.
+    private var nameEncoding: UInt = NSUTF8StringEncoding
     private init(
         url: URL,
         attempts: ArchivePasswordAttempts,
@@ -347,6 +349,7 @@ private final class XADArchiveWithPasswordSupport: @unchecked Sendable {
                 throw ArchiveError.extractionFailed(
                     "Could not reopen \(url.lastPathComponent) with the new password (XAD error \(openError))")
             }
+            reopened.setNameEncoding(nameEncoding)
             archive = reopened
             reindex()
         }
@@ -361,8 +364,35 @@ private final class XADArchiveWithPasswordSupport: @unchecked Sendable {
         return try await runBlocking { body(current) }
     }
 
-    func setNameEncoding(_ encoding: UInt) async throws {
-        try await read { $0.setNameEncoding(encoding) }
+    /// Reads the names in `chosen`, or in the encoding their bytes turn out to be
+    /// in, worked out as for the 7-Zip engine: which engine opens an archive does
+    /// not change what it is called.
+    ///
+    /// - Returns: the encoding used, `nil` when every name is declared or UTF-8.
+    func readNames(chosen: ArchiveNameEncoding?) async throws -> ArchiveNameEncoding? {
+        let encoding = try await read { archive -> ArchiveNameEncoding? in
+            let undeclared = (0..<archive.numberOfEntries()).compactMap { index -> XADPath? in
+                let entry = archive.dataForkParserDictionary(forEntry: index)
+                    ?? archive.resourceForkParserDictionary(forEntry: index)
+                guard let name = entry?[XADFileNameKey] as? XADPath, !name.encodingIsKnown() else { return nil }
+                return name
+            }
+            // StuffIt is the Mac's own, whatever the file is called: a `.sea` is one.
+            let western: ArchiveNameEncoding = archive.formatName()?.hasPrefix("StuffIt") == true ? .macRoman : .dosLatin
+            var encoding = ArchiveNameEncoding.of(undeclared.map { $0.data() }, chosen: chosen, western: western)
+            // XAD decodes a path whole, and one that fails comes back with its
+            // folders flattened into the name. Unreadable names in the right
+            // folders are better, as `Automatic` is what an archive opens with, and
+            // no byte fails in these two. A pick stays what it is: it can be undone.
+            if chosen == nil, let found = encoding,
+               !undeclared.allSatisfy({ $0.canDecode(withEncoding: found.stringEncoding.rawValue) }) {
+                encoding = western
+            }
+            archive.setNameEncoding(encoding?.stringEncoding.rawValue ?? NSUTF8StringEncoding)
+            return encoding
+        }
+        nameEncoding = encoding?.stringEncoding.rawValue ?? NSUTF8StringEncoding
+        return encoding
     }
 
     func numberOfEntries() async throws -> Int32 {
@@ -462,7 +492,17 @@ private func isContained(_ url: URL, in directory: URL) -> Bool {
 }
 
 final actor ArchiveXadEngine: ArchiveEngine {
+    /// What the user picked for this archive's names; `nil` leaves it to detection.
+    private let nameEncoding: ArchiveNameEncoding?
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
+
+    init(nameEncoding: ArchiveNameEncoding? = nil) {
+        self.nameEncoding = nameEncoding
+    }
+
+    nonisolated func readingNames(as encoding: ArchiveNameEncoding?) -> any ArchiveEngine {
+        ArchiveXadEngine(nameEncoding: encoding)
+    }
 
     func statusStream() -> AsyncStream<EngineStatus> {
         AsyncStream { continuation in
@@ -479,26 +519,28 @@ final actor ArchiveXadEngine: ArchiveEngine {
     }
 
     /// Opens `url` the one way this engine opens anything: with the password
-    /// resolved up front when the archive wants one.
+    /// resolved up front when the archive wants one, and its names read.
+    ///
+    /// - Returns: the archive, and the encoding its names were read in, for an
+    ///   archive that does not declare one.
     private func open(
         url: URL,
         passwordResolver: @escaping ArchivePasswordResolver,
         delegate: XADArchiveDelegate
-    ) async throws -> XADArchiveWithPasswordSupport {
+    ) async throws -> (XADArchiveWithPasswordSupport, ArchiveNameEncoding?) {
         let archive = try await XADArchiveWithPasswordSupport.open(
             url: url,
             attempts: ArchivePasswordAttempts(url: url, resolver: passwordResolver),
             delegate: delegate
         )
-        try await archive.setNameEncoding(NSUTF8StringEncoding)
-        return archive
+        return (archive, try await archive.readNames(chosen: nameEncoding))
     }
 
     func loadArchive(
         url: URL,
         passwordResolver: @escaping ArchivePasswordResolver
     ) async throws -> ArchiveEngineLoadResult {
-        let archive = try await open(
+        let (archive, nameEncoding) = try await open(
             url: url, passwordResolver: passwordResolver, delegate: XADArchiveDelegate())
 
         var entries: [UUID: ArchiveItem] = [:]
@@ -568,7 +610,8 @@ final actor ArchiveXadEngine: ArchiveEngine {
             uncompressedSize: uncompressedSizeOverall,
             // A header-encrypted archive needed the password just to list, so
             // it counts as encrypted even if no entry flags itself.
-            isEncrypted: isEncrypted || archive.wasOpenedWithAPassword
+            isEncrypted: isEncrypted || archive.wasOpenedWithAPassword,
+            nameEncoding: nameEncoding
         )
     }
 
@@ -591,7 +634,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
         let totalBytes = items.reduce(Int64(0)) { $0 + Int64(Swift.max(0, $1.uncompressedSize)) }
         let delegate = XADArchiveDelegate(
             onProgress: onProgress, totalBytes: totalBytes, usesGlobalCounters: false)
-        let archive = try await open(
+        let (archive, _) = try await open(
             url: url, passwordResolver: passwordResolver, delegate: delegate)
 
         var urlsByItemID: [UUID: URL] = [:]
@@ -757,7 +800,7 @@ final actor ArchiveXadEngine: ArchiveEngine {
         // whole-archive mode: XAD reports its own global byte counters
         let delegate = XADArchiveDelegate(
             onProgress: onProgress, totalBytes: 0, usesGlobalCounters: true)
-        let archive = try await open(
+        let (archive, _) = try await open(
             url: url, passwordResolver: passwordResolver, delegate: delegate)
 
         do {

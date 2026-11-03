@@ -421,6 +421,7 @@ let package = Package(
                 .unsafeFlags(["-w", "-fno-modules"]),
             ],
             cxxSettings: [
+                .define("MY_UTF8_RAW_NON_UTF8_SUPPORTED"),
                 .define("_7ZIP_ST"),
                 .define("Z7_NO_LARGE_PAGES"),
                 .define("_FILE_OFFSET_BITS", to: "64"),
@@ -468,6 +469,7 @@ let package = Package(
                 .copy("TestArchives/nested"),
                 .copy("TestArchives/password"),
                 .copy("TestArchives/compressed"),
+                .copy("TestArchives/encodings"),
                 // One app bundle per archiver, so extraction can be checked against
                 // files nobody here tailored to it.
                 .copy("TestArchives/archivers")

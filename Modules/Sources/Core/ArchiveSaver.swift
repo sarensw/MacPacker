@@ -41,6 +41,9 @@ final actor ArchiveSaver {
     private let isSaveAs: Bool
     /// The source's password, when it is known already.
     private let sourcePassword: String?
+    /// What the user picked for the source's names; `nil` leaves it to detection.
+    /// A Save As writes them again, under the names the window shows.
+    private let sourceNameEncoding: ArchiveNameEncoding?
     private let passwordResolver: ArchivePasswordResolver
     private let folderAccessProvider: ArchiveFolderAccessUserProvider?
     /// Bytes written, of how many, and when 7-Zip said so — on the main actor.
@@ -61,6 +64,7 @@ final actor ArchiveSaver {
         options: CompressionOptions,
         isSaveAs: Bool,
         sourcePassword: String?,
+        sourceNameEncoding: ArchiveNameEncoding? = nil,
         passwordResolver: @escaping ArchivePasswordResolver,
         folderAccessProvider: ArchiveFolderAccessUserProvider?,
         onProgress: @escaping @MainActor @Sendable (_ completed: UInt64, _ total: UInt64, _ at: Date) -> Void,
@@ -74,6 +78,7 @@ final actor ArchiveSaver {
         self.options = options
         self.isSaveAs = isSaveAs
         self.sourcePassword = sourcePassword
+        self.sourceNameEncoding = sourceNameEncoding
         self.passwordResolver = passwordResolver
         self.folderAccessProvider = folderAccessProvider
         self.onProgress = onProgress
@@ -166,6 +171,7 @@ final actor ArchiveSaver {
         defer { for f in accessedFiles { f.stopAccessingSecurityScopedResource() } }
 
         let (source, target, items, options, rewrite) = (source, target, items, options, isSaveAs)
+        let sourceNameEncoding = sourceNameEncoding
         let progress = progressHandler()
         let work: @Sendable () throws -> Void = {
             try SevenZipArchive.writeArchive(
@@ -175,6 +181,7 @@ final actor ArchiveSaver {
                 options: options,
                 sourcePassword: sourcePassword,
                 rewrite: rewrite,
+                readSourceNames: { Archive7ZipEngine.readNames(of: $0, chosen: sourceNameEncoding) },
                 progress: progress
             )
         }

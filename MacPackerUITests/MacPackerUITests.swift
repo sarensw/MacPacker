@@ -518,6 +518,57 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// File ▸ Filename Encoding reads the names of an archive that does not say what
+    /// they are in anew (#373). An archive with only ASCII names has nothing to
+    /// choose, and the menu is off.
+    func testPickingAnEncodingReadsTheNames() throws {
+        let dir = try makeWorkDir("encoding")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try "one".write(to: dir.appendingPathComponent("abcde.txt"), atomically: true, encoding: .utf8)
+        let plain = dir.appendingPathComponent("plain.zip")
+        try run("/usr/bin/zip", ["-X", plain.path, "abcde.txt"], cwd: dir)
+
+        func openEncodingMenu(_ app: XCUIApplication) {
+            app.menuBars.menuBarItems["File"].click()
+            app.menuBars.menuItems["Filename Encoding"].click()
+        }
+
+        var app = launchApp(arguments: ["-ArchivePath", plain.path])
+        XCTAssertTrue(app.staticTexts["abcde.txt"].waitForExistence(timeout: 15), "archive did not load")
+        openEncodingMenu(app)
+        XCTAssertFalse(app.menuItems["Detect Automatically"].isEnabled, "an archive with nothing to choose offers the menu")
+        app.terminate()
+
+        // "Отчёт" in Windows-1251. `zip` cannot write it, since APFS holds no such
+        // file name, so it goes into the headers afterwards. Nothing detects this
+        // code page, so only the pick can read it.
+        var bytes = try Data(contentsOf: plain)
+        let placeholder = Data("abcde".utf8)
+        while let range = bytes.range(of: placeholder) {
+            bytes.replaceSubrange(range, with: [0xCE, 0xF2, 0xF7, 0xB8, 0xF2])
+        }
+        let zip = dir.appendingPathComponent("fixture.zip")
+        try bytes.write(to: zip)
+
+        app = launchApp(arguments: ["-ArchivePath", zip.path])
+        XCTAssertTrue(app.staticTexts["1 item"].waitForExistence(timeout: 15), "archive did not load")
+        XCTAssertFalse(app.staticTexts["Отчёт.txt"].exists, "the name read as Cyrillic before anything was picked")
+
+        openEncodingMenu(app)
+        XCTAssertTrue(app.menuItems["Detect Automatically"].isEnabled, "the menu is off for an archive that does not say")
+        // The name the app asks macOS for, in the language of the machine.
+        let cyrillic = app.menuItems[String.localizedName(of: .windowsCP1251)]
+        XCTAssertTrue(cyrillic.waitForExistence(timeout: 5), "the menu does not offer Cyrillic")
+        cyrillic.click()
+
+        XCTAssertTrue(app.staticTexts["Отчёт.txt"].waitForExistence(timeout: 10), "the pick did not read the name")
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "name read as Cyrillic"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.terminate()
+    }
+
     /// Dragging a file from Finder onto the upper half of an editable archive adds
     /// it — the drop zones replaced the old ⌥-modifier gesture, so the plain drag
     /// has to land in the archive without any key held.
