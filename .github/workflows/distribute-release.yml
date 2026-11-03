@@ -1,9 +1,14 @@
-# ── Per-app release shell (workflows-macos v0.5.10, product-file model) ───────
+# ── Per-app release shell (workflows-apple v0.6.8, product-file model) ────────
 # Fires on a version tag. The orchestrator parses the tag → the target product,
-# validates the version against that product's inline changelog, then builds and
-# publishes just it. The GH Release is created last (fail-safe ordering).
+# validates the version against that product's inline changelog, then builds its
+# Direct and App Store legs from that commit with one build number. Direct goes
+# to the stable Sparkle feed and the GH Release, the App Store build to TestFlight:
+# that's the build to submit.
 #
-# Cross-account (sarensw/MacPacker → LeanBytes/workflows-macos): `secrets: inherit`
+# The GH Release comes before the appcast, because new Sparkle items download
+# from it. If a run fails after the release exists, re-run the failed job.
+#
+# Cross-account (sarensw/MacPacker → LeanBytes/workflows-apple): `secrets: inherit`
 # forwards nothing across accounts, so the map stays explicit. No JIRA_API_TOKEN
 # here — the release orchestrator does not declare it (passing an undeclared
 # secret is a hard workflow error) and release runs no tests.
@@ -26,39 +31,32 @@ jobs:
   release:
     # Make sure the release job only runs in our own repo, not any fork repo.
     if: github.repository == 'sarensw/MacPacker'
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-release.yml@v0.5.10
+    uses: LeanBytes/workflows-apple/.github/workflows/distribute-release.yml@v0.6.8
     secrets:
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
       KEYCHAIN_PASSWORD:              ${{ secrets.KEYCHAIN_PASSWORD }}
-      PROV_PROF_DEVID_BASE64:         ${{ secrets.PROV_PROF_DEVID_BASE64 }}
-      PROV_PROF_DEVID_FINDER_BASE64:  ${{ secrets.PROV_PROF_DEVID_FINDER_BASE64 }}
-      PROV_PROF_DEVID_QL_BASE64:      ${{ secrets.PROV_PROF_DEVID_QL_BASE64 }}
       APPLE_DISTR_P12_BASE64:         ${{ secrets.APPLE_DISTR_P12_BASE64 }}
       APPLE_DISTR_PASSWORD:           ${{ secrets.APPLE_DISTR_PASSWORD }}
       MAC_DISTR_P12_BASE64:           ${{ secrets.MAC_DISTR_P12_BASE64 }}
       MAC_DISTR_PASSWORD:             ${{ secrets.MAC_DISTR_PASSWORD }}
-      PROV_PROF_STORE_BASE64:         ${{ secrets.PROV_PROF_STORE_BASE64 }}
-      PROV_PROF_STORE_FINDER_BASE64:  ${{ secrets.PROV_PROF_STORE_FINDER_BASE64 }}
-      PROV_PROF_STORE_QL_BASE64:      ${{ secrets.PROV_PROF_STORE_QL_BASE64 }}
       ASC_KEY_ID:                     ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID:                  ${{ secrets.ASC_ISSUER_ID }}
       ASC_KEY_BASE64:                 ${{ secrets.ASC_KEY_BASE64 }}
       AWS_ACCESS_KEY_ID:              ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY:          ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       SPARKLE_ED_PRIVATE_KEY:         ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
-      SHARED_WORKFLOWS_TOKEN:         ${{ secrets.SHARED_WORKFLOWS_TOKEN }}
     with:
       # All jobs shall run on GitHub infrastructure, not LeanBytes infrastructure
-      runs-on-prepare:      '"macos-26"'
-      runs-on-build-direct: '"macos-26"'
-      runs-on-build-store:  '"macos-26"'
-      runs-on-publish:      '"macos-26"'
+      runs-on-prepare:          '"macos-26"'
+      runs-on-build-mac-direct: '"macos-26"'
+      runs-on-build-mac-store:  '"macos-26"'
+      runs-on-publish:          '"macos-26"'
 
-      artifact-retention-days: 90   # CI artifacts kept 90 days
-      # The store leg MUST archive "Release Store" — the orchestrator default is
-      # "Release", which would build the wrong flavor.
-      configuration-app-store: Release Store
+      # New Sparkle items download from the GitHub Release, not S3, which charges
+      # for data out (#387). The appcast stays on S3: SUFeedURL is built into
+      # installed apps.
+      appcast-downloads-from-github: true
 
       # ── Discussion configuration ──
       create-discussion: true

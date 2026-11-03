@@ -1,20 +1,20 @@
 {
   "id": "",
-  "platform": "macos",
   "scheme": "MacPacker",
   "product-name": "MacPacker",
   "bundle-id": "com.sarensx.MacPacker",
-  "scheme-store": "MacPacker Store",
-  "has-finder": true,
-  "bundle-id-finder": "com.sarensx.MacPacker.FinderExtension",
-  "has-quicklook": true,
-  "bundle-id-quicklook": "com.sarensx.MacPacker.QuickLookExtension",
-  "build-direct": true,
-  "build-app-store": true,
-  "distribute-app-store": true,
-  "distribute-appcast": true,
-  "s3-subpath": "",
-  "appcast-seed-path": "Config/appcast.xml",
+  "platforms": {
+    "macos": {
+      "direct": {
+        "appcast": true,
+        "appcast-seed-path": "Config/appcast.xml"
+      },
+      "app-store": {
+        "scheme": "MacPacker Store",
+        "configuration": "Release Store"
+      }
+    }
+  },
   "changelog": {
     "comingNext": {
       "en": "Integrity check and recovery",
