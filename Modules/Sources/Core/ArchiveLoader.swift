@@ -110,6 +110,12 @@ final actor ArchiveLoader {
     /// archive type, select the proper engine and then load all info like type info, entries,  ... . The hiarchy is built in a separate step.
     /// - Parameter url: The url to open
     public func loadEntries(url: URL) async throws -> ArchiveLoaderLoadResult {
+        // Before detection or any engine: gone is the same answer for all of
+        // them, and a recent archive outlives its file.
+        guard Sandbox.accessSync(url: url, perform: { FileManager.default.fileExists(atPath: url.path) }) else {
+            throw ArchiveError.loadFailed("\(url.lastPathComponent) no longer exists.")
+        }
+
         // in case this is a compount `archiveUrl` will hold the extracted url
         var archiveUrl: URL? = url
         // for a split, the resolved first volume (adopted as the window identity)

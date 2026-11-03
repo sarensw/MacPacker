@@ -206,10 +206,24 @@ private final class XADArchiveWithPasswordSupport: @unchecked Sendable {
         // blocking XADMaster call — it parses the whole archive, and for an
         // encrypted one it decrypts every sidecar on the way past
         try await runBlocking {
+            // initWithFile:delegate:error: picks its parser outside any @try, so
+            // a file it can't open or read raises an NSException, which Swift
+            // can't catch: the app aborts. This is that same step inside a @try.
+            // It decodes nothing, so what it reports is never a password problem.
+            var error: XADError = 0
+            autoreleasepool {
+                _ = XADArchiveParser(forPath: url.path, error: &error)
+            }
+            guard error == 0 else {
+                throw ArchiveError.loadFailed("\(url.lastPathComponent) could not be read.")
+            }
+
+            // ponytail: a file gone between these two calls still aborts. An ObjC
+            // @try shim around the init closes that.
+
             // initWithFile:delegate:error: over the plain initWithFile: so a
             // failure carries a code instead of a bare nil, and so the delegate
             // is in place for the parse rather than only afterwards.
-            var error: XADError = 0
             let archive = XADArchive(file: url.path, delegate: delegate, error: &error)
             return (archive, error)
         }
