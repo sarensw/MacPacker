@@ -97,6 +97,34 @@
             "issues": [
                 "388"
             ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Other apps can start Finder actions",
+                "zh-Hans": "其他应用可以启动 Finder 操作",
+                "fr": "D’autres apps peuvent lancer des actions du Finder",
+                "de": "Andere Apps können Finder-Aktionen starten",
+                "it": "Altre app possono avviare azioni del Finder",
+                "ja": "他のアプリが Finder の操作を実行できる",
+                "fa": "برنامه‌های دیگر می‌توانند عملیات Finder را اجرا کنند",
+                "pl": "Inne aplikacje mogą uruchamiać akcje Findera",
+                "pt-BR": "Outros apps podem iniciar ações do Finder",
+                "ru": "Другие приложения могут запускать действия Finder",
+                "uk": "Інші застосунки можуть запускати дії Finder",
+                "es-MX": "Otras apps pueden iniciar acciones del Finder",
+                "ko": "다른 앱이 Finder 작업을 실행할 수 있음",
+                "nl": "Andere apps kunnen Finder-acties starten",
+                "tr": "Diğer uygulamalar Finder işlemlerini başlatabiliyor",
+                "vi": "Ứng dụng khác có thể chạy thao tác Finder",
+                "ar": "يمكن لتطبيقات أخرى بدء إجراءات Finder",
+                "ca": "Altres apps poden iniciar accions del Finder",
+                "el": "Άλλες εφαρμογές μπορούν να ξεκινούν ενέργειες του Finder",
+                "nb": "Andre apper kan starte Finder-handlinger",
+                "zh-TW": "其他 App 可以啟動 Finder 動作",
+                "hi": "दूसरे ऐप Finder क्रियाएँ शुरू कर सकते हैं"
+            },
+            "issues": ["286"]
           }
         ]
       },

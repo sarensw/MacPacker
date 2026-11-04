@@ -60,8 +60,8 @@ public extension AppUrlAction {
 /// `<scheme>://<action>?files=…&target=…[&format=…][&dated=<seconds since 1970>]`.
 ///
 /// The scheme is registered with Launch Services, so any app or web page can
-/// open such a url: all of it is untrusted input, and parsing is where it gets
-/// checked.
+/// open such a url. The app carries out only what its own Finder extension
+/// sent (#286), and parsing checks every url all the same.
 public struct AppUrl: Equatable, Sendable {
     public var action: AppUrlAction
     public var files: [URL]

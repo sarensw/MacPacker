@@ -74,6 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     public func applicationWillFinishLaunching(_ notification: Notification) {
         guard !Self.isRunningInPreview else { return }
         log.notice("applicationWillFinishLaunching")
+        FinderRequestSenders.install()
     }
     
     public func application(_ application: NSApplication, open urls: [URL]) {
@@ -109,6 +110,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
 
         if let appUrl {
+            // Any app, and any web page the user lets through, can open the
+            // app's urls. Only what the Finder extension sent is carried out:
+            // the rest would read and write under the user's folder grants
+            // without a question (#286).
+            guard let url = urls.first, FinderRequestSenders.sentByFinderExtension(url) else {
+                log.error("Refused Finder action '\(appUrl.action.rawValue)': not sent by MacPacker's Finder extension")
+                Task {
+                    if finderLaunchIsOver {
+                        log.notice("Launched for a refused Finder action — quitting")
+                        NSApp.terminate(nil)
+                    }
+                }
+                return
+            }
             log.notice("Routing Finder app-url action '\(appUrl.action.rawValue)' for \(appUrl.files.count) file(s)")
             var handler: AppUrlHandler?
 
