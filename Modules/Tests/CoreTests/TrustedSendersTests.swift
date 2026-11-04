@@ -111,6 +111,20 @@ extension AllCoreTests {
             #expect(senders.sentByTrustedSender(request))
         }
 
+        /// Urls that arrive while the app launches are handed over together,
+        /// and only the first is carried out. Each of them uses up its note:
+        /// one left over would let the same url from another app through later.
+        @Test func everyUrlHandedOverTogetherUsesUpItsNote() throws {
+            let senders = TrustedSenders(trusting: [try ownRequirement()])
+            let other = "app.macpacker://extractHere?files=/Users/me/Downloads/photos.zip&target=/Users/me/Downloads"
+            senders.note(url, sentBy: ownAuditToken())
+            senders.note(other, sentBy: ownAuditToken())
+            let dropped = try #require(URL(string: other))
+
+            #expect(senders.sentByTrustedSender(firstOf: [try #require(URL(string: url)), dropped]))
+            #expect(!senders.sentByTrustedSender(dropped))
+        }
+
         /// Any one of the requirements will do.
         @Test func aSenderMeetingOneOfTheRequirementsIsTrusted() throws {
             let senders = TrustedSenders(trusting: [try otherRequirement(), try ownRequirement()])

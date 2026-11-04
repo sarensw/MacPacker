@@ -51,9 +51,10 @@ enum FinderRequestSenders {
         log.info("Checking who sends get-url events", context: ["installed": "\(installed == noErr)"])
     }
 
-    /// Whether the Finder extension sent `url`. Each url sent answers once.
-    static func sentByFinderExtension(_ url: URL) -> Bool {
-        senders.sentByTrustedSender(url)
+    /// Whether the Finder extension sent the first of `urls`, the one carried
+    /// out. Each url sent answers once.
+    static func sentByFinderExtension(firstOf urls: [URL]) -> Bool {
+        senders.sentByTrustedSender(firstOf: urls)
     }
 
     private static func noteSender(of event: UnsafePointer<AppleEvent>) {
@@ -62,8 +63,10 @@ enum FinderRequestSenders {
         let descriptor = NSAppleEventDescriptor(aeDescNoCopy: &copy)
         guard let url = descriptor.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue else { return }
         let token = descriptor.attributeDescriptor(forKeyword: AEKeyword(keySenderAuditTokenAttr))?.data
+        // checked first: the sender has to be running still
+        let trusted = senders.note(url, sentBy: token)
         let sender = token.flatMap(CodeSignature.identifier(ofProcess:)) ?? "unknown or gone"
-        if senders.note(url, sentBy: token) {
+        if trusted {
             log.info("Url from the Finder extension", context: ["sender": sender])
         } else {
             log.warning("Url from another sender", context: ["sender": sender])

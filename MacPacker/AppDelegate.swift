@@ -114,7 +114,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             // app's urls. Only what the Finder extension sent is carried out:
             // the rest would read and write under the user's folder grants
             // without a question (#286).
-            guard let url = urls.first, FinderRequestSenders.sentByFinderExtension(url) else {
+            guard FinderRequestSenders.sentByFinderExtension(firstOf: urls) else {
                 log.error("Refused Finder action '\(appUrl.action.rawValue)': not sent by MacPacker's Finder extension")
                 Task {
                     if finderLaunchIsOver {

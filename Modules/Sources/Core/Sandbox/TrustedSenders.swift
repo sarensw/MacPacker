@@ -45,6 +45,14 @@ public final class TrustedSenders {
         sent.remove(at: index)
         return true
     }
+
+    /// Whether a trusted sender sent the first of `urls`, the one the app
+    /// carries out when urls arrive together. The others use up their notes
+    /// all the same: one left over would let the same url from another app
+    /// through later.
+    public func sentByTrustedSender(firstOf urls: [URL]) -> Bool {
+        urls.map { sentByTrustedSender($0) }.first ?? false
+    }
 }
 
 /// The code signatures of running processes and of code on disk.
