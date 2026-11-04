@@ -168,7 +168,8 @@ Pull requests may need rework or some wait time before they can be merged. Openi
 - [x] Wide format coverage (40+ formats)
 - [x] Create ZIP and 7z archives, with a password and split into volumes
 - [x] Edit ZIP and 7z archives: add, replace, and delete files
-- [ ] Integrity check and recovery (coming next)
+- [x] Integrity check: test an archive without extracting it
+- [ ] Recovery of damaged archives
 - [ ] Tree view of an archive's contents
 
 ## License

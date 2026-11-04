@@ -237,23 +237,37 @@ extension AllCoreTests {
             #expect(!center.isRunningAction)
         }
 
-        /// A failed job stays listed until the window that shows it closes.
-        /// The app must not quit under it: nobody would learn that the
-        /// extraction failed.
-        @Test func aFailedJobCountsUntilItIsCleared() {
+        /// A failed job stays listed until the window that shows it closes, and
+        /// so does a test that ran to the end, whatever it found: its verdict is
+        /// what it was run for. The app must not quit under either: nobody would
+        /// learn how it ended.
+        @Test func anOutcomeCountsUntilItIsCleared() {
             let center = ExtractionProgressCenter()
             let done = center.begin(archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
             center.finish(done, .done)
             let cancelled = center.begin(archiveName: "b.zip", destination: nil, itemCount: 1, totalBytes: nil)
             center.finish(cancelled, .cancelled)
-            #expect(!center.hasFailedJobs)
+            let cancelledTest = center.begin(kind: .test, archiveName: "c.zip", destination: nil, itemCount: 0, totalBytes: nil)
+            center.finish(cancelledTest, .cancelled)
+            #expect(!center.hasOutcomesToShow)
 
-            let failed = center.begin(archiveName: "c.zip", destination: nil, itemCount: 1, totalBytes: nil)
+            let failed = center.begin(archiveName: "d.zip", destination: nil, itemCount: 1, totalBytes: nil)
             center.finish(failed, .failed("disk full"))
-            #expect(center.hasFailedJobs)
+            #expect(center.hasOutcomesToShow)
 
             center.clearFinished()
-            #expect(!center.hasFailedJobs)
+            #expect(!center.hasOutcomesToShow)
+
+            let tested = center.begin(kind: .test, archiveName: "e.zip", destination: nil, itemCount: 0, totalBytes: nil)
+            center.finish(tested, testedAs: ArchiveTestResult(damagedEntries: [], isArchiveDamaged: false))
+            #expect(center.jobs.first?.state == .done)
+            #expect(center.hasOutcomesToShow)
+
+            center.clearFinished()
+            let damaged = center.begin(kind: .test, archiveName: "f.zip", destination: nil, itemCount: 0, totalBytes: nil)
+            center.finish(damaged, testedAs: ArchiveTestResult(damagedEntries: ["a.txt"], isArchiveDamaged: false))
+            #expect(center.jobs.first?.state == .failed("Damaged: a.txt"))
+            #expect(center.hasOutcomesToShow)
         }
 
         @Test func clearFinishedKeepsRunningJobs() {

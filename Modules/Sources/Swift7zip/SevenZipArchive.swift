@@ -341,6 +341,53 @@ public class SevenZipArchive {
         }
         return result2
     }
+
+    // MARK: - Testing
+
+    /// Decodes every entry and checks it against its checksum, writing nothing.
+    /// - Parameter progress: Optional byte-progress callback; return `false` to abort.
+    /// - Returns: the paths of the entries that did not decode or did not match
+    ///   their checksum, and whether the archive reports damage of its own — cut
+    ///   short, its headers broken — which no entry has to show.
+    /// - Throws: ``SevenZipError/passwordMissing`` if any entry is encrypted and
+    ///   no password was set, ``SevenZipError/passwordWrong`` when the one set did
+    ///   not decrypt them, ``SevenZipError/cancelled`` when the progress callback
+    ///   aborted, ``SevenZipError/extractionFailed(_:)`` when the test could not run.
+    public func test(
+        progress: ProgressHandler? = nil
+    ) throws -> (damagedPaths: [String], archiveIsDamaged: Bool) {
+        if !hasPassword, try entries.contains(where: \.isEncrypted) {
+            throw SevenZipError.passwordMissing
+        }
+        let box = progress.map(ProgressBox.init)
+        var damaged: UnsafeMutablePointer<UInt32>?
+        var count: UInt32 = 0
+        var archiveIsDamaged = false
+        var errorPtr: UnsafeMutablePointer<CChar>?
+        let result = withExtendedLifetime(box) {
+            sz_test_all(
+                handle.ref,
+                box != nil ? Self.progressThunk : nil,
+                box.map { Unmanaged.passUnretained($0).toOpaque() },
+                &damaged, &count, &archiveIsDamaged, &errorPtr)
+        }
+        defer { free(damaged) }
+        if result != SZ_TEST_DAMAGED {
+            try Self.check(result, errorPtr)
+        }
+        let indices = UnsafeBufferPointer(start: damaged, count: Int(count))
+        return (indices.map(path(ofEntryAt:)), archiveIsDamaged)
+    }
+
+    /// The path the listing shows `index` under, or for an entry it leaves out —
+    /// a sidecar, an alternate stream — the one it is stored under.
+    private func path(ofEntryAt index: UInt32) -> String {
+        var raw = SZEntry()
+        if sz_get_entry(handle.ref, index, &raw), let path = raw.path {
+            return String(cString: path)
+        }
+        return sz_entry_path(handle.ref, index).map { String(cString: $0) } ?? ""
+    }
 }
 
 // MARK: - Internal Conversion

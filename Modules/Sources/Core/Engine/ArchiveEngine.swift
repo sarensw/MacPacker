@@ -90,6 +90,24 @@ public struct ArchiveExtractionResult: Sendable {
     }
 }
 
+/// What testing an archive found.
+public struct ArchiveTestResult: Equatable, Sendable {
+    /// The entries that did not decode or did not match their checksum, by path.
+    public let damagedEntries: [String]
+    /// Whether the archive reports damage of its own: cut short, its headers
+    /// broken. Every entry can read and the archive still not be whole.
+    public let isArchiveDamaged: Bool
+
+    public init(damagedEntries: [String], isArchiveDamaged: Bool) {
+        self.damagedEntries = damagedEntries
+        self.isArchiveDamaged = isArchiveDamaged
+    }
+
+    public var isIntact: Bool {
+        damagedEntries.isEmpty && !isArchiveDamaged
+    }
+}
+
 /// Byte-level progress reported by an engine during extraction. `completed`
 /// and `total` share the engine's own processed-bytes unit. Return `false`
 /// to abort the extraction. Called on the extraction thread.
@@ -173,10 +191,30 @@ public protocol ArchiveEngine: Sendable {
         passwordResolver: @escaping ArchivePasswordResolver,
         onProgress: ArchiveExtractionProgress?
     ) async throws
+
+    /// Decodes every entry of the archive at `url` and checks it against its
+    /// checksum, writing nothing. Engines that cannot keep the default
+    /// implementation, which throws ``ArchiveError/testUnsupported``.
+    func test(
+        _ url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveTestResult
 }
 
 public extension ArchiveEngine {
     func readingNames(as encoding: ArchiveNameEncoding?) -> any ArchiveEngine { self }
+
+    // ponytail: 7-Zip only. XADMaster checks a checksum while it extracts, and
+    // its reads raise exceptions Swift cannot catch, so testing there means
+    // extracting to a temp folder; add it if StuffIt users ask.
+    func test(
+        _ url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveTestResult {
+        throw ArchiveError.testUnsupported
+    }
 
     func extract(
         items: [ArchiveItem],

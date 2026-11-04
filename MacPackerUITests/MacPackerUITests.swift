@@ -598,6 +598,64 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// A zip holding `readme.txt`, stored, and a copy with one byte of that file
+    /// changed: the copy opens and lists as before, and only its CRC tells.
+    private func makeWholeAndDamagedZip(in dir: URL) throws -> (whole: URL, damaged: URL) {
+        let payload = dir.appendingPathComponent("readme.txt")
+        try "Every byte of this file is checked.".write(to: payload, atomically: true, encoding: .utf8)
+        let whole = dir.appendingPathComponent("whole.zip")
+        try run("/usr/bin/zip", ["-X", "-0", whole.path, "readme.txt"], cwd: dir)
+        try FileManager.default.removeItem(at: payload)
+
+        var bytes = try Data(contentsOf: whole)
+        let range = try XCTUnwrap(bytes.range(of: Data("Every".utf8)))
+        bytes[range.lowerBound] ^= 0x20
+        let damaged = dir.appendingPathComponent("damaged.zip")
+        try bytes.write(to: damaged)
+        return (whole, damaged)
+    }
+
+    /// File ▸ Test Archive checks the archive in front and says what it found in
+    /// the progress window: nothing for a whole archive, the damaged file for one
+    /// whose CRC no longer matches (#232).
+    func testTestArchiveFromTheFileMenuShowsTheVerdict() throws {
+        let dir = try makeWorkDir("test-archive")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let (whole, damaged) = try makeWholeAndDamagedZip(in: dir)
+
+        for (zip, verdict) in [(whole, "No errors found"), (damaged, "Damaged: readme.txt")] {
+            let app = launchApp(arguments: ["-ArchivePath", zip.path])
+            XCTAssertTrue(app.staticTexts["readme.txt"].waitForExistence(timeout: 15), "\(zip.lastPathComponent) did not load")
+            app.menuBars.menuBarItems["File"].click()
+            app.menuBars.menuItems["Test Archive"].click()
+
+            let progress = app.windows["progress.window"]
+            XCTAssertTrue(progress.staticTexts[verdict].waitForExistence(timeout: 15), "no \"\(verdict)\" for \(zip.lastPathComponent)")
+            add(screenshot(app, name: verdict))
+            app.terminate()
+        }
+    }
+
+    /// Finder's Test Archive starts the app without a window of its own and puts
+    /// the verdict up in the progress window. The verdict is what the action was
+    /// for, so it holds the app up until it is closed (#232).
+    func testFinderTestArchiveKeepsTheVerdictUntilItIsClosed() throws {
+        let dir = try makeWorkDir("finder-test-archive")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let (_, damaged) = try makeWholeAndDamagedZip(in: dir)
+
+        let app = launchApp(finderAction: "test", files: [damaged], target: dir)
+        confirmAccessPanel(app, button: "Grant Access")
+
+        let progress = app.windows["progress.window"]
+        XCTAssertTrue(progress.staticTexts["Damaged: readme.txt"].waitForExistence(timeout: 15), "no verdict")
+        add(screenshot(app, name: "Finder test verdict"))
+        XCTAssertFalse(app.wait(for: .notRunning, timeout: 3), "the app quit under its verdict")
+
+        progress.buttons[XCUIIdentifierCloseWindow].click()
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 10), "the app stayed after its verdict was closed")
+    }
+
     /// Dragging a file from Finder onto the upper half of an editable archive adds
     /// it — the drop zones replaced the old ⌥-modifier gesture, so the plain drag
     /// has to land in the archive without any key held.

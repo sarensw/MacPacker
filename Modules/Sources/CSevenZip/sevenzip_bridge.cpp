@@ -540,6 +540,8 @@ public:
     /// through SetOperationResult and *still* returns S_OK from Extract(), so
     /// without this the caller cannot tell a wrong password from a success.
     Int32 failedOpResult = NArchive::NExtract::NOperationResult::kOK;
+    /// Every entry that did not decode, in the order they came.
+    std::vector<UInt32> failedEntries;
     /// Extracted files whose name starts with "._", i.e. candidate AppleDouble
     /// sidecars. They cannot be resolved as they arrive: a sidecar may be stored
     /// before the entry it describes, and `._x` sorts before `x`, so that is the
@@ -575,6 +577,7 @@ private:
     FString _destDir;
     CMyComPtr<ISequentialOutStream> _outFileStream;
     FString _currentFilePath;
+    UInt32 _currentIndex = 0;        // entry GetStream was last asked for
     UInt32 _currentMode = 0;         // POSIX mode from kpidPosixAttrib; 0 if unknown
     EntryTime _currentTime;          // kpidMTime of the entry being written
     bool _currentIsSymlink = false;  // entry is a Unix symlink (S_IFLNK)
@@ -593,6 +596,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
 
     // Reset per-entry POSIX state. SetOperationResult only acts when GetStream
     // fills these in below for an actually-extracted file.
+    _currentIndex = index;
     _currentFilePath.Empty();
     _currentMode = 0;
     _currentTime = EntryTime();
@@ -926,6 +930,7 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
         if (failedOpResult == NArchive::NExtract::NOperationResult::kOK ||
             opRes == NArchive::NExtract::NOperationResult::kWrongPassword)
             failedOpResult = opRes;
+        failedEntries.push_back(_currentIndex);
         _currentIsSymlink = false;
         _currentMode = 0;
         _currentTime = EntryTime();
@@ -1698,6 +1703,77 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
         return finishExtract(callback, hr, error_out);
     } catch (...) {
         if (error_out) *error_out = strdup("Internal error during extraction");
+        return SZ_EXTRACT_FAILED;
+    }
+}
+
+/// Whether `archive` reports damage of its own: an error flag or an error
+/// message, as 7-Zip's own client counts them. Warnings are left out, as there:
+/// a zip the way Nextcloud writes it warns of a headers error and holds nothing
+/// that is wrong.
+static bool reportsDamage(IInArchive *archive) {
+    NWindows::NCOM::CPropVariant flags;
+    if (archive->GetArchiveProperty(kpidErrorFlags, &flags) == S_OK
+        && flags.vt == VT_UI4 && flags.ulVal != 0)
+        return true;
+    NWindows::NCOM::CPropVariant message;
+    return archive->GetArchiveProperty(kpidError, &message) == S_OK && message.vt != VT_EMPTY;
+}
+
+int sz_test_all(SZArchiveRef archive,
+                sz_progress_callback progress, void *progress_context,
+                uint32_t **damaged_out, uint32_t *damaged_count_out,
+                bool *archive_damaged_out, char **error_out) {
+    if (damaged_out) *damaged_out = nullptr;
+    if (damaged_count_out) *damaged_count_out = 0;
+    if (archive_damaged_out) *archive_damaged_out = false;
+    if (!archive) {
+        if (error_out) *error_out = strdup("Invalid arguments");
+        return SZ_EXTRACT_FAILED;
+    }
+    try {
+        auto *handle = static_cast<SZArchiveHandle *>(archive);
+
+        // No destination: in test mode the callback hands out no stream, and
+        // the handler decodes each entry into nothing.
+        auto *callback = new CExtractCallback(handle->activeArchive(), handle->sourceName,
+                                                handle->decodedPaths, FString(),
+                                                handle->password, handle->hasPassword,
+                                                progress, progress_context);
+        CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
+
+        const HRESULT hr = handle->activeArchive()->Extract(
+            nullptr, (UInt32)(Int32)-1, 1, callback);
+
+        if (callback->aborted || hr == E_ABORT)
+            return SZ_EXTRACT_ABORTED;
+        if (callback->failedOpResult == NArchive::NExtract::NOperationResult::kWrongPassword)
+            return SZ_EXTRACT_WRONG_PASSWORD;
+        // S_FALSE is a handler's word for data that is broken, with no entry to
+        // blame. Anything else is the test failing, not the archive.
+        if (hr != S_OK && hr != S_FALSE) {
+            if (error_out) *error_out = strdup("The archive could not be tested");
+            return SZ_EXTRACT_FAILED;
+        }
+
+        // Asked after the run, since some handlers find out while decoding: xz
+        // reports there what its decoder ran into.
+        bool archiveDamaged = hr == S_FALSE;
+        for (const SZArchiveLevel &level : handle->levels)
+            archiveDamaged = reportsDamage(level.archive) || archiveDamaged;
+
+        const std::vector<UInt32> &damaged = callback->failedEntries;
+        if (archive_damaged_out) *archive_damaged_out = archiveDamaged;
+        if (!damaged.empty() && damaged_out && damaged_count_out) {
+            *damaged_out = (uint32_t *)malloc(damaged.size() * sizeof(uint32_t));
+            if (*damaged_out) {
+                std::copy(damaged.begin(), damaged.end(), *damaged_out);
+                *damaged_count_out = (uint32_t)damaged.size();
+            }
+        }
+        return damaged.empty() && !archiveDamaged ? SZ_EXTRACT_OK : SZ_TEST_DAMAGED;
+    } catch (...) {
+        if (error_out) *error_out = strdup("Internal error during the test");
         return SZ_EXTRACT_FAILED;
     }
 }

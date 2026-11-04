@@ -207,6 +207,32 @@ final actor Archive7ZipEngine: ArchiveEngine {
         }
     }
 
+    func test(
+        _ url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveTestResult {
+        let attempts = ArchivePasswordAttempts(url: url, resolver: passwordResolver)
+        let (szip, _) = try await Self.open(url: url, attempts: attempts, nameEncoding: nameEncoding)
+
+        // Same retry shape as extract(items:): a wrong password only shows once
+        // an entry is decrypted.
+        while true {
+            do {
+                // blocking C call — keep it off the cooperative pool
+                let found = try await runBlocking {
+                    try szip.test(progress: Self.bridgeProgress(onProgress))
+                }
+                return ArchiveTestResult(damagedEntries: found.damagedPaths, isArchiveDamaged: found.archiveIsDamaged)
+            } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
+                szip.setPassword(try await attempts.next())
+                continue
+            } catch SevenZipError.cancelled {
+                throw CancellationError()
+            }
+        }
+    }
+
     /// Opens the archive with the password it needs, asked for here rather than
     /// when something later fails.
     ///

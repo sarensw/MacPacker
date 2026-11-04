@@ -176,7 +176,9 @@ private struct ExtractionProgressRowView: View {
                     .modifier(FadeInOnAppear())
                 } else if !isExpanded {
                     HStack(spacing: 10) {
-                        if case .failed(let message) = job.state {
+                        if let result = job.testResult {
+                            verdict(result)
+                        } else if case .failed(let message) = job.state {
                             Text(verbatim: message)
                                 .font(.caption)
                                 .foregroundStyle(.red)
@@ -200,6 +202,26 @@ private struct ExtractionProgressRowView: View {
     }
 
     // MARK: Pieces
+
+    /// What a test found: nothing, or what is damaged — the entries, or the
+    /// archive itself when it is broken where no entry shows it.
+    @ViewBuilder
+    private func verdict(_ result: ArchiveTestResult) -> some View {
+        if result.isIntact {
+            Text(.archiveTestNoErrorsFound)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        } else {
+            // ponytail: the first 20 names, the line shows fewer anyway
+            let names = result.damagedEntries.isEmpty ? [job.archiveName] : result.damagedEntries
+            let list = names.prefix(20).joined(separator: ", ") + (names.count > 20 ? ", …" : "")
+            Text(.archiveTestDamaged(list))
+                .font(.caption)
+                .foregroundStyle(.red)
+                .lineLimit(1)
+                .truncationMode(.tail)
+        }
+    }
 
     private var typeBadge: some View {
         Text(verbatim: String((job.archiveName as NSString).pathExtension.uppercased().prefix(4)))

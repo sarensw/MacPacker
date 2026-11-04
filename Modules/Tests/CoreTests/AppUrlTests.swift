@@ -21,7 +21,7 @@ extension AllCoreTests {
         /// background, and Finder keeps the focus. The app used to come to
         /// the front for every action and hand the focus back when it was
         /// done (#279).
-        @Test(arguments: [AppUrlAction.extractHere, .extractToFolder, .compress, .compressForWindows,
+        @Test(arguments: [AppUrlAction.extractHere, .extractToFolder, .test, .compress, .compressForWindows,
                           .compressEach, .compressContents])
         func extractingAndCompressingLeaveTheAppInTheBackground(action: AppUrlAction) {
             #expect(!action.bringsAppToFront)
@@ -191,7 +191,7 @@ extension AllCoreTests {
             #expect(AppUrlAction.extractTo.honorsSmartExtraction)
 
             // nothing that does not extract gets a say either
-            for action in [AppUrlAction.open, .compress, .compressForWindows, .compressEach, .compressContents,
+            for action in [AppUrlAction.open, .test, .compress, .compressForWindows, .compressEach, .compressContents,
                            .addToArchive] {
                 #expect(!action.honorsSmartExtraction, "\(action) does not extract")
             }

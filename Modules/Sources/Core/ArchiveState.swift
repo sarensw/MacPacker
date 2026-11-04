@@ -1891,6 +1891,58 @@ extension ArchiveState {
         }
     }
     
+    //
+    // MARK: Test
+    //
+
+    /// Tests the archive at `url`: every entry has to decompress and match its
+    /// checksum, and nothing is written. The File menu tests the window's own
+    /// archive, Finder's "Test Archive" a file no window has open — it is never
+    /// listed, so a compound is not decompressed to disk first. The verdict goes
+    /// to the progress center, and stays there until the window showing it is
+    /// closed.
+    @discardableResult
+    public func test(_ url: URL) -> Task<Void, Never> {
+        let jobId = progressCenter.begin(
+            kind: .test,
+            archiveName: (url == self.url ? name : nil) ?? url.lastPathComponent,
+            destination: nil,
+            itemCount: 0,
+            totalBytes: nil
+        )
+        let loader = ArchiveLoader(
+            archiveTypeDetector: archiveTypeDetector,
+            archiveEngineSelector: effectiveEngineSelector,
+            passwordResolver: makePasswordResolver(),
+            folderAccessResolver: makeFolderAccessResolver()
+        )
+        let cancelFlag = ExtractionCancelFlag()
+        let progress = makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
+        let task = Task {
+            do {
+                let result = try await loader.test(url: url, onProgress: progress)
+                log.info("Archive tested", context: [
+                    "file": url.lastPathComponent,
+                    "damagedEntries": "\(result.damagedEntries.count)",
+                    "archiveDamaged": "\(result.isArchiveDamaged)"
+                ])
+                progressCenter.finish(jobId, testedAs: result)
+            } catch is CancellationError {
+                progressCenter.finish(jobId, .cancelled)
+            } catch ArchiveError.passwordCancelled {
+                progressCenter.finish(jobId, passwordCancelledOutcome())
+            } catch {
+                log.error("Archive test failed", context: ["file": url.lastPathComponent, "error": error.localizedDescription])
+                progressCenter.finish(jobId, .failed(error.localizedDescription))
+            }
+        }
+        progressCenter.setOnCancel(jobId) {
+            cancelFlag.cancel()
+            task.cancel()
+        }
+        return task
+    }
+
     /// Updates the quick look preview URL. The previewer we're using is the default systems
     /// preview that is called Quick Look and that can be reached via Space in Finder
     ///

@@ -218,6 +218,7 @@ class FinderSync: FIFinderSync {
         case .extractHere: #selector(extractHere(_:))
         case .extractToFolder: #selector(extractToFolder(_:))
         case .extractToChosenFolder: #selector(extractToChosenFolder(_:))
+        case .testArchive: #selector(testArchive(_:))
         case .addToArchive: #selector(addToArchive(_:))
         case .compressToZip: #selector(compressToZip(_:))
         case .compressToDatedZip: #selector(compressToDatedZip(_:))
@@ -260,6 +261,9 @@ class FinderSync: FIFinderSync {
 
         case .extractToChosenFolder:
             return String(localized: .settingsExtractToChosenFolder)
+
+        case .testArchive:
+            return String(localized: .commonTestArchive)
 
         case .compressToZip, .compressToDatedZip, .compressTo7z:
             let ext = item.archiveExtension ?? "zip"
@@ -390,6 +394,11 @@ class FinderSync: FIFinderSync {
     @objc func extractToChosenFolder(_ sender: Any?) {
         log.notice("Finder menu: Extract to…")
         communicateWithMainApp(item: .extractToChosenFolder)
+    }
+
+    @objc func testArchive(_ sender: Any?) {
+        log.notice("Finder menu: Test Archive")
+        communicateWithMainApp(item: .testArchive)
     }
 
     @objc func compressToDatedZip(_ sender: Any?) {

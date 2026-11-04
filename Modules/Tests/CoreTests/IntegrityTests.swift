@@ -1,0 +1,150 @@
+//
+//  IntegrityTests.swift
+//  Modules
+//
+//  Testing an archive (#232): every entry has to decompress and match its
+//  checksum, and nothing is written. A test that missed damage would be worse
+//  than no test, so every way an archive can be damaged that the fixtures in
+//  `damaged/` hold has to come out as damaged, naming what is — and every
+//  archive that is whole has to come out as whole.
+//
+
+import Foundation
+import Testing
+@testable import Core
+
+extension AllCoreTests {
+    @MainActor struct IntegrityTests {
+
+        /// `folder/name` in the test bundle.
+        private func fixture(_ path: String) -> URL {
+            let parts = path.split(separator: "/", maxSplits: 1)
+            return Bundle.module.url(forResource: String(parts[0]), withExtension: nil)!
+                .appendingPathComponent(String(parts[1]))
+        }
+
+        /// Tests `url` the way the File menu and Finder's "Test Archive" do, and
+        /// hands back the job it ended in.
+        private func test(
+            _ url: URL,
+            engines: any ArchiveEngineSelectorProtocol = ArchiveEngineSelector7zip(),
+            password: String? = nil
+        ) async throws -> ExtractionJob {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: engines)
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+            // Unsandboxed tests can already read the folder, so grant unconditionally.
+            state.folderAccessProvider = { _ in true }
+            state.passwordProvider = { _ in password }
+            await state.test(url).value
+            return try #require(center.jobs.first)
+        }
+
+        /// Every archive that is whole tests as whole, whatever its format. The
+        /// compounds are tested as the compressed file around the tar.
+        @Test(arguments: [
+            "7z", "arj", "ar", "cab", "cpio", "lzh", "rar", "tar", "xar", "zip", "jar",
+            "rpm", "exe", "dmg", "fat", "iso", "qcow2", "squashfs", "vdi", "vhd", "vhdx",
+            "vmdk", "wim", "tar.bz2", "tar.gz", "tar.lzma", "tar.xz", "tar.Z", "tgz", "txz",
+        ])
+        func aWholeArchiveTestsWhole(ext: String) async throws {
+            let job = try await test(fixture("defaultArchives/defaultArchive.\(ext)"))
+
+            #expect(job.kind == .test)
+            #expect(job.state == .done)
+            #expect(job.testResult == ArchiveTestResult(damagedEntries: [], isArchiveDamaged: false))
+        }
+
+        /// A Nextcloud download warns of a headers error, and holds nothing that
+        /// is wrong: 7-Zip tests it OK, and a warning is not damage.
+        @Test func aWarningIsNotDamage() async throws {
+            let job = try await test(fixture("zip/zipstreamer64.zip"))
+
+            #expect(job.state == .done)
+            #expect(job.testResult?.isIntact == true)
+        }
+
+        /// What is damaged is named, and only that: an archive with one damaged
+        /// entry has others that are fine. An archive cut short says so itself,
+        /// also where every entry that is left reads.
+        @Test(arguments: [
+            ("damaged/crc.zip", ["folder/README.md"], false),
+            ("damaged/crc.7z", ["folder/NestedArchive.zip"], false),
+            ("damaged/crc.tar.gz", ["crc.tar"], false),
+            ("damaged/truncated.zip", ["folder/NestedArchive.zip"], true),
+            ("damaged/noCentralDirectory.zip", [], true),
+        ])
+        func damageIsFoundAndNamed(arg: (String, [String], Bool)) async throws {
+            let job = try await test(fixture(arg.0))
+
+            #expect(job.testResult == ArchiveTestResult(damagedEntries: arg.1, isArchiveDamaged: arg.2))
+            guard case .failed = job.state else {
+                Issue.record("\(arg.0) ended \(job.state), not failed")
+                return
+            }
+            #expect(job.hasOutcomeToShow)
+        }
+
+        /// A compound is tested as the compressed file it is, and nothing is
+        /// decompressed to disk on the way: opening it would write the tar to a
+        /// temp folder first.
+        @Test func aCompoundIsTestedWithoutWritingTheTar() async throws {
+            let temp = try #require(FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first)
+                .appendingPathComponent("ta", isDirectory: true)
+            let before = (try? FileManager.default.contentsOfDirectory(atPath: temp.path)) ?? []
+
+            let job = try await test(fixture("defaultArchives/defaultArchive.tar.gz"))
+
+            #expect(job.state == .done)
+            #expect(((try? FileManager.default.contentsOfDirectory(atPath: temp.path)) ?? []) == before)
+        }
+
+        /// Any part of a split set tests the whole set, through its first volume.
+        @Test(arguments: ["zip/split_pk.zip", "zip/split_7zz.zip.003"])
+        func anyPartOfASplitTestsTheWholeSet(part: String) async throws {
+            let job = try await test(fixture(part))
+
+            #expect(job.state == .done)
+            #expect(job.testResult?.isIntact == true)
+        }
+
+        /// An encrypted archive is decrypted to be tested, with the password it
+        /// is asked for; the name of an encrypted header too.
+        @Test(arguments: ["password/zip_aes256.zip", "password/7z_aes256.7z", "password/7z_encrypted_header.7z"])
+        func anEncryptedArchiveTestsWithItsPassword(path: String) async throws {
+            let job = try await test(fixture(path), password: "password")
+
+            #expect(job.state == .done)
+            #expect(job.testResult?.isIntact == true)
+        }
+
+        /// Without the password there is nothing to decode, so there is no
+        /// verdict either: a cancelled prompt is a cancelled test.
+        @Test func aCancelledPasswordPromptCancelsTheTest() async throws {
+            let job = try await test(fixture("password/7z_aes256.7z"), password: nil)
+
+            #expect(job.state == .cancelled)
+            #expect(job.testResult == nil)
+            #expect(!job.hasOutcomeToShow)
+        }
+
+        /// The progress callback stops a test as it stops an extraction.
+        @Test func aTestStopsWhenProgressSaysSo() async throws {
+            await #expect(throws: CancellationError.self) {
+                _ = try await Archive7ZipEngine().test(
+                    fixture("defaultArchives/defaultArchive.zip"),
+                    passwordResolver: { _ in nil },
+                    onProgress: { _, _ in false })
+            }
+        }
+
+        /// XADMaster has no test of its own, and its reads raise exceptions
+        /// Swift cannot catch: an archive XAD reads says so instead of a verdict.
+        @Test func anEngineThatCannotTestSaysSo() async throws {
+            let job = try await test(fixture("defaultArchives/defaultArchive.zip"), engines: ArchiveEngineSelectorXad())
+
+            #expect(job.state == .failed(ArchiveError.testUnsupported.localizedDescription))
+            #expect(job.testResult == nil)
+        }
+    }
+}

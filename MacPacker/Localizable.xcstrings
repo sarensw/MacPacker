@@ -6731,6 +6731,30 @@
         }
       }
     },
+    "archiveTestDamaged": {
+      "comment": "Progress window, under the name of an archive that was tested and is damaged. The placeholder lists the damaged files inside it, separated by commas, or names the archive itself when that is what is damaged, cut short for example.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Damaged: %@"
+          }
+        }
+      }
+    },
+    "archiveTestNoErrorsFound": {
+      "comment": "Progress window, under the name of an archive that was tested: every file in it decompresses and matches its checksum.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No errors found"
+          }
+        }
+      }
+    },
     "columnDateModified": {
       "comment": "Column that shows the date the file was modified",
       "extractionState": "manual",
@@ -15374,6 +15398,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Terms & Conditions"
+          }
+        }
+      }
+    },
+    "commonTestArchive": {
+      "comment": "Menu entry, in Finder's context menu, the File menu and the list of context menu entries in Settings: checks that every file in the archive decompresses and matches its checksum, without extracting anything.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test Archive"
+          }
+        }
+      }
+    },
+    "commonTesting": {
+      "comment": "Name of the progress window while it shows an archive being tested. The title bar shows no text; VoiceOver and Mission Control read it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Testing"
           }
         }
       }
