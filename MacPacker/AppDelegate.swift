@@ -90,6 +90,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
         // first check if this is an app url, and handle it accordingly
         let appUrl: AppUrl? = urls.first.flatMap { UrlParser().parse(appUrl: $0) }
+        // Asked whatever comes first: a Finder action replayed after a file
+        // still uses up the note of who sent it (#286).
+        let fromFinderExtension = FinderRequestSenders.sentByFinderExtension(firstOf: urls)
         // With "Extract archives on open" on, the archives among what is to
         // be opened are extracted next to themselves instead, as Extract Here
         // does (#280). What MacPacker cannot open still gets its window.
@@ -114,7 +117,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             // app's urls. Only what the Finder extension sent is carried out:
             // the rest would read and write under the user's folder grants
             // without a question (#286).
-            guard FinderRequestSenders.sentByFinderExtension(firstOf: urls) else {
+            guard fromFinderExtension else {
                 log.error("Refused Finder action '\(appUrl.action.rawValue)': not sent by MacPacker's Finder extension")
                 Task {
                     if finderLaunchIsOver {

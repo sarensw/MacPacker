@@ -125,6 +125,17 @@ extension AllCoreTests {
             #expect(!senders.sentByTrustedSender(dropped))
         }
 
+        /// A file opened while the app launches can come first. Nobody noted
+        /// it, and the Finder action after it still uses up its note.
+        @Test func aFinderActionAfterAFileUsesUpItsNote() throws {
+            let senders = TrustedSenders(trusting: [try ownRequirement()])
+            senders.note(url, sentBy: ownAuditToken())
+            let request = try #require(URL(string: url))
+
+            #expect(!senders.sentByTrustedSender(firstOf: [URL(fileURLWithPath: "/Users/me/Downloads/photos.zip"), request]))
+            #expect(!senders.sentByTrustedSender(request))
+        }
+
         /// Any one of the requirements will do.
         @Test func aSenderMeetingOneOfTheRequirementsIsTrusted() throws {
             let senders = TrustedSenders(trusting: [try otherRequirement(), try ownRequirement()])
