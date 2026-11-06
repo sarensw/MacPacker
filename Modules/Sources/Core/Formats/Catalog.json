@@ -559,6 +559,20 @@
       "engines": [
         { "id": "xad", "capabilities": ["listContents", "extractFiles"], "default": true }
       ]
+    },
+    {
+      "id": "zstd",
+      "name": "Zstandard File",
+      "kind": "compression",
+      "uti": ["com.facebook.zst-archive"],
+      "extensions": ["zst"],
+      "mime": ["application/zstd"],
+      "rules": [
+        { "policy": "any", "tests": [{"type": "signature", "bytes": "28 B5 2F FD", "offset": 0}] }
+      ],
+      "engines": [
+        { "id": "7zip", "capabilities": ["listContents", "extractFiles"], "default": true }
+      ]
     }
   ],
   "compounds": [
@@ -603,6 +617,13 @@
       "uti": ["public.z-archive"],
       "extensions": ["taz","tar.z"],
       "components": ["tar","z"]
+    },
+    {
+      "id": "tar.zst",
+      "name": "Zstandard Tar Archive",
+      "uti": ["com.facebook.tar-zst-archive"],
+      "extensions": ["tzst", "tar.zst"],
+      "components": ["tar","zstd"]
     }
   ],
   "splits": [
