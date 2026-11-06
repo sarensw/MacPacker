@@ -47,11 +47,16 @@ struct ContentView: View {
                 }
             }
             
+            // the window's own extractions, rather than in another window
+            if let windowID = archiveState.windowID {
+                WindowExtractionProgressView(center: archiveState.progressCenter, window: windowID)
+            }
+
             Divider()
                 .frame(height: 1)
                 .background(.quinary)
             
-            StatusBarView()
+            StatusBarView(progressCenter: archiveState.progressCenter)
         }
         .toolbar {
             ArchiveContentToolbarView(
@@ -81,7 +86,7 @@ struct ContentView: View {
         // A failed open ends in reset(), so the window falls back to its empty
         // state: without this the user's drag or double-click just appears to do
         // nothing. Extraction failures are deliberately not shown here — the
-        // progress window already reports those.
+        // window's progress strip, or the progress window, already reports those.
         .alert(
             .errorOpenArchive,
             isPresented: Binding(

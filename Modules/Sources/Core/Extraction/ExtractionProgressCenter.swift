@@ -49,6 +49,10 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public let kind: Kind
     public let archiveName: String
     public let destination: URL?
+    /// The archive window that started the job and shows it itself, at its
+    /// foot, rather than in the progress window — `nil` for a job no window
+    /// started (Finder's actions). See `ExtractionProgressCenter.windowOpened`.
+    public let shownIn: UUID?
     public let itemCount: Int
     /// Expected total uncompressed bytes from the archive listing. `nil`
     /// means unknown — show an indeterminate progress bar.
@@ -165,13 +169,19 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
 }
 
 /// Global registry of running jobs. All archive windows (and the window-less
-/// Finder-extension flows) report here so one progress window can show
-/// everything that is being extracted, or compressed from Finder, right now.
+/// Finder-extension flows) report here, so that the app knows everything that
+/// is being extracted, or compressed from Finder, right now — to warn before it
+/// quits, for one. Where a job is seen depends on who started it: an archive
+/// window shows its own at its foot while it is open, and the progress window
+/// shows everything else (`windowlessJobs`).
 @MainActor
 public final class ExtractionProgressCenter: ObservableObject {
     public static let shared = ExtractionProgressCenter()
 
     @Published public private(set) var jobs: [ExtractionJob] = []
+    /// The archive windows open now that show their own jobs, by the id their
+    /// jobs carry in `shownIn`.
+    @Published public private(set) var openWindows: Set<UUID> = []
 
     private var cancelHandlers: [UUID: () -> Void] = [:]
     private var actionsUnderWay = 0
@@ -180,6 +190,30 @@ public final class ExtractionProgressCenter: ObservableObject {
 
     public var hasActiveJobs: Bool {
         jobs.contains { !$0.isFinished }
+    }
+
+    /// What the progress window shows: every job but those an open archive
+    /// window shows itself. A job whose window has closed is back among them.
+    public var windowlessJobs: [ExtractionJob] {
+        jobs.filter { job in job.shownIn.map { !openWindows.contains($0) } ?? true }
+    }
+
+    /// The jobs the archive window `window` shows itself.
+    public func jobs(shownIn window: UUID) -> [ExtractionJob] {
+        jobs.filter { $0.shownIn == window }
+    }
+
+    /// An archive window that shows its own jobs has opened.
+    public func windowOpened(_ window: UUID) {
+        openWindows.insert(window)
+    }
+
+    /// That window has closed. Its jobs still running carry on, and the
+    /// progress window takes them over; those it had finished go with it —
+    /// they were seen where they ran.
+    public func windowClosed(_ window: UUID) {
+        jobs.removeAll { $0.shownIn == window && $0.isFinished }
+        openWindows.remove(window)
     }
 
     /// What the running jobs are doing, for the wording around the window:
@@ -221,6 +255,7 @@ public final class ExtractionProgressCenter: ObservableObject {
         kind: ExtractionJob.Kind = .extraction,
         archiveName: String,
         destination: URL?,
+        shownIn window: UUID? = nil,
         itemCount: Int,
         totalBytes: Int64?
     ) -> UUID {
@@ -229,6 +264,7 @@ public final class ExtractionProgressCenter: ObservableObject {
             kind: kind,
             archiveName: archiveName,
             destination: destination,
+            shownIn: window,
             itemCount: itemCount,
             totalBytes: totalBytes,
             startedAt: Date()
@@ -339,8 +375,17 @@ public final class ExtractionProgressCenter: ObservableObject {
         }
     }
 
-    /// Drops all finished jobs (the progress window calls this when it closes).
+    /// Drops the finished jobs the progress window shows (it calls this when it
+    /// closes). Those an open archive window shows stay: that window lets them
+    /// go itself (`dismiss`).
     public func clearFinished() {
-        jobs.removeAll { $0.isFinished }
+        let windowless = Set(windowlessJobs.map(\.id))
+        jobs.removeAll { $0.isFinished && windowless.contains($0.id) }
+    }
+
+    /// Drops one finished job: an archive window is done showing it. A job
+    /// still running stays.
+    public func dismiss(_ id: UUID) {
+        jobs.removeAll { $0.id == id && $0.isFinished }
     }
 }

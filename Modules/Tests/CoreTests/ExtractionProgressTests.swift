@@ -397,6 +397,77 @@ extension AllCoreTests {
         }
     }
 
+    // MARK: - Where a job is seen
+
+    /// An archive window shows its own jobs at its foot while it is open; the
+    /// progress window shows everything else — Finder's jobs, and a window's
+    /// once that window has closed.
+    @MainActor struct ExtractionJobWindowTests {
+
+        @Test func aWindowShowsItsOwnJobsAndTheProgressWindowTheRest() {
+            let center = ExtractionProgressCenter()
+            let window = UUID()
+            center.windowOpened(window)
+            let own = center.begin(archiveName: "a.zip", destination: nil, shownIn: window, itemCount: 1, totalBytes: 10)
+            let finders = center.begin(archiveName: "b.zip", destination: nil, itemCount: 1, totalBytes: 10)
+
+            #expect(center.jobs(shownIn: window).map(\.id) == [own])
+            #expect(center.windowlessJobs.map(\.id) == [finders])
+            // and the app still knows of both, to warn before it quits
+            #expect(center.jobs.count == 2)
+        }
+
+        @Test func aJobStillRunningWhenItsWindowClosesGoesToTheProgressWindow() {
+            let center = ExtractionProgressCenter()
+            let window = UUID()
+            center.windowOpened(window)
+            let running = center.begin(archiveName: "a.zip", destination: nil, shownIn: window, itemCount: 1, totalBytes: 10)
+            let failed = center.begin(archiveName: "b.zip", destination: nil, shownIn: window, itemCount: 1, totalBytes: 10)
+            center.finish(failed, .failed("CRC error"))
+
+            center.windowClosed(window)
+
+            // the failed one was seen where it ran, and goes with the window
+            #expect(center.jobs.map(\.id) == [running])
+            #expect(center.windowlessJobs.map(\.id) == [running])
+        }
+
+        /// A window that never said it was open shows nothing: its jobs are
+        /// the progress window's.
+        @Test func aJobOfAWindowNotOpenIsTheProgressWindows() {
+            let center = ExtractionProgressCenter()
+            let id = center.begin(archiveName: "a.zip", destination: nil, shownIn: UUID(), itemCount: 1, totalBytes: 10)
+            #expect(center.windowlessJobs.map(\.id) == [id])
+        }
+
+        /// The progress window clears what it showed when it closes; a failed
+        /// job an open window shows stays until that window puts it away.
+        @Test func clearingTheProgressWindowLeavesTheWindowsJobs() {
+            let center = ExtractionProgressCenter()
+            let window = UUID()
+            center.windowOpened(window)
+            let own = center.begin(archiveName: "a.zip", destination: nil, shownIn: window, itemCount: 1, totalBytes: 10)
+            let finders = center.begin(archiveName: "b.zip", destination: nil, itemCount: 1, totalBytes: 10)
+            center.finish(own, .failed("CRC error"))
+            center.finish(finders, .done)
+
+            center.clearFinished()
+            #expect(center.jobs.map(\.id) == [own])
+
+            center.dismiss(own)
+            #expect(center.jobs.isEmpty)
+        }
+
+        @Test func aRunningJobIsNotDismissed() {
+            let center = ExtractionProgressCenter()
+            let window = UUID()
+            center.windowOpened(window)
+            let id = center.begin(archiveName: "a.zip", destination: nil, shownIn: window, itemCount: 1, totalBytes: 10)
+            center.dismiss(id)
+            #expect(center.jobs.map(\.id) == [id])
+        }
+    }
+
     // MARK: - ArchiveState extraction reports jobs
 
     @MainActor struct ArchiveStateExtractProgressTests {
@@ -489,6 +560,34 @@ extension AllCoreTests {
             #expect(center.jobs.count == 1)
             #expect(center.jobs[0].state == .done)
             #expect(center.hasActiveJobs == false)
+        }
+
+        /// A window's state marks its extractions as the window's own; one no
+        /// window shows — Finder's — leaves them to the progress window.
+        @Test(arguments: [true, false])
+        func extractionsCarryTheirWindow(inWindow: Bool) async throws {
+            let state = try await openedState()
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+            let window = inWindow ? UUID() : nil
+            state.windowID = window
+
+            let dest = try makeDest()
+            defer { try? FileManager.default.removeItem(at: dest) }
+            let fileItem = state.entries.values.first(where: { $0.type == .file && $0.uncompressedSize > 0 })!
+
+            for run in [{ state.extract(items: [fileItem], to: dest, smart: false) },
+                        { state.extract(to: dest, smart: false) }] {
+                await withCheckedContinuation { continuation in
+                    state.onStatusChange = { status in
+                        if status == .done { continuation.resume() }
+                    }
+                    run()
+                }
+            }
+
+            #expect(center.jobs.count == 2)
+            #expect(center.jobs.allSatisfy { $0.shownIn == window })
         }
     }
 }
