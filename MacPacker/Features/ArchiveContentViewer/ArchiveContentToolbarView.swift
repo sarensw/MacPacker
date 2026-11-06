@@ -19,6 +19,7 @@ extension NSImage {
 struct ArchiveContentToolbarView: ToolbarContent {
     @EnvironmentObject private var appState: AppState
     @Environment(\.openQuickCompressWindow) private var openQuickCompressWindow
+    @Environment(\.openNewTab) private var openNewTab
     @Environment(\.openURL) private var openURL
     @Environment(\.openSettings) private var openSettings
     @State private var isExportingItem: Bool = false
@@ -157,6 +158,17 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
             
             Spacer()
+
+            Button {
+                openNewTab()
+            } label: {
+                Label {
+                    Text(.commonNewTab)
+                } icon: {
+                    Image(systemName: "plus.square.on.square")
+                }
+            }
+            .help(.archiveNewTabHint)
             
             Menu {
                 Button {

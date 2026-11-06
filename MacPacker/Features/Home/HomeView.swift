@@ -31,6 +31,11 @@ enum HomeLayout {
     static let sectionHeaderHeight: CGFloat = 22
 }
 
+extension EnvironmentValues {
+    /// Whether the window shows its tab bar (see `TabBarPresence`).
+    @Entry var windowShowsTabBar = false
+}
+
 struct HomeView: View {
     @EnvironmentObject private var state: ArchiveState
     @EnvironmentObject private var compressor: DropCompressor
@@ -56,6 +61,20 @@ struct HomeView: View {
 
     private let maxRecents = 4
 
+    @Environment(\.windowShowsTabBar) private var windowShowsTabBar
+
+    /// While the window shows its tab bar, on macOS 26 and later, the page
+    /// stops this far below the toolbar and tab bar. Running under them, it
+    /// brings out the title bar's background, and over that background the tab
+    /// bar leaves stale separators behind each time a tab is added or closed
+    /// (seen on macOS 27). Without a tab bar it runs under them as before, and
+    /// the bar lights up when the pointer enters it. The page's own top padding
+    /// gives the point back, so nothing moves.
+    private var clearanceBelowBars: CGFloat {
+        if #available(macOS 26, *), windowShowsTabBar { return 1 }
+        return 0
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 36) {
@@ -78,10 +97,11 @@ struct HomeView: View {
             // room to breathe, but the whole page still has to clear a 500pt window
             // (less toolbar, tab bar and status bar) without scrolling
             .padding(.horizontal, 32)
-            .padding(.top, 24)
+            .padding(.top, 24 - clearanceBelowBars)
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .padding(.top, clearanceBelowBars)
         .onAppear {
             recents = Array(RecentArchives.urls.prefix(maxRecents))
             #if DEBUG
