@@ -153,6 +153,34 @@
                 "hi": "दूसरे ऐप Finder क्रियाएँ शुरू कर सकते हैं"
             },
             "issues": ["286"]
+          },
+          {
+            "type": "core",
+            "title": {
+                "en": "Update 7-Zip to v26.06",
+                "zh-Hans": "更新 7-Zip 至 v26.06",
+                "fr": "Mise à jour de 7-Zip vers la version 26.06",
+                "de": "7-Zip auf Version 26.06 aktualisiert",
+                "it": "Aggiornamento di 7-Zip alla versione 26.06",
+                "ja": "7-Zip を v26.06 に更新",
+                "fa": "به‌روزرسانی 7-Zip به نسخه 26.06",
+                "pl": "Aktualizacja 7-Zip do wersji 26.06",
+                "pt-BR": "Atualização do 7-Zip para a versão 26.06",
+                "ru": "Обновление 7-Zip до версии 26.06",
+                "uk": "Оновлення 7-Zip до версії 26.06",
+                "es-MX": "Actualización de 7-Zip a la versión 26.06",
+                "ko": "7-Zip을 v26.06으로 업데이트",
+                "nl": "7-Zip bijgewerkt naar v26.06",
+                "tr": "7-Zip v26.06'ya güncellendi",
+                "vi": "Cập nhật 7-Zip lên v26.06",
+                "ar": "تحديث 7-Zip إلى الإصدار 26.06",
+                "ca": "Actualització de 7-Zip a la versió 26.06",
+                "el": "Ενημέρωση του 7-Zip στην έκδοση 26.06",
+                "nb": "7-Zip oppdatert til versjon 26.06",
+                "zh-TW": "7-Zip 更新至 26.06 版",
+                "hi": "7-Zip को संस्करण 26.06 में अपडेट किया गया"
+            },
+            "issues": ["398"]
           }
         ]
       },
