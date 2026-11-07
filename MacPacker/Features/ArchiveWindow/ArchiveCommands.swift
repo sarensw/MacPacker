@@ -104,11 +104,7 @@ private struct FilenameEncodingMenu: View {
                 get: { front.chosen },
                 set: { front.read(as: $0) }
             )) {
-                Text(
-                    "Detect Automatically",
-                    comment: "File ▸ Filename Encoding, first entry: the app works out how the file names inside the archive are written, as opposed to the encodings listed below it."
-                )
-                .tag(ArchiveNameEncoding?.none)
+                Text(.archiveFilenameEncodingDetectAutomatically).tag(ArchiveNameEncoding?.none)
                 Divider()
                 ForEach(Self.encodings) { encoding in
                     Text(verbatim: encoding.localizedName).tag(ArchiveNameEncoding?.some(encoding))
@@ -118,10 +114,7 @@ private struct FilenameEncodingMenu: View {
             }
             .pickerStyle(.inline)
         } label: {
-            Text(
-                "Filename Encoding",
-                comment: "File menu, submenu: how the file names inside the open archive are read. For archives from another system whose names show up garbled."
-            )
+            Text(.archiveFilenameEncoding)
         }
         .disabled(!front.canChoose)
     }
