@@ -96,11 +96,46 @@ class FinderSync: FIFinderSync {
     }
     
     override var toolbarItemImage: NSImage {
-        // Finder renders this at the asset's own logical size and ignores anything
-        // assigned to `size`, so the toolbar metrics are baked into the imageset:
-        // a 24 pt canvas with the artwork inset to 20 pt, matching what Finder's
-        // built-in items and other archivers ship.
-        NSImage(named: "FinderToolbarIcon") ?? NSImage()
+        let icon = FinderMenuSettings.toolbarIcon()
+        log.info("Toolbar icon: \(icon.rawValue)")
+        return switch icon {
+        case .colored:
+            // Finder renders this at the asset's own logical size and ignores anything
+            // assigned to `size`, so the toolbar metrics are baked into the imageset:
+            // a 24 pt canvas with the artwork inset to 20 pt, matching what Finder's
+            // built-in items and other archivers ship.
+            NSImage(named: "FinderToolbarIcon") ?? NSImage()
+        case .subtle:
+            // The menu bar glyph on the same canvas, 18 pt rather than the
+            // colored icon's 20 pt, picked by eye. Its own artwork, as scaling
+            // the menu bar one up would thicken its lines past Finder's
+            // buttons. A template, which Finder tints.
+            NSImage(named: "FinderToolbarSubtleIcon") ?? NSImage()
+        }
+    }
+
+    /// The image of the "MacPacker" context menu entry: the menu bar glyph,
+    /// 13 pt tall in the 16 pt Finder sizes it to. Finder takes it as plain
+    /// image data, so a template would stay black in a dark menu; the glyph is
+    /// painted in the menu's text color instead. Finder asks on a thread that
+    /// can keep the appearance of an earlier request, so light or dark comes
+    /// from the system setting itself.
+    private var menuItemImage: NSImage {
+        let isDark = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark"
+        let appearance = NSAppearance(named: isDark ? .darkAqua : .aqua)
+        let artwork = NSImage(named: "MenuBarIcon")
+        return NSImage(size: NSSize(width: 16, height: 16), flipped: false) { _ in
+            guard let artwork, let appearance else { return false }
+            let height: CGFloat = 13
+            let width = height * artwork.size.width / artwork.size.height
+            let rect = NSRect(x: (16 - width) / 2, y: (16 - height) / 2, width: width, height: height)
+            artwork.draw(in: rect)
+            appearance.performAsCurrentDrawingAppearance {
+                NSColor.labelColor.set()
+                rect.fill(using: .sourceAtop)
+            }
+            return true
+        }
     }
     
     /// Whether the URL points at a directory. Uses the file system's
@@ -170,6 +205,7 @@ class FinderSync: FIFinderSync {
 
         let menu = NSMenu(title: "")
         let macPackerItem = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+        macPackerItem.image = menuItemImage
         menu.setSubmenu(macPackerSubmenu, for: macPackerItem)
         menu.addItem(macPackerItem)
 

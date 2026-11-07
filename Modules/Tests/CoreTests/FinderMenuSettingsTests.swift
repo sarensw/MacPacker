@@ -41,6 +41,14 @@ extension AllCoreTests {
                 #expect(FinderMenuSettings.isEnabled(item, in: defaults) == item.isEnabledByDefault)
             }
             #expect(FinderMenuSettings.isCascaded(in: defaults))
+            #expect(FinderMenuSettings.toolbarIcon(in: defaults) == .colored)
+        }
+
+        @Test("An unknown toolbar icon value falls back to the colored icon")
+        func unknownToolbarIconIsColored() {
+            let defaults = scratchDefaults()
+            defaults.set("rainbow", forKey: FinderMenuSettings.toolbarIconKey)
+            #expect(FinderMenuSettings.toolbarIcon(in: defaults) == .colored)
         }
 
         @Test("The default menu is the lean set")
@@ -57,10 +65,12 @@ extension AllCoreTests {
             defaults.set(false, forKey: FinderMenuSettings.key(for: .extractHere))
             defaults.set(true, forKey: FinderMenuSettings.key(for: .compressTo7z))
             defaults.set(false, forKey: FinderMenuSettings.cascadedKey)
+            defaults.set(ToolbarIcon.subtle.rawValue, forKey: FinderMenuSettings.toolbarIconKey)
 
             #expect(!FinderMenuSettings.isEnabled(.extractHere, in: defaults))
             #expect(FinderMenuSettings.isEnabled(.compressTo7z, in: defaults))
             #expect(!FinderMenuSettings.isCascaded(in: defaults))
+            #expect(FinderMenuSettings.toolbarIcon(in: defaults) == .subtle)
         }
 
         @Test("A single folder gets the compress entries and its contents, no extract entries")

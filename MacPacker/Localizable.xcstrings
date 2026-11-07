@@ -23424,6 +23424,18 @@
         }
       }
     },
+    "settingsFinderToolbarIcon": {
+      "comment": "Settings label for the icon of the MacPacker button in Finder's toolbar",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder Toolbar Icon"
+          }
+        }
+      }
+    },
     "settingsFolderAccessHint": {
       "comment": "Explains, in the Permissions settings, why the app asks for folder access and what granting these two folders achieves",
       "extractionState": "manual",
@@ -26042,6 +26054,42 @@
           "stringUnit": {
             "state": "translated",
             "value": "Smart extraction"
+          }
+        }
+      }
+    },
+    "settingsToolbarIconColored": {
+      "comment": "Choice for the icon of the MacPacker button in Finder's toolbar: the colored app icon",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colored"
+          }
+        }
+      }
+    },
+    "settingsToolbarIconHint": {
+      "comment": "Hint under the Finder toolbar icon setting: Finder shows the newly chosen icon only once it has been relaunched, for example after logging in again",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies after Finder restarts."
+          }
+        }
+      }
+    },
+    "settingsToolbarIconSubtle": {
+      "comment": "Choice for the icon of the MacPacker button in Finder's toolbar: a one-color outline that matches Finder's own buttons",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtle"
           }
         }
       }
