@@ -68,6 +68,34 @@
             "issues": ["373"]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Subtle icon in Finder and the menu bar",
+                "zh-Hans": "Finder 和菜单栏中的简约图标",
+                "fr": "Icône discrète dans le Finder et la barre des menus",
+                "de": "Dezentes Symbol im Finder und in der Menüleiste",
+                "it": "Icona discreta nel Finder e nella barra dei menu",
+                "ja": "Finder とメニューバー用の控えめなアイコン",
+                "fa": "آیکون ساده در Finder و نوار منو",
+                "pl": "Dyskretna ikona w Finderze i na pasku menu",
+                "pt-BR": "Ícone discreto no Finder e na barra de menus",
+                "ru": "Неброский значок в Finder и в строке меню",
+                "uk": "Стриманий значок у Finder і на смузі меню",
+                "es-MX": "Ícono discreto en el Finder y la barra de menús",
+                "ko": "Finder 및 메뉴 막대용 은은한 아이콘",
+                "nl": "Subtiel symbool in de Finder en de menubalk",
+                "tr": "Finder ve menü çubuğu için sade simge",
+                "vi": "Biểu tượng tối giản cho Finder và thanh menu",
+                "ar": "أيقونة بسيطة في Finder وشريط القوائم",
+                "ca": "Icona discreta al Finder i a la barra de menús",
+                "el": "Διακριτικό εικονίδιο στο Finder και στη γραμμή μενού",
+                "nb": "Diskret ikon i Finder og menylinjen",
+                "zh-TW": "Finder 與選單列的簡約圖像",
+                "hi": "Finder और मेनू बार के लिए सादा आइकन"
+            },
+            "issues": ["311"]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MenuBarIcon.svg's glyph in the 3…21 box of a 24 pt toolbar canvas, line widths kept, not scaled. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3.55" y="3.55" width="16.9" height="16.9" rx="4.28" stroke-width="1.1"/>
+  <path d="M7.83 4.1 L10.86 11.52 M16.17 4.1 L13.14 11.52 M8.606 6 H10.346 M15.394 6 H13.654 M9.635 8.52 H10.835 M14.365 8.52 H13.165" stroke-width="1"/>
+  <path d="M10.44 12.24 H13.56 L14.1 16.2 L12.72 17.4 H11.28 L9.9 16.2 Z" stroke-width="1"/>
+  <path d="M12 17.4 V20.22" stroke-width="1"/>
+</svg>
