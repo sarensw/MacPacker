@@ -950,6 +950,73 @@
 	<string>$(APP_GROUP_ID)</string>
 	<key>MacPackerURLScheme</key>
 	<string>$(APP_URL_SCHEME)</string>
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Extract using $(INFOPLIST_KEY_CFBundleDisplayName)</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>extract</string>
+			<key>NSPortName</key>
+			<string>$(PRODUCT_NAME)</string>
+			<key>NSRequiredContext</key>
+			<dict>
+				<key>NSApplicationIdentifier</key>
+				<string>com.apple.finder</string>
+			</dict>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>NSShouldActivateForServiceRequest</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Compress using $(INFOPLIST_KEY_CFBundleDisplayName)</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>compress</string>
+			<key>NSPortName</key>
+			<string>$(PRODUCT_NAME)</string>
+			<key>NSRequiredContext</key>
+			<dict>
+				<key>NSApplicationIdentifier</key>
+				<string>com.apple.finder</string>
+			</dict>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.item</string>
+			</array>
+			<key>NSShouldActivateForServiceRequest</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Create archive with $(INFOPLIST_KEY_CFBundleDisplayName)</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>createArchive</string>
+			<key>NSPortName</key>
+			<string>$(PRODUCT_NAME)</string>
+			<key>NSRequiredContext</key>
+			<dict>
+				<key>NSApplicationIdentifier</key>
+				<string>com.apple.finder</string>
+			</dict>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.item</string>
+			</array>
+		</dict>
+	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

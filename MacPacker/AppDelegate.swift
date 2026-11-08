@@ -33,6 +33,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var dropCompressor: DropCompressor? = nil
     private var dropWindowController: DropWindowController? = nil
     private var pendingOpenURLs: [URL] = []
+    /// Finder's Services menu: MacPacker's menu where Finder shows no Finder
+    /// extension's, in iCloud Drive and other File Provider folders (#342).
+    private var finderServices: FinderServices? = nil
     /// What the app was launched for: it decides the launch windows, and
     /// whether the app quits again when a Finder action is done.
     private var launch = Launch()
@@ -128,42 +131,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 return
             }
             log.notice("Routing Finder app-url action '\(appUrl.action.rawValue)' for \(appUrl.files.count) file(s)")
-            var handler: AppUrlHandler?
-
-            // we will be here if this is a valid app url
-            // (url starting with app.macpacker:// scheme)
-            switch appUrl.action {
-            case .open:
-                handler = AppUrlOpenHandler()
-            case .extractHere:
-                handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .extractToFolder:
-                handler = AppUrlExtractToFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .compress:
-                handler = AppUrlCompressHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .addToArchive:
-                handler = AppUrlAddToArchiveHandler()
-            case .extractTo:
-                handler = AppUrlExtractToChosenFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .compressEach:
-                handler = AppUrlCompressEachHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .compressContents:
-                handler = AppUrlCompressContentsHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            }
-
-            guard let handler else {
-                log.error("No handler available for action '\(appUrl.action.rawValue)'")
-                return
-            }
-            guard let archiveWindowManager else {
-                log.error("Archive window manager not ready; dropping action '\(appUrl.action.rawValue)'")
-                return
-            }
-
-            // We have all the url info, start the handlers now.
-            run(handler, for: [appUrl], in: archiveWindowManager)
-
-            // no need to move further here as it was an app url
+            perform([appUrl])
             return
         }
 
@@ -178,6 +146,58 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         for url in urls where !archivesToExtract.contains(url) {
             log.notice("Open-with: opening \(url.lastPathComponent)")
             archiveWindowManager?.openArchiveWindow(for: url)
+        }
+    }
+
+    /// A service of Finder's Services menu, for what is selected there: the
+    /// requests of the Finder menu entry it stands in for. It is what the
+    /// launch was for, unless something else came first (#342).
+    private func performService(_ requests: [AppUrl]) {
+        log.notice("Services menu action '\(requests.first?.action.rawValue ?? "-")' for \(requests.flatMap(\.files).count) file(s)")
+        _ = launch.started(for: .finderExtension)
+        // Info.plist keeps AppKit from activating the app for these services
+        // (NSShouldActivateForServiceRequest), but that reaches only a running
+        // app: one launched for a service is activated as it launches. Finder
+        // takes the focus back before anything is shown. Asked of the system:
+        // `NSApp.isActive` can still be false here, with the app in front.
+        if let action = requests.first?.action, !action.bringsAppToFront, NSRunningApplication.current.isActive {
+            log.notice("Launched to the front for a service — handing the focus back to Finder")
+            _ = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.finder").first?.activate(options: [])
+        }
+        perform(requests)
+    }
+
+    /// Carries out a Finder action, all of whose requests ask for the same.
+    private func perform(_ requests: [AppUrl]) {
+        guard let action = requests.first?.action else {
+            log.error("Finder action without anything to act on")
+            return
+        }
+        guard let archiveWindowManager else {
+            log.error("Archive window manager not ready; dropping action '\(action.rawValue)'")
+            return
+        }
+        run(handler(for: action), for: requests, in: archiveWindowManager)
+    }
+
+    private func handler(for action: AppUrlAction) -> AppUrlHandler {
+        switch action {
+        case .open:
+            AppUrlOpenHandler()
+        case .extractHere:
+            AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .extractToFolder:
+            AppUrlExtractToFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .compress:
+            AppUrlCompressHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .addToArchive:
+            AppUrlAddToArchiveHandler()
+        case .extractTo:
+            AppUrlExtractToChosenFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .compressEach:
+            AppUrlCompressEachHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .compressContents:
+            AppUrlCompressContentsHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
         }
     }
 
@@ -230,6 +250,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         archiveWindowManager?.onFirstWindowOpened = { [weak self] in self?.startUpdateChecksIfInUse() }
         extractionProgressWindowController = ExtractionProgressWindowController(center: .shared)
 
+        // Once the window manager is there, which the services need. Finder
+        // sends the request of a service that launched the app after this.
+        let finderServices = FinderServices { [weak self] in self?.performService($0) }
+        self.finderServices = finderServices
+        NSApp.servicesProvider = finderServices
+
         // The window is cheap (the panel itself is built on first show); the menu
         // bar item installs itself only if the user switched it on.
         dropMenuBarItem = DropMenuBarItem(actions: .init(
@@ -264,12 +290,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // screen as it was (#279). That decides in `application(_:open:)`,
         // where it arrives, and it may still be on its way: AppKit hands it
         // over once it is done restoring windows, on one launch before this
-        // point and on the next after it. Should a launch bring nothing to
-        // open after all, it shows nothing either, until the app is opened:
-        // see `applicationShouldHandleReopen`.
+        // point and on the next after it. A service of the Services menu
+        // decides in `performService`, after this point (#342). Should a
+        // launch bring nothing to open after all, it shows nothing either,
+        // until the app is opened: see `applicationShouldHandleReopen`.
         let launchEvent = NSAppleEventManager.shared().currentAppleEvent
-        let startedAsApp = launchEvent?.eventClass == AEEventClass(kCoreEventClass)
-            && launchEvent?.eventID == AEEventID(kAEOpenApplication)
+        log.debug("Launch event", context: ["event": launchEvent.map { "\($0)" } ?? "none"])
+        let startedAsApp = Launch.isAppItself(launchedBy: launchEvent)
         let showsLaunchWindows: Bool
         if launchedToOpenSomething {
             showsLaunchWindows = launch.started(for: .launchParameters)
