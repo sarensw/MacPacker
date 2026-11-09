@@ -5,6 +5,7 @@
 //  Created by Claude on 12.10.26.
 //
 
+import CoreServices
 import Foundation
 
 /// What the app was launched for. It decides whether the launch shows the
@@ -29,9 +30,10 @@ public struct Launch: Sendable {
         /// drop on the Dock icon, `open` in Terminal. The first archive
         /// takes the launch window.
         case openWith
-        /// A request from the Finder extension, for an entry of its menu. Or
-        /// archives handed over to open while "Extract archives on open" is
-        /// on, which then go through its Extract Here (#280).
+        /// A request from the Finder extension, for an entry of its menu, or
+        /// from Finder's Services menu, which sends the same requests (#342).
+        /// Or archives handed over to open while "Extract archives on open"
+        /// is on, which then go through its Extract Here (#280).
         case finderExtension
     }
 
@@ -39,6 +41,21 @@ public struct Launch: Sendable {
     public private(set) var reason: Reason?
 
     public init() {}
+
+    /// Whether the app was launched as such, by `event`: the Apple event in
+    /// hand when it has finished launching. That is "open application", but
+    /// not when it notes a launch for the Services menu: the service's
+    /// request comes after it (#342). A launch to open a url or a file has no
+    /// event in hand by then.
+    public static func isAppItself(launchedBy event: NSAppleEventDescriptor?) -> Bool {
+        guard let event,
+              event.eventClass == AEEventClass(kCoreEventClass),
+              event.eventID == AEEventID(kAEOpenApplication) else {
+            return false
+        }
+        let launchedAs = event.paramDescriptor(forKeyword: keyAEPropData)?.enumCodeValue
+        return launchedAs != keyAELaunchedAsServiceItem
+    }
 
     /// The launch was started for `reason`. Only the first reason counts: what
     /// arrives later finds the app running.

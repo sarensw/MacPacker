@@ -96,6 +96,35 @@
             "issues": ["311"]
           },
           {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Finder integration for iCloud Drive and others via Services Menu",
+                "zh-Hans": "通过“服务”菜单在 iCloud 云盘等位置使用 Finder 集成",
+                "fr": "Intégration au Finder pour iCloud Drive et autres via le menu Services",
+                "de": "Finder-Integration für iCloud Drive und andere über das Menü „Dienste“",
+                "it": "Integrazione nel Finder per iCloud Drive e altri tramite il menu Servizi",
+                "ja": "サービスメニューから iCloud Drive などで使える Finder 連携",
+                "fa": "یکپارچگی با Finder برای iCloud Drive و موارد دیگر از طریق منوی سرویس‌ها",
+                "pl": "Integracja z Finderem dla iCloud Drive i innych przez menu Usługi",
+                "pt-BR": "Integração com o Finder para iCloud Drive e outros pelo menu Serviços",
+                "ru": "Интеграция с Finder для iCloud Drive и других через меню «Службы»",
+                "uk": "Інтеграція з Finder для iCloud Drive та інших через меню «Служби»",
+                "es-MX": "Integración con el Finder para iCloud Drive y otros con el menú Servicios",
+                "ko": "서비스 메뉴를 통한 iCloud Drive 등에서의 Finder 통합",
+                "nl": "Finder-integratie voor iCloud Drive en meer via het menu Voorzieningen",
+                "tr": "Servisler menüsüyle iCloud Drive ve diğerleri için Finder entegrasyonu",
+                "vi": "Tích hợp Finder cho iCloud Drive và các nơi khác qua menu Dịch vụ",
+                "ar": "تكامل Finder مع iCloud Drive وغيره عبر قائمة الخدمات",
+                "ca": "Integració amb el Finder per a l’iCloud Drive i altres des del menú Serveis",
+                "el": "Ενσωμάτωση στο Finder για το iCloud Drive και άλλα μέσω του μενού Υπηρεσίες",
+                "nb": "Finder-integrasjon for iCloud Drive og andre via Tjenester-menyen",
+                "zh-TW": "透過「服務」選單在 iCloud 雲碟等位置使用 Finder 整合",
+                "hi": "सेवाएँ मेनू से iCloud Drive और अन्य जगहों के लिए Finder इंटीग्रेशन"
+            },
+            "issues": ["342"]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {
