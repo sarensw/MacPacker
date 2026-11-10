@@ -103,6 +103,11 @@ final actor ArchiveSaver {
             throw ArchiveError.saveRefused(
                 "\(splitArchiveName) is split into volumes, so it can't be changed in place. Use Save As to write it as a new archive.")
         }
+        log.info("Writing archive", context: [
+            "file": target.lastPathComponent,
+            "format": options.format.rawValue,
+            "excludeMacData": "\(options.excludeMacData)"
+        ])
         let password = try await write(prompts: 0, sourcePassword: sourcePassword)
         let written = (options.volumeSize ?? 0) > 0
             ? target.deletingLastPathComponent().appendingPathComponent(target.lastPathComponent + ".001")

@@ -221,6 +221,7 @@ class FinderSync: FIFinderSync {
         case .addToArchive: #selector(addToArchive(_:))
         case .compressToZip: #selector(compressToZip(_:))
         case .compressToDatedZip: #selector(compressToDatedZip(_:))
+        case .compressForWindows: #selector(compressForWindows(_:))
         case .compressTo7z: #selector(compressTo7z(_:))
         case .compressEachSeparately: #selector(compressEachSeparately(_:))
         case .compressFolderContents: #selector(compressFolderContents(_:))
@@ -267,6 +268,10 @@ class FinderSync: FIFinderSync {
                 name = FinderMenuItem.datedName(name, extension: ext, at: Self.menuShownAt)
             }
             return String(localized: .commonCompressTo(name))
+
+        case .compressForWindows:
+            let name = compressedArchiveName(for: allItems, pathExtension: item.archiveExtension ?? "zip")
+            return String(localized: .commonCompressToForWindows(name))
 
         case .compressEachSeparately:
             return String(localized: .settingsCompressEachItemSeparately)
@@ -390,6 +395,11 @@ class FinderSync: FIFinderSync {
     @objc func compressToDatedZip(_ sender: Any?) {
         log.notice("Finder menu: Compress to dated zip")
         communicateWithMainApp(item: .compressToDatedZip)
+    }
+
+    @objc func compressForWindows(_ sender: Any?) {
+        log.notice("Finder menu: Compress for Windows")
+        communicateWithMainApp(item: .compressForWindows)
     }
 
     @objc func compressEachSeparately(_ sender: Any?) {

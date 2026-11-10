@@ -4,7 +4,7 @@
 //
 //  The app's side of the save options: the model the save panel binds to —
 //  what it offers, what it remembers, what it hands the writer — and the
-//  save itself as the archive window runs it: leaving `.DS_Store` out, asking
+//  save itself as the archive window runs it: leaving Mac-specific data out, asking
 //  for the password of an encrypted source, reopening a split archive.
 //
 
@@ -46,7 +46,8 @@ extension AllCoreTests {
             #expect(options.solidBlockSize == nil)
             #expect(options.password.isEmpty && options.encryption == .aes256 && !options.encryptFileNames)
             #expect(options.volumeSize == nil)
-            #expect(!options.excludeDSStore, ".DS_Store stays in unless asked, as in Finder's Compress")
+            #expect(options.compressionOptions?.excludeMacData == false,
+                    "Mac-specific data stays in unless asked, as in Finder's Compress")
             #expect(options.canSave)
         }
 
@@ -148,7 +149,6 @@ extension AllCoreTests {
             first.wordSize = 64
             first.solidBlockSize = 16 << 20
             first.encryptFileNames = true
-            first.excludeDSStore = true
             first.volumeSize = 25 << 20
             first.password = "hunter2"
             first.passwordConfirmation = "hunter2"
@@ -158,7 +158,7 @@ extension AllCoreTests {
             #expect(second.format == .sevenZ, "opens on the format used last")
             #expect(second.level == 9 && second.method == .lzma)
             #expect(second.dictionarySize == 64 << 20 && second.wordSize == 64 && second.solidBlockSize == 16 << 20)
-            #expect(second.encryptFileNames && second.excludeDSStore)
+            #expect(second.encryptFileNames)
             #expect(second.volumeSize == nil, "the volume size is a one-off")
             #expect(second.password.isEmpty && second.passwordConfirmation.isEmpty, "the password is never stored")
         }
@@ -191,18 +191,17 @@ extension AllCoreTests {
             quick.wordSize = 16
             quick.solidBlockSize = 0
             quick.encryptFileNames = true
-            quick.excludeDSStore = true
             quick.password = "correct horse"
             quick.passwordConfirmation = "correct horse"
             quick.volumeSize = 25 << 20
 
             let again = ArchiveSaveOptions(defaults: defaults, storage: .quickCompress)
             #expect(again.format == .sevenZ && again.level == 9 && again.method == .ppmd)
-            #expect(again.wordSize == 16 && again.solidBlockSize == 0 && again.encryptFileNames && again.excludeDSStore)
+            #expect(again.wordSize == 16 && again.solidBlockSize == 0 && again.encryptFileNames)
             #expect(again.password.isEmpty && again.volumeSize == nil, "never the password or the volume size")
 
             let panel = ArchiveSaveOptions(defaults: defaults)
-            #expect(panel.format == .zip && panel.level == 5 && panel.method == nil && !panel.excludeDSStore,
+            #expect(panel.format == .zip && panel.level == 5 && panel.method == nil,
                     "the save panel's settings are its own")
             var stored = ""
             for (_, value) in defaults.dictionaryRepresentation() {
@@ -316,6 +315,36 @@ extension AllCoreTests {
             #expect(start.password == nil && !start.encryptFileNames && start.volumeSize == nil)
         }
 
+        /// Leaving Mac-specific data out is one switch for every way of
+        /// compressing (#236): the save panel, Quick Compress and the start page
+        /// read the same setting, and none keeps a copy of its own.
+        @Test func macDataIsOneSwitchForEveryWayOfCompressing() throws {
+            let defaults = isolatedDefaults()
+            let panel = ArchiveSaveOptions(defaults: defaults)
+            let quick = ArchiveSaveOptions(defaults: defaults, storage: .quickCompress)
+            for on in [true, false, true] {
+                defaults.set(on, forKey: Keys.excludeMacData)
+                #expect(try #require(panel.compressionOptions).excludeMacData == on)
+                #expect(try #require(quick.compressionOptions).excludeMacData == on)
+                #expect(quick.startPageOptions.excludeMacData == on)
+            }
+        }
+
+        /// Whoever had the save panel's or Quick Compress's `.DS_Store` switch
+        /// on finds the switch that replaced them on. A choice made since stays.
+        @Test(arguments: [(false, false, false), (true, false, true), (false, true, true), (true, true, true)])
+        func theDSStoreSwitchesCarryOver(savePanel: Bool, quickCompress: Bool, expected: Bool) {
+            let defaults = isolatedDefaults()
+            defaults.set(savePanel, forKey: Keys.saveOptionsExcludeDSStore)
+            defaults.set(quickCompress, forKey: Keys.dropWindowExcludeDSStore)
+            Keys.carryOverExcludeDSStore(in: defaults)
+            #expect(defaults.bool(forKey: Keys.excludeMacData) == expected)
+
+            defaults.set(false, forKey: Keys.excludeMacData)
+            Keys.carryOverExcludeDSStore(in: defaults)
+            #expect(!defaults.bool(forKey: Keys.excludeMacData), "turned off since, it stays off")
+        }
+
         @Test func theWriterGetsWhatWasSet() throws {
             let options = ArchiveSaveOptions(defaults: isolatedDefaults())
             options.format = .sevenZ
@@ -334,9 +363,6 @@ extension AllCoreTests {
             #expect(o.solidMode == false && o.solidBlockSize == nil, "0 means no solid blocks")
             #expect(o.encryptFileNames && o.password == "pw" && o.encryption == nil)
             #expect(o.volumeSize == 100 << 20)
-            #expect(!o.excludeDSStore)
-            options.excludeDSStore = true
-            #expect(try #require(options.compressionOptions).excludeDSStore, "leaving .DS_Store out is one of the options")
 
             options.solidBlockSize = .max
             let solid = try #require(options.compressionOptions)
@@ -421,26 +447,38 @@ extension AllCoreTests {
         }
     }
 
-    // MARK: - .DS_Store
+    // MARK: - Mac-specific data
 
-    struct DSStoreExclusionTests {
+    struct MacDataExclusionTests {
 
-        @Test func onlyAddedFilesNamedExactlyDSStoreGo() {
+        @Test func onlyAddedMacFilesGoByTheirExactNames() {
             let disk = URL(fileURLWithPath: "/tmp/anything")
             let items: [ArchiveUpdateItem] = [
                 .addFile(archivePath: ".DS_Store", diskPath: disk),
                 .addFile(archivePath: "folder/.DS_Store", diskPath: disk),
                 .addFile(archivePath: "a/b/c/.DS_Store", diskPath: disk),
                 .addData(archivePath: "folder/.DS_Store", data: Data()),
+                .addFile(archivePath: "folder/Icon\r", diskPath: disk),
+                .addFile(archivePath: "._notes.txt", diskPath: disk),
+                .addFile(archivePath: "folder/._orphan", diskPath: disk),
+                .addDirectory(archivePath: "__MACOSX", diskPath: disk),
+                .addDirectory(archivePath: "folder/__MACOSX/sub", diskPath: disk),
+                .addFile(archivePath: "folder/__MACOSX/sub/._a.txt", diskPath: disk),
                 .addFile(archivePath: ".DS_Store.bak", diskPath: disk),
                 .addFile(archivePath: "x.DS_Store", diskPath: disk),
                 .addFile(archivePath: "DS_Store", diskPath: disk),
                 .addFile(archivePath: ".ds_store", diskPath: disk),
                 .addDirectory(archivePath: ".DS_Store", diskPath: disk),
+                .addFile(archivePath: "Icon", diskPath: disk),
+                .addFile(archivePath: "Icon\r.txt", diskPath: disk),
+                .addFile(archivePath: ".gitignore", diskPath: disk),
+                .addFile(archivePath: "_underscore", diskPath: disk),
+                .addFile(archivePath: "__MACOSX.txt", diskPath: disk),
+                .addDirectory(archivePath: "__macosx", diskPath: disk),
                 .remove(sourceIndex: 3),
                 .move(sourceIndex: 4, newPath: "moved/.DS_Store"),
             ]
-            let kept = items.excludingDSStore()
+            let kept = items.excludingMacData()
             let paths: [String] = kept.map { item in
                 switch item {
                 case .addFile(let path, _, _, _), .addData(let path, _, _, _), .addDirectory(let path, _, _, _): path
@@ -449,6 +487,7 @@ extension AllCoreTests {
                 }
             }
             #expect(paths == [".DS_Store.bak", "x.DS_Store", "DS_Store", ".ds_store", ".DS_Store",
+                              "Icon", "Icon\r.txt", ".gitignore", "_underscore", "__MACOSX.txt", "__macosx",
                               "remove 3", "move 4 moved/.DS_Store"])
         }
 
@@ -479,7 +518,7 @@ extension AllCoreTests {
                 state.create()
                 #expect(await state.add(url: folder).value)
                 let target = dir.appendingPathComponent("out.\(format.rawValue)")
-                await state.save(to: target, options: .init(format: format, excludeDSStore: exclude))?.value
+                await state.save(to: target, options: .init(format: format, excludeMacData: exclude))?.value
                 #expect(state.error == nil, "\(state.error ?? "")")
 
                 let paths = try storedPaths(target)
@@ -520,13 +559,158 @@ extension AllCoreTests {
             state.open(url: archive)
             try await state.openTask?.value
             #expect(await state.add(url: folder).value)
-            await state.save(options: .init(format: format, excludeDSStore: true))?.value
+            await state.save(options: .init(format: format, excludeMacData: true))?.value
             #expect(state.error == nil, "\(state.error ?? "")")
 
             let paths = try systemEntries(archive)
             #expect(paths.contains(".DS_Store"), "the one the archive held stays")
             #expect(!paths.contains { $0.hasPrefix("Photos") && $0.hasSuffix(".DS_Store") }, "\(paths)")
             #expect(paths.contains("Photos/a.jpg"))
+        }
+
+        private static let attributes: [String: Data] = [
+            "com.apple.metadata:_kMDItemUserTags": Data("bplist-stand-in-tags".utf8),
+            "com.apple.metadata:kMDItemWhereFroms": Data("bplist-stand-in-url".utf8),
+            "com.apple.ResourceFork": Data("RESOURCE-FORK-PAYLOAD".utf8),
+            "com.macpacker.test": Data("arbitrary".utf8),
+        ]
+
+        /// A folder with one of everything the switch's info list names, apart
+        /// from `.DS_Store`, which `finderFolder` brings.
+        private func macFolder(in dir: URL) throws -> URL {
+            let fm = FileManager.default
+            let folder = dir.appendingPathComponent("Mac")
+            try fm.createDirectory(at: folder.appendingPathComponent("__MACOSX"), withIntermediateDirectories: true)
+            try "plain".write(to: folder.appendingPathComponent("plain.txt"), atomically: true, encoding: .utf8)
+            // a `__MACOSX` folder, as unzip leaves one; Foundation lists no `._`
+            // file in a folder, so only the folder itself would go in
+            try Data("AppleDouble".utf8).write(to: folder.appendingPathComponent("__MACOSX/._plain.txt"))
+            // Finder tags, download addresses, resource forks, other extended attributes
+            let tagged = folder.appendingPathComponent("tagged.txt")
+            try "tagged".write(to: tagged, atomically: true, encoding: .utf8)
+            for (name, value) in Self.attributes { setExtendedAttribute(name, value, at: tagged) }
+            // hidden flags
+            let hidden = folder.appendingPathComponent("hidden.txt")
+            try "hidden".write(to: hidden, atomically: true, encoding: .utf8)
+            #expect(chflags(hidden.path, UInt32(UF_HIDDEN)) == 0)
+            // custom icons
+            let iconic = folder.appendingPathComponent("Iconic")
+            try makeFolderWithCustomIcon(at: iconic, fork: Data("ICNS-STAND-IN".utf8))
+            try "inside".write(to: iconic.appendingPathComponent("inside.txt"), atomically: true, encoding: .utf8)
+            return folder
+        }
+
+        /// The rest of the list behind the switch's info button (#236): with the
+        /// switch on, a new archive holds the files and folders and nothing
+        /// Mac-specific about them; off, all of it goes in.
+        @MainActor @Test(arguments: CompressionOptions.Format.allCases)
+        func newArchivesLeaveMacDataOutOnlyWhenAsked(_ format: CompressionOptions.Format) async throws {
+            for exclude in [false, true] {
+                let dir = try makeTempDir()
+                defer { try? FileManager.default.removeItem(at: dir) }
+                let folder = try macFolder(in: dir)
+                // a `._` file goes in only when it is picked itself
+                let orphan = dir.appendingPathComponent("._orphan")
+                try Data("AppleDouble".utf8).write(to: orphan)
+
+                let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+                state.create()
+                #expect(await state.add(url: folder).value)
+                #expect(await state.add(url: orphan).value)
+                let target = dir.appendingPathComponent("out.\(format.rawValue)")
+                await state.save(to: target, options: .init(format: format, excludeMacData: exclude))?.value
+                #expect(state.error == nil, "\(state.error ?? "")")
+
+                // the format's own tool, which lists sidecars too; it prints the
+                // carriage return in `Icon\r` its own way, hence the prefix
+                let paths = try systemEntries(target)
+                for path in ["Mac/plain.txt", "Mac/tagged.txt", "Mac/hidden.txt", "Mac/Iconic/inside.txt"] {
+                    #expect(paths.contains(path), "the files themselves always go in: \(paths)")
+                }
+                let macData = paths.filter {
+                    $0.split(separator: "/").contains("__MACOSX")
+                        || ($0 as NSString).lastPathComponent.hasPrefix("._")
+                        || $0.hasPrefix("Mac/Iconic/Icon")
+                }
+                if exclude {
+                    #expect(macData.isEmpty, "\(macData)")
+                } else {
+                    for path in ["._orphan", "__MACOSX/Mac/._tagged.txt", "__MACOSX/Mac/._hidden.txt",
+                                 "__MACOSX/Mac/._Iconic"] {
+                        #expect(macData.contains(path), "\(path) in \(macData)")
+                    }
+                    #expect(macData.contains { $0.hasPrefix("Mac/__MACOSX") }, "\(macData)")
+                    #expect(macData.contains { $0.hasPrefix("Mac/Iconic/Icon") }, "\(macData)")
+                }
+
+                let out = dir.appendingPathComponent("out")
+                try await extractWithOurEngine(target, to: out)
+                let extracted = out.appendingPathComponent("Mac")
+                for (name, value) in Self.attributes {
+                    #expect(extendedAttribute(name, at: extracted.appendingPathComponent("tagged.txt"))
+                                == (exclude ? nil : value), "\(name)")
+                }
+                let hidden = try extracted.appendingPathComponent("hidden.txt").resourceValues(forKeys: [.isHiddenKey])
+                #expect(hidden.isHidden == !exclude, "left out, the flag no longer hides the file")
+                let iconic = extracted.appendingPathComponent("Iconic")
+                #expect(finderFlags(at: iconic) == (exclude ? nil : FinderFlag.hasCustomIcon))
+                #expect(FileManager.default.fileExists(
+                    atPath: iconic.appendingPathComponent(customIconFileName).path) == !exclude)
+            }
+        }
+
+        /// A Save As writes the archive's own entries again, their sidecars too:
+        /// leaving Mac-specific data out is about what the save adds, as it is
+        /// for `.DS_Store`.
+        @MainActor @Test(arguments: CompressionOptions.Format.allCases)
+        func aSaveAsKeepsTheMacDataOfWhatTheArchiveHolds(_ format: CompressionOptions.Format) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let kept = dir.appendingPathComponent("kept.txt")
+            let added = dir.appendingPathComponent("added.txt")
+            for file in [kept, added] {
+                try "text".write(to: file, atomically: true, encoding: .utf8)
+                setExtendedAttribute("com.macpacker.test", Data("arbitrary".utf8), at: file)
+            }
+            let archive = dir.appendingPathComponent("existing.\(format.rawValue)")
+            try SevenZipArchive.writeArchive(
+                destination: archive, items: [.addFile(archivePath: "kept.txt", diskPath: kept)],
+                options: .init(format: format))
+            #expect(try systemEntries(archive).contains("__MACOSX/._kept.txt"))
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: archive)
+            try await state.openTask?.value
+            #expect(await state.add(url: added).value)
+            let target = dir.appendingPathComponent("copy.\(format.rawValue)")
+            await state.save(to: target, options: .init(format: format, excludeMacData: true))?.value
+            #expect(state.error == nil, "\(state.error ?? "")")
+
+            let paths = try systemEntries(target)
+            #expect(paths.contains("kept.txt") && paths.contains("added.txt"), "\(paths)")
+            #expect(paths.contains("__MACOSX/._kept.txt"), "the archive's own entry keeps its metadata: \(paths)")
+            #expect(!paths.contains("__MACOSX/._added.txt"), "\(paths)")
+        }
+
+        /// Finder's Compress, a Service and a Save hand no options from a panel:
+        /// the switch in Settings decides for them (#236).
+        @MainActor @Test func aCompressWithoutOptionsFollowsTheSetting() async throws {
+            for on in [false, true] {
+                let dir = try makeTempDir()
+                defer { try? FileManager.default.removeItem(at: dir) }
+                let folder = try finderFolder(in: dir)
+
+                let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+                state.defaults = isolatedDefaults()
+                state.defaults.set(on, forKey: Keys.excludeMacData)
+                let target = dir.appendingPathComponent("Photos.zip")
+                #expect(await state.compress([folder], to: target))
+
+                let paths = try systemEntries(target)
+                #expect(paths.contains("Photos/a.jpg"))
+                #expect(paths.contains("Photos/.DS_Store") == !on, "\(paths)")
+                #expect(paths.contains { $0.hasPrefix("__MACOSX/") } == !on, "\(paths)")
+            }
         }
     }
 

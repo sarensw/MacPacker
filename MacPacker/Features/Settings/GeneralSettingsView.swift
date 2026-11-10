@@ -22,6 +22,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
     @AppStorage(Keys.extractOnOpen) var extractOnOpen: Bool = false
+    @AppStorage(Keys.excludeMacData) var excludeMacData: Bool = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -143,6 +144,21 @@ struct GeneralSettingsView: View {
 
                 HStack {
                     Toggle(isOn: $extractOnOpen) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            Divider()
+
+            HStack(alignment: .top) {
+                Text(.archiveSaveExcludeMacData)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack(spacing: 6) {
+                    Toggle(isOn: $excludeMacData) {}
+                        .accessibilityIdentifier("settings.excludeMacData")
+                    MacDataInfoButton()
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)

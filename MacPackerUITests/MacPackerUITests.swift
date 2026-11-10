@@ -712,7 +712,7 @@ final class MacPackerUITests: XCTestCase {
         XCTAssertTrue(password.waitForExistence(timeout: 10) && password.isHittable,
                       "the options do not show the password field")
         XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveOptions.volume").firstMatch.exists)
-        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveOptions.excludeDSStore").firstMatch.exists)
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "saveOptions.excludeMacData").firstMatch.exists)
         XCTAssertEqual(panel.frame.width, max(first, second), "the window did not widen for the options")
         app.terminate()
     }
@@ -1005,9 +1005,9 @@ final class MacPackerUITests: XCTestCase {
     }
 
     /// The panel remembers per format and across launches, as 7-Zip does: 7z at
-    /// Fastest with .DS_Store left out, saved, app quit — the next Save As has
-    /// them again once 7z is picked, and no password. Writes the debug app's
-    /// own defaults, which is the point.
+    /// Fastest with Mac-specific data left out, saved, app quit — the next Save
+    /// As has them again once 7z is picked, and no password. Writes the debug
+    /// app's own defaults, which is the point.
     func testSaveSettingsComeBackAfterRelaunch() throws {
         let (app, dir) = try openSaveAs("remember")
         defer { try? FileManager.default.removeItem(at: dir) }
@@ -1015,7 +1015,7 @@ final class MacPackerUITests: XCTestCase {
         choose("7z", in: "saveFormatPicker", app)
         choose("Fastest", in: "saveLevelPicker", app)
         app.buttons["saveOptionsButton"].firstMatch.click()
-        let exclude = app.descendants(matching: .any).matching(identifier: "saveOptions.excludeDSStore").firstMatch
+        let exclude = app.descendants(matching: .any).matching(identifier: "saveOptions.excludeMacData").firstMatch
         XCTAssertTrue(exclude.waitForExistence(timeout: 10), "no options sheet")
         if !isOn(exclude) { exclude.click() }
         app.buttons["saveOptionsDoneButton"].firstMatch.click()
@@ -1034,9 +1034,9 @@ final class MacPackerUITests: XCTestCase {
         XCTAssertEqual(again.popUpButtons["saveLevelPicker"].firstMatch.value as? String, "Fastest",
                        "7z's level was not remembered")
         again.buttons["saveOptionsButton"].firstMatch.click()
-        let excludeAgain = again.descendants(matching: .any).matching(identifier: "saveOptions.excludeDSStore").firstMatch
+        let excludeAgain = again.descendants(matching: .any).matching(identifier: "saveOptions.excludeMacData").firstMatch
         XCTAssertTrue(excludeAgain.waitForExistence(timeout: 10), "no options sheet")
-        XCTAssertTrue(isOn(excludeAgain), "the .DS_Store choice was not remembered")
+        XCTAssertTrue(isOn(excludeAgain), "the Mac-specific data choice was not remembered")
         XCTAssertEqual((again.secureTextFields["saveOptions.password"].firstMatch.value as? String) ?? "", "",
                        "a password must never be remembered")
         again.buttons["saveOptionsDoneButton"].firstMatch.click()

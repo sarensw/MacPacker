@@ -26,6 +26,7 @@ struct MacPackerApp: App {
     init() {
         tb.start()
         Keys.registerDefaults()
+        Keys.carryOverExcludeDSStore()
         log.notice("MacPackerApp.init — app process starting")
         
         #if DEBUG

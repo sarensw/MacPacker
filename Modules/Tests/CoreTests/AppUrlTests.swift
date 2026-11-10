@@ -21,7 +21,8 @@ extension AllCoreTests {
         /// background, and Finder keeps the focus. The app used to come to
         /// the front for every action and hand the focus back when it was
         /// done (#279).
-        @Test(arguments: [AppUrlAction.extractHere, .extractToFolder, .compress, .compressEach, .compressContents])
+        @Test(arguments: [AppUrlAction.extractHere, .extractToFolder, .compress, .compressForWindows,
+                          .compressEach, .compressContents])
         func extractingAndCompressingLeaveTheAppInTheBackground(action: AppUrlAction) {
             #expect(!action.bringsAppToFront)
         }
@@ -66,6 +67,21 @@ extension AllCoreTests {
             )
             let url = try #require(request.url(scheme: scheme))
             #expect(try AppUrl(url: url, scheme: scheme) == request)
+        }
+
+        /// "Compress for Windows" is an action of its own, so the app can tell it
+        /// from a plain Compress and leave Mac-specific data out (#236).
+        @Test func compressForWindowsSurvivesTheTripThroughItsUrl() throws {
+            let request = AppUrl(
+                action: FinderMenuItem.compressForWindows.action,
+                files: [URL(fileURLWithPath: "/Users/me/My Photos")],
+                target: URL(fileURLWithPath: "/Users/me"),
+                format: FinderMenuItem.compressForWindows.archiveExtension
+            )
+            let url = try #require(request.url(scheme: scheme))
+            let parsed = try AppUrl(url: url, scheme: scheme)
+            #expect(parsed == request)
+            #expect(parsed.action == .compressForWindows && parsed.format == "zip")
         }
 
         @Test("The dated archive gets the name the menu showed, even after a minute boundary")
@@ -175,7 +191,8 @@ extension AllCoreTests {
             #expect(AppUrlAction.extractTo.honorsSmartExtraction)
 
             // nothing that does not extract gets a say either
-            for action in [AppUrlAction.open, .compress, .compressEach, .compressContents, .addToArchive] {
+            for action in [AppUrlAction.open, .compress, .compressForWindows, .compressEach, .compressContents,
+                           .addToArchive] {
                 #expect(!action.honorsSmartExtraction, "\(action) does not extract")
             }
         }

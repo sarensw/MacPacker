@@ -147,6 +147,8 @@ private struct FinderMenuItemToggle: View {
             Text(.settingsExtractToChosenFolder)
         case .compressToDatedZip:
             Text(.settingsCompressToZipDateTime)
+        case .compressForWindows:
+            Text(.settingsCompressToZipForWindows)
         case .compressEachSeparately:
             Text(.settingsCompressEachItemSeparately)
         case .compressFolderContents:

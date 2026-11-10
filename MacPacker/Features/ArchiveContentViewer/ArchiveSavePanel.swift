@@ -84,6 +84,8 @@ struct SaveOptionsRows: View {
     @ObservedObject var options: ArchiveSaveOptions
     /// Quick Compress keeps its format menu in the titlebar, so it hides the row.
     var showsFormat = true
+    /// One switch for every way of compressing, the same as in Settings.
+    @AppStorage(Keys.excludeMacData) private var excludeMacData = false
 
     private let fieldWidth: CGFloat = 170
 
@@ -174,10 +176,13 @@ struct SaveOptionsRows: View {
             // at Store nothing is compressed, so these do nothing
             .disabled(!options.compresses)
 
-            row(Text(.archiveSaveExcludeDsStoreFiles)) {
-                Toggle(isOn: $options.excludeDSStore) { EmptyView() }
-                    .labelsHidden()
-                    .accessibilityIdentifier("saveOptions.excludeDSStore")
+            row(Text(.archiveSaveExcludeMacData)) {
+                HStack(spacing: 6) {
+                    MacDataInfoButton()
+                    Toggle(isOn: $excludeMacData) { EmptyView() }
+                        .labelsHidden()
+                        .accessibilityIdentifier("saveOptions.excludeMacData")
+                }
             }
         }
     }
@@ -211,6 +216,49 @@ struct SaveOptionsRows: View {
             .foregroundStyle(red ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
             .fixedSize(horizontal: false, vertical: true)
     }
+}
+
+/// The ⓘ beside "Leave out Mac-specific data": what exactly stays out, as a
+/// plain list. The writer's `excludingMacData` and sidecar rule are the same list.
+struct MacDataInfoButton: View {
+    @State private var isShown = false
+
+    var body: some View {
+        Button {
+            isShown.toggle()
+        } label: {
+            Label {
+                Text(.archiveSaveMacDataLeftOut)
+            } icon: {
+                Image(systemName: "info.circle")
+            }
+            .labelStyle(.iconOnly)
+        }
+        .buttonStyle(.borderless)
+        .help(Text(.archiveSaveMacDataLeftOut))
+        .accessibilityIdentifier("saveOptions.macDataInfo")
+        .popover(isPresented: $isShown, arrowEdge: .bottom) {
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(Array(Self.leftOut.enumerated()), id: \.offset) { _, line in
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(verbatim: "•")
+                        Text(line)
+                    }
+                }
+            }
+            .padding(12)
+        }
+    }
+
+    private static let leftOut: [LocalizedStringResource] = [
+        .archiveSaveMacDataDsStoreFiles,
+        .archiveSaveMacDataSidecars,
+        .archiveSaveMacDataFinderTags,
+        .archiveSaveMacDataCustomIcons,
+        .archiveSaveMacDataHiddenFlags,
+        .archiveSaveMacDataDownloadAddresses,
+        .archiveSaveMacDataExtendedAttributes,
+    ]
 }
 
 /// The option controls themselves, without labels. The save panel's sheet and

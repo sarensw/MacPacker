@@ -4415,140 +4415,14 @@
         }
       }
     },
-    "archiveSaveExcludeDsStoreFiles": {
-      "comment": "Toggle that leaves Finder's hidden .DS_Store files out of the archive",
+    "archiveSaveExcludeMacData": {
+      "comment": "Switch in the archive options, Quick Compress and Settings: leaves macOS-only data out of new archives — .DS_Store files, ._ files, Finder tags, custom icons, hidden flags — which Windows and Linux show as clutter. The info button beside it lists everything.",
       "extractionState": "manual",
       "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "استبعاد ملفات .DS_Store"
-          }
-        },
-        "ca": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exclou els fitxers .DS_Store"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": ".DS_Store ausschließen"
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Εξαίρεση αρχείων .DS_Store"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Exclude .DS_Store files"
-          }
-        },
-        "es-mx": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Excluir archivos .DS_Store"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exclude .DS_Store files"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ignorer les fichiers .DS_Store"
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": ".DS_Store फ़ाइलों को बाहर रखें"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escludi i file .DS_Store"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exclude .DS_Store files"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exclude .DS_Store files"
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sluit .DS_Store-bestanden uit"
-          }
-        },
-        "no": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ekskluder .DS_Store-filer"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wyklucz pliki .DS_Store"
-          }
-        },
-        "pt-br": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exclude .DS_Store files"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Исключить файлы .DS_Store"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exclude .DS_Store files"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Виключити файли .DS_Store"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exclude .DS_Store files"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "排除 .DS_Store 文件"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exclude .DS_Store files"
+            "value": "Leave out Mac-specific data"
           }
         }
       }
@@ -5515,6 +5389,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ultra"
+          }
+        }
+      }
+    },
+    "archiveSaveMacDataCustomIcons": {
+      "comment": "One line of the list behind the info button beside “Leave out Mac-specific data”, which names what that switch leaves out of new archives. The looks a user gives files and folders in Finder: pasted pictures, folder colors, symbols and emoji. The files and folders themselves stay.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom icons"
+          }
+        }
+      }
+    },
+    "archiveSaveMacDataDownloadAddresses": {
+      "comment": "One line of the list behind the info button beside “Leave out Mac-specific data”, which names what that switch leaves out of new archives. The web address a file was downloaded from, shown as “Where from” in Get Info.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download addresses"
+          }
+        }
+      }
+    },
+    "archiveSaveMacDataDsStoreFiles": {
+      "comment": "One line of the list behind the info button beside “Leave out Mac-specific data”, which names what that switch leaves out of new archives. The hidden files Finder writes into folders for their view settings. Keep “.DS_Store” as is.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".DS_Store files"
+          }
+        }
+      }
+    },
+    "archiveSaveMacDataExtendedAttributes": {
+      "comment": "One line of the list behind the info button beside “Leave out Mac-specific data”, which names what that switch leaves out of new archives. Everything else macOS keeps beside a file’s contents, in Apple’s technical terms.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resource forks and other extended attributes"
+          }
+        }
+      }
+    },
+    "archiveSaveMacDataFinderTags": {
+      "comment": "One line of the list behind the info button beside “Leave out Mac-specific data”, which names what that switch leaves out of new archives. The colored tags a user gives files in Finder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder tags"
+          }
+        }
+      }
+    },
+    "archiveSaveMacDataHiddenFlags": {
+      "comment": "One line of the list behind the info button beside “Leave out Mac-specific data”, which names what that switch leaves out of new archives. The flag that hides a file in Finder. The file itself stays in the archive and comes out visible.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hidden flags"
+          }
+        }
+      }
+    },
+    "archiveSaveMacDataLeftOut": {
+      "comment": "Tooltip and VoiceOver name of the info button beside “Leave out Mac-specific data”; the button opens the list of what that switch leaves out.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What is left out"
+          }
+        }
+      }
+    },
+    "archiveSaveMacDataSidecars": {
+      "comment": "One line of the list behind the info button beside “Leave out Mac-specific data”, which names what that switch leaves out of new archives. The extra files that carry a Mac file’s metadata inside an archive. Keep “._” and “__MACOSX” as is.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "._ files and __MACOSX folders"
           }
         }
       }
@@ -8963,6 +8933,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Compress to \"%@\""
+          }
+        }
+      }
+    },
+    "commonCompressToForWindows": {
+      "comment": "Finder context menu entry; %@ is the zip file’s name, e.g. Photos.zip. Writes a zip without Mac-specific data such as .DS_Store files, which Windows shows as clutter.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress to \"%@\" for Windows"
           }
         }
       }
@@ -21602,6 +21584,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Compress to zip with date and time"
+          }
+        }
+      }
+    },
+    "settingsCompressToZipForWindows": {
+      "comment": "Context menu entry in the settings list: compresses the selection straight to a zip file without Mac-specific data such as .DS_Store files, for people on Windows",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress to zip for Windows"
           }
         }
       }

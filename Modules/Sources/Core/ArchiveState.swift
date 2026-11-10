@@ -176,6 +176,9 @@ public class ArchiveState: ObservableObject {
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
+    /// Where a save given no options reads whether Mac-specific data is left
+    /// out — a Finder compress, a Save. Tests inject their own.
+    var defaults: UserDefaults = .standard
     /// Passwords the user gave, by the file they were given for. One window can
     /// hold more than one archive: an archive inside the archive opens in the
     /// same tree, extracted to a temp file, and each can have its own password.
@@ -1064,7 +1067,8 @@ extension ArchiveState {
             sourceAsOpened: openedFile,
             target: target,
             items: diff,
-            options: options ?? CompressionOptions(format: format),
+            options: options ?? CompressionOptions(
+                format: format, excludeMacData: defaults.bool(forKey: Keys.excludeMacData)),
             isSaveAs: destination != nil,
             sourcePassword: url.flatMap { passwords[$0] },
             sourceNameEncoding: chosenNameEncoding,
