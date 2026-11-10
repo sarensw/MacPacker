@@ -37,8 +37,9 @@ tracks upstream unmodified. Fix in the bridging layer or in MacPacker code.
 
 **New UI strings: build, then commit the catalog as generated.** Extraction runs
 on the app target build, so `swift test` alone leaves new strings out and they
-never reach POEditor. Commit whichever catalog changed (`MacPacker/`,
-`FinderExtension/`, `Modules/Sources/ArchivePreviewUI/`). Write no translations
+never reach POEditor. Commit whichever catalog changed (`MacPacker/`, which the
+Finder extension shares; `Modules/Sources/ArchivePreviewUI/`;
+`Modules/Sources/Core/`). Write no translations
 into it, English included: the literal in the code is the key and its own
 fallback, and every value — `en` too — comes back from POEditor. Where the
 literal alone does not say where the string appears, pass `comment:` at the call
