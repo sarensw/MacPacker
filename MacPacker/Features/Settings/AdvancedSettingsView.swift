@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 17.06.25.
 //
 
+import Core
 import Foundation
 import SwiftUI
 import tb
@@ -30,7 +31,7 @@ struct AdvancedSettingsView: View {
                     .disabled(applicationSupportDirectory == nil)
                     
                     Button {
-                        CacheCleaner().clean()
+                        Task { await CacheCleaner().removeAll() }
                     } label: {
                         Text(.settingsClearCache)
                     }
