@@ -125,6 +125,62 @@
             "issues": ["342"]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Leave all Mac-specific data out of archives",
+                "zh-Hans": "从压缩包中排除所有 Mac 专属数据",
+                "fr": "Exclure toutes les données propres au Mac des archives",
+                "de": "Alle Mac-spezifischen Daten aus Archiven heraushalten",
+                "it": "Escludere tutti i dati specifici del Mac dagli archivi",
+                "ja": "アーカイブから Mac 固有のデータをすべて除外",
+                "fa": "کنار گذاشتن همه داده‌های مخصوص Mac از آرشیوها",
+                "pl": "Pomijanie wszystkich danych specyficznych dla Maca w archiwach",
+                "pt-BR": "Excluir todos os dados próprios do Mac ao compactar",
+                "ru": "Исключение всех специфичных для Mac данных из архивов",
+                "uk": "Виключення всіх специфічних для Mac даних з архівів",
+                "es-MX": "Excluir todos los datos propios de Mac al comprimir",
+                "ko": "압축 파일에서 Mac 전용 데이터를 모두 제외",
+                "nl": "Alle Mac-specifieke gegevens weglaten uit archieven",
+                "tr": "Mac'e özgü tüm verileri arşivlerden hariç tutma",
+                "vi": "Không đưa dữ liệu riêng của Mac vào tệp nén",
+                "ar": "استبعاد كل بيانات Mac الخاصة من الأرشيفات",
+                "ca": "Excloure totes les dades pròpies del Mac dels arxius",
+                "el": "Εξαίρεση όλων των δεδομένων του Mac από τα αρχεία",
+                "nb": "Utelat alle Mac-spesifikke data fra arkiver",
+                "zh-TW": "從壓縮檔中排除所有 Mac 專屬資料",
+                "hi": "आर्काइव से सभी Mac-विशिष्ट डेटा बाहर रखें"
+            },
+            "issues": ["236"]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Compress for Windows from Finder",
+                "zh-Hans": "从 Finder 为 Windows 压缩",
+                "fr": "Compresser pour Windows depuis le Finder",
+                "de": "Im Finder für Windows komprimieren",
+                "it": "Comprimere per Windows dal Finder",
+                "ja": "Finder から Windows 向けに圧縮",
+                "fa": "فشرده‌سازی برای Windows از Finder",
+                "pl": "Kompresja dla Windows z poziomu Findera",
+                "pt-BR": "Compactar para Windows pelo Finder",
+                "ru": "Сжатие для Windows из Finder",
+                "uk": "Стиснення для Windows із Finder",
+                "es-MX": "Comprimir para Windows desde el Finder",
+                "ko": "Finder에서 Windows용으로 압축",
+                "nl": "Comprimeren voor Windows vanuit de Finder",
+                "tr": "Finder'dan Windows için sıkıştırma",
+                "vi": "Nén cho Windows từ Finder",
+                "ar": "الضغط لنظام Windows من Finder",
+                "ca": "Comprimeix per a Windows des del Finder",
+                "el": "Συμπίεση για Windows από το Finder",
+                "nb": "Komprimer for Windows fra Finder",
+                "zh-TW": "從 Finder 為 Windows 壓縮",
+                "hi": "Finder से Windows के लिए कंप्रेस करें"
+            },
+            "issues": ["236"]
+          },
+          {
             "type": "fix",
             "highlight": true,
             "title": {

@@ -68,16 +68,24 @@ public enum ArchiveUpdateItem: Sendable {
 }
 
 extension Array where Element == ArchiveUpdateItem {
-    /// Without the `.DS_Store` files these changes would add. Finder writes one
-    /// into every folder it shows, and nobody means to archive it. Only additions
-    /// go — entries the archive already holds stay — and only files named exactly
-    /// `.DS_Store`: a folder of that name is not Finder's.
-    public func excludingDSStore() -> [ArchiveUpdateItem] {
+    /// Without the Mac-specific files these changes would add: the `.DS_Store`
+    /// Finder writes into every folder it shows, the `Icon\r` behind a custom
+    /// folder icon, and AppleDouble sidecars — `._` files, as macOS leaves them
+    /// on drives that cannot hold extended attributes, and `__MACOSX` folders, as
+    /// other tools unpack them. Only additions go — entries the archive already
+    /// holds stay — and only exact names: a `.DS_Store.bak`, or a folder named
+    /// `.DS_Store`, is somebody's own.
+    public func excludingMacData() -> [ArchiveUpdateItem] {
         filter { item in
             switch item {
             case .addFile(let path, _, _, _), .addData(let path, _, _, _):
-                return (path as NSString).lastPathComponent != ".DS_Store"
-            default:
+                let components = path.split(separator: "/")
+                guard let name = components.last else { return true }
+                return !(name == ".DS_Store" || name == "Icon\r" || name.hasPrefix("._")
+                         || components.contains("__MACOSX"))
+            case .addDirectory(let path, _, _, _):
+                return !path.split(separator: "/").contains("__MACOSX")
+            case .remove, .move:
                 return true
             }
         }

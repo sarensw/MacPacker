@@ -14,6 +14,8 @@ public enum AppUrlAction: String, Sendable {
     case extractToFolder
     case extractTo
     case compress
+    /// A zip without Mac-specific data, whatever the setting says.
+    case compressForWindows
     case compressEach
     case compressContents
     case addToArchive
@@ -33,7 +35,7 @@ public extension AppUrlAction {
         switch self {
         case .extractHere, .extractTo:
             true
-        case .extractToFolder, .open, .compress, .compressEach,
+        case .extractToFolder, .open, .compress, .compressForWindows, .compressEach,
              .compressContents, .addToArchive:
             false
         }
@@ -49,7 +51,7 @@ public extension AppUrlAction {
         switch self {
         case .open, .addToArchive, .extractTo:
             true
-        case .extractHere, .extractToFolder, .compress, .compressEach,
+        case .extractHere, .extractToFolder, .compress, .compressForWindows, .compressEach,
              .compressContents:
             false
         }
@@ -66,7 +68,7 @@ public struct AppUrl: Equatable, Sendable {
     public var action: AppUrlAction
     public var files: [URL]
     public var target: URL
-    /// Extension of the archive to produce, for `compress`; `nil` means zip.
+    /// Extension of the archive to produce, for the compress actions; `nil` means zip.
     /// Always one the menu itself produces — it ends up in a file name.
     public var format: String?
     /// When the menu showed the dated entry, for `compress`; `nil` for an

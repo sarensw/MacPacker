@@ -176,6 +176,11 @@ public class ArchiveState: ObservableObject {
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
+    /// Where this state reads its settings: the ".." row, the sort order, and
+    /// whether a save given no options leaves Mac-specific data out. Not the
+    /// hidden files: that setting lives in the app group the extensions share,
+    /// read through `Keys`. Tests inject their own.
+    var defaults: UserDefaults = .standard
     /// Passwords the user gave, by the file they were given for. One window can
     /// hold more than one archive: an archive inside the archive opens in the
     /// same tree, extracted to a temp file, and each can have its own password.
@@ -408,7 +413,7 @@ extension ArchiveState {
     /// button and ⌘↑ go up either way.
     public var showsParentRow: Bool {
         guard !isSearching, canGoUp else { return false }
-        return UserDefaults.standard.bool(forKey: Keys.showParentRow)
+        return defaults.bool(forKey: Keys.showParentRow)
     }
 
     /// Updates the live search. Every change re-filters the entries; clearing
@@ -436,7 +441,7 @@ extension ArchiveState {
             $0.type != .root && $0.name.localizedCaseInsensitiveContains(searchText)
                 && (showsHiddenFiles || !isInHiddenPath($0))
         }
-        guard UserDefaults.standard.string(forKey: Keys.defaultOrderColumn) != nil else {
+        guard defaults.string(forKey: Keys.defaultOrderColumn) != nil else {
             return matches.sorted { a, b in
                 if a.isFolder != b.isFolder { return a.isFolder }
                 let cmp = a.name.localizedStandardCompare(b.name)
@@ -486,7 +491,7 @@ extension ArchiveState {
         }
 
         let children = listedChildren(of: selectedItem)
-        guard UserDefaults.standard.string(forKey: Keys.defaultOrderColumn) != nil else {
+        guard defaults.string(forKey: Keys.defaultOrderColumn) != nil else {
             childItems = children
             return
         }
@@ -495,8 +500,8 @@ extension ArchiveState {
     }
 
     private func sortedForDisplay(_ items: [ArchiveItem]) -> [ArchiveItem] {
-        let defaultOrderColumn = UserDefaults.standard.string(forKey: Keys.defaultOrderColumn)
-        let defaultOrderColumnAscending = UserDefaults.standard.bool(forKey: Keys.defaultOrderColumnAscending)
+        let defaultOrderColumn = defaults.string(forKey: Keys.defaultOrderColumn)
+        let defaultOrderColumnAscending = defaults.bool(forKey: Keys.defaultOrderColumnAscending)
 
         return items.sorted { a, b in
                 switch defaultOrderColumn {
@@ -1064,7 +1069,8 @@ extension ArchiveState {
             sourceAsOpened: openedFile,
             target: target,
             items: diff,
-            options: options ?? CompressionOptions(format: format),
+            options: options ?? CompressionOptions(
+                format: format, excludeMacData: defaults.bool(forKey: Keys.excludeMacData)),
             isSaveAs: destination != nil,
             sourcePassword: url.flatMap { passwords[$0] },
             sourceNameEncoding: chosenNameEncoding,
