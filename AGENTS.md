@@ -35,16 +35,23 @@ version X". Naming a version in a changelog entry or commit message is fine.
 **Vendored submodules stay pristine.** `Modules/Sources/CSevenZip/vendor/7zip`
 tracks upstream unmodified. Fix in the bridging layer or in MacPacker code.
 
-**New UI strings: build, then commit the catalog as generated.** Extraction runs
-on the app target build, so `swift test` alone leaves new strings out and they
-never reach POEditor. Commit whichever catalog changed (`MacPacker/`, which the
-Finder extension shares; `Modules/Sources/ArchivePreviewUI/`;
-`Modules/Sources/Core/`). Write no translations
-into it, English included: the literal in the code is the key and its own
-fallback, and every value — `en` too — comes back from POEditor. Where the
-literal alone does not say where the string appears, pass `comment:` at the call
-site (`Text(_, comment:)`, `String(localized:comment:)`); it is the only context
-a translator gets.
+**New UI strings: an id with its English and a comment.**
+`MacPacker/Localizable.xcstrings`, which the Finder extension shares, is keyed by
+hand-named ids that the code reads through the symbols Xcode generates
+(`Text(.archiveSaveFormat)`, `String(localized: .commonCompressTo(name))`).
+Literal keys (`Text("…")`) don't belong in it. Add a new string as an entry with
+`"extractionState": "manual"`, its `en` value and a `comment` — the only context
+a translator gets — then run `scripts/restore-manual-extraction-state.sh` to put
+the catalog back in order. Write no other language: POEditor fills them, and
+until it has, those languages show the raw id, so the round trip comes before a
+release. `MacPacker/LeanBytes.xcstrings` is not in POEditor: fill every app
+language yourself.
+
+The package catalogs (`Modules/Sources/ArchivePreviewUI/`,
+`Modules/Sources/Core/`) are keyed by their English literals,
+`String(localized: "…", bundle: .module, comment: "…")`, each its own fallback.
+No app build writes them back: build the package target, then
+`xcrun xcstringstool sync` its `.stringsdata` into the catalog.
 
 **Bug fixes start with a failing test** in `Modules/Tests/CoreTests`.
 
