@@ -184,6 +184,34 @@
             "issues": ["286"]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Clearing temporary files might freeze the app",
+                "zh-Hans": "清除临时文件可能导致应用程序冻结",
+                "fr": "Supprimer les fichiers temporaires peut bloquer l’application",
+                "de": "Temporäre Dateien löschen kann die App einfrieren lassen",
+                "it": "Eliminare i file temporanei può bloccare l’applicazione",
+                "ja": "一時ファイルを削除するとアプリがフリーズすることがある",
+                "fa": "پاک کردن فایل‌های موقت ممکن است باعث توقف برنامه شود",
+                "pl": "Usuwanie plików tymczasowych może zawiesić aplikację",
+                "pt-BR": "Apagar arquivos temporários pode fazer o aplicativo travar",
+                "ru": "Удаление временных файлов может привести к зависанию приложения",
+                "uk": "Видалення тимчасових файлів може призвести до зависання застосунку",
+                "es-MX": "Borrar archivos temporales puede congelar la aplicación",
+                "ko": "임시 파일을 지우면 앱이 멈출 수 있음",
+                "nl": "Tijdelijke bestanden wissen kan de app laten vastlopen",
+                "tr": "Geçici dosyaları silmek uygulamayı dondurabilir",
+                "vi": "Xóa tệp tạm có thể làm ứng dụng bị treo",
+                "ar": "مسح الملفات المؤقتة قد يجمّد التطبيق",
+                "ca": "Esborrar els fitxers temporals pot bloquejar l’app",
+                "el": "Η εκκαθάριση προσωρινών αρχείων μπορεί να παγώσει την εφαρμογή",
+                "nb": "Sletting av midlertidige filer kan fryse appen",
+                "zh-TW": "清除暫存檔案時 App 可能停止回應",
+                "hi": "अस्थायी फ़ाइलें साफ़ करने से ऐप फ़्रीज़ हो सकता है"
+            },
+            "issues": ["301"]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.06",

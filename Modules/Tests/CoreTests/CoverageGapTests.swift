@@ -332,34 +332,6 @@ extension AllCoreTests {
         }
     }
 
-    // MARK: - CacheCleaner: clean()
-
-    @MainActor struct CacheCleanerCleanAllTests {
-
-        @Test func cleanAllRemovesCacheDir() {
-            // Create a ta directory in cache
-            let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-            let taDir = cacheDir.appendingPathComponent("ta", isDirectory: true)
-            let testDir = taDir.appendingPathComponent(UUID().uuidString, isDirectory: true)
-            try? FileManager.default.createDirectory(at: testDir, withIntermediateDirectories: true)
-
-            let cleaner = CacheCleaner()
-            cleaner.clean()
-
-            // After clean(), the ta directory may or may not exist (it removes it)
-            // At minimum this should not crash
-        }
-
-        @Test func cleanTempDirectoriesWithNonExistentPaths() {
-            let cleaner = CacheCleaner()
-            // Cleaning non-existent directories should not crash (hits error path)
-            cleaner.clean(tempDirectories: [
-                URL(fileURLWithPath: "/tmp/\(UUID().uuidString)"),
-                URL(fileURLWithPath: "/tmp/\(UUID().uuidString)")
-            ])
-        }
-    }
-
     // MARK: - ArchiveXadEngine: full extraction and error methods
 
     @MainActor struct ArchiveXadEngineExtraTests {
@@ -991,22 +963,6 @@ extension AllCoreTests {
             let selector = ArchiveEngineSelector(catalog: catalog, configStore: configStore)
             let result = selector.engineType(for: "completely_unknown_format_xyz")
             #expect(result == nil)
-        }
-    }
-
-    // MARK: - CacheCleaner: error path when ta dir missing
-
-    @MainActor struct CacheCleanerErrorPathTests {
-
-        @Test func cleanWhenTaDirDoesNotExistHitsErrorPath() {
-            // Ensure the ta directory does not exist
-            let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-            let taDir = cacheDir.appendingPathComponent("ta", isDirectory: true)
-            try? FileManager.default.removeItem(at: taDir)
-
-            let cleaner = CacheCleaner()
-            // This should hit the catch block (error path) since ta dir doesn't exist
-            cleaner.clean()
         }
     }
 

@@ -340,6 +340,27 @@ extension AllCoreTests {
             #expect(state.error == nil)
             #expect(state.isBusy == false)
         }
+
+        /// Closing a window, or opening another archive in it, hands its
+        /// temporary files to the cleaner and goes on. They can be thousands of
+        /// files, and removed on the main thread they kept the window from
+        /// drawing (#301).
+        @Test func cleanLeavesTheTemporaryFilesToTheCleaner() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            state.open(url: folderURL.appendingPathComponent("defaultArchive.zip"))
+            try await state.openTask?.value
+            let file = try #require(state.entries.values.first { $0.type == .file })
+            let extracted = try await state.extractToTemp(item: file)
+
+            state.clean()
+            // The test holds the main actor until it awaits: what is gone by now
+            // went on the main actor.
+            #expect(FileManager.default.fileExists(atPath: extracted.path))
+
+            await state.cleanTask?.value
+            #expect(!FileManager.default.fileExists(atPath: extracted.path))
+        }
     }
 
     // MARK: - cancelCurrentOperation()

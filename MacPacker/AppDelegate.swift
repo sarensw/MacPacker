@@ -224,7 +224,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
         // the terminate-time cleanup never runs when the app crashes or is
         // killed — clear stale extraction caches from previous runs here too
-        CacheCleaner().clean()
+        Task { await CacheCleaner().removeLeftovers() }
 
         // Built before the window manager: the archive windows are handed the
         // compressor and the way to open the quick-compress window, so their
@@ -448,7 +448,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         if ExtractionDemo.isRequested { return .terminateNow }
 #endif
         guard let running = ExtractionProgressCenter.shared.runningKind else {
-            return .terminateNow
+            quitOnceCacheIsCleared()
+            return .terminateLater
         }
 
         // "extraction" / "compression": the lines an extraction always logged, as they were
@@ -477,15 +478,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // an archive stays behind under the name the whole one was to have.
         Task { @MainActor in
             await ExtractionProgressCenter.shared.cancelAll(.compression, waitingUpTo: .seconds(5))
-            NSApp.reply(toApplicationShouldTerminate: true)
+            quitOnceCacheIsCleared()
         }
         return .terminateLater
     }
 
-    public func applicationWillTerminate(_ notification: Notification) {
-        guard !Self.isRunningInPreview else { return }
-        log.notice("applicationWillTerminate — cleaning cache")
-        CacheCleaner().clean()
+    /// Answers a `.terminateLater` once the cache is cleared: nothing extracted
+    /// outlives the app, not even from a protected archive. The app hides
+    /// first, so it is gone from the screen at once while the files go in the
+    /// background. A force quit before they are gone leaves the rest to the
+    /// next launch (#301).
+    private func quitOnceCacheIsCleared() {
+        log.notice("Quitting — clearing cache")
+        NSApp.hide(nil)
+        Task {
+            await CacheCleaner().removeAll()
+            NSApp.reply(toApplicationShouldTerminate: true)
+        }
     }
     
     func openArchiveUsingOpenPanel() {

@@ -193,6 +193,9 @@ public class ArchiveState: ObservableObject {
     private var openedFile: FileStamp?
 
     public private(set) var openTask: Task<Void, any Error>?
+    /// The temporary files of what was closed last, removed off the main actor
+    /// by `CacheCleaner`. They are gone once this ends.
+    private(set) var cleanTask: Task<Void, Never>?
     /// The add started last. What it adds is read off the main actor, so it is
     /// there once this ends.
     public private(set) var addTask: Task<Bool, Never>?
@@ -336,8 +339,9 @@ extension ArchiveState {
         self.previewItemUrl = nil
         
         updateStatus(.idle)
-        
-        CacheCleaner().clean(tempDirectories: tempDirectories)
+
+        cleanTask = Task { [tempDirectories] in await CacheCleaner().remove(tempDirectories) }
+        tempDirectories = []
     }
     
     public func clean() {
