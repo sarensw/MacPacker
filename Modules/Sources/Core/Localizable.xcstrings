@@ -12,9 +12,6 @@
         }
       }
     },
-    "Testing isn't supported for this format." : {
-      "comment" : "Progress window, under the name of an archive the user asked to test, in place of the verdict: archives of its kind can be opened but not checked."
-    },
     "The archive" : {
       "comment" : "Fallback archive name in a password-required error",
       "localizations" : {
