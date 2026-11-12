@@ -126,18 +126,23 @@ final actor ArchiveExtractor {
         return (urls, temp.url)
     }
 
-    /// Extracts a single item from a resolved batch to the target directory through a temp directory.
+    /// Extracts a single item from a resolved batch through a temp directory,
+    /// and moves it to `target` when one is given.
     ///
-    /// The item is extracted to a temp directory first, then moved to the target.
-    /// This avoids sandboxing issues when extracting directly to a user-chosen destination.
+    /// `target` is the item's new url, its name included: the place a file
+    /// promise names. The app the item was dropped on chose it and expects the
+    /// item there, so it is used as it is; extracting into a folder picks a free
+    /// name instead. Into another volume the move is a copy that takes as long
+    /// as the item is big, so it runs off the cooperative pool, like the
+    /// engines' own calls, and off the main thread (#300).
     ///
     /// - Parameters:
     ///   - batch: A resolved batch containing the item, its archive URL, and engine type.
-    ///   - destination: Destination folder. If `nil`, the extracted file stays in temp.
-    /// - Returns: The extracted file URL and the temp directory used.
+    ///   - target: Where the item goes, name included. If `nil`, it stays in temp.
+    /// - Returns: Where the item is now, and the temp directory used.
     public func extract(
         batch: ResolvedBatch,
-        to destination: URL? = nil,
+        as target: URL? = nil,
         onProgress: ArchiveExtractionProgress? = nil
     ) async throws -> SingleExtractionResult {
         guard let item = batch.items.first else {
@@ -150,16 +155,12 @@ final actor ArchiveExtractor {
             throw ArchiveError.extractionFailed("Extraction of item failed, but no url was returned")
         }
 
-        // Only if there is a target directory then we move the file there,
-        // otherwise we keep it in the temp spot.
-        if let destination {
-            try moveExtractedItems(extractedURLs, to: destination, items: [item])
+        guard let target else {
+            return SingleExtractionResult(url: extractedURL, tempDir: tempDirectory)
         }
-
-        return SingleExtractionResult(
-            url: extractedURL,
-            tempDir: tempDirectory
-        )
+        try Task.checkCancellation()
+        try await runBlocking { try FileManager.default.moveItem(at: extractedURL, to: target) }
+        return SingleExtractionResult(url: target, tempDir: tempDirectory)
     }
 
     /// Extracts items from multiple resolved batches to the target directory through temp directories.

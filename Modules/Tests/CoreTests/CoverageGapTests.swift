@@ -996,10 +996,11 @@ extension AllCoreTests {
                 archiveEngineSelector: ArchiveEngineSelector7zip(),
                 passwordResolver: { _ in nil }
             )
-            let result = try await extractor.extract(batch: batch, to: tempDest)
-            // File was moved from temp to destination
             let destFile = tempDest.appendingPathComponent(fileItem.name)
+            let result = try await extractor.extract(batch: batch, as: destFile)
+            // File was moved from temp to destination
             #expect(FileManager.default.fileExists(atPath: destFile.path))
+            #expect(result.url == destFile)
         }
     }
 }
