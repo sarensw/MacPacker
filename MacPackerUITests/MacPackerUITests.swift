@@ -729,12 +729,15 @@ final class MacPackerUITests: XCTestCase {
     /// Finder's Test Archive starts the app without a window of its own and puts
     /// the verdict up in the progress window. The verdict is what the action was
     /// for, so it holds the app up until it is closed (#232).
+    ///
+    /// The menu bar item is a window on screen too, and it keeps the app up:
+    /// off here, whatever the Debug app this test shares its settings with says.
     func testFinderTestArchiveKeepsTheVerdictUntilItIsClosed() throws {
         let dir = try makeWorkDir("finder-test-archive")
         defer { try? FileManager.default.removeItem(at: dir) }
         let (_, damaged) = try makeWholeAndDamagedZip(in: dir)
 
-        let app = launchApp(finderAction: "test", files: [damaged], target: dir)
+        let app = launchApp(finderAction: "test", files: [damaged], target: dir, arguments: ["-showMenuBarItem", "NO"])
         confirmAccessPanel(app, button: "Grant Access")
 
         let progress = app.windows["progress.window"]
