@@ -1766,10 +1766,13 @@ int sz_test_all(SZArchiveRef archive,
         if (archive_damaged_out) *archive_damaged_out = archiveDamaged;
         if (!damaged.empty() && damaged_out && damaged_count_out) {
             *damaged_out = (uint32_t *)malloc(damaged.size() * sizeof(uint32_t));
-            if (*damaged_out) {
-                std::copy(damaged.begin(), damaged.end(), *damaged_out);
-                *damaged_count_out = (uint32_t)damaged.size();
+            // without the list, damage would read as none
+            if (!*damaged_out) {
+                if (error_out) *error_out = strdup("The archive could not be tested");
+                return SZ_EXTRACT_FAILED;
             }
+            std::copy(damaged.begin(), damaged.end(), *damaged_out);
+            *damaged_count_out = (uint32_t)damaged.size();
         }
         return damaged.empty() && !archiveDamaged ? SZ_EXTRACT_OK : SZ_TEST_DAMAGED;
     } catch (...) {
