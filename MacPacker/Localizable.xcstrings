@@ -6743,6 +6743,30 @@
         }
       }
     },
+    "archiveTestDamagedFileCount": {
+      "comment": "Progress window, under the name of an archive that was tested and is damaged, when the names of the damaged files inside it don't fit on the line. The argument is how many files are damaged.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Damaged: %lld file"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Damaged: %lld files"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "archiveTestNoErrorsFound": {
       "comment": "Progress window, under the name of an archive that was tested: every file in it decompresses and matches its checksum.",
       "extractionState": "manual",

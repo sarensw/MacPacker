@@ -598,19 +598,26 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
-    /// A zip holding `readme.txt`, stored, and a copy with one byte of that file
-    /// changed: the copy opens and lists as before, and only its CRC tells.
-    private func makeWholeAndDamagedZip(in dir: URL) throws -> (whole: URL, damaged: URL) {
-        let payload = dir.appendingPathComponent("readme.txt")
-        try "Every byte of this file is checked.".write(to: payload, atomically: true, encoding: .utf8)
-        let whole = dir.appendingPathComponent("whole.zip")
-        try run("/usr/bin/zip", ["-X", "-0", whole.path, "readme.txt"], cwd: dir)
-        try FileManager.default.removeItem(at: payload)
+    /// A zip holding `files`, stored, and a copy with one byte of each file
+    /// changed: the copy opens and lists as before, and only the CRCs tell.
+    private func makeWholeAndDamagedZip(in dir: URL, files: [String] = ["readme.txt"]) throws -> (whole: URL, damaged: URL) {
+        let suffix = files.count == 1 ? "" : "\(files.count)"
+        for file in files {
+            try "Every byte of this file is checked.".write(to: dir.appendingPathComponent(file), atomically: true, encoding: .utf8)
+        }
+        let whole = dir.appendingPathComponent("whole\(suffix).zip")
+        try run("/usr/bin/zip", ["-X", "-0", whole.path] + files, cwd: dir)
+        for file in files {
+            try FileManager.default.removeItem(at: dir.appendingPathComponent(file))
+        }
 
         var bytes = try Data(contentsOf: whole)
-        let range = try XCTUnwrap(bytes.range(of: Data("Every".utf8)))
-        bytes[range.lowerBound] ^= 0x20
-        let damaged = dir.appendingPathComponent("damaged.zip")
+        let ranges = bytes.ranges(of: Data("Every".utf8))
+        XCTAssertEqual(ranges.count, files.count)
+        for range in ranges {
+            bytes[range.lowerBound] ^= 0x20
+        }
+        let damaged = dir.appendingPathComponent("damaged\(suffix).zip")
         try bytes.write(to: damaged)
         return (whole, damaged)
     }
@@ -629,16 +636,24 @@ final class MacPackerUITests: XCTestCase {
 
     /// The toolbar's Test Archive checks the archive the window shows and says
     /// what it found in the progress window: nothing for a whole archive, the
-    /// damaged file for one whose CRC no longer matches. A click on the row
-    /// leaves the verdict where it is: a test has no chart to open (#232).
+    /// damaged files for one whose CRCs no longer match while their names fit on
+    /// the line, else how many. A click on the row leaves the verdict where it
+    /// is: a test has no chart to open (#232).
     func testTestArchiveFromTheToolbarShowsTheVerdict() throws {
         let dir = try makeWorkDir("test-archive")
         defer { try? FileManager.default.removeItem(at: dir) }
         let (whole, damaged) = try makeWholeAndDamagedZip(in: dir)
+        let few = try makeWholeAndDamagedZip(in: dir, files: ["a.txt", "b.txt", "c.txt"]).damaged
+        let many = try makeWholeAndDamagedZip(in: dir, files: (1...12).map { String(format: "file%02d.txt", $0) }).damaged
 
-        for (zip, verdict) in [(whole, "No errors found"), (damaged, "Damaged: readme.txt")] {
+        for (zip, first, verdict) in [
+            (whole, "readme.txt", "No errors found"),
+            (damaged, "readme.txt", "Damaged: readme.txt"),
+            (few, "a.txt", "Damaged: a.txt, b.txt, c.txt"),
+            (many, "file01.txt", "Damaged: 12 files"),
+        ] {
             let app = launchApp(arguments: ["-ArchivePath", zip.path])
-            XCTAssertTrue(app.staticTexts["readme.txt"].waitForExistence(timeout: 15), "\(zip.lastPathComponent) did not load")
+            XCTAssertTrue(app.staticTexts[first].waitForExistence(timeout: 15), "\(zip.lastPathComponent) did not load")
             let test = app.toolbars.buttons["Test Archive"].firstMatch
             XCTAssertTrue(test.waitForExistence(timeout: 5), "the toolbar has no Test Archive")
             test.click()

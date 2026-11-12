@@ -218,14 +218,21 @@ private struct ExtractionProgressRowView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
-            // ponytail: the first 20 names, the line shows fewer anyway
             let names = result.damagedEntries.isEmpty ? [job.archiveName] : result.damagedEntries
-            let list = names.prefix(20).joined(separator: ", ") + (names.count > 20 ? ", …" : "")
-            Text(.archiveTestDamaged(list))
-                .font(.caption)
-                .foregroundStyle(.red)
-                .lineLimit(1)
-                .truncationMode(.tail)
+            // The names while the whole list fits on the line, else how many.
+            ViewThatFits(in: .horizontal) {
+                // ponytail: past 20 names they never fit; spares measuring thousands
+                if names.count <= 20 {
+                    Text(.archiveTestDamaged(names.joined(separator: ", ")))
+                }
+                if names.count > 1 {
+                    Text(.archiveTestDamagedFileCount(names.count))
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.red)
+            .lineLimit(1)
+            .truncationMode(.tail)
         }
     }
 
