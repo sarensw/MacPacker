@@ -23,21 +23,30 @@ final actor ArchiveExtractor {
     /// Fired for every temp directory an extraction writes into, so callers
     /// can register it for cleanup if the run is cancelled or fails.
     private let onTempDirectoryCreated: (@Sendable (URL) -> Void)?
+    /// Moves an extracted item into place: `FileManager.moveItem`, unless a
+    /// test watches where the moves run.
+    private let moveItem: @Sendable (_ from: URL, _ to: URL) throws -> Void
 
     init(
         archiveEngineSelector: ArchiveEngineSelectorProtocol,
         passwordResolver: @escaping ArchivePasswordResolver,
-        onTempDirectoryCreated: (@Sendable (URL) -> Void)? = nil
+        onTempDirectoryCreated: (@Sendable (URL) -> Void)? = nil,
+        moveItem: @escaping @Sendable (_ from: URL, _ to: URL) throws -> Void = {
+            try FileManager.default.moveItem(at: $0, to: $1)
+        }
     ) {
         self.archiveEngineSelector = archiveEngineSelector
         self.passwordResolver = passwordResolver
         self.onTempDirectoryCreated = onTempDirectoryCreated
+        self.moveItem = moveItem
     }
 
     /// Moves the given set of extracted temporary files to another destination.
     ///
     /// This is usually used to move extracted file(s) from their temporary location
-    /// to the final target directory.
+    /// to the final target directory. Into another volume each move is a copy
+    /// that takes as long as the item is big, so it runs off the cooperative
+    /// pool, like the engines' own calls (#300).
     ///
     /// - Parameters:
     ///   - extractedURLs: The extracted item urls keyed by item id.
@@ -47,7 +56,7 @@ final actor ArchiveExtractor {
         _ extractedURLs: [UUID: URL],
         to destination: URL,
         items: [ArchiveItem]
-    ) throws {
+    ) async throws {
         _ = destination.startAccessingSecurityScopedResource()
         defer { destination.stopAccessingSecurityScopedResource() }
         
@@ -68,7 +77,7 @@ final actor ArchiveExtractor {
             let isDirectory = item.type == .directory || item.type == .virtual
             let targetURL = destination.appending(
                 component: SmartExtraction.freeName(item.name, in: destination, isDirectory: isDirectory))
-            try FileManager.default.moveItem(at: sourceURL, to: targetURL)
+            try await runBlocking { [moveItem] in try moveItem(sourceURL, targetURL) }
         }
     }
 
@@ -159,7 +168,7 @@ final actor ArchiveExtractor {
             return SingleExtractionResult(url: extractedURL, tempDir: tempDirectory)
         }
         try Task.checkCancellation()
-        try await runBlocking { try FileManager.default.moveItem(at: extractedURL, to: target) }
+        try await runBlocking { [moveItem] in try moveItem(extractedURL, target) }
         return SingleExtractionResult(url: target, tempDir: tempDirectory)
     }
 
@@ -195,7 +204,7 @@ final actor ArchiveExtractor {
             // Only if there is a target directory then we move the files there,
             // otherwise we keep them in the temp spot.
             if let destination {
-                try moveExtractedItems(extractedURLs, to: destination, items: batch.items)
+                try await moveExtractedItems(extractedURLs, to: destination, items: batch.items)
             }
         }
 
