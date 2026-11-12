@@ -1708,13 +1708,18 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
 }
 
 /// Whether `archive` reports damage of its own: an error flag or an error
-/// message, as 7-Zip's own client counts them. Warnings are left out, as there:
-/// a zip the way Nextcloud writes it warns of a headers error and holds nothing
-/// that is wrong.
+/// message, as 7-Zip's own client counts them, or a checksum of its own that
+/// doesn't match, which 7-Zip only warns of (a dmg's, a xar's table of
+/// contents). Other warnings are left out, as there: a zip the way Nextcloud
+/// writes it warns of a headers error and holds nothing that is wrong.
 static bool reportsDamage(IInArchive *archive) {
     NWindows::NCOM::CPropVariant flags;
     if (archive->GetArchiveProperty(kpidErrorFlags, &flags) == S_OK
         && flags.vt == VT_UI4 && flags.ulVal != 0)
+        return true;
+    NWindows::NCOM::CPropVariant warnings;
+    if (archive->GetArchiveProperty(kpidWarningFlags, &warnings) == S_OK
+        && warnings.vt == VT_UI4 && (warnings.ulVal & kpv_ErrorFlags_CrcError))
         return true;
     NWindows::NCOM::CPropVariant message;
     return archive->GetArchiveProperty(kpidError, &message) == S_OK && message.vt != VT_EMPTY;

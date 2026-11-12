@@ -66,13 +66,16 @@ extension AllCoreTests {
 
         /// What is damaged is named, and only that: an archive with one damaged
         /// entry has others that are fine. An archive cut short says so itself,
-        /// also where every entry that is left reads.
+        /// also where every entry that is left reads, and so does one whose own
+        /// checksum no longer matches, of which 7-Zip only warns.
         @Test(arguments: [
             ("damaged/crc.zip", ["folder/README.md"], false),
             ("damaged/crc.7z", ["folder/NestedArchive.zip"], false),
             ("damaged/crc.tar.gz", ["crc.tar"], false),
             ("damaged/truncated.zip", ["folder/NestedArchive.zip"], true),
             ("damaged/noCentralDirectory.zip", [], true),
+            ("damaged/crc.dmg", [], true),
+            ("damaged/tocChecksum.xar", [], true),
         ])
         func damageIsFoundAndNamed(arg: (String, [String], Bool)) async throws {
             let job = try await test(fixture(arg.0))
