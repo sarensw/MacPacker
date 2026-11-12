@@ -468,8 +468,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             alert.messageText = String(localized: .appCompressionInProgress)
             alert.informativeText = String(localized: .appQuitDuringCompressionWarning)
         case .test:
-            // a test writes nothing, so stopping one loses nothing
-            return .terminateNow
+            // a test writes nothing, so stopping one loses nothing; the cache still goes
+            quitOnceCacheIsCleared()
+            return .terminateLater
         }
         log.notice("Quit requested while \(what) is running — asking user")
         alert.addButton(withTitle: String(localized: .commonCancel))
