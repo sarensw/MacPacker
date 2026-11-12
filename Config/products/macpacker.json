@@ -268,6 +268,34 @@
             "issues": ["301"]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Dragging a file to another disk might freeze the app",
+                "zh-Hans": "将文件拖到其他磁盘可能导致应用程序冻结",
+                "fr": "Glisser un fichier vers un autre disque peut bloquer l’application",
+                "de": "Datei auf ein anderes Laufwerk ziehen kann die App einfrieren lassen",
+                "it": "Trascinare un file su un altro disco può bloccare l’applicazione",
+                "ja": "ファイルを別のディスクにドラッグするとアプリがフリーズすることがある",
+                "fa": "کشیدن فایل به دیسک دیگر ممکن است باعث توقف برنامه شود",
+                "pl": "Przeciąganie pliku na inny dysk może zawiesić aplikację",
+                "pt-BR": "Arrastar um arquivo para outro disco pode fazer o aplicativo travar",
+                "ru": "Перетаскивание файла на другой диск может привести к зависанию приложения",
+                "uk": "Перетягування файлу на інший диск може призвести до зависання застосунку",
+                "es-MX": "Arrastrar un archivo a otro disco puede congelar la aplicación",
+                "ko": "파일을 다른 디스크로 드래그하면 앱이 멈출 수 있음",
+                "nl": "Een bestand naar een andere schijf slepen kan de app laten vastlopen",
+                "tr": "Bir dosyayı başka bir diske sürüklemek uygulamayı dondurabilir",
+                "vi": "Kéo tệp sang ổ đĩa khác có thể làm ứng dụng bị treo",
+                "ar": "سحب ملف إلى قرص آخر قد يجمّد التطبيق",
+                "ca": "Arrossegar un fitxer a un altre disc pot bloquejar l’app",
+                "el": "Το σύρσιμο αρχείου σε άλλο δίσκο μπορεί να παγώσει την εφαρμογή",
+                "nb": "Å dra en fil til en annen disk kan fryse appen",
+                "zh-TW": "將檔案拖到其他磁碟時 App 可能停止回應",
+                "hi": "किसी फ़ाइल को दूसरी डिस्क पर ड्रैग करने से ऐप फ़्रीज़ हो सकता है"
+            },
+            "issues": ["300"]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.06",

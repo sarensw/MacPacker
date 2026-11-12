@@ -1675,11 +1675,10 @@ extension ArchiveState {
             )
             let result = try await extractor.extract(
                 batch: batch,
+                as: url,
                 onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
             )
             tempDirectories.append(result.tempDir)
-            try Task.checkCancellation()
-            try FileManager.default.moveItem(at: result.url, to: url)
         }
         progressCenter.setOnCancel(jobId) {
             cancelFlag.cancel()
