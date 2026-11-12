@@ -255,23 +255,26 @@ final actor ArchiveLoader {
     }
     
     /// Tests the archive at `url` without listing it: every entry is decoded and
-    /// checked against its checksum, and nothing is written. The engine selected
-    /// for the format gets the file as it is, a split as its first volume, and a
-    /// compound as the compressed file around the archive, which holds all of it.
+    /// checked against its checksum, and nothing is written. It runs on the
+    /// engine the catalog says can test the format, whichever engine opens it,
+    /// and gets the file as it is, a split as its first volume, and a compound
+    /// as the compressed file around the archive, which holds all of it.
     public func test(url: URL, onProgress: ArchiveExtractionProgress?) async throws -> ArchiveTestResult {
         let detected = try detect(url)
         var file = url
         if let split = detected.split {
             file = try await firstVolume(of: url, split: split, type: detected.type)
         }
-        let typeID = detected.composition?.components.last ?? detected.type.id
-        guard let engine = archiveEngineSelector.engine(for: typeID) else {
-            throw ArchiveError.invalidArchive("No engine is configured for \(detected.type.name).")
+        let type = detected.composition?.components.last.flatMap { archiveTypeDetector.type(for: $0) } ?? detected.type
+        guard let tester = type.engines.first(where: \.canTest).flatMap({ ArchiveEngineType(configId: $0.id) }) else {
+            log.notice("No engine can test the format", context: ["file": url.lastPathComponent, "type": type.id])
+            throw ArchiveError.testUnsupported
         }
+        let engine = archiveEngineSelector.engine(for: tester)
         log.info("Testing archive", context: [
             "file": url.lastPathComponent,
-            "type": typeID,
-            "engine": archiveEngineSelector.engineType(for: typeID)?.configId ?? "unknown"
+            "type": type.id,
+            "engine": tester.configId
         ])
         return try await Sandbox.access(url: file) {
             try await engine.test(file, passwordResolver: passwordResolver, onProgress: onProgress)

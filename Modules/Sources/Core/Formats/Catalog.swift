@@ -155,13 +155,18 @@ public struct RuleTestDto: Codable, Sendable {
 
 public struct EngineDto: Codable, Sendable {
     public let id: String                // engine ID ("xad", "7zip", ...)
-    public let capabilities: [String]    // ["listContents", "extractFiles", "splitVolumes"]
+    public let capabilities: [String]    // ["listContents", "extractFiles", "splitVolumes", "test"]
     public let `default`: Bool?          // optional, only present on one item
 
     /// Whether the engine writes archives of its format, so one it opened can be
     /// changed. An engine that only reads numbers entries its own way, and the
     /// writer would take those numbers for other entries.
     public var canEdit: Bool { capabilities.contains("edit") }
+
+    /// Whether the engine checks every entry of its format against its checksum
+    /// without writing anything. A test runs on such an engine, whichever engine
+    /// opens the format.
+    public var canTest: Bool { capabilities.contains("test") }
 }
 
 // MARK: - Compounds

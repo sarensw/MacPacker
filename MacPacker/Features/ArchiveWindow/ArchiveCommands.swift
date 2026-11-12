@@ -31,15 +31,6 @@ struct ArchiveCommands: Commands {
 
             FilenameEncodingMenu()
 
-            Button {
-                // what is tested is the file, which a save is rewriting
-                guard let state = Self.frontArchiveState(), let url = state.url,
-                      state.root != nil, !state.isSaving else { return }
-                state.test(url)
-            } label: {
-                Text(.commonTestArchive)
-            }
-
             Divider()
 
             Button {

@@ -30,7 +30,9 @@ enum ArchiveError: Error, LocalizedError {
         case .passwordCancelled: return "Password entry was cancelled."
         case .xadError(let code, let message): return "\(message) (error \(code))"
         case .saveRefused(let message): return message
-        case .testUnsupported: return "Only the 7-Zip engine can test archives."
+        case .testUnsupported:
+            return String(localized: "Testing isn't supported for this format.", bundle: .module,
+                          comment: "Progress window, under the name of an archive the user asked to test, in place of the verdict: archives of its kind can be opened but not checked.")
         }
     }
 }

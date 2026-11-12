@@ -193,8 +193,9 @@ public protocol ArchiveEngine: Sendable {
     ) async throws
 
     /// Decodes every entry of the archive at `url` and checks it against its
-    /// checksum, writing nothing. Engines that cannot keep the default
-    /// implementation, which throws ``ArchiveError/testUnsupported``.
+    /// checksum, writing nothing. Asked only of an engine whose catalog entry
+    /// declares `test`; the others keep the default implementation, which throws
+    /// ``ArchiveError/testUnsupported``.
     func test(
         _ url: URL,
         passwordResolver: @escaping ArchivePasswordResolver,
@@ -205,9 +206,10 @@ public protocol ArchiveEngine: Sendable {
 public extension ArchiveEngine {
     func readingNames(as encoding: ArchiveNameEncoding?) -> any ArchiveEngine { self }
 
-    // ponytail: 7-Zip only. XADMaster checks a checksum while it extracts, and
-    // its reads raise exceptions Swift cannot catch, so testing there means
-    // extracting to a temp folder; add it if StuffIt users ask.
+    // ponytail: 7-Zip only, the one engine the catalog declares `test` for.
+    // XADMaster checks a checksum while it extracts, and its reads raise
+    // exceptions Swift cannot catch, so testing there means extracting to a temp
+    // folder; add it, and `test` to its catalog entries, if StuffIt users ask.
     func test(
         _ url: URL,
         passwordResolver: @escaping ArchivePasswordResolver,

@@ -105,6 +105,12 @@ struct HomeView: View {
                 // Also the name the new archive carries until it is saved.
                 let newArchive = String(localized: .commonNewArchive)
                 StartCard(icon: "doc.badge.plus", title: newArchive) { state.create(named: newArchive) }
+
+                StartCard(icon: "checkmark.seal", title: String(localized: .commonTestArchive)) {
+                    ArchiveTestPanel.run { state.test($0) }
+                }
+                // the toolbar's Test Archive is on this window too
+                .accessibilityIdentifier("home.testArchive")
             }
         }
     }

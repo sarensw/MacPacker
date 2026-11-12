@@ -33,11 +33,20 @@ class AppUrlTestHandler: AppUrlHandler {
             return
         }
         for fileUrl in appUrl.files {
-            let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
-            // the other volumes of a split, and a password, are asked for as when opening
-            state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
-            state.passwordProvider = { @MainActor request in await PasswordWindow.ask(request) }
-            await state.test(fileUrl).value
+            await Self.test(fileUrl, catalog: catalog, engineSelector: engineSelector).value
         }
+    }
+
+    /// Tests `url` with no archive window of its own: the verdict shows in the
+    /// progress window. File ▸ Test Archive tests this way too.
+    @MainActor @discardableResult
+    static func test(
+        _ url: URL, catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol
+    ) -> Task<Void, Never> {
+        let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
+        // the other volumes of a split, and a password, are asked for as when opening
+        state.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
+        state.passwordProvider = { @MainActor request in await PasswordWindow.ask(request) }
+        return state.test(url)
     }
 }

@@ -520,6 +520,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
     }
     
+    /// File ▸ Test Archive: asks which archives to test, with or without a
+    /// window open.
+    func testArchivesUsingOpenPanel() {
+        let appState = appState
+        ArchiveTestPanel.run { url in
+            AppUrlTestHandler.test(url, catalog: appState.catalog, engineSelector: appState.engineSelector)
+        }
+    }
+
     func openNewArchiveWindow() {
         self.archiveWindowManager?.openNewArchiveWindow()
     }

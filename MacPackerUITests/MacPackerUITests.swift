@@ -615,10 +615,23 @@ final class MacPackerUITests: XCTestCase {
         return (whole, damaged)
     }
 
-    /// File ▸ Test Archive checks the archive in front and says what it found in
-    /// the progress window: nothing for a whole archive, the damaged file for one
-    /// whose CRC no longer matches (#232).
-    func testTestArchiveFromTheFileMenuShowsTheVerdict() throws {
+    /// Chooses `file` in the open panel that is up: Go to Folder (⇧⌘G) takes the
+    /// path of a file too, and selects it.
+    private func pick(_ file: URL, inOpenPanelOf app: XCUIApplication) {
+        let open = app.windows.buttons["Open"].firstMatch
+        XCTAssertTrue(open.waitForExistence(timeout: 10), "no open panel")
+        app.typeKey("g", modifierFlags: [.command, .shift])
+        app.typeText(file.path)
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(open.wait(for: \.isEnabled, toEqual: true, timeout: 10), "\(file.lastPathComponent) is not selected")
+        open.click()
+    }
+
+    /// The toolbar's Test Archive checks the archive the window shows and says
+    /// what it found in the progress window: nothing for a whole archive, the
+    /// damaged file for one whose CRC no longer matches. A click on the row
+    /// leaves the verdict where it is: a test has no chart to open (#232).
+    func testTestArchiveFromTheToolbarShowsTheVerdict() throws {
         let dir = try makeWorkDir("test-archive")
         defer { try? FileManager.default.removeItem(at: dir) }
         let (whole, damaged) = try makeWholeAndDamagedZip(in: dir)
@@ -626,14 +639,91 @@ final class MacPackerUITests: XCTestCase {
         for (zip, verdict) in [(whole, "No errors found"), (damaged, "Damaged: readme.txt")] {
             let app = launchApp(arguments: ["-ArchivePath", zip.path])
             XCTAssertTrue(app.staticTexts["readme.txt"].waitForExistence(timeout: 15), "\(zip.lastPathComponent) did not load")
-            app.menuBars.menuBarItems["File"].click()
-            app.menuBars.menuItems["Test Archive"].click()
+            let test = app.toolbars.buttons["Test Archive"].firstMatch
+            XCTAssertTrue(test.waitForExistence(timeout: 5), "the toolbar has no Test Archive")
+            test.click()
 
-            let progress = app.windows["progress.window"]
-            XCTAssertTrue(progress.staticTexts[verdict].waitForExistence(timeout: 15), "no \"\(verdict)\" for \(zip.lastPathComponent)")
+            let line = app.windows["progress.window"].staticTexts[verdict]
+            XCTAssertTrue(line.waitForExistence(timeout: 15), "no \"\(verdict)\" for \(zip.lastPathComponent)")
+            line.click()
+            XCTAssertFalse(line.waitForNonExistence(timeout: 2), "a click on the row hid \"\(verdict)\"")
             add(screenshot(app, name: verdict))
             app.terminate()
         }
+    }
+
+    /// Test Archive on the start page and in the File menu asks which archives
+    /// to test: neither needs one open (#232).
+    ///
+    /// `-ArchivePath` keeps the welcome window away; ⌘⇧N then opens an empty
+    /// window, which shows the start page.
+    func testTestArchiveAsksWhichOneOnTheStartPageAndInTheFileMenu() throws {
+        let dir = try makeWorkDir("test-archive-panel")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let (whole, damaged) = try makeWholeAndDamagedZip(in: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", whole.path])
+        XCTAssertTrue(app.staticTexts["readme.txt"].waitForExistence(timeout: 15), "the archive did not load")
+        app.typeKey("n", modifierFlags: [.command, .shift])
+        let card = app.buttons["home.testArchive"]
+        XCTAssertTrue(card.waitForExistence(timeout: 10), "the start page has no Test Archive")
+        card.click()
+        pick(damaged, inOpenPanelOf: app)
+
+        let progress = app.windows["progress.window"]
+        XCTAssertTrue(progress.staticTexts["Damaged: readme.txt"].waitForExistence(timeout: 15),
+                      "no verdict for the start page's test")
+
+        app.menuBars.menuBarItems["File"].click()
+        app.menuBars.menuItems["Test Archive"].click()
+        pick(whole, inOpenPanelOf: app)
+        XCTAssertTrue(progress.staticTexts["No errors found"].waitForExistence(timeout: 15),
+                      "no verdict for the File menu's test")
+        add(screenshot(app, name: "start page and File menu verdicts"))
+        app.terminate()
+    }
+
+    /// Preview, Extract, Test and the search field act on the archive in the
+    /// window, so they are off on the start page, which has none. Preview and
+    /// Extract selected wait for a selection too, like Delete.
+    ///
+    /// The archive's window closes before the empty one opens: the start page
+    /// is then the only window, and its controls the only ones to find.
+    func testArchiveControlsAreOffOnTheStartPage() throws {
+        let dir = try makeWorkDir("controls-off")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let (whole, _) = try makeWholeAndDamagedZip(in: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", whole.path, "-\(quitOnLastWindowClosedKey)", "NO"])
+        let row = app.staticTexts["readme.txt"]
+        XCTAssertTrue(row.waitForExistence(timeout: 15), "the archive did not load")
+        let search = app.windows.searchFields["archive.searchField"]
+        func button(_ label: String) -> XCUIElement { app.toolbars.buttons[label].firstMatch }
+        func becomes(_ element: XCUIElement, _ enabled: Bool) -> Bool {
+            element.wait(for: \.isEnabled, toEqual: enabled, timeout: 5)
+        }
+
+        XCTAssertTrue(search.waitForExistence(timeout: 5), "no search field")
+        for control in [button("Extract archive"), button("Test Archive"), search] {
+            XCTAssertTrue(becomes(control, true), "\(control) is off with an archive open")
+        }
+        for label in ["Preview", "Extract selected"] {
+            XCTAssertTrue(becomes(button(label), false), "\(label) is on with nothing selected")
+        }
+        row.click()
+        for label in ["Preview", "Extract selected"] {
+            XCTAssertTrue(becomes(button(label), true), "\(label) is off with readme.txt selected")
+        }
+
+        app.typeKey("w", modifierFlags: .command)
+        app.typeKey("n", modifierFlags: [.command, .shift])
+        XCTAssertTrue(app.buttons["home.testArchive"].waitForExistence(timeout: 10), "no start page")
+        XCTAssertTrue(search.waitForExistence(timeout: 5), "no search field on the start page")
+        for label in ["Preview", "Extract selected", "Extract archive", "Test Archive"] {
+            XCTAssertTrue(becomes(button(label), false), "\(label) is on on the start page")
+        }
+        XCTAssertTrue(becomes(search, false), "the search field is on on the start page")
+        app.terminate()
     }
 
     /// Finder's Test Archive starts the app without a window of its own and puts

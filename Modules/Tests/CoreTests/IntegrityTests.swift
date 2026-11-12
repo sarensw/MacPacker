@@ -138,13 +138,29 @@ extension AllCoreTests {
             }
         }
 
-        /// XADMaster has no test of its own, and its reads raise exceptions
-        /// Swift cannot catch: an archive XAD reads says so instead of a verdict.
-        @Test func anEngineThatCannotTestSaysSo() async throws {
-            let job = try await test(fixture("defaultArchives/defaultArchive.zip"), engines: ArchiveEngineSelectorXad())
+        /// A format no engine can test says so about the format: which engine
+        /// reads it is nothing a user picked or needs to know. Only XAD reads
+        /// StuffIt, and the catalog declares `test` for 7-Zip alone.
+        @Test func aFormatNoEngineCanTestSaysSo() async throws {
+            let job = try await test(fixture("stuffit/testfile.stuffit7_dlx.macx1.sit"))
 
-            #expect(job.state == .failed(ArchiveError.testUnsupported.localizedDescription))
+            #expect(job.state == .failed("Testing isn't supported for this format."))
             #expect(job.testResult == nil)
+        }
+
+        /// A test runs on the engine the catalog says can test the format,
+        /// whichever engine was picked to open it: here XAD, which cannot.
+        @Test func aTestRunsOnTheEngineThatCanTest() async throws {
+            let catalog = ArchiveTypeCatalog()
+            let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
+            store.isAutomatic = false
+            store.setSelectedEngine(.xad, for: "zip")
+
+            let job = try await test(
+                fixture("damaged/crc.zip"),
+                engines: ArchiveEngineSelector(catalog: catalog, configStore: store))
+
+            #expect(job.testResult == ArchiveTestResult(damagedEntries: ["folder/README.md"], isArchiveDamaged: false))
         }
     }
 }

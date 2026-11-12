@@ -122,10 +122,16 @@ private struct ExtractionProgressRowView: View {
     let onToggleExpanded: () -> Void
     let onCancel: () -> Void
 
+    /// A test writes nothing, so it has no byte counts and no throughput to
+    /// open up to: its bar, then its verdict, is all there is.
+    private var canExpand: Bool { job.hasEngineProgress && job.kind != .test }
+
+    private var showsChart: Bool { isExpanded && canExpand }
+
     var body: some View {
         // collapsed: everything vertically centered on the badge line;
         // expanded: header on line with the controls, details fade in
-        HStack(alignment: isExpanded ? .top : .center, spacing: 12) {
+        HStack(alignment: showsChart ? .top : .center, spacing: 12) {
             typeBadge
 
             VStack(alignment: .leading, spacing: 6) {
@@ -141,14 +147,14 @@ private struct ExtractionProgressRowView: View {
 
                     trailingControl
 
-                    if job.hasEngineProgress {
+                    if canExpand {
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                if isExpanded, job.hasEngineProgress {
+                if showsChart {
                     Group {
                         ExtractionSpeedChartView(
                             samples: job.speedSamples,
@@ -174,7 +180,7 @@ private struct ExtractionProgressRowView: View {
                         .font(.caption)
                     }
                     .modifier(FadeInOnAppear())
-                } else if !isExpanded {
+                } else {
                     HStack(spacing: 10) {
                         if let result = job.testResult {
                             verdict(result)
@@ -195,7 +201,7 @@ private struct ExtractionProgressRowView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            if job.hasEngineProgress {
+            if canExpand {
                 onToggleExpanded()
             }
         }
@@ -233,7 +239,7 @@ private struct ExtractionProgressRowView: View {
 
     @ViewBuilder
     private var bytesText: some View {
-        if let total = job.effectiveTotalBytes {
+        if job.kind != .test, let total = job.effectiveTotalBytes {
             Text(verbatim: "\(formatBytes(job.completedBytes)) / \(formatBytes(total))")
                 .font(.callout.weight(.semibold))
                 .foregroundStyle(.secondary)

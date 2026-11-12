@@ -1009,6 +1009,13 @@ extension ArchiveState {
         canBeEdited && !isSaving && selectedItem.map { !isWithinOpenedArchive($0) } == true
     }
 
+    /// Whether there is an archive file to preview, extract or test from: the
+    /// start page and a new archive never saved have none, and a save is
+    /// rewriting it.
+    public var canReadArchive: Bool {
+        url != nil && root != nil && !isSaving
+    }
+
     /// Saves the pending changes.
     ///
     /// - For an archive loaded from disk, the changes are applied in place.
