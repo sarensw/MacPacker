@@ -542,6 +542,11 @@ public:
     Int32 failedOpResult = NArchive::NExtract::NOperationResult::kOK;
     /// Every entry that did not decode, in the order they came.
     std::vector<UInt32> failedEntries;
+    /// Set by a test: once an encrypted entry decoded and matched, the password
+    /// is right, and an encrypted entry failing after it is damaged.
+    /// Extraction still reads every such failure as a wrong password.
+    bool testing = false;
+    bool passwordProven = false;
     /// Extracted files whose name starts with "._", i.e. candidate AppleDouble
     /// sidecars. They cannot be resolved as they arrive: a sidecar may be stored
     /// before the entry it describes, and `._x` sorts before `x`, so that is the
@@ -910,6 +915,9 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
     // back, chmod it, or replace it with a symlink.
     _outFileStream.Release();
 
+    if (opRes == NArchive::NExtract::NOperationResult::kOK && _currentIsEncrypted)
+        passwordProven = true;
+
     if (opRes != NArchive::NExtract::NOperationResult::kOK) {
         // The entry did not decode. Whatever bytes landed on disk are garbage —
         // usually zero of them — so remove the file instead of leaving an empty
@@ -920,7 +928,7 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
         // 7z AES stores no password verifier, so the only sign of a bad
         // password is that the plaintext fails its CRC. On an encrypted entry
         // that is what a wrong password looks like, not a damaged archive.
-        if (_currentIsEncrypted &&
+        if (_currentIsEncrypted && !(testing && passwordProven) &&
             (opRes == NArchive::NExtract::NOperationResult::kDataError ||
              opRes == NArchive::NExtract::NOperationResult::kCRCError))
             opRes = NArchive::NExtract::NOperationResult::kWrongPassword;
@@ -1746,6 +1754,7 @@ int sz_test_all(SZArchiveRef archive,
                                                 handle->password, handle->hasPassword,
                                                 progress, progress_context);
         CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
+        callback->testing = true;
 
         const HRESULT hr = handle->activeArchive()->Extract(
             nullptr, (UInt32)(Int32)-1, 1, callback);

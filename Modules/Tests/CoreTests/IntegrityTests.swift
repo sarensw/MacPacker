@@ -67,7 +67,9 @@ extension AllCoreTests {
         /// What is damaged is named, and only that: an archive with one damaged
         /// entry has others that are fine. An archive cut short says so itself,
         /// also where every entry that is left reads, and so does one whose own
-        /// checksum no longer matches, of which 7-Zip only warns.
+        /// checksum no longer matches, of which 7-Zip only warns. In an encrypted
+        /// archive, what fails after an entry decrypted and matched is damaged:
+        /// the password was right, and asking again can't help.
         @Test(arguments: [
             ("damaged/crc.zip", ["folder/README.md"], false),
             ("damaged/crc.7z", ["folder/NestedArchive.zip"], false),
@@ -76,9 +78,10 @@ extension AllCoreTests {
             ("damaged/noCentralDirectory.zip", [], true),
             ("damaged/crc.dmg", [], true),
             ("damaged/tocChecksum.xar", [], true),
+            ("damaged/crcEncrypted.7z", ["folder/README.md", "hello world.txt"], false),
         ])
         func damageIsFoundAndNamed(arg: (String, [String], Bool)) async throws {
-            let job = try await test(fixture(arg.0))
+            let job = try await test(fixture(arg.0), password: "password")
 
             #expect(job.testResult == ArchiveTestResult(damagedEntries: arg.1, isArchiveDamaged: arg.2))
             guard case .failed = job.state else {
@@ -119,6 +122,18 @@ extension AllCoreTests {
 
             #expect(job.state == .done)
             #expect(job.testResult?.isIntact == true)
+        }
+
+        /// A wrong password is asked again, not taken for damage: nothing has
+        /// decrypted yet to prove it right, the folder stored before the files
+        /// without encryption no more than anything else.
+        @Test func aWrongPasswordIsAskedAgain() async throws {
+            let result = try await Archive7ZipEngine().test(
+                fixture("password/7z_aes256.7z"),
+                passwordResolver: { $0.attempt == 1 ? "wrong" : "password" },
+                onProgress: nil)
+
+            #expect(result.isIntact)
         }
 
         /// Without the password there is nothing to decode, so there is no
