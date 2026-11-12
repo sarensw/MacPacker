@@ -149,18 +149,41 @@ extension AllCoreTests {
         }
 
         /// A test runs on the engine the catalog says can test the format,
-        /// whichever engine was picked to open it: here XAD, which cannot.
-        @Test func aTestRunsOnTheEngineThatCanTest() async throws {
+        /// whichever engine was picked to open it: here XAD, which cannot test,
+        /// nor read a split set.
+        @Test(arguments: [
+            ("damaged/crc.zip", ["folder/README.md"]),
+            ("zip/split_pk.zip", []),
+        ])
+        func aTestRunsOnTheEngineThatCanTest(arg: (String, [String])) async throws {
             let catalog = ArchiveTypeCatalog()
             let store = ArchiveEngineConfigStore(catalog: catalog, defaults: isolatedDefaults())
             store.isAutomatic = false
             store.setSelectedEngine(.xad, for: "zip")
 
             let job = try await test(
-                fixture("damaged/crc.zip"),
+                fixture(arg.0),
                 engines: ArchiveEngineSelector(catalog: catalog, configStore: store))
 
-            #expect(job.testResult == ArchiveTestResult(damagedEntries: ["folder/README.md"], isArchiveDamaged: false))
+            #expect(job.testResult == ArchiveTestResult(damagedEntries: arg.1, isArchiveDamaged: false))
+        }
+
+        /// The toolbar tests the archive the window opened, under that
+        /// archive's name, also while the window shows a nested archive.
+        @Test func theVerdictNamesTheArchiveTested() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+            state.open(url: fixture("defaultArchives/defaultArchive.zip"))
+            try await state.openTask?.value
+            let folder = try #require(state.root?.children?.compactMap { state.entries[$0] }.first { $0.type == .directory })
+            try await state.openAsync(item: folder)
+            try await state.openAsync(item: try #require(state.childItems?.first { $0.name == "NestedArchive.zip" }))
+            #expect(state.name == "NestedArchive.zip")
+
+            await state.test(try #require(state.url)).value
+
+            #expect(center.jobs.first?.archiveName == "defaultArchive.zip")
         }
     }
 }

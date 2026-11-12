@@ -1912,7 +1912,8 @@ extension ArchiveState {
     public func test(_ url: URL) -> Task<Void, Never> {
         let jobId = progressCenter.begin(
             kind: .test,
-            archiveName: (url == self.url ? name : nil) ?? url.lastPathComponent,
+            // not `name`: with a nested archive open, that is the nested one's
+            archiveName: splitSetName(for: url),
             destination: nil,
             itemCount: 0,
             totalBytes: nil

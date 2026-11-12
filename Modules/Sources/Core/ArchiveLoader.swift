@@ -171,7 +171,10 @@ final actor ArchiveLoader {
             // A split archive — same shape as the compound step: reduce any volume to
             // the real archive (its first segment). The read itself is wrapped in
             // `Sandbox.access`.
-            let firstVolume = try await firstVolume(of: url, split: split, type: detectorResult.type)
+            guard engineDeclares("splitVolumes", for: detectorResult.type) else {
+                throw ArchiveError.invalidArchive("The engine selected for \(detectorResult.type.name) can't read split archives. Switch to 7-Zip in Settings.")
+            }
+            let firstVolume = try await firstVolume(of: url, split: split)
             archiveUrl = firstVolume
             firstVolumeURL = firstVolume
             yield(.processing(progress: nil, activity: .splitFirstVolume(firstVolume.lastPathComponent)))
@@ -261,14 +264,17 @@ final actor ArchiveLoader {
     /// as the compressed file around the archive, which holds all of it.
     public func test(url: URL, onProgress: ArchiveExtractionProgress?) async throws -> ArchiveTestResult {
         let detected = try detect(url)
-        var file = url
-        if let split = detected.split {
-            file = try await firstVolume(of: url, split: split, type: detected.type)
-        }
         let type = detected.composition?.components.last.flatMap { archiveTypeDetector.type(for: $0) } ?? detected.type
-        guard let tester = type.engines.first(where: \.canTest).flatMap({ ArchiveEngineType(configId: $0.id) }) else {
+        guard let testing = type.engines.first(where: \.canTest),
+              let tester = ArchiveEngineType(configId: testing.id),
+              // the volumes are read by the engine that tests, not the one picked to open the format
+              detected.split == nil || testing.capabilities.contains("splitVolumes") else {
             log.notice("No engine can test the format", context: ["file": url.lastPathComponent, "type": type.id])
             throw ArchiveError.testUnsupported
+        }
+        var file = url
+        if let split = detected.split {
+            file = try await firstVolume(of: url, split: split)
         }
         let engine = archiveEngineSelector.engine(for: tester)
         log.info("Testing archive", context: [
@@ -305,14 +311,10 @@ final actor ArchiveLoader {
         return detectorResult
     }
 
-    /// The first volume of the split archive `url` is a part of. The engine
-    /// selected for `type` has to read volumes, and the folder holding them has
-    /// to be readable: access to it is asked for through the app, exactly like a
-    /// password.
-    private func firstVolume(of url: URL, split: SplitTypeDto, type: ArchiveTypeDto) async throws -> URL {
-        guard engineDeclares("splitVolumes", for: type) else {
-            throw ArchiveError.invalidArchive("The engine selected for \(type.name) can't read split archives. Switch to 7-Zip in Settings.")
-        }
+    /// The first volume of the split archive `url` is a part of. The folder
+    /// holding the volumes has to be readable: access to it is asked for through
+    /// the app, exactly like a password.
+    private func firstVolume(of url: URL, split: SplitTypeDto) async throws -> URL {
         let firstVolume = SplitVolumeResolver.firstVolume(for: url, split: split)
         guard await folderAccessResolver(firstVolume) else {
             throw ArchiveError.invalidArchive("Access to the folder of \(firstVolume.lastPathComponent) was declined; the other volumes can't be read.")
