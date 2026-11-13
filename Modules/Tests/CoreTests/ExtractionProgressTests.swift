@@ -7,6 +7,7 @@
 
 import Testing
 import Foundation
+import Combine
 @testable import Core
 
 extension AllCoreTests {
@@ -464,6 +465,40 @@ extension AllCoreTests {
             #expect(job.destination?.path == dest.path)
             #expect(job.itemCount == 1)
             #expect(job.totalBytes == Int64(fileItem.uncompressedSize))
+        }
+
+        // #300: the drag-out moved the extracted file into place on the main
+        // thread. Into another volume a move is a copy, and the app stood still
+        // for as long as the copy took. The engine sends its first progress
+        // report while it extracts, so the report reaches the main thread before
+        // anything the drag does after the extraction. The main thread is held
+        // from there: the file has to arrive all the same.
+        @Test func dragOutDeliversTheFileWhileTheMainThreadIsHeld() async throws {
+            let state = try await openedState()
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+
+            let dest = try makeDest()
+            defer { try? FileManager.default.removeItem(at: dest) }
+
+            let fileItem = state.entries.values.first(where: { $0.type == .file && $0.uncompressedSize > 0 })!
+            let target = dest.appendingPathComponent(fileItem.name)
+
+            var arrivedWhileHeld: Bool?
+            let hold = center.$jobs.sink { jobs in
+                guard arrivedWhileHeld == nil, jobs.contains(where: \.hasEngineProgress) else { return }
+                let deadline = Date().addingTimeInterval(5)
+                while !FileManager.default.fileExists(atPath: target.path), Date() < deadline {
+                    usleep(1_000)
+                }
+                arrivedWhileHeld = FileManager.default.fileExists(atPath: target.path)
+            }
+            defer { hold.cancel() }
+
+            try await state.fulfillDrag(item: fileItem, to: target)
+
+            #expect(arrivedWhileHeld != nil, "the engine never reported progress, so nothing was held")
+            #expect(arrivedWhileHeld == true, "the file arrived only once the main thread was free")
         }
 
         @Test func extractFullArchiveTracksJobAndProducesFiles() async throws {

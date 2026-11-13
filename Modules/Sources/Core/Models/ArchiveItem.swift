@@ -45,6 +45,12 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     /// synthesize because the archive carries no entry for it.
     public var isFolder: Bool { type == .directory || type == .virtual }
 
+    /// Whether Finder hides it: a name that starts with a dot, like
+    /// `.DS_Store`, or `Icon\r`, the invisible file that holds a folder's
+    /// custom icon. The sidecars of `__MACOSX/` and `._name` never get this
+    /// far: the engines fold them onto the files they describe.
+    public var isHidden: Bool { name.hasPrefix(".") || name == "Icon\r" }
+
     // The following are only relevant if this is a nested archive
     // that can be opened
     public private(set) var url: URL? = nil

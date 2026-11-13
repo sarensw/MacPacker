@@ -15,6 +15,8 @@ public enum AppUrlAction: String, Sendable {
     case extractToFolder
     case extractTo
     case compress
+    /// A zip without Mac-specific data, whatever the setting says.
+    case compressForWindows
     case compressEach
     case compressContents
     case addToArchive
@@ -38,7 +40,7 @@ public extension AppUrlAction {
         switch self {
         case .extractHere, .extractTo, .extractNextToArchive:
             true
-        case .extractToFolder, .open, .compress, .compressEach,
+        case .extractToFolder, .open, .compress, .compressForWindows, .compressEach,
              .compressContents, .addToArchive:
             false
         }
@@ -54,7 +56,7 @@ public extension AppUrlAction {
         switch self {
         case .open, .addToArchive, .extractTo:
             true
-        case .extractHere, .extractToFolder, .compress, .compressEach,
+        case .extractHere, .extractToFolder, .compress, .compressForWindows, .compressEach,
              .compressContents, .extractNextToArchive:
             false
         }
@@ -65,13 +67,13 @@ public extension AppUrlAction {
 /// `<scheme>://<action>?files=…&target=…[&format=…][&dated=<seconds since 1970>][&items=…]`.
 ///
 /// The scheme is registered with Launch Services, so any app or web page can
-/// open such a url: all of it is untrusted input, and parsing is where it gets
-/// checked.
+/// open such a url. The app carries out only what its own Finder extension
+/// sent (#286), and parsing checks every url all the same.
 public struct AppUrl: Equatable, Sendable {
     public var action: AppUrlAction
     public var files: [URL]
     public var target: URL
-    /// Extension of the archive to produce, for `compress`; `nil` means zip.
+    /// Extension of the archive to produce, for the compress actions; `nil` means zip.
     /// Always one the menu itself produces — it ends up in a file name.
     public var format: String?
     /// When the menu showed the dated entry, for `compress`; `nil` for an
@@ -164,6 +166,14 @@ public struct AppUrl: Equatable, Sendable {
         if action == .extractNextToArchive, self.files.count != 1 {
             throw .notOneArchive
         }
+    }
+
+    /// Extract Here for archives the app was handed to open, when it extracts
+    /// them instead (#280): one request per folder, as the menu entry sends
+    /// for a selection, so that each archive lands next to itself.
+    public static func extractHere(_ archives: [URL]) -> [AppUrl] {
+        Dictionary(grouping: archives) { $0.deletingLastPathComponent() }
+            .map { AppUrl(action: .extractHere, files: $0.value, target: $0.key) }
     }
 
     /// The archive's file name for this request: `base` as the compress rule

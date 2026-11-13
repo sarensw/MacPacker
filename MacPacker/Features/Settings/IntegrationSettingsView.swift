@@ -79,6 +79,24 @@ struct IntegrationSettingsView: View {
                 .toggleStyle(.checkbox)
                 .frame(width: 240, alignment: .leading)
             }
+
+            HStack(alignment: .top) {
+                Text(.settingsFinderToolbarIcon)
+                    .frame(width: 160, alignment: .trailing)
+
+                // Finder takes the toolbar image only when it starts the
+                // extension, and neither the app nor the extension can make
+                // it start a new one.
+                VStack(alignment: .leading, spacing: 4) {
+                    ToolbarIconPicker()
+
+                    Text(.settingsToolbarIconHint)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading, 8)
+                }
+                .frame(width: 240, alignment: .leading)
+            }
         }
         .padding()
         .onAppear {
@@ -129,6 +147,8 @@ private struct FinderMenuItemToggle: View {
             Text(.settingsExtractToChosenFolder)
         case .compressToDatedZip:
             Text(.settingsCompressToZipDateTime)
+        case .compressForWindows:
+            Text(.settingsCompressToZipForWindows)
         case .compressEachSeparately:
             Text(.settingsCompressEachItemSeparately)
         case .compressFolderContents:
@@ -143,6 +163,19 @@ private struct FinderMenuCascadedToggle: View {
 
     var body: some View {
         Toggle(isOn: $isCascaded) {
+        }
+    }
+}
+
+/// The icon of the MacPacker button in Finder's toolbar.
+private struct ToolbarIconPicker: View {
+    @AppStorage(FinderMenuSettings.toolbarIconKey, store: FinderMenuSettings.defaults)
+    private var icon: ToolbarIcon = .colored
+
+    var body: some View {
+        Picker(String(""), selection: $icon) {
+            Text(.settingsToolbarIconColored).tag(ToolbarIcon.colored)
+            Text(.settingsToolbarIconSubtle).tag(ToolbarIcon.subtle)
         }
     }
 }
