@@ -181,6 +181,22 @@ public class ArchiveState: ObservableObject {
     /// hidden files: that setting lives in the app group the extensions share,
     /// read through `Keys`. Tests inject their own.
     var defaults: UserDefaults = .standard
+    /// Set for an archive window's state: the id its extractions carry, so
+    /// that the window shows them itself rather than the progress window
+    /// (`ExtractionJob.shownIn`). `nil` for one no window shows — Finder's.
+    public var windowID: UUID?
+    /// The job of the Extract archive under way, which is what makes the
+    /// state busy while it runs.
+    @Published private var wholeExtractionJob: UUID?
+
+    /// Whether the state is busy with an Extract archive that its window
+    /// shows itself, with its own Cancel, so the status bar needn't. Extract
+    /// selected never makes the state busy: while one runs, whatever does is
+    /// something else, and the status bar shows it.
+    public var isBusyWithItsOwnExtraction: Bool {
+        guard isBusy, let windowID, let job = wholeExtractionJob else { return false }
+        return progressCenter.jobs(shownIn: windowID).contains { $0.id == job && !$0.isFinished }
+    }
     /// Passwords the user gave, by the file they were given for. One window can
     /// hold more than one archive: an archive inside the archive opens in the
     /// same tree, extracted to a temp file, and each can have its own password.
@@ -1655,6 +1671,7 @@ extension ArchiveState {
         let jobId = progressCenter.begin(
             archiveName: name ?? self.url?.lastPathComponent ?? "Archive",
             destination: url.deletingLastPathComponent(),
+            shownIn: windowID,
             itemCount: 1,
             totalBytes: Self.plannedBytes(of: [item])
         )
@@ -1752,6 +1769,7 @@ extension ArchiveState {
         let jobId = progressCenter.begin(
             archiveName: name ?? url?.lastPathComponent ?? "Archive",
             destination: destination,
+            shownIn: windowID,
             itemCount: items.count,
             totalBytes: Self.plannedBytes(of: items)
         )
@@ -1827,9 +1845,11 @@ extension ArchiveState {
         let jobId = progressCenter.begin(
             archiveName: name ?? url?.lastPathComponent ?? "Archive",
             destination: destination,
+            shownIn: windowID,
             itemCount: entries.values.count(where: { $0.type == .file }),
             totalBytes: (uncompressedSize ?? 0) > 0 ? uncompressedSize : nil
         )
+        wholeExtractionJob = jobId
 
         let cancelFlag = ExtractionCancelFlag()
         let task = Task {
@@ -1883,6 +1903,7 @@ extension ArchiveState {
             }
 
             self.isBusy = false
+            wholeExtractionJob = nil
             updateStatus(.done)
         }
         progressCenter.setOnCancel(jobId) {

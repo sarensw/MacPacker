@@ -11,6 +11,15 @@ import SwiftUI
 struct StatusBarView: View {
     @Environment(\.openURL) var openURL
     @EnvironmentObject var archiveState: ArchiveState
+    /// Where the window's extractions report — `ArchiveState.progressCenter`.
+    @ObservedObject var progressCenter: ExtractionProgressCenter
+
+    /// The window's own Extract archive is shown just above, with its own
+    /// Cancel: the bar keeps saying what the archive holds meanwhile. Anything
+    /// else under way still shows here.
+    private var isExtractingHere: Bool {
+        archiveState.isBusyWithItsOwnExtraction
+    }
     
     var typeName: String? {
         if let comp = archiveState.compositionType {
@@ -78,7 +87,7 @@ struct StatusBarView: View {
                 }
             } else {
                 HStack(alignment: .firstTextBaseline, spacing: 0) {
-                    if archiveState.isBusy {
+                    if archiveState.isBusy && !isExtractingHere {
                         CancelEngineActionButtonView() {
                             archiveState.cancelCurrentOperation()
                         }
