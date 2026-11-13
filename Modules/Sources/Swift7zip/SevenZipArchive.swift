@@ -50,7 +50,7 @@ public class SevenZipArchive {
 
     // MARK: - Inspection
 
-    /// Version of the embedded 7-Zip library, e.g. `26.05`.
+    /// Version of the embedded 7-Zip library, e.g. `26.06`.
     ///
     /// Read from the vendored sources at compile time, so it follows the
     /// `Sources/CSevenZip/vendor/7zip` submodule automatically.
@@ -102,6 +102,61 @@ public class SevenZipArchive {
                 return SevenZipEntry(bridgeEntry: raw)
             }
         }
+    }
+
+    // MARK: - Names
+
+    /// The names as 7-Zip read them and the bytes the archive stores them in, by
+    /// entry, when one of them can be in a code page, and nothing otherwise. Every
+    /// entry is in there that is not plain ASCII, the hidden
+    /// sidecars included, unless it declares UTF-8 itself and is: the archive does
+    /// not say what the others are in, so whoever knows has to say for all of
+    /// them. A flag on bytes that are not UTF-8 says nothing, as `bsdtar` sets it
+    /// whenever the locale is UTF-8, whatever the name is in.
+    public var storedNames: [(index: UInt32, path: String, bytes: Data)] {
+        guard sz_has_undecoded_paths(handle.ref) || canHideCodePages else { return [] }
+        return (0..<UInt32(Swift.max(0, sz_entry_count(handle.ref)))).compactMap { index in
+            guard let stored = sz_entry_path(handle.ref, index) else { return nil }
+            let path = String(cString: stored)
+            let bytes = Self.storedBytes(of: path)
+            guard bytes.contains(where: { $0 >= 0x80 }) else { return nil }
+            return sz_entry_declares_utf8(handle.ref, index) && String(data: bytes, encoding: .utf8) != nil
+                ? nil : (index, path, bytes)
+        }
+    }
+
+    /// Whether names 7-Zip read as UTF-8 can be in a code page all the same, as
+    /// `图片` in GBK happens to be valid UTF-8. A 7z or a RAR5 stores Unicode, and
+    /// 7-Zip does not say which is which: these two are where it says of a name.
+    // ponytail: zip and tar. In LZH, CAB and the like a code page takes a name that does not read.
+    private var canHideCodePages: Bool {
+        ["zip", "tar"].contains(formatName ?? "") && sz_has_non_ascii_paths(handle.ref)
+    }
+
+    /// Whether a `/` in a stored name can be a 0x5C. The handlers of these formats
+    /// take every 0x5C for a path separator (`WinPathToOsPath`), also the second
+    /// byte of a character: ソ and 表 in Shift-JIS, 許 in Big5.
+    public var slashesWereBackslashes: Bool {
+        ["Lzh", "Rar", "Cab"].contains(formatName ?? "")
+    }
+
+    /// Undoes what `sz_has_undecoded_paths` describes.
+    private static func storedBytes(of path: String) -> Data {
+        var bytes = Data()
+        for scalar in path.unicodeScalars {
+            if (0xEF80...0xEFFF).contains(scalar.value) {
+                bytes.append(UInt8(truncatingIfNeeded: scalar.value))
+            } else {
+                bytes.append(contentsOf: String(scalar).utf8)
+            }
+        }
+        return bytes
+    }
+
+    /// Lists and extracts the entry at `index` as `path`, for a name read in the
+    /// right code page. The archive stays as it is.
+    public func setPath(_ path: String, ofEntryAt index: UInt32) {
+        sz_set_entry_path(handle.ref, index, path)
     }
 
     // MARK: - Password
@@ -163,7 +218,17 @@ public class SevenZipArchive {
             handle.ref, index,
             destination.path, &errorPtr)
         try Self.check(result, errorPtr)
-        return [index: destination.appendingPathComponent(entry.path)]
+        return [index: Self.extractedURL(of: entry.path, in: destination)]
+    }
+
+    private static func extractedURL(of path: String, in destination: URL) -> URL {
+        destination.appendingPathComponent(extractedPath(of: path))
+    }
+
+    /// Where an extraction writes `path`, below its destination: the bridge drops
+    /// every empty, "." and ".." part, so that nothing lands outside of it.
+    static func extractedPath(of path: String) -> String {
+        path.split(separator: "/").filter { $0 != "." && $0 != ".." }.joined(separator: "/")
     }
 
     /// Byte progress during extraction, as reported by 7-Zip itself.
@@ -235,7 +300,7 @@ public class SevenZipArchive {
         try Self.check(result, errorPtr)
         var result2: [UInt32: URL] = [:]
         for (idx, path) in indexPaths {
-            result2[idx] = destination.appendingPathComponent(path)
+            result2[idx] = Self.extractedURL(of: path, in: destination)
         }
         return result2
     }
@@ -272,7 +337,7 @@ public class SevenZipArchive {
         try Self.check(result, errorPtr)
         var result2: [UInt32: URL] = [:]
         for entry in allEntries {
-            result2[entry.index] = destination.appendingPathComponent(entry.path)
+            result2[entry.index] = Self.extractedURL(of: entry.path, in: destination)
         }
         return result2
     }

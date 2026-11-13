@@ -6,6 +6,8 @@
 //  decided by what the launch was started for.
 //
 
+import CoreServices
+import Foundation
 import Testing
 @testable import Core
 
@@ -59,6 +61,38 @@ extension AllCoreTests {
             ]
             #expect(later == [false, false, false])
             #expect(launch.reason == first)
+        }
+
+        // MARK: - The launch event
+
+        private func openApplicationEvent(launchedAs: AEKeyword? = nil) -> NSAppleEventDescriptor {
+            let event = NSAppleEventDescriptor(
+                eventClass: AEEventClass(kCoreEventClass),
+                eventID: AEEventID(kAEOpenApplication),
+                targetDescriptor: nil,
+                returnID: AEReturnID(kAutoGenerateReturnID),
+                transactionID: AETransactionID(kAnyTransactionID)
+            )
+            if let launchedAs {
+                event.setParam(NSAppleEventDescriptor(enumCode: launchedAs), forKeyword: keyAEPropData)
+            }
+            return event
+        }
+
+        @Test func openApplicationLaunchesTheAppItself() {
+            #expect(Launch.isAppItself(launchedBy: openApplicationEvent()))
+        }
+
+        /// A service of the Services menu launches the app with "open
+        /// application" too, and sends its request after it. The launch is
+        /// the request's, which shows no window (#342).
+        @Test func aLaunchForAServiceIsNotOneOfTheAppItself() {
+            #expect(!Launch.isAppItself(launchedBy: openApplicationEvent(launchedAs: keyAELaunchedAsServiceItem)))
+        }
+
+        /// A url or a file to open: no event is in hand any more.
+        @Test func aLaunchWithoutAnEventIsNotOneOfTheAppItself() {
+            #expect(!Launch.isAppItself(launchedBy: nil))
         }
 
         // MARK: - Quitting when the work is done

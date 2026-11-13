@@ -1,77 +1,74 @@
-# ── Per-app beta shell (workflows-macos v0.5.10, product-file model) ──────────
+# ── Per-app distribute shell (workflows-apple v0.6.8, product-file model) ─────
 # Fires on push to main. The orchestrator discovers Config/products/*.json and
-# cuts a beta for each product whose OWN file changed and whose version is still
-# unreleased (primary MacPacker → bare v<ver>-beta.N). Channel toggles and the
-# Finder/QuickLook extension identity live in the product file; infra only here.
+# builds each product whose OWN file changed and whose version is still
+# unreleased: Direct to the Sparkle beta feed (primary MacPacker → bare
+# v<ver>-beta.N), App Store to TestFlight. The legs live in the product file;
+# infra only here.
 #
-# Also runs by hand (Actions → Distribute Beta → Run workflow) to re-cut a beta
+# Also runs by hand (Actions → Distribute → Run workflow) to re-cut a beta
 # when nothing changed since the last one — after a flaky runner, a toolchain
 # bump, or to reship the same code. It never overrides "already released": a
 # released version needs a new changelog version first.
 #
-# Cross-account (sarensw/MacPacker → LeanBytes/workflows-macos): `secrets: inherit`
+# Cross-account (sarensw/MacPacker → LeanBytes/workflows-apple): `secrets: inherit`
 # forwards nothing across accounts, so the map stays explicit.
 # ─────────────────────────────────────────────────────────────────────────────
-name: Distribute Beta
+name: Distribute
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
     inputs:
-      force-beta:
-        description: "Cut a beta even if nothing changed"
+      force:
+        description: "Build even if nothing changed"
         type: boolean
         default: false
 
 permissions:
   contents: write          # GH pre-release + the auto-pushed beta tag
+  actions: read            # find the last successful run
 
 jobs:
-  beta:
-    # Make sure the beta job only runs in our own repo, not any fork repo. A
-    # manual run from any branch but main would publish that branch as a beta.
+  distribute:
+    # Make sure this job only runs in our own repo, not any fork repo. A manual
+    # run from any branch but main would publish that branch as a beta.
     if: github.repository == 'sarensw/MacPacker' && github.ref == 'refs/heads/main'
-    uses: LeanBytes/workflows-macos/.github/workflows/distribute-beta.yml@v0.5.10
+    uses: LeanBytes/workflows-apple/.github/workflows/distribute.yml@v0.6.8
     secrets:
       DEVELOPER_ID_P12_BASE64:        ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
       DEVELOPER_ID_PASSWORD:          ${{ secrets.DEVELOPER_ID_PASSWORD }}
       KEYCHAIN_PASSWORD:              ${{ secrets.KEYCHAIN_PASSWORD }}
-      PROV_PROF_DEVID_BASE64:         ${{ secrets.PROV_PROF_DEVID_BASE64 }}
-      PROV_PROF_DEVID_FINDER_BASE64:  ${{ secrets.PROV_PROF_DEVID_FINDER_BASE64 }}
-      PROV_PROF_DEVID_QL_BASE64:      ${{ secrets.PROV_PROF_DEVID_QL_BASE64 }}
       APPLE_DISTR_P12_BASE64:         ${{ secrets.APPLE_DISTR_P12_BASE64 }}
       APPLE_DISTR_PASSWORD:           ${{ secrets.APPLE_DISTR_PASSWORD }}
       MAC_DISTR_P12_BASE64:           ${{ secrets.MAC_DISTR_P12_BASE64 }}
       MAC_DISTR_PASSWORD:             ${{ secrets.MAC_DISTR_PASSWORD }}
-      PROV_PROF_STORE_BASE64:         ${{ secrets.PROV_PROF_STORE_BASE64 }}
-      PROV_PROF_STORE_FINDER_BASE64:  ${{ secrets.PROV_PROF_STORE_FINDER_BASE64 }}
-      PROV_PROF_STORE_QL_BASE64:      ${{ secrets.PROV_PROF_STORE_QL_BASE64 }}
       ASC_KEY_ID:                     ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID:                  ${{ secrets.ASC_ISSUER_ID }}
       ASC_KEY_BASE64:                 ${{ secrets.ASC_KEY_BASE64 }}
       AWS_ACCESS_KEY_ID:              ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY:          ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       SPARKLE_ED_PRIVATE_KEY:         ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
-      # v0.4.x: the beta run-tests gate files a ticket when the suite fails.
+      # The run-tests gate files a ticket when the suite fails.
       JIRA_API_TOKEN:                 ${{ secrets.JIRA_API_TOKEN }}
-      SHARED_WORKFLOWS_TOKEN:         ${{ secrets.SHARED_WORKFLOWS_TOKEN }}
     with:
       # false on a push (the input does not exist there), true only when the box
       # is ticked on a manual run.
-      force-beta: ${{ inputs.force-beta || false }}
+      force: ${{ inputs.force || false }}
 
       # All jobs shall run on GitHub infrastructure, not LeanBytes infrastructure
-      runs-on-prepare:      '"macos-26"'
-      runs-on-build-direct: '"macos-26"'
-      runs-on-build-store:  '"macos-26"'
-      runs-on-test:         '"macos-26"'
-      runs-on-publish:      '"macos-26"'
+      runs-on-prepare:          '"macos-26"'
+      runs-on-build-mac-direct: '"macos-26"'
+      runs-on-build-mac-store:  '"macos-26"'
+      runs-on-test:             '"macos-26"'
+      runs-on-publish:          '"macos-26"'
 
-      artifact-retention-days: 90   # CI artifacts kept 90 days
-      # The store leg MUST archive "Release Store" — the orchestrator default is
-      # "Release", which would build the wrong flavor.
-      configuration-app-store: Release Store
+      artifact-retention-days: 90   # test results; build artifacts stay one day on a public repo
+
+      # New Sparkle items download from the GitHub pre-release, not S3, which
+      # charges for data out (#387). The appcast stays on S3: SUFeedURL is built
+      # into installed apps.
+      appcast-downloads-from-github: true
 
       # ── Test configuration ──
       run-tests: true
@@ -79,5 +76,5 @@ jobs:
       swift-package-path: Modules
       # The Swift tests check their archives against the current 7-Zip (`7zz`);
       # the runner image ships only p7zip 17.05 as `7z`. Installed through the
-      # shared pre-build hook, so nothing app-specific lives in workflows-macos.
+      # shared pre-build hook, so nothing app-specific lives in workflows-apple.
       pre-build-script: .ci/install-sevenzip.sh

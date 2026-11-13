@@ -9,12 +9,14 @@ import AppKit
 import Core
 import FinderMenu
 import Foundation
+import Swift7zip
 import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Writes `items` into a new archive at `destination` through the same
-/// add/save path the UI uses; the format follows the destination's extension.
+/// add/save path the UI uses. Without `options`, the format follows the
+/// destination's extension and the rest the settings.
 ///
 /// There is no window to show it in, so it goes to the progress window: that
 /// comes up once the compress takes long enough, can cancel it, and stays up
@@ -24,12 +26,13 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 private func writeArchive(
     _ items: [URL],
     to destination: URL,
+    options: CompressionOptions? = nil,
     catalog: ArchiveTypeCatalog,
     engineSelector: ArchiveEngineSelectorProtocol
 ) async -> Bool {
     log.notice("Compressing \(items.count) item(s) to \(destination.lastPathComponent)")
     let state = ArchiveState(catalog: catalog, engineSelector: engineSelector)
-    guard await state.compress(items, to: destination, showingProgress: true) else {
+    guard await state.compress(items, to: destination, options: options, showingProgress: true) else {
         if let error = state.error {
             log.error("Compress failed", context: ["error": error])
         } else {
@@ -42,9 +45,9 @@ private func writeArchive(
 }
 
 /// Finder actions "Compress to <name>.zip" and ".7z", optionally with the
-/// date and time in the name: creates the archive next to the selected files
-/// without further questions (one folder-access prompt is unavoidable under
-/// the sandbox).
+/// date and time in the name, and "Compress to <name>.zip for Windows":
+/// creates the archive next to the selected files without further questions
+/// (one folder-access prompt is unavoidable under the sandbox).
 class AppUrlCompressHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
@@ -72,7 +75,11 @@ class AppUrlCompressHandler: AppUrlHandler {
             extension: ext
         )
         let dest = CompressDestination.unique(named: name, in: folder)
-        if await writeArchive(appUrl.files, to: dest, catalog: self.catalog, engineSelector: self.engineSelector) {
+        // For Windows, Mac-specific data stays out whatever the setting says.
+        let options = appUrl.action == .compressForWindows
+            ? CompressionOptions(format: .zip, excludeMacData: true) : nil
+        if await writeArchive(appUrl.files, to: dest, options: options,
+                              catalog: self.catalog, engineSelector: self.engineSelector) {
             // only where it takes no second Finder window
             let selected = appUrl.itemsToSelect([dest])
             if !selected.isEmpty {

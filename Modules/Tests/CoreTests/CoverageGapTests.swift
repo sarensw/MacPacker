@@ -332,34 +332,6 @@ extension AllCoreTests {
         }
     }
 
-    // MARK: - CacheCleaner: clean()
-
-    @MainActor struct CacheCleanerCleanAllTests {
-
-        @Test func cleanAllRemovesCacheDir() {
-            // Create a ta directory in cache
-            let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-            let taDir = cacheDir.appendingPathComponent("ta", isDirectory: true)
-            let testDir = taDir.appendingPathComponent(UUID().uuidString, isDirectory: true)
-            try? FileManager.default.createDirectory(at: testDir, withIntermediateDirectories: true)
-
-            let cleaner = CacheCleaner()
-            cleaner.clean()
-
-            // After clean(), the ta directory may or may not exist (it removes it)
-            // At minimum this should not crash
-        }
-
-        @Test func cleanTempDirectoriesWithNonExistentPaths() {
-            let cleaner = CacheCleaner()
-            // Cleaning non-existent directories should not crash (hits error path)
-            cleaner.clean(tempDirectories: [
-                URL(fileURLWithPath: "/tmp/\(UUID().uuidString)"),
-                URL(fileURLWithPath: "/tmp/\(UUID().uuidString)")
-            ])
-        }
-    }
-
     // MARK: - ArchiveXadEngine: full extraction and error methods
 
     @MainActor struct ArchiveXadEngineExtraTests {
@@ -994,22 +966,6 @@ extension AllCoreTests {
         }
     }
 
-    // MARK: - CacheCleaner: error path when ta dir missing
-
-    @MainActor struct CacheCleanerErrorPathTests {
-
-        @Test func cleanWhenTaDirDoesNotExistHitsErrorPath() {
-            // Ensure the ta directory does not exist
-            let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-            let taDir = cacheDir.appendingPathComponent("ta", isDirectory: true)
-            try? FileManager.default.removeItem(at: taDir)
-
-            let cleaner = CacheCleaner()
-            // This should hit the catch block (error path) since ta dir doesn't exist
-            cleaner.clean()
-        }
-    }
-
     // MARK: - ArchiveExtractor: single extraction with destination
 
     @MainActor struct ArchiveExtractorWithDestinationTests {
@@ -1040,10 +996,77 @@ extension AllCoreTests {
                 archiveEngineSelector: ArchiveEngineSelector7zip(),
                 passwordResolver: { _ in nil }
             )
-            let result = try await extractor.extract(batch: batch, to: tempDest)
-            // File was moved from temp to destination
             let destFile = tempDest.appendingPathComponent(fileItem.name)
+            let result = try await extractor.extract(batch: batch, as: destFile)
+            // File was moved from temp to destination
             #expect(FileManager.default.fileExists(atPath: destFile.path))
+            #expect(result.url == destFile)
         }
+
+        // Into another volume, moving an extracted item into place is a copy
+        // that takes as long as the item is big. Like the engines' own calls it
+        // goes through `runBlocking`, onto a thread of its own, instead of
+        // holding a thread of the cooperative pool for that long (#300). A move
+        // made on the pool runs inside the task that called it; one made through
+        // `runBlocking` runs outside any task.
+        @Test func movingIntoAFolderRunsOffTheCooperativePool() async throws {
+            let (batch, _, folder) = try await fileBatchAndFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+
+            let watcher = MoveWatcher()
+            _ = try await extractor(watcher).extract(batches: [batch], to: folder)
+            #expect(!watcher.moves.isEmpty, "nothing was moved into the folder")
+            #expect(!watcher.moves.contains(true), "a move ran inside a task, on the cooperative pool")
+        }
+
+        @Test func movingToADropTargetRunsOffTheCooperativePool() async throws {
+            let (batch, item, folder) = try await fileBatchAndFolder()
+            defer { try? FileManager.default.removeItem(at: folder) }
+
+            let watcher = MoveWatcher()
+            _ = try await extractor(watcher).extract(batch: batch, as: folder.appending(component: item.name))
+            #expect(!watcher.moves.isEmpty, "nothing was moved to the drop target")
+            #expect(!watcher.moves.contains(true), "a move ran inside a task, on the cooperative pool")
+        }
+
+        private func extractor(_ watcher: MoveWatcher) -> ArchiveExtractor {
+            ArchiveExtractor(
+                archiveEngineSelector: ArchiveEngineSelector7zip(),
+                passwordResolver: { _ in nil },
+                moveItem: { from, to in
+                    watcher.noteWhereThisRuns()
+                    try FileManager.default.moveItem(at: from, to: to)
+                }
+            )
+        }
+
+        /// A batch for one file of the default archive, and an empty folder.
+        private func fileBatchAndFolder() async throws -> (ResolvedBatch, ArchiveItem, URL) {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            state.open(url: folderURL.appendingPathComponent("defaultArchive.zip"))
+            try await state.openTask?.value
+
+            let item = try #require(state.entries.values.first { $0.type == .file })
+            let batch = try #require(try ArchiveBatchResolver().resolveBatches(
+                for: [item], in: state.entries, using: ArchiveEngineSelector7zip()).first)
+            let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            return (batch, item, folder)
+        }
+
+    }
+}
+
+/// For each move, whether it ran inside a task.
+private final class MoveWatcher: @unchecked Sendable {
+    private let lock = NSLock()
+    private var insideATask: [Bool] = []
+
+    var moves: [Bool] { lock.withLock { insideATask } }
+
+    func noteWhereThisRuns() {
+        let inTask = withUnsafeCurrentTask { $0 != nil }
+        lock.withLock { insideATask.append(inTask) }
     }
 }

@@ -23,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     @AppStorage("updateBetaChannelOn") var updateBetaChannelOn: Bool = false
     @AppStorage("checkForUpdates") var checkForUpdates: SettingUpdateCheck = .automatically
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
+    @AppStorage(Keys.extractOnOpen) private var extractOnOpen: Bool = false
     private var archiveWindowManager: ArchiveWindowManager? = nil
     private var extractionProgressWindowController: ExtractionProgressWindowController? = nil
     private var dropMenuBarItem: DropMenuBarItem? = nil
@@ -32,6 +33,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private var dropCompressor: DropCompressor? = nil
     private var dropWindowController: DropWindowController? = nil
     private var pendingOpenURLs: [URL] = []
+    /// Finder's Services menu: MacPacker's menu where Finder shows no Finder
+    /// extension's, in iCloud Drive and other File Provider folders (#342).
+    private var finderServices: FinderServices? = nil
     /// What the app was launched for: it decides the launch windows, and
     /// whether the app quits again when a Finder action is done.
     private var launch = Launch()
@@ -73,6 +77,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     public func applicationWillFinishLaunching(_ notification: Notification) {
         guard !Self.isRunningInPreview else { return }
         log.notice("applicationWillFinishLaunching")
+        FinderRequestSenders.install()
     }
     
     public func application(_ application: NSApplication, open urls: [URL]) {
@@ -88,11 +93,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
         // first check if this is an app url, and handle it accordingly
         let appUrl: AppUrl? = urls.first.flatMap { UrlParser().parse(appUrl: $0) }
+        // Asked whatever comes first: a Finder action replayed after a file
+        // still uses up the note of who sent it (#286).
+        let fromFinderExtension = FinderRequestSenders.sentByFinderExtension(firstOf: urls)
+        // With "Extract archives on open" on, the archives among what is to
+        // be opened are extracted next to themselves instead, as Extract Here
+        // does (#280). What MacPacker cannot open still gets its window.
+        let detector = ArchiveTypeDetector(catalog: appState.catalog)
+        let archivesToExtract = appUrl == nil && extractOnOpen ? urls.filter { detector.detect(for: $0) != nil } : []
 
         // On a cold start this is what the launch was started for, so it
         // decides the launch windows. The welcome window goes on top of what
         // opens below.
-        let showsLaunchWindows = launch.started(for: appUrl == nil ? .openWith : .finderExtension)
+        let showsLaunchWindows = launch.started(for: appUrl == nil && archivesToExtract.isEmpty ? .openWith : .finderExtension)
         if showsLaunchWindows {
             openLaunchWindow()
         }
@@ -103,62 +116,105 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
 
         if let appUrl {
+            // Any app, and any web page the user lets through, can open the
+            // app's urls. Only what the Finder extension sent is carried out:
+            // the rest would read and write under the user's folder grants
+            // without a question (#286).
+            guard fromFinderExtension else {
+                log.error("Refused Finder action '\(appUrl.action.rawValue)': not sent by MacPacker's Finder extension")
+                Task {
+                    if finderLaunchIsOver {
+                        log.notice("Launched for a refused Finder action — quitting")
+                        NSApp.terminate(nil)
+                    }
+                }
+                return
+            }
             log.notice("Routing Finder app-url action '\(appUrl.action.rawValue)' for \(appUrl.files.count) file(s)")
-            var handler: AppUrlHandler?
-
-            // we will be here if this is a valid app url
-            // (url starting with app.macpacker:// scheme)
-            switch appUrl.action {
-            case .open:
-                handler = AppUrlOpenHandler()
-            case .extractHere:
-                handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .extractToFolder:
-                handler = AppUrlExtractToFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .compress:
-                handler = AppUrlCompressHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .addToArchive:
-                handler = AppUrlAddToArchiveHandler()
-            case .extractTo:
-                handler = AppUrlExtractToChosenFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .compressEach:
-                handler = AppUrlCompressEachHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            case .compressContents:
-                handler = AppUrlCompressContentsHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-            }
-
-            guard let handler else {
-                log.error("No handler available for action '\(appUrl.action.rawValue)'")
-                return
-            }
-            guard let archiveWindowManager else {
-                log.error("Archive window manager not ready; dropping action '\(appUrl.action.rawValue)'")
-                return
-            }
-
-            // We have all the url info, start the handlers now. The action
-            // counts as under way until all of it is done, so that the app
-            // does not quit in the middle of it: see
-            // `applicationShouldTerminateAfterLastWindowClosed`.
-            Task {
-                await ExtractionProgressCenter.shared.run {
-                    await handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
-                }
-                if finderLaunchIsOver {
-                    log.notice("Launched for a Finder action, which is done — quitting")
-                    NSApp.terminate(nil)
-                }
-            }
-
-            // no need to move further here as it was an app url
+            perform([appUrl])
             return
+        }
+
+        if !archivesToExtract.isEmpty, let archiveWindowManager {
+            log.notice("Extracting \(archivesToExtract.count) opened archive(s) instead")
+            let handler = AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+            run(handler, for: AppUrl.extractHere(archivesToExtract), in: archiveWindowManager)
         }
 
         // it is not an app url, therefore the assumption is that the app
         // was opened via Finder > right click > Open with...
-        for url in urls {
+        for url in urls where !archivesToExtract.contains(url) {
             log.notice("Open-with: opening \(url.lastPathComponent)")
             archiveWindowManager?.openArchiveWindow(for: url)
+        }
+    }
+
+    /// A service of Finder's Services menu, for what is selected there: the
+    /// requests of the Finder menu entry it stands in for. It is what the
+    /// launch was for, unless something else came first (#342).
+    private func performService(_ requests: [AppUrl]) {
+        log.notice("Services menu action '\(requests.first?.action.rawValue ?? "-")' for \(requests.flatMap(\.files).count) file(s)")
+        _ = launch.started(for: .finderExtension)
+        // Info.plist keeps AppKit from activating the app for these services
+        // (NSShouldActivateForServiceRequest), but that reaches only a running
+        // app: one launched for a service is activated as it launches. Finder
+        // takes the focus back before anything is shown. Asked of the system:
+        // `NSApp.isActive` can still be false here, with the app in front.
+        if let action = requests.first?.action, !action.bringsAppToFront, NSRunningApplication.current.isActive {
+            log.notice("Launched to the front for a service — handing the focus back to Finder")
+            _ = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.finder").first?.activate(options: [])
+        }
+        perform(requests)
+    }
+
+    /// Carries out a Finder action, all of whose requests ask for the same.
+    private func perform(_ requests: [AppUrl]) {
+        guard let action = requests.first?.action else {
+            log.error("Finder action without anything to act on")
+            return
+        }
+        guard let archiveWindowManager else {
+            log.error("Archive window manager not ready; dropping action '\(action.rawValue)'")
+            return
+        }
+        run(handler(for: action), for: requests, in: archiveWindowManager)
+    }
+
+    private func handler(for action: AppUrlAction) -> AppUrlHandler {
+        switch action {
+        case .open:
+            AppUrlOpenHandler()
+        case .extractHere:
+            AppUrlExtractHereHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .extractToFolder:
+            AppUrlExtractToFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .compress, .compressForWindows:
+            AppUrlCompressHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .addToArchive:
+            AppUrlAddToArchiveHandler()
+        case .extractTo:
+            AppUrlExtractToChosenFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .compressEach:
+            AppUrlCompressEachHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .compressContents:
+            AppUrlCompressContentsHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        }
+    }
+
+    /// Runs a Finder action to its end. It counts as under way until all of
+    /// it is done, so that the app does not quit in the middle of it: see
+    /// `applicationShouldTerminateAfterLastWindowClosed`.
+    private func run(_ handler: AppUrlHandler, for appUrls: [AppUrl], in archiveWindowManager: ArchiveWindowManager) {
+        Task {
+            await ExtractionProgressCenter.shared.run {
+                for appUrl in appUrls {
+                    await handler.handle(appUrl: appUrl, archiveWindowManager: archiveWindowManager)
+                }
+            }
+            if finderLaunchIsOver {
+                log.notice("Launched for a Finder action, which is done — quitting")
+                NSApp.terminate(nil)
+            }
         }
     }
     
@@ -168,7 +224,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
         // the terminate-time cleanup never runs when the app crashes or is
         // killed — clear stale extraction caches from previous runs here too
-        CacheCleaner().clean()
+        Task { await CacheCleaner().removeLeftovers() }
 
         // Built before the window manager: the archive windows are handed the
         // compressor and the way to open the quick-compress window, so their
@@ -193,6 +249,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // from its first window on, the app is in use as an app
         archiveWindowManager?.onFirstWindowOpened = { [weak self] in self?.startUpdateChecksIfInUse() }
         extractionProgressWindowController = ExtractionProgressWindowController(center: .shared)
+
+        // Once the window manager is there, which the services need. Finder
+        // sends the request of a service that launched the app after this.
+        let finderServices = FinderServices { [weak self] in self?.performService($0) }
+        self.finderServices = finderServices
+        NSApp.servicesProvider = finderServices
 
         // The window is cheap (the panel itself is built on first show); the menu
         // bar item installs itself only if the user switched it on.
@@ -228,12 +290,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // screen as it was (#279). That decides in `application(_:open:)`,
         // where it arrives, and it may still be on its way: AppKit hands it
         // over once it is done restoring windows, on one launch before this
-        // point and on the next after it. Should a launch bring nothing to
-        // open after all, it shows nothing either, until the app is opened:
-        // see `applicationShouldHandleReopen`.
+        // point and on the next after it. A service of the Services menu
+        // decides in `performService`, after this point (#342). Should a
+        // launch bring nothing to open after all, it shows nothing either,
+        // until the app is opened: see `applicationShouldHandleReopen`.
         let launchEvent = NSAppleEventManager.shared().currentAppleEvent
-        let startedAsApp = launchEvent?.eventClass == AEEventClass(kCoreEventClass)
-            && launchEvent?.eventID == AEEventID(kAEOpenApplication)
+        log.debug("Launch event", context: ["event": launchEvent.map { "\($0)" } ?? "none"])
+        let startedAsApp = Launch.isAppItself(launchedBy: launchEvent)
         let showsLaunchWindows: Bool
         if launchedToOpenSomething {
             showsLaunchWindows = launch.started(for: .launchParameters)
@@ -385,7 +448,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         if ExtractionDemo.isRequested { return .terminateNow }
 #endif
         guard let running = ExtractionProgressCenter.shared.runningKind else {
-            return .terminateNow
+            quitOnceCacheIsCleared()
+            return .terminateLater
         }
 
         // "extraction" / "compression": the lines an extraction always logged, as they were
@@ -414,15 +478,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         // an archive stays behind under the name the whole one was to have.
         Task { @MainActor in
             await ExtractionProgressCenter.shared.cancelAll(.compression, waitingUpTo: .seconds(5))
-            NSApp.reply(toApplicationShouldTerminate: true)
+            quitOnceCacheIsCleared()
         }
         return .terminateLater
     }
 
-    public func applicationWillTerminate(_ notification: Notification) {
-        guard !Self.isRunningInPreview else { return }
-        log.notice("applicationWillTerminate — cleaning cache")
-        CacheCleaner().clean()
+    /// Answers a `.terminateLater` once the cache is cleared: nothing extracted
+    /// outlives the app, not even from a protected archive. The app hides
+    /// first, so it is gone from the screen at once while the files go in the
+    /// background. A force quit before they are gone leaves the rest to the
+    /// next launch (#301).
+    private func quitOnceCacheIsCleared() {
+        log.notice("Quitting — clearing cache")
+        NSApp.hide(nil)
+        Task {
+            await CacheCleaner().removeAll()
+            NSApp.reply(toApplicationShouldTerminate: true)
+        }
     }
     
     func openArchiveUsingOpenPanel() {
