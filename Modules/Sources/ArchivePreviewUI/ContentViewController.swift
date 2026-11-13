@@ -65,40 +65,64 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
     
     func didRequestExtractSelected() {
         guard let state else { return }
-        guard let selectedItems = archiveViewController.selectedItems else { return }
+        guard let selectedItems = archiveViewController.selectedItems, !selectedItems.isEmpty else { return }
         guard let window = view.window ?? NSApp.keyWindow ?? NSApp.mainWindow else { return }
-        
-        let panel = NSOpenPanel()
-        panel.canChooseFiles = false
-        panel.canChooseDirectories = true
-        panel.allowsMultipleSelection = false
-        panel.canCreateDirectories = true
-        
-        let completion: (NSApplication.ModalResponse) -> Void = { response in
-            if response == .OK, let url = panel.url {
-                state.extract(items: selectedItems, to: url, smart: Keys.smartExtractionEnabled())
+
+        askWhereToExtract(in: window, startingIn: folderNextToTheArchive(of: state)) { [weak self] folder in
+            self?.extract(into: folder, names: selectedItems.map(\.name)) {
+                state.extract(items: selectedItems, to: folder, smart: Keys.smartExtractionEnabled())
             }
         }
-        
-        panel.beginSheetModal(for: window, completionHandler: completion)
     }
-    
+
     func didRequestExtractAll() {
         guard let state else { return }
         guard let window = view.window ?? NSApp.keyWindow ?? NSApp.mainWindow else { return }
-        
+        let topLevel = state.root?.children?.compactMap { state.entries[$0]?.name } ?? []
+
+        askWhereToExtract(in: window, startingIn: folderNextToTheArchive(of: state)) { [weak self] folder in
+            self?.extract(into: folder, names: topLevel) {
+                state.extract(to: folder, smart: Keys.smartExtractionEnabled())
+            }
+        }
+    }
+
+    // MARK: - Extracting
+
+    /// Where the folder dialog opens: the archive's own folder when "Extract
+    /// next to the archive" is on. The preview still asks — it may write only
+    /// where it is given access — but the answer is one click away.
+    private func folderNextToTheArchive(of state: ArchiveState) -> URL? {
+        Keys.extractNextToArchiveEnabled() ? state.url?.deletingLastPathComponent() : nil
+    }
+
+    /// Asks for the folder to extract into, as a sheet on the preview.
+    private func askWhereToExtract(in window: NSWindow, startingIn folder: URL?, then extract: @escaping @MainActor (URL) -> Void) {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
         panel.canCreateDirectories = true
-        
-        let completion: (NSApplication.ModalResponse) -> Void = { response in
+        panel.directoryURL = folder
+        panel.beginSheetModal(for: window) { response in
             if response == .OK, let url = panel.url {
-                state.extract(to: url, smart: Keys.smartExtractionEnabled())
+                extract(url)
             }
         }
-        
-        panel.beginSheetModal(for: window, completionHandler: completion)
+    }
+
+    /// Runs `extraction` into `folder`, and selects what it put there in
+    /// Finder once it is done when Finder has no window open, as the app does.
+    private func extract(into folder: URL, names: [String], _ extraction: @escaping @MainActor () -> Task<ExtractionJob.State, Never>) {
+        Task { @MainActor in
+            let picked = folder.startAccessingSecurityScopedResource()
+            defer { if picked { folder.stopAccessingSecurityScopedResource() } }
+            let before = ExtractedItems.contents(of: folder)
+            guard await extraction().value == .done else { return }
+            let result = ExtractedItems.find(in: folder, before: before, names: names)
+            if !result.isEmpty {
+                ExtractedItems.select(result)
+            }
+        }
     }
 }
