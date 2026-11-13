@@ -259,13 +259,13 @@ extension AllCoreTests {
             #expect(!center.hasOutcomesToShow)
 
             let tested = center.begin(kind: .test, archiveName: "e.zip", destination: nil, itemCount: 0, totalBytes: nil)
-            center.finish(tested, testedAs: ArchiveTestResult(damagedEntries: [], isArchiveDamaged: false))
+            center.finish(tested, testedAs: ArchiveTestResult(damagedEntries: []))
             #expect(center.jobs.first?.state == .done)
             #expect(center.hasOutcomesToShow)
 
             center.clearFinished()
             let damaged = center.begin(kind: .test, archiveName: "f.zip", destination: nil, itemCount: 0, totalBytes: nil)
-            center.finish(damaged, testedAs: ArchiveTestResult(damagedEntries: ["a.txt"], isArchiveDamaged: false))
+            center.finish(damaged, testedAs: ArchiveTestResult(damagedEntries: ["a.txt"]))
             #expect(center.jobs.first?.state == .failed("Damaged: a.txt"))
             #expect(center.hasOutcomesToShow)
         }

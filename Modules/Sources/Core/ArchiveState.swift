@@ -1929,10 +1929,11 @@ extension ArchiveState {
         let task = Task {
             do {
                 let result = try await loader.test(url: url, onProgress: progress)
-                log.info("Archive tested", context: [
+                // a notice, so that it is in the logs a user exports
+                log.notice("Archive tested", context: [
                     "file": url.lastPathComponent,
                     "damagedEntries": "\(result.damagedEntries.count)",
-                    "archiveDamaged": "\(result.isArchiveDamaged)"
+                    "archiveDamage": result.archiveDamage?.rawValue ?? "none"
                 ])
                 progressCenter.finish(jobId, testedAs: result)
             } catch is CancellationError {

@@ -94,18 +94,29 @@ public struct ArchiveExtractionResult: Sendable {
 public struct ArchiveTestResult: Equatable, Sendable {
     /// The entries that did not decode or did not match their checksum, by path.
     public let damagedEntries: [String]
-    /// Whether the archive reports damage of its own: cut short, its headers
-    /// broken. Every entry can read and the archive still not be whole.
-    public let isArchiveDamaged: Bool
+    /// How the archive reports damage of its own, nil when it reports none.
+    /// Every entry can read and the archive still not be whole.
+    public let archiveDamage: ArchiveDamage?
 
-    public init(damagedEntries: [String], isArchiveDamaged: Bool) {
+    public init(damagedEntries: [String], archiveDamage: ArchiveDamage? = nil) {
         self.damagedEntries = damagedEntries
-        self.isArchiveDamaged = isArchiveDamaged
+        self.archiveDamage = archiveDamage
     }
 
     public var isIntact: Bool {
-        damagedEntries.isEmpty && !isArchiveDamaged
+        damagedEntries.isEmpty && archiveDamage == nil
     }
+}
+
+/// How an archive is damaged of its own, where no entry has to show it.
+public enum ArchiveDamage: String, Sendable {
+    /// Cut short: what came after the cut is gone, files with it maybe.
+    case endsEarly
+    /// A checksum of its own no longer matches: part of it changed after it
+    /// was made.
+    case checksum
+    /// Anything else, its headers broken for one.
+    case other
 }
 
 /// Byte-level progress reported by an engine during extraction. `completed`

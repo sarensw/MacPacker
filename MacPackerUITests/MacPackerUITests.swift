@@ -637,12 +637,19 @@ final class MacPackerUITests: XCTestCase {
     /// The toolbar's Test Archive checks the archive the window shows and says
     /// what it found in the progress window: nothing for a whole archive, the
     /// damaged files for one whose CRCs no longer match while their names fit on
-    /// the line, else how many. A click on the row leaves the verdict where it
-    /// is: a test has no chart to open (#232).
+    /// the line, else how many; for an archive cut short, also why. A click on
+    /// the row leaves the verdict where it is: a test has no chart to open (#232).
     func testTestArchiveFromTheToolbarShowsTheVerdict() throws {
         let dir = try makeWorkDir("test-archive")
         defer { try? FileManager.default.removeItem(at: dir) }
         let (whole, damaged) = try makeWholeAndDamagedZip(in: dir)
+        // cut off where its central directory starts, at the offset the end of
+        // central directory record (the last 22 bytes) holds at 16: every file
+        // still reads, and only the archive itself can say it is incomplete
+        let bytes = try Data(contentsOf: whole)
+        let directory = bytes[(bytes.count - 6)..<(bytes.count - 2)].reversed().reduce(0) { $0 << 8 | Int($1) }
+        let cut = dir.appendingPathComponent("cut.zip")
+        try bytes.prefix(directory).write(to: cut)
         let few = try makeWholeAndDamagedZip(in: dir, files: ["a.txt", "b.txt", "c.txt"]).damaged
         let many = try makeWholeAndDamagedZip(in: dir, files: (1...12).map { String(format: "file%02d.txt", $0) }).damaged
 
@@ -651,6 +658,7 @@ final class MacPackerUITests: XCTestCase {
             (damaged, "readme.txt", "Damaged: readme.txt"),
             (few, "a.txt", "Damaged: a.txt, b.txt, c.txt"),
             (many, "file01.txt", "Damaged: 12 files"),
+            (cut, "readme.txt", "The archive ends early, so files may be missing."),
         ] {
             let app = launchApp(arguments: ["-ArchivePath", zip.path])
             XCTAssertTrue(app.staticTexts[first].waitForExistence(timeout: 15), "\(zip.lastPathComponent) did not load")

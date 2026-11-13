@@ -348,14 +348,20 @@ public class SevenZipArchive {
     /// - Parameter progress: Optional byte-progress callback; return `false` to abort.
     /// - Returns: the paths of the entries that did not decode or did not match
     ///   their checksum, and whether the archive reports damage of its own — cut
-    ///   short, its headers broken — which no entry has to show.
+    ///   short, its headers broken — which no entry has to show. With them, to
+    ///   tell why: what the archive reports, as 7-Zip's error flags; what the
+    ///   entries ended with, bit (1 << r) per 7-Zip operation result r; and a
+    ///   message the archive gives of its own (see `sz_test_all`).
     /// - Throws: ``SevenZipError/passwordMissing`` if any entry is encrypted and
     ///   no password was set, ``SevenZipError/passwordWrong`` when the one set did
     ///   not decrypt them, ``SevenZipError/cancelled`` when the progress callback
     ///   aborted, ``SevenZipError/extractionFailed(_:)`` when the test could not run.
     public func test(
         progress: ProgressHandler? = nil
-    ) throws -> (damagedPaths: [String], archiveIsDamaged: Bool) {
+    ) throws -> (
+        damagedPaths: [String], archiveIsDamaged: Bool,
+        archiveFlags: UInt32, entryResults: UInt32, archiveMessage: String?
+    ) {
         if !hasPassword, try entries.contains(where: \.isEncrypted) {
             throw SevenZipError.passwordMissing
         }
@@ -363,20 +369,25 @@ public class SevenZipArchive {
         var damaged: UnsafeMutablePointer<UInt32>?
         var count: UInt32 = 0
         var archiveIsDamaged = false
+        var archiveFlags: UInt32 = 0
+        var entryResults: UInt32 = 0
+        var message: UnsafeMutablePointer<CChar>?
         var errorPtr: UnsafeMutablePointer<CChar>?
         let result = withExtendedLifetime(box) {
             sz_test_all(
                 handle.ref,
                 box != nil ? Self.progressThunk : nil,
                 box.map { Unmanaged.passUnretained($0).toOpaque() },
-                &damaged, &count, &archiveIsDamaged, &errorPtr)
+                &damaged, &count, &archiveIsDamaged,
+                &archiveFlags, &entryResults, &message, &errorPtr)
         }
-        defer { free(damaged) }
+        defer { free(damaged); free(message) }
         if result != SZ_TEST_DAMAGED {
             try Self.check(result, errorPtr)
         }
         let indices = UnsafeBufferPointer(start: damaged, count: Int(count))
-        return (indices.map(path(ofEntryAt:)), archiveIsDamaged)
+        return (indices.map(path(ofEntryAt:)), archiveIsDamaged,
+                archiveFlags, entryResults, message.map { String(cString: $0) })
     }
 
     /// The path the listing shows `index` under, or for an entry it leaves out —

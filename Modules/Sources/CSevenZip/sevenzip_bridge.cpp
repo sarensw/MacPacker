@@ -542,6 +542,8 @@ public:
     Int32 failedOpResult = NArchive::NExtract::NOperationResult::kOK;
     /// Every entry that did not decode, in the order they came.
     std::vector<UInt32> failedEntries;
+    /// What those entries ended with: bit (1 << result) per NOperationResult.
+    UInt32 failedResults = 0;
     /// Set by a test: once an encrypted entry decoded and matched, the password
     /// is right, and an encrypted entry failing after it is damaged.
     /// Extraction still reads every such failure as a wrong password.
@@ -939,6 +941,8 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
             opRes == NArchive::NExtract::NOperationResult::kWrongPassword)
             failedOpResult = opRes;
         failedEntries.push_back(_currentIndex);
+        if ((UInt32)opRes < 32)
+            failedResults |= 1u << opRes;
         _currentIsSymlink = false;
         _currentMode = 0;
         _currentTime = EntryTime();
@@ -1720,26 +1724,37 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
 /// doesn't match, which 7-Zip only warns of (a dmg's, a xar's table of
 /// contents). Other warnings are left out, as there: a zip the way Nextcloud
 /// writes it warns of a headers error and holds nothing that is wrong.
-static bool reportsDamage(IInArchive *archive) {
+/// What it reports goes into `found` as kpv_ErrorFlags_* bits, the checksum as
+/// kpv_ErrorFlags_CrcError, and its message into `message` unless one is there.
+static bool reportsDamage(IInArchive *archive, UInt32 &found, std::string &message) {
+    UInt32 own = 0;
     NWindows::NCOM::CPropVariant flags;
-    if (archive->GetArchiveProperty(kpidErrorFlags, &flags) == S_OK
-        && flags.vt == VT_UI4 && flags.ulVal != 0)
-        return true;
+    if (archive->GetArchiveProperty(kpidErrorFlags, &flags) == S_OK && flags.vt == VT_UI4)
+        own |= flags.ulVal;
     NWindows::NCOM::CPropVariant warnings;
-    if (archive->GetArchiveProperty(kpidWarningFlags, &warnings) == S_OK
-        && warnings.vt == VT_UI4 && (warnings.ulVal & kpv_ErrorFlags_CrcError))
-        return true;
-    NWindows::NCOM::CPropVariant message;
-    return archive->GetArchiveProperty(kpidError, &message) == S_OK && message.vt != VT_EMPTY;
+    if (archive->GetArchiveProperty(kpidWarningFlags, &warnings) == S_OK && warnings.vt == VT_UI4)
+        own |= warnings.ulVal & kpv_ErrorFlags_CrcError;
+    found |= own;
+    NWindows::NCOM::CPropVariant error;
+    const bool hasMessage = archive->GetArchiveProperty(kpidError, &error) == S_OK
+        && error.vt != VT_EMPTY;
+    if (hasMessage && message.empty())
+        message = PropVariantToUTF8(error);
+    return own != 0 || hasMessage;
 }
 
 int sz_test_all(SZArchiveRef archive,
                 sz_progress_callback progress, void *progress_context,
                 uint32_t **damaged_out, uint32_t *damaged_count_out,
-                bool *archive_damaged_out, char **error_out) {
+                bool *archive_damaged_out, uint32_t *archive_flags_out,
+                uint32_t *entry_results_out, char **archive_message_out,
+                char **error_out) {
     if (damaged_out) *damaged_out = nullptr;
     if (damaged_count_out) *damaged_count_out = 0;
     if (archive_damaged_out) *archive_damaged_out = false;
+    if (archive_flags_out) *archive_flags_out = 0;
+    if (entry_results_out) *entry_results_out = 0;
+    if (archive_message_out) *archive_message_out = nullptr;
     if (!archive) {
         if (error_out) *error_out = strdup("Invalid arguments");
         return SZ_EXTRACT_FAILED;
@@ -1773,11 +1788,18 @@ int sz_test_all(SZArchiveRef archive,
         // Asked after the run, since some handlers find out while decoding: xz
         // reports there what its decoder ran into.
         bool archiveDamaged = hr == S_FALSE;
+        UInt32 archiveFlags = 0;
+        std::string archiveMessage;
         for (const SZArchiveLevel &level : handle->levels)
-            archiveDamaged = reportsDamage(level.archive) || archiveDamaged;
+            archiveDamaged = reportsDamage(level.archive, archiveFlags, archiveMessage) || archiveDamaged;
 
         const std::vector<UInt32> &damaged = callback->failedEntries;
         if (archive_damaged_out) *archive_damaged_out = archiveDamaged;
+        if (archive_flags_out) *archive_flags_out = archiveFlags;
+        if (entry_results_out) *entry_results_out = callback->failedResults;
+        // only for the log: without it, nothing is lost
+        if (archive_message_out && !archiveMessage.empty())
+            *archive_message_out = strdup(archiveMessage.c_str());
         if (!damaged.empty() && damaged_out && damaged_count_out) {
             *damaged_out = (uint32_t *)malloc(damaged.size() * sizeof(uint32_t));
             // without the list, damage would read as none

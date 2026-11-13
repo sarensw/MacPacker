@@ -11,6 +11,7 @@
 
 import Foundation
 import Testing
+import tb
 @testable import Core
 
 extension AllCoreTests {
@@ -52,7 +53,7 @@ extension AllCoreTests {
 
             #expect(job.kind == .test)
             #expect(job.state == .done)
-            #expect(job.testResult == ArchiveTestResult(damagedEntries: [], isArchiveDamaged: false))
+            #expect(job.testResult == ArchiveTestResult(damagedEntries: []))
         }
 
         /// A Nextcloud download warns of a headers error, and holds nothing that
@@ -67,28 +68,44 @@ extension AllCoreTests {
         /// What is damaged is named, and only that: an archive with one damaged
         /// entry has others that are fine. An archive cut short says so itself,
         /// also where every entry that is left reads, and so does one whose own
-        /// checksum no longer matches, of which 7-Zip only warns. In an encrypted
-        /// archive, what fails after an entry decrypted and matched is damaged:
-        /// the password was right, and asking again can't help.
+        /// checksum no longer matches, of which 7-Zip only warns; each says
+        /// which, so that the verdict can say why. In an encrypted archive, what
+        /// fails after an entry decrypted and matched is damaged: the password
+        /// was right, and asking again can't help.
         @Test(arguments: [
-            ("damaged/crc.zip", ["folder/README.md"], false),
-            ("damaged/crc.7z", ["folder/NestedArchive.zip"], false),
-            ("damaged/crc.tar.gz", ["crc.tar"], false),
-            ("damaged/truncated.zip", ["folder/NestedArchive.zip"], true),
-            ("damaged/noCentralDirectory.zip", [], true),
-            ("damaged/crc.dmg", [], true),
-            ("damaged/tocChecksum.xar", [], true),
-            ("damaged/crcEncrypted.7z", ["folder/README.md", "hello world.txt"], false),
-        ])
-        func damageIsFoundAndNamed(arg: (String, [String], Bool)) async throws {
+            ("damaged/crc.zip", ["folder/README.md"], nil),
+            ("damaged/crc.7z", ["folder/NestedArchive.zip"], nil),
+            ("damaged/crc.tar.gz", ["crc.tar"], nil),
+            ("damaged/truncated.zip", ["folder/NestedArchive.zip"], .endsEarly),
+            ("damaged/noCentralDirectory.zip", [], .endsEarly),
+            ("damaged/crc.dmg", [], .checksum),
+            ("damaged/tocChecksum.xar", [], .checksum),
+            ("damaged/crcEncrypted.7z", ["folder/README.md", "hello world.txt"], nil),
+        ] as [(String, [String], ArchiveDamage?)])
+        func damageIsFoundAndNamed(arg: (String, [String], ArchiveDamage?)) async throws {
             let job = try await test(fixture(arg.0), password: "password")
 
-            #expect(job.testResult == ArchiveTestResult(damagedEntries: arg.1, isArchiveDamaged: arg.2))
+            #expect(job.testResult == ArchiveTestResult(damagedEntries: arg.1, archiveDamage: arg.2))
             guard case .failed = job.state else {
                 Issue.record("\(arg.0) ended \(job.state), not failed")
                 return
             }
             #expect(job.hasOutcomeToShow)
+        }
+
+        /// Why an archive is damaged is in the logs a user exports from Settings
+        /// to send us.
+        @Test func whyAnArchiveIsDamagedIsInTheExportedLogs() async throws {
+            let since = Date()
+            _ = try await test(fixture("damaged/noCentralDirectory.zip"))
+
+            let file = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID()).ndjson")
+            defer { try? FileManager.default.removeItem(at: file) }
+            try tb.exportRecentLogs(since: since, to: file)
+            let lines = try String(contentsOf: file, encoding: .utf8).split(separator: "\n")
+
+            #expect(lines.contains { $0.contains("noCentralDirectory.zip") && $0.contains("endsEarly") })
+            #expect(lines.contains { $0.contains("noCentralDirectory.zip") && $0.contains("unexpectedEnd") })
         }
 
         /// A compound is tested as the compressed file it is, and nothing is
@@ -183,7 +200,7 @@ extension AllCoreTests {
                 fixture(arg.0),
                 engines: ArchiveEngineSelector(catalog: catalog, configStore: store))
 
-            #expect(job.testResult == ArchiveTestResult(damagedEntries: arg.1, isArchiveDamaged: false))
+            #expect(job.testResult == ArchiveTestResult(damagedEntries: arg.1))
         }
 
         /// The toolbar tests the archive the window opened, under that

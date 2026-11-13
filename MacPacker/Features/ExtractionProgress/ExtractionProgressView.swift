@@ -219,20 +219,31 @@ private struct ExtractionProgressRowView: View {
                 .foregroundStyle(.secondary)
         } else {
             let names = result.damagedEntries.isEmpty ? [job.archiveName] : result.damagedEntries
-            // The names while the whole list fits on the line, else how many.
-            ViewThatFits(in: .horizontal) {
-                // ponytail: past 20 names they never fit; spares measuring thousands
-                if names.count <= 20 {
-                    Text(.archiveTestDamaged(names.joined(separator: ", ")))
+            VStack(alignment: .leading, spacing: 2) {
+                // The names while the whole list fits on the line, else how many.
+                ViewThatFits(in: .horizontal) {
+                    // ponytail: past 20 names they never fit; spares measuring thousands
+                    if names.count <= 20 {
+                        Text(.archiveTestDamaged(names.joined(separator: ", ")))
+                    }
+                    if names.count > 1 {
+                        Text(.archiveTestDamagedFileCount(names.count))
+                    }
                 }
-                if names.count > 1 {
-                    Text(.archiveTestDamagedFileCount(names.count))
+                .foregroundStyle(.red)
+                .lineLimit(1)
+                .truncationMode(.tail)
+
+                // Why, where the archive says so itself: its files may all read,
+                // and "Damaged" alone would look like a mistake.
+                switch result.archiveDamage {
+                case .endsEarly: Text(.archiveTestEndsEarly)
+                case .checksum: Text(.archiveTestChecksumMismatch)
+                case .other, nil: EmptyView()
                 }
             }
             .font(.caption)
-            .foregroundStyle(.red)
-            .lineLimit(1)
-            .truncationMode(.tail)
+            .foregroundStyle(.secondary)
         }
     }
 

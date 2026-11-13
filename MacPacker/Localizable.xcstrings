@@ -6731,6 +6731,18 @@
         }
       }
     },
+    "archiveTestChecksumMismatch": {
+      "comment": "Progress window, under \"Damaged: <archive>\" after a test, when the checksum the archive keeps of itself (of the whole archive, or of its table of contents) no longer matches: part of it changed after it was made. Its files can still read, so this says why it counts as damaged.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The archive no longer matches its checksum."
+          }
+        }
+      }
+    },
     "archiveTestDamaged": {
       "comment": "Progress window, under the name of an archive that was tested and is damaged. The placeholder lists the damaged files inside it, separated by commas, or names the archive itself when that is what is damaged, cut short for example.",
       "extractionState": "manual",
@@ -6763,6 +6775,18 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "archiveTestEndsEarly": {
+      "comment": "Progress window, under \"Damaged: <archive>\" after a test, when the archive is cut short, by a download or a copy that stopped before the end for example. What came after the cut is gone, so nobody can tell whether files are missing; the files before it can still be whole and be extracted.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The archive ends early, so files may be missing."
           }
         }
       }
