@@ -462,6 +462,7 @@
 				"zh-TW",
 				el,
 				nb,
+				hi,
 			);
 			mainGroup = 25C0A89B2A78DE5F002C1C2A;
 			packageReferences = (
@@ -1391,7 +1392,7 @@
 			repositoryURL = "https://github.com/LeanBytes/SandboxPilotKit";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.4.0;
+				minimumVersion = 1.5.3;
 			};
 		};
 		25C764232E6C6D5300464CF5 /* XCRemoteSwiftPackageReference "XADMasterSwift" */ = {

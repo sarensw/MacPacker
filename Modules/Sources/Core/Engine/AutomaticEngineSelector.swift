@@ -20,20 +20,27 @@ import Foundation
 /// without the pin the archive would list through the fallback and then fail
 /// on the first extraction, which resolves the engine from the format all over
 /// again. Fallback stays on so the pinned engine keeps its own alternatives.
+///
+/// It also hands every engine the encoding the user picked for the window's
+/// names, so an extraction writes the names the window shows.
 struct AutomaticEngineSelector: ArchiveEngineSelectorProtocol {
     let base: any ArchiveEngineSelectorProtocol
     /// formatId -> engine that actually works for the archive in this window.
     let pinned: [String: ArchiveEngineType]
+    /// `nil` leaves the names to detection.
+    var nameEncoding: ArchiveNameEncoding? = nil
 
     var allowsEngineFallback: Bool { base.allowsEngineFallback }
 
     func engine(for id: String) -> ArchiveEngine? {
-        guard let type = pinned[id] else { return base.engine(for: id) }
-        return base.engine(for: type)
+        guard let type = pinned[id] else {
+            return base.engine(for: id)?.readingNames(as: nameEncoding)
+        }
+        return engine(for: type)
     }
 
     func engine(for type: ArchiveEngineType) -> ArchiveEngine {
-        base.engine(for: type)
+        base.engine(for: type).readingNames(as: nameEncoding)
     }
 
     func engineType(for id: String) -> ArchiveEngineType? {

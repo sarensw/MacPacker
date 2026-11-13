@@ -36,6 +36,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
 
         let window = ArchiveWindow()
         window.isRestorable = false
+        window.setAccessibilityIdentifier(AccessibilityIdentifier.archiveWindow)
         if let cascadeFrom {
             // macOS convention: inherit the size of the window in use, step
             // down-right. `.zero` asks for the next point without moving anything,

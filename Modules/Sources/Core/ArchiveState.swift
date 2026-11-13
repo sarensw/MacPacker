@@ -88,7 +88,20 @@ public class ArchiveState: ObservableObject {
     // Live filter over the whole archive. While non-empty, the table shows
     // every entry whose name matches instead of the current folder.
     @Published private(set) public var searchText: String = ""
-    
+
+    /// Whether the files Finder hides are listed. Starts from the setting; an
+    /// open window follows the setting as it changes.
+    public var showsHiddenFiles = Keys.showHiddenFilesEnabled() {
+        didSet {
+            guard showsHiddenFiles != oldValue else { return }
+            log.info("Hidden files shown changed", context: ["shown": "\(showsHiddenFiles)"])
+            // a selected file the list no longer shows would still be extracted
+            selectedItems = []
+            loadChildren()
+            isReloadNeeded = true
+        }
+    }
+
     // UI State
     @Published private(set) public var isBusy: Bool = false
     @Published private(set) public var statusText: String? = nil
@@ -106,6 +119,11 @@ public class ArchiveState: ObservableObject {
     /// window looks saved.
     @Published private(set) public var saveError: String? = nil
     @Published public var isReloadNeeded: Bool = false
+    /// What this archive's names are read in, where they could be in something
+    /// else. `nil` when the archive says, or they are ASCII: nothing to choose.
+    @Published private(set) public var nameEncoding: ArchiveNameEncoding? = nil
+    /// The encoding the user picked for the names; `nil` leaves it to detection.
+    @Published private(set) public var chosenNameEncoding: ArchiveNameEncoding? = nil
 
     // Listeners for non-ui
     @Published private(set) public var status: ArchiveStateStatus = .idle
@@ -128,13 +146,16 @@ public class ArchiveState: ObservableObject {
 
     /// The selector everything downstream should use.
     private var effectiveEngineSelector: ArchiveEngineSelectorProtocol {
-        pinnedEngines.isEmpty
+        pinnedEngines.isEmpty && chosenNameEncoding == nil
             ? archiveEngineSelector
-            : AutomaticEngineSelector(base: archiveEngineSelector, pinned: pinnedEngines)
+            : AutomaticEngineSelector(base: archiveEngineSelector, pinned: pinnedEngines, nameEncoding: chosenNameEncoding)
     }
     private let archiveTypeDetector: ArchiveTypeDetector
     
     private var tempDirectories: [URL] = []
+    /// Selections being extracted, which go on behind `isBusy`. Their temp files
+    /// must not go away under them.
+    private var runningExtractions = 0
     
     public var passwordProvider: ArchivePasswordUserProvider?
     public var folderAccessProvider: ArchiveFolderAccessUserProvider?
@@ -155,6 +176,11 @@ public class ArchiveState: ObservableObject {
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
+    /// Where this state reads its settings: the ".." row, the sort order, and
+    /// whether a save given no options leaves Mac-specific data out. Not the
+    /// hidden files: that setting lives in the app group the extensions share,
+    /// read through `Keys`. Tests inject their own.
+    var defaults: UserDefaults = .standard
     /// Set for an archive window's state: the id its extractions carry, so
     /// that the window shows them itself rather than the progress window
     /// (`ExtractionJob.shownIn`). `nil` for one no window shows — Finder's.
@@ -176,6 +202,9 @@ public class ArchiveState: ObservableObject {
     private var openedFile: FileStamp?
 
     public private(set) var openTask: Task<Void, any Error>?
+    /// The temporary files of what was closed last, removed off the main actor
+    /// by `CacheCleaner`. They are gone once this ends.
+    private(set) var cleanTask: Task<Void, Never>?
     /// The add started last. What it adds is read off the main actor, so it is
     /// there once this ends.
     public private(set) var addTask: Task<Bool, Never>?
@@ -236,9 +265,9 @@ extension ArchiveState {
     /// How a `passwordCancelled` should be reported.
     ///
     /// Dismissing the prompt is the user's own choice, so the job just ends as
-    /// cancelled. Having no prompt at all is different: Finder's "Extract Here"
-    /// and QuickLook build an ArchiveState with no `passwordProvider`, so an
-    /// encrypted archive used to fail there with nothing shown and nothing
+    /// cancelled. Having no prompt at all is different: an ArchiveState built
+    /// with no `passwordProvider`, as Finder's "Extract Here" and QuickLook once
+    /// were, used to fail on an encrypted archive with nothing shown and nothing
     /// extracted. That needs to be a failure with a message that says what to do.
     private func passwordCancelledOutcome() -> ExtractionJob.State {
         guard passwordProvider == nil else { return .cancelled }
@@ -313,10 +342,15 @@ extension ArchiveState {
         self.passwords = [:]
         self.pinnedEngines = [:]
         self.activeEngine = nil
+        self.nameEncoding = nil
+        self.chosenNameEncoding = nil
+        // The file it shows goes with the temp directories below.
+        self.previewItemUrl = nil
         
         updateStatus(.idle)
-        
-        CacheCleaner().clean(tempDirectories: tempDirectories)
+
+        cleanTask = Task { [tempDirectories] in await CacheCleaner().remove(tempDirectories) }
+        tempDirectories = []
     }
     
     public func clean() {
@@ -383,7 +417,7 @@ extension ArchiveState {
     /// button and ⌘↑ go up either way.
     public var showsParentRow: Bool {
         guard !isSearching, canGoUp else { return false }
-        return UserDefaults.standard.bool(forKey: Keys.showParentRow)
+        return defaults.bool(forKey: Keys.showParentRow)
     }
 
     /// Updates the live search. Every change re-filters the entries; clearing
@@ -409,8 +443,9 @@ extension ArchiveState {
     private func searchResults() -> [ArchiveItem] {
         let matches = entries.values.filter {
             $0.type != .root && $0.name.localizedCaseInsensitiveContains(searchText)
+                && (showsHiddenFiles || !isInHiddenPath($0))
         }
-        guard UserDefaults.standard.string(forKey: Keys.defaultOrderColumn) != nil else {
+        guard defaults.string(forKey: Keys.defaultOrderColumn) != nil else {
             return matches.sorted { a, b in
                 if a.isFolder != b.isFolder { return a.isFolder }
                 let cmp = a.name.localizedStandardCompare(b.name)
@@ -431,6 +466,26 @@ extension ArchiveState {
         return a.id.uuidString < b.id.uuidString
     }
 
+    /// Whether `item` is hidden, or inside a folder that is. A search over all
+    /// entries would find what hidden folders hold; browsing does not list
+    /// them, though a window already inside one stays there.
+    private func isInHiddenPath(_ item: ArchiveItem) -> Bool {
+        var node: ArchiveItem? = item
+        while let current = node, current.type != .root {
+            if current.isHidden { return true }
+            node = current.parent.flatMap { entries[$0] }
+        }
+        return false
+    }
+
+    /// The children of `node` the list shows: all of them, or all but the
+    /// hidden ones. The archive window and the Quick Look outline both list
+    /// through this.
+    public func listedChildren(of node: ArchiveItem) -> [ArchiveItem] {
+        let children = (node.children ?? []).compactMap { entries[$0] }
+        return showsHiddenFiles ? children : children.filter { !$0.isHidden }
+    }
+
     public func loadChildren() {
         guard let selectedItem else { return }
 
@@ -439,19 +494,18 @@ extension ArchiveState {
             return
         }
 
-        guard UserDefaults.standard.string(forKey: Keys.defaultOrderColumn) != nil else {
-            childItems = selectedItem.children?.compactMap { entries[$0] }
+        let children = listedChildren(of: selectedItem)
+        guard defaults.string(forKey: Keys.defaultOrderColumn) != nil else {
+            childItems = children
             return
         }
 
-        if let children = selectedItem.children?.compactMap({ entries[$0] }) {
-            childItems = sortedForDisplay(children)
-        }
+        childItems = sortedForDisplay(children)
     }
 
     private func sortedForDisplay(_ items: [ArchiveItem]) -> [ArchiveItem] {
-        let defaultOrderColumn = UserDefaults.standard.string(forKey: Keys.defaultOrderColumn)
-        let defaultOrderColumnAscending = UserDefaults.standard.bool(forKey: Keys.defaultOrderColumnAscending)
+        let defaultOrderColumn = defaults.string(forKey: Keys.defaultOrderColumn)
+        let defaultOrderColumnAscending = defaults.bool(forKey: Keys.defaultOrderColumnAscending)
 
         return items.sorted { a, b in
                 switch defaultOrderColumn {
@@ -1019,9 +1073,11 @@ extension ArchiveState {
             sourceAsOpened: openedFile,
             target: target,
             items: diff,
-            options: options ?? CompressionOptions(format: format),
+            options: options ?? CompressionOptions(
+                format: format, excludeMacData: defaults.bool(forKey: Keys.excludeMacData)),
             isSaveAs: destination != nil,
             sourcePassword: url.flatMap { passwords[$0] },
+            sourceNameEncoding: chosenNameEncoding,
             passwordResolver: makePasswordResolver(),
             folderAccessProvider: folderAccessProvider,
             onProgress: { [weak self, progressCenter] completed, total, date in
@@ -1053,6 +1109,8 @@ extension ArchiveState {
 
                 // reload from disk so entries and indices reflect the file
                 let engines = pinnedEngines
+                let chosenEncoding = chosenNameEncoding
+                let readEncoding = nameEncoding
                 open(url: saved.url)
                 // Known already — reopening must not ask again. Set after open(),
                 // which starts by forgetting every password, and before the first
@@ -1063,7 +1121,15 @@ extension ArchiveState {
                 // Likewise the engine: it is still the archive the window opened,
                 // whatever Settings have said since.
                 pinnedEngines = engines
+                chosenNameEncoding = chosenEncoding
                 _ = try? await openTask?.value
+                // Fewer names can tell a different story, while no byte of them
+                // changed: `文档` alone reads as Korean.
+                // ponytail: for this window. Opened anew, that is what it reads as.
+                if let readEncoding, let nameEncoding, nameEncoding != readEncoding {
+                    readNames(as: readEncoding)
+                    _ = try? await openTask?.value
+                }
                 self.isSaving = false
                 return .written
             } catch SevenZipError.cancelled {
@@ -1187,6 +1253,7 @@ extension ArchiveState {
                 
                 self.uncompressedSize = loaderResult.uncompressedSize
                 self.isEncrypted = loaderResult.isEncrypted
+                self.nameEncoding = loaderResult.nameEncoding
                 // The archive stays with the engine that read it (see
                 // `pinnedEngines`). That may be a fallback, when the configured
                 // engine cannot read this archive: the first extraction would
@@ -1270,6 +1337,23 @@ extension ArchiveState {
         }
     }
     
+    /// Lists the archive again with its names read in `encoding`, or as detected
+    /// for `nil`, from here on and for everything extracted from it. Nothing
+    /// changes in the file. Refused with changes pending: the listing they are
+    /// about goes.
+    public func readNames(as encoding: ArchiveNameEncoding?) {
+        guard let url, !hasPendingChanges, !isBusy, runningExtractions == 0, encoding != chosenNameEncoding
+        else { return }
+        let known = passwords
+        let engines = pinnedEngines
+        open(url: url)
+        // Like the password and the engine after a save: set after open(), which
+        // forgets them, and before the load gets to run.
+        passwords = known
+        pinnedEngines = engines
+        chosenNameEncoding = encoding
+    }
+
     public func open(item: ArchiveItem) {
         Task {
             do {
@@ -1596,11 +1680,10 @@ extension ArchiveState {
             )
             let result = try await extractor.extract(
                 batch: batch,
+                as: url,
                 onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
             )
             tempDirectories.append(result.tempDir)
-            try Task.checkCancellation()
-            try FileManager.default.moveItem(at: result.url, to: url)
         }
         progressCenter.setOnCancel(jobId) {
             cancelFlag.cancel()
@@ -1632,11 +1715,13 @@ extension ArchiveState {
 
     /// True when `items` selects every top-level entry of the archive — the
     /// selection is the whole archive, so extraction behaves like
-    /// "Extract archive" and the smart folder rule applies.
+    /// "Extract archive" and the smart folder rule applies. Hidden files the
+    /// list leaves out cannot be selected, so they are not asked for.
     private func coversWholeArchive(_ items: [ArchiveItem]) -> Bool {
         guard let root else { return false }
         let topLevel = entries.values.filter {
-            $0.parent == root.id || ($0.parent == nil && $0.type != .root)
+            ($0.parent == root.id || ($0.parent == nil && $0.type != .root))
+                && (showsHiddenFiles || !$0.isHidden)
         }
         guard !topLevel.isEmpty else { return false }
         let selectedIDs = Set(items.map(\.id))
@@ -1678,7 +1763,9 @@ extension ArchiveState {
         )
 
         let cancelFlag = ExtractionCancelFlag()
+        runningExtractions += 1
         let task = Task {
+            defer { runningExtractions -= 1 }
             do {
                 let batches = try batchResolver.resolveBatches(for: items, in: entries, using: effectiveEngineSelector)
                 // "Extract selected" with the whole archive selected behaves
@@ -1688,21 +1775,19 @@ extension ArchiveState {
                 // The smart folder is created below, before the extractor starts
                 // access on it — so the user-picked destination has to be held
                 // accessible from here on, or the directory creation fails for
-                // sandboxed destinations.
-                let didAccessDestination = destination.startAccessingSecurityScopedResource()
-                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
+                // sandboxed destinations. A folder granted on an earlier launch
+                // is reached through its stored bookmark: on its own, the plain
+                // url grants nothing.
+                let scopedDestination = Sandbox.securityScopedURL(for: destination) ?? destination
+                let didAccessDestination = scopedDestination.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { scopedDestination.stopAccessingSecurityScopedResource() } }
 
                 var target = destination
-                if smart, coversWholeArchive(items) {
-                    let archiveUrl = url
-                    target = SmartExtraction.containerFolder(
-                        for: entries,
-                        archiveName: archiveUrl.map { archiveTypeDetector.getNameWithoutExtension(for: $0) } ?? "Archive",
-                        destination: destination
-                    ) ?? destination
-                    if target != destination {
-                        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
-                    }
+                if smart, coversWholeArchive(items), SmartExtraction.needsContainer(entries) {
+                    let archiveName = url.map { archiveTypeDetector.getNameWithoutExtension(for: $0) } ?? "Archive"
+                    target = destination.appending(
+                        component: SmartExtraction.freeName(archiveName, in: destination, isDirectory: true))
+                    try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
                 }
                 let result = try await extractor.extract(
                     batches: batches,
@@ -1763,27 +1848,22 @@ extension ArchiveState {
                     throw ArchiveError.extractionFailed("No archive handler found")
                 }
 
-                // The smart folder is created below, before the extractor starts
-                // access on it — so the user-picked destination has to be held
-                // accessible from here on, or the directory creation fails for
-                // sandboxed destinations.
-                let didAccessDestination = destination.startAccessingSecurityScopedResource()
-                defer { if didAccessDestination { destination.stopAccessingSecurityScopedResource() } }
+                // The extractor creates its own folder in the destination before
+                // it starts access on it — so the user-picked destination has to
+                // be held accessible from here on, or that fails for sandboxed
+                // destinations. A folder granted on an earlier launch is reached
+                // through its stored bookmark: on its own, the plain url grants
+                // nothing.
+                let scopedDestination = Sandbox.securityScopedURL(for: destination) ?? destination
+                let didAccessDestination = scopedDestination.startAccessingSecurityScopedResource()
+                defer { if didAccessDestination { scopedDestination.stopAccessingSecurityScopedResource() } }
 
-                var target = destination
-                if smart {
-                    // Folder name from the archive file, extension stripped —
-                    // compounds (tar.gz) and split parts included — so it
-                    // matches the "Extract to …" folder naming.
-                    target = SmartExtraction.containerFolder(
-                        for: entries,
-                        archiveName: archiveTypeDetector.getNameWithoutExtension(for: archiveUrl),
-                        destination: destination
-                    ) ?? destination
-                    if target != destination {
-                        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
-                    }
-                }
+                // Folder name from the archive file, extension stripped —
+                // compounds (tar.gz) and split parts included — so it matches
+                // the "Extract to …" folder naming.
+                let containerName = smart && SmartExtraction.needsContainer(entries)
+                    ? archiveTypeDetector.getNameWithoutExtension(for: archiveUrl)
+                    : nil
 
                 let extractor = ArchiveExtractor(
                     archiveEngineSelector: effectiveEngineSelector,
@@ -1792,7 +1872,8 @@ extension ArchiveState {
                 try await extractor.extractAll(
                     archiveUrl,
                     archiveTypeId: archiveTypeId,
-                    to: target,
+                    to: destination,
+                    containerName: containerName,
                     onProgress: makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
                 )
                 progressCenter.finish(jobId, .done)

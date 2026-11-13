@@ -44,7 +44,10 @@ enum RecentArchives {
     /// Most recent first. Entries whose file is gone are kept — opening one then
     /// fails with the normal "Could not open archive" alert.
     static var urls: [URL] {
-        (UserDefaults.standard.stringArray(forKey: key) ?? []).compactMap { URL(string: $0) }
+        #if DEBUG
+        if let pinned = LaunchParameters.recentArchives { return pinned }
+        #endif
+        return (UserDefaults.standard.stringArray(forKey: key) ?? []).compactMap { URL(string: $0) }
     }
 
     /// Empties the list (the start page's "Clear"). The stored bookmarks stay —

@@ -1,20 +1,20 @@
 {
   "id": "",
-  "platform": "macos",
   "scheme": "MacPacker",
   "product-name": "MacPacker",
   "bundle-id": "com.sarensx.MacPacker",
-  "scheme-store": "MacPacker Store",
-  "has-finder": true,
-  "bundle-id-finder": "com.sarensx.MacPacker.FinderExtension",
-  "has-quicklook": true,
-  "bundle-id-quicklook": "com.sarensx.MacPacker.QuickLookExtension",
-  "build-direct": true,
-  "build-app-store": true,
-  "distribute-app-store": true,
-  "distribute-appcast": true,
-  "s3-subpath": "",
-  "appcast-seed-path": "Config/appcast.xml",
+  "platforms": {
+    "macos": {
+      "direct": {
+        "appcast": true,
+        "appcast-seed-path": "Config/appcast.xml"
+      },
+      "app-store": {
+        "scheme": "MacPacker Store",
+        "configuration": "Release Store"
+      }
+    }
+  },
   "changelog": {
     "comingNext": {
       "en": "Integrity check and recovery",
@@ -35,6 +35,605 @@
       "tr": "Bütünlük kontrolü ve kurtarma"
     },
     "versions": [
+      {
+        "version": "1.3.0",
+        "items": [
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Detect and choose file name encodings",
+                "zh-Hans": "检测并选择文件名编码",
+                "fr": "Détecter et choisir l’encodage des noms de fichiers",
+                "de": "Codierung von Dateinamen erkennen und wählen",
+                "it": "Rilevare e scegliere la codifica dei nomi dei file",
+                "ja": "ファイル名のエンコーディングを検出して選択",
+                "fa": "تشخیص و انتخاب کدگذاری نام فایل‌ها",
+                "pl": "Wykrywanie i wybór kodowania nazw plików",
+                "pt-BR": "Detectar e escolher a codificação dos nomes de arquivos",
+                "ru": "Определение и выбор кодировки имён файлов",
+                "uk": "Визначення та вибір кодування імен файлів",
+                "es-MX": "Detectar y elegir la codificación de nombres de archivo",
+                "ko": "파일 이름 인코딩 감지 및 선택",
+                "nl": "Codering van bestandsnamen herkennen en kiezen",
+                "tr": "Dosya adı kodlamasını algılama ve seçme",
+                "vi": "Phát hiện và chọn mã hóa tên tệp",
+                "ar": "اكتشاف ترميز أسماء الملفات واختياره",
+                "ca": "Detecta i tria la codificació dels noms de fitxer",
+                "el": "Εντοπισμός και επιλογή κωδικοποίησης ονομάτων αρχείων",
+                "nb": "Oppdag og velg koding av filnavn",
+                "zh-TW": "偵測並選擇檔案名稱編碼",
+                "hi": "फ़ाइल नामों की एनकोडिंग पहचानें और चुनें"
+            },
+            "issues": ["373"]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Subtle icon in Finder and the menu bar",
+                "zh-Hans": "Finder 和菜单栏中的简约图标",
+                "fr": "Icône discrète dans le Finder et la barre des menus",
+                "de": "Dezentes Symbol im Finder und in der Menüleiste",
+                "it": "Icona discreta nel Finder e nella barra dei menu",
+                "ja": "Finder とメニューバー用の控えめなアイコン",
+                "fa": "آیکون ساده در Finder و نوار منو",
+                "pl": "Dyskretna ikona w Finderze i na pasku menu",
+                "pt-BR": "Ícone discreto no Finder e na barra de menus",
+                "ru": "Неброский значок в Finder и в строке меню",
+                "uk": "Стриманий значок у Finder і на смузі меню",
+                "es-MX": "Ícono discreto en el Finder y la barra de menús",
+                "ko": "Finder 및 메뉴 막대용 은은한 아이콘",
+                "nl": "Subtiel symbool in de Finder en de menubalk",
+                "tr": "Finder ve menü çubuğu için sade simge",
+                "vi": "Biểu tượng tối giản cho Finder và thanh menu",
+                "ar": "أيقونة بسيطة في Finder وشريط القوائم",
+                "ca": "Icona discreta al Finder i a la barra de menús",
+                "el": "Διακριτικό εικονίδιο στο Finder και στη γραμμή μενού",
+                "nb": "Diskret ikon i Finder og menylinjen",
+                "zh-TW": "Finder 與選單列的簡約圖像",
+                "hi": "Finder और मेनू बार के लिए सादा आइकन"
+            },
+            "issues": ["311"]
+          },
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Finder integration for iCloud Drive and others via Services Menu",
+                "zh-Hans": "通过“服务”菜单在 iCloud 云盘等位置使用 Finder 集成",
+                "fr": "Intégration au Finder pour iCloud Drive et autres via le menu Services",
+                "de": "Finder-Integration für iCloud Drive und andere über das Menü „Dienste“",
+                "it": "Integrazione nel Finder per iCloud Drive e altri tramite il menu Servizi",
+                "ja": "サービスメニューから iCloud Drive などで使える Finder 連携",
+                "fa": "یکپارچگی با Finder برای iCloud Drive و موارد دیگر از طریق منوی سرویس‌ها",
+                "pl": "Integracja z Finderem dla iCloud Drive i innych przez menu Usługi",
+                "pt-BR": "Integração com o Finder para iCloud Drive e outros pelo menu Serviços",
+                "ru": "Интеграция с Finder для iCloud Drive и других через меню «Службы»",
+                "uk": "Інтеграція з Finder для iCloud Drive та інших через меню «Служби»",
+                "es-MX": "Integración con el Finder para iCloud Drive y otros con el menú Servicios",
+                "ko": "서비스 메뉴를 통한 iCloud Drive 등에서의 Finder 통합",
+                "nl": "Finder-integratie voor iCloud Drive en meer via het menu Voorzieningen",
+                "tr": "Servisler menüsüyle iCloud Drive ve diğerleri için Finder entegrasyonu",
+                "vi": "Tích hợp Finder cho iCloud Drive và các nơi khác qua menu Dịch vụ",
+                "ar": "تكامل Finder مع iCloud Drive وغيره عبر قائمة الخدمات",
+                "ca": "Integració amb el Finder per a l’iCloud Drive i altres des del menú Serveis",
+                "el": "Ενσωμάτωση στο Finder για το iCloud Drive και άλλα μέσω του μενού Υπηρεσίες",
+                "nb": "Finder-integrasjon for iCloud Drive og andre via Tjenester-menyen",
+                "zh-TW": "透過「服務」選單在 iCloud 雲碟等位置使用 Finder 整合",
+                "hi": "सेवाएँ मेनू से iCloud Drive और अन्य जगहों के लिए Finder इंटीग्रेशन"
+            },
+            "issues": ["342"]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Leave all Mac-specific data out of archives",
+                "zh-Hans": "从压缩包中排除所有 Mac 专属数据",
+                "fr": "Exclure toutes les données propres au Mac des archives",
+                "de": "Alle Mac-spezifischen Daten aus Archiven heraushalten",
+                "it": "Escludere tutti i dati specifici del Mac dagli archivi",
+                "ja": "アーカイブから Mac 固有のデータをすべて除外",
+                "fa": "کنار گذاشتن همه داده‌های مخصوص Mac از آرشیوها",
+                "pl": "Pomijanie wszystkich danych specyficznych dla Maca w archiwach",
+                "pt-BR": "Excluir todos os dados próprios do Mac ao compactar",
+                "ru": "Исключение всех специфичных для Mac данных из архивов",
+                "uk": "Виключення всіх специфічних для Mac даних з архівів",
+                "es-MX": "Excluir todos los datos propios de Mac al comprimir",
+                "ko": "압축 파일에서 Mac 전용 데이터를 모두 제외",
+                "nl": "Alle Mac-specifieke gegevens weglaten uit archieven",
+                "tr": "Mac'e özgü tüm verileri arşivlerden hariç tutma",
+                "vi": "Không đưa dữ liệu riêng của Mac vào tệp nén",
+                "ar": "استبعاد كل بيانات Mac الخاصة من الأرشيفات",
+                "ca": "Excloure totes les dades pròpies del Mac dels arxius",
+                "el": "Εξαίρεση όλων των δεδομένων του Mac από τα αρχεία",
+                "nb": "Utelat alle Mac-spesifikke data fra arkiver",
+                "zh-TW": "從壓縮檔中排除所有 Mac 專屬資料",
+                "hi": "आर्काइव से सभी Mac-विशिष्ट डेटा बाहर रखें"
+            },
+            "issues": ["236"]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Compress for Windows from Finder",
+                "zh-Hans": "从 Finder 为 Windows 压缩",
+                "fr": "Compresser pour Windows depuis le Finder",
+                "de": "Im Finder für Windows komprimieren",
+                "it": "Comprimere per Windows dal Finder",
+                "ja": "Finder から Windows 向けに圧縮",
+                "fa": "فشرده‌سازی برای Windows از Finder",
+                "pl": "Kompresja dla Windows z poziomu Findera",
+                "pt-BR": "Compactar para Windows pelo Finder",
+                "ru": "Сжатие для Windows из Finder",
+                "uk": "Стиснення для Windows із Finder",
+                "es-MX": "Comprimir para Windows desde el Finder",
+                "ko": "Finder에서 Windows용으로 압축",
+                "nl": "Comprimeren voor Windows vanuit de Finder",
+                "tr": "Finder'dan Windows için sıkıştırma",
+                "vi": "Nén cho Windows từ Finder",
+                "ar": "الضغط لنظام Windows من Finder",
+                "ca": "Comprimeix per a Windows des del Finder",
+                "el": "Συμπίεση για Windows από το Finder",
+                "nb": "Komprimer for Windows fra Finder",
+                "zh-TW": "從 Finder 為 Windows 壓縮",
+                "hi": "Finder से Windows के लिए कंप्रेस करें"
+            },
+            "issues": ["236"]
+          },
+          {
+            "type": "fix",
+            "highlight": true,
+            "title": {
+                "en": "Missing recent archive crashes the app",
+                "zh-Hans": "已不存在的最近压缩包会导致应用程序崩溃",
+                "fr": "Une archive récente manquante fait planter l’application",
+                "de": "Fehlendes zuletzt verwendetes Archiv lässt die App abstürzen",
+                "it": "Un archivio recente mancante manda in crash l’applicazione",
+                "ja": "最近使ったアーカイブが見つからないとアプリがクラッシュする",
+                "fa": "آرشیو اخیر ناموجود باعث از کار افتادن برنامه می‌شود",
+                "pl": "Brakujące ostatnie archiwum powoduje awarię aplikacji",
+                "pt-BR": "Um arquivo recente ausente faz o aplicativo falhar",
+                "ru": "Отсутствующий недавний архив приводит к сбою приложения",
+                "uk": "Відсутній недавній архів спричиняє збій застосунку",
+                "es-MX": "Un archivo reciente faltante hace que la aplicación falle",
+                "ko": "없는 최근 아카이브를 열면 앱이 충돌함",
+                "nl": "Een ontbrekend recent archief laat de app crashen",
+                "tr": "Bulunamayan son kullanılan arşiv uygulamayı çökertiyor",
+                "vi": "Tệp nén gần đây không còn tồn tại làm ứng dụng gặp sự cố",
+                "ar": "أرشيف حديث مفقود يؤدي إلى تعطّل التطبيق",
+                "ca": "Un arxiu recent que falta fa fallar l’app",
+                "el": "Πρόσφατο αρχείο που λείπει προκαλεί κατάρρευση της εφαρμογής",
+                "nb": "Et manglende nylig arkiv krasjer appen",
+                "zh-TW": "最近使用的壓縮檔已不存在時 App 當機",
+                "hi": "हाल का आर्काइव गुम होने पर ऐप क्रैश हो जाता है"
+            },
+            "issues": [
+                "388"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Other apps can start Finder actions",
+                "zh-Hans": "其他应用可以启动 Finder 操作",
+                "fr": "D’autres apps peuvent lancer des actions du Finder",
+                "de": "Andere Apps können Finder-Aktionen starten",
+                "it": "Altre app possono avviare azioni del Finder",
+                "ja": "他のアプリが Finder の操作を実行できる",
+                "fa": "برنامه‌های دیگر می‌توانند عملیات Finder را اجرا کنند",
+                "pl": "Inne aplikacje mogą uruchamiać akcje Findera",
+                "pt-BR": "Outros apps podem iniciar ações do Finder",
+                "ru": "Другие приложения могут запускать действия Finder",
+                "uk": "Інші застосунки можуть запускати дії Finder",
+                "es-MX": "Otras apps pueden iniciar acciones del Finder",
+                "ko": "다른 앱이 Finder 작업을 실행할 수 있음",
+                "nl": "Andere apps kunnen Finder-acties starten",
+                "tr": "Diğer uygulamalar Finder işlemlerini başlatabiliyor",
+                "vi": "Ứng dụng khác có thể chạy thao tác Finder",
+                "ar": "يمكن لتطبيقات أخرى بدء إجراءات Finder",
+                "ca": "Altres apps poden iniciar accions del Finder",
+                "el": "Άλλες εφαρμογές μπορούν να ξεκινούν ενέργειες του Finder",
+                "nb": "Andre apper kan starte Finder-handlinger",
+                "zh-TW": "其他 App 可以啟動 Finder 動作",
+                "hi": "दूसरे ऐप Finder क्रियाएँ शुरू कर सकते हैं"
+            },
+            "issues": ["286"]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Clearing temporary files might freeze the app",
+                "zh-Hans": "清除临时文件可能导致应用程序冻结",
+                "fr": "Supprimer les fichiers temporaires peut bloquer l’application",
+                "de": "Temporäre Dateien löschen kann die App einfrieren lassen",
+                "it": "Eliminare i file temporanei può bloccare l’applicazione",
+                "ja": "一時ファイルを削除するとアプリがフリーズすることがある",
+                "fa": "پاک کردن فایل‌های موقت ممکن است باعث توقف برنامه شود",
+                "pl": "Usuwanie plików tymczasowych może zawiesić aplikację",
+                "pt-BR": "Apagar arquivos temporários pode fazer o aplicativo travar",
+                "ru": "Удаление временных файлов может привести к зависанию приложения",
+                "uk": "Видалення тимчасових файлів може призвести до зависання застосунку",
+                "es-MX": "Borrar archivos temporales puede congelar la aplicación",
+                "ko": "임시 파일을 지우면 앱이 멈출 수 있음",
+                "nl": "Tijdelijke bestanden wissen kan de app laten vastlopen",
+                "tr": "Geçici dosyaları silmek uygulamayı dondurabilir",
+                "vi": "Xóa tệp tạm có thể làm ứng dụng bị treo",
+                "ar": "مسح الملفات المؤقتة قد يجمّد التطبيق",
+                "ca": "Esborrar els fitxers temporals pot bloquejar l’app",
+                "el": "Η εκκαθάριση προσωρινών αρχείων μπορεί να παγώσει την εφαρμογή",
+                "nb": "Sletting av midlertidige filer kan fryse appen",
+                "zh-TW": "清除暫存檔案時 App 可能停止回應",
+                "hi": "अस्थायी फ़ाइलें साफ़ करने से ऐप फ़्रीज़ हो सकता है"
+            },
+            "issues": ["301"]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Dragging a file to another disk might freeze the app",
+                "zh-Hans": "将文件拖到其他磁盘可能导致应用程序冻结",
+                "fr": "Glisser un fichier vers un autre disque peut bloquer l’application",
+                "de": "Datei auf ein anderes Laufwerk ziehen kann die App einfrieren lassen",
+                "it": "Trascinare un file su un altro disco può bloccare l’applicazione",
+                "ja": "ファイルを別のディスクにドラッグするとアプリがフリーズすることがある",
+                "fa": "کشیدن فایل به دیسک دیگر ممکن است باعث توقف برنامه شود",
+                "pl": "Przeciąganie pliku na inny dysk może zawiesić aplikację",
+                "pt-BR": "Arrastar um arquivo para outro disco pode fazer o aplicativo travar",
+                "ru": "Перетаскивание файла на другой диск может привести к зависанию приложения",
+                "uk": "Перетягування файлу на інший диск може призвести до зависання застосунку",
+                "es-MX": "Arrastrar un archivo a otro disco puede congelar la aplicación",
+                "ko": "파일을 다른 디스크로 드래그하면 앱이 멈출 수 있음",
+                "nl": "Een bestand naar een andere schijf slepen kan de app laten vastlopen",
+                "tr": "Bir dosyayı başka bir diske sürüklemek uygulamayı dondurabilir",
+                "vi": "Kéo tệp sang ổ đĩa khác có thể làm ứng dụng bị treo",
+                "ar": "سحب ملف إلى قرص آخر قد يجمّد التطبيق",
+                "ca": "Arrossegar un fitxer a un altre disc pot bloquejar l’app",
+                "el": "Το σύρσιμο αρχείου σε άλλο δίσκο μπορεί να παγώσει την εφαρμογή",
+                "nb": "Å dra en fil til en annen disk kan fryse appen",
+                "zh-TW": "將檔案拖到其他磁碟時 App 可能停止回應",
+                "hi": "किसी फ़ाइल को दूसरी डिस्क पर ड्रैग करने से ऐप फ़्रीज़ हो सकता है"
+            },
+            "issues": ["300"]
+          },
+          {
+            "type": "core",
+            "title": {
+                "en": "Update 7-Zip to v26.06",
+                "zh-Hans": "更新 7-Zip 至 v26.06",
+                "fr": "Mise à jour de 7-Zip vers la version 26.06",
+                "de": "7-Zip auf Version 26.06 aktualisiert",
+                "it": "Aggiornamento di 7-Zip alla versione 26.06",
+                "ja": "7-Zip を v26.06 に更新",
+                "fa": "به‌روزرسانی 7-Zip به نسخه 26.06",
+                "pl": "Aktualizacja 7-Zip do wersji 26.06",
+                "pt-BR": "Atualização do 7-Zip para a versão 26.06",
+                "ru": "Обновление 7-Zip до версии 26.06",
+                "uk": "Оновлення 7-Zip до версії 26.06",
+                "es-MX": "Actualización de 7-Zip a la versión 26.06",
+                "ko": "7-Zip을 v26.06으로 업데이트",
+                "nl": "7-Zip bijgewerkt naar v26.06",
+                "tr": "7-Zip v26.06'ya güncellendi",
+                "vi": "Cập nhật 7-Zip lên v26.06",
+                "ar": "تحديث 7-Zip إلى الإصدار 26.06",
+                "ca": "Actualització de 7-Zip a la versió 26.06",
+                "el": "Ενημέρωση του 7-Zip στην έκδοση 26.06",
+                "nb": "7-Zip oppdatert til versjon 26.06",
+                "zh-TW": "7-Zip 更新至 26.06 版",
+                "hi": "7-Zip को संस्करण 26.06 में अपडेट किया गया"
+            },
+            "issues": ["398"]
+          }
+        ]
+      },
+      {
+        "version": "1.2.0",
+        "items": [
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Open and extract LZMA files",
+                "zh-Hans": "打开并解压 LZMA 文件",
+                "fr": "Ouvrir et extraire les fichiers LZMA",
+                "de": "LZMA-Dateien öffnen und entpacken",
+                "it": "Aprire ed estrarre i file LZMA",
+                "ja": "LZMA ファイルを開いて展開",
+                "fa": "باز کردن و استخراج فایل‌های LZMA",
+                "pl": "Otwieranie i wypakowywanie plików LZMA",
+                "pt-BR": "Abrir e extrair arquivos LZMA",
+                "ru": "Открытие и извлечение файлов LZMA",
+                "uk": "Відкриття та розпакування файлів LZMA",
+                "es-MX": "Abrir y extraer archivos LZMA",
+                "ko": "LZMA 파일 열기 및 압축 해제",
+                "nl": "LZMA-bestanden openen en uitpakken",
+                "tr": "LZMA dosyalarını açma ve çıkarma",
+                "vi": "Mở và giải nén tệp LZMA",
+                "ar": "فتح ملفات LZMA واستخراجها",
+                "ca": "Obre i extreu fitxers LZMA",
+                "el": "Άνοιγμα και εξαγωγή αρχείων LZMA",
+                "nb": "Åpne og pakk ut LZMA-filer",
+                "zh-TW": "開啟並解壓縮 LZMA 檔案",
+                "hi": "LZMA फ़ाइलें खोलें और निकालें"
+            },
+            "issues": [
+                "340"
+            ]
+          },
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Extract archives on open",
+                "zh-Hans": "打开压缩包时自动解压",
+                "fr": "Extraire les archives à l’ouverture",
+                "de": "Archive beim Öffnen entpacken",
+                "it": "Estrarre gli archivi all’apertura",
+                "ja": "アーカイブを開くときに展開",
+                "fa": "استخراج آرشیوها هنگام باز کردن",
+                "pl": "Wypakowywanie archiwów przy otwieraniu",
+                "pt-BR": "Extrair arquivos compactados ao abrir",
+                "ru": "Извлечение архивов при открытии",
+                "uk": "Розпакування архівів під час відкриття",
+                "es-MX": "Extraer archivos comprimidos al abrirlos",
+                "ko": "아카이브를 열 때 압축 해제",
+                "nl": "Archieven uitpakken bij openen",
+                "tr": "Arşivleri açarken çıkarma",
+                "vi": "Giải nén tệp nén khi mở",
+                "ar": "استخراج الأرشيفات عند فتحها",
+                "ca": "Extreu els arxius en obrir-los",
+                "el": "Εξαγωγή συμπιεσμένων αρχείων κατά το άνοιγμα",
+                "nb": "Pakk ut arkiver ved åpning",
+                "zh-TW": "開啟壓縮檔時自動解壓縮",
+                "hi": "खोलने पर आर्काइव निकालें"
+            },
+            "issues": [
+                "280"
+            ]
+          },
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Hide hidden files, as Finder does",
+                "zh-Hans": "像 Finder 一样不显示隐藏文件",
+                "fr": "Masquer les fichiers cachés, comme le Finder",
+                "de": "Versteckte Dateien ausblenden, wie im Finder",
+                "it": "Nascondere i file nascosti, come il Finder",
+                "ja": "Finder と同じく隠しファイルを非表示に",
+                "fa": "پنهان کردن فایل‌های پنهان، مانند Finder",
+                "pl": "Ukrywanie ukrytych plików, jak w Finderze",
+                "pt-BR": "Ocultar arquivos ocultos, como o Finder",
+                "ru": "Скрытие скрытых файлов, как в Finder",
+                "uk": "Приховування прихованих файлів, як у Finder",
+                "es-MX": "Ocultar archivos ocultos, como el Finder",
+                "ko": "Finder처럼 숨김 파일 숨기기",
+                "nl": "Verborgen bestanden verbergen, zoals de Finder",
+                "tr": "Gizli dosyaları gizleme, Finder’daki gibi",
+                "vi": "Ẩn tệp ẩn, giống như Finder",
+                "ar": "إخفاء الملفات المخفية كما في Finder",
+                "ca": "Oculta els fitxers ocults, com el Finder",
+                "el": "Απόκρυψη κρυφών αρχείων, όπως στο Finder",
+                "nb": "Skjul skjulte filer, slik Finder gjør",
+                "zh-TW": "像 Finder 一樣不顯示隱藏檔案",
+                "hi": "Finder की तरह छिपी फ़ाइलें छिपाएँ"
+            },
+            "issues": [
+                "304"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Deb, rpm and compressed files open as “unknown”",
+                "zh-Hans": "deb、rpm 和压缩文件打开后显示为“unknown”",
+                "fr": "Les fichiers deb, rpm et compressés s’ouvrent en « unknown »",
+                "de": "Deb-, rpm- und komprimierte Dateien öffnen sich als „unknown“",
+                "it": "I file deb, rpm e compressi si aprono come «unknown»",
+                "ja": "deb、rpm、圧縮ファイルを開くと「unknown」と表示される",
+                "fa": "فایل‌های deb، rpm و فشرده به‌صورت «unknown» باز می‌شوند",
+                "pl": "Pliki deb, rpm i skompresowane otwierają się jako „unknown”",
+                "pt-BR": "Arquivos deb, rpm e compactados abrem como “unknown”",
+                "ru": "Deb-, rpm- и сжатые файлы открываются как «unknown»",
+                "uk": "Deb-, rpm- і стиснені файли відкриваються як «unknown»",
+                "es-MX": "Los archivos deb, rpm y comprimidos se abren como «unknown»",
+                "ko": "deb, rpm 및 압축 파일이 “unknown”으로 열림",
+                "nl": "Deb-, rpm- en gecomprimeerde bestanden openen als “unknown”",
+                "tr": "Deb, rpm ve sıkıştırılmış dosyalar “unknown” olarak açılıyor",
+                "vi": "Tệp deb, rpm và tệp nén mở ra thành “unknown”",
+                "ar": "ملفات deb وrpm والملفات المضغوطة تُفتح باسم «unknown»",
+                "ca": "Els fitxers deb, rpm i comprimits s’obren com a «unknown»",
+                "el": "Τα αρχεία deb, rpm και τα συμπιεσμένα ανοίγουν ως «unknown»",
+                "nb": "Deb-, rpm- og komprimerte filer åpnes som «unknown»",
+                "zh-TW": "deb、rpm 與壓縮檔案開啟後顯示為「unknown」",
+                "hi": "deb, rpm और कंप्रेस्ड फ़ाइलें “unknown” के रूप में खुलती हैं"
+            },
+            "issues": [
+                "340",
+                "361"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Extract Here fails in a folder granted before",
+                "zh-Hans": "在已授权的文件夹中“解压到当前位置”失败",
+                "fr": "« Extraire ici » échoue dans un dossier déjà autorisé",
+                "de": "„Hier entpacken“ scheitert in zuvor freigegebenem Ordner",
+                "it": "«Estrai qui» fallisce in una cartella già autorizzata",
+                "ja": "許可済みのフォルダで「ここに展開」が失敗する",
+                "fa": "«استخراج در اینجا» در پوشه‌ای که قبلاً مجاز شده ناموفق است",
+                "pl": "„Wypakuj tutaj” zawodzi w folderze z nadanym wcześniej dostępem",
+                "pt-BR": "“Extrair aqui” falha em uma pasta já autorizada",
+                "ru": "«Распаковать здесь» не работает в ранее разрешённой папке",
+                "uk": "«Розпакувати тут» не працює в раніше дозволеній теці",
+                "es-MX": "«Extraer aquí» falla en una carpeta ya autorizada",
+                "ko": "이전에 허용한 폴더에서 “여기에 압축 풀기” 실패",
+                "nl": "“Hier uitpakken” mislukt in een eerder toegestane map",
+                "tr": "Önceden izin verilen klasörde “Buraya Çıkar” başarısız",
+                "vi": "“Giải nén tại đây” thất bại trong thư mục đã cấp quyền trước đó",
+                "ar": "«استخرج هنا» يفشل في مجلد مُنح الإذن سابقًا",
+                "ca": "«Extreu aquí» falla en una carpeta ja autoritzada",
+                "el": "Το «Εξαγωγή εδώ» αποτυγχάνει σε φάκελο με άδεια από πριν",
+                "nb": "«Pakk ut her» mislykkes i en mappe med tilgang fra før",
+                "zh-TW": "在已授權的資料夾中「解壓縮到這裡」失敗",
+                "hi": "“यहाँ निकालें” पहले से पहुँच वाले फ़ोल्डर में विफल होता है"
+            },
+            "issues": [
+                "370"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Extracting overwrites files of the same name",
+                "zh-Hans": "解压会覆盖同名文件",
+                "fr": "L’extraction écrase les fichiers du même nom",
+                "de": "Entpacken überschreibt gleichnamige Dateien",
+                "it": "L’estrazione sovrascrive i file con lo stesso nome",
+                "ja": "展開すると同じ名前のファイルが上書きされる",
+                "fa": "استخراج، فایل‌های هم‌نام را بازنویسی می‌کند",
+                "pl": "Wypakowywanie nadpisuje pliki o tej samej nazwie",
+                "pt-BR": "A extração sobrescreve arquivos com o mesmo nome",
+                "ru": "Распаковка перезаписывает файлы с тем же именем",
+                "uk": "Розпакування перезаписує файли з тією самою назвою",
+                "es-MX": "La extracción sobrescribe archivos con el mismo nombre",
+                "ko": "압축 해제 시 같은 이름의 파일을 덮어씀",
+                "nl": "Uitpakken overschrijft bestanden met dezelfde naam",
+                "tr": "Çıkarma, aynı adlı dosyaların üzerine yazıyor",
+                "vi": "Giải nén ghi đè tệp trùng tên",
+                "ar": "الاستخراج يستبدل الملفات التي تحمل الاسم نفسه",
+                "ca": "L’extracció sobreescriu fitxers amb el mateix nom",
+                "el": "Η εξαγωγή αντικαθιστά αρχεία με το ίδιο όνομα",
+                "nb": "Utpakking overskriver filer med samme navn",
+                "zh-TW": "解壓縮會覆寫同名檔案",
+                "hi": "निकालने पर एक ही नाम वाली फ़ाइलें ओवरराइट हो जाती हैं"
+            },
+            "issues": [
+                "371"
+            ]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Some tar files open into a “.” folder",
+                "zh-Hans": "部分 tar 文件打开后只有一个“.”文件夹",
+                "fr": "Certains fichiers tar s’ouvrent sur un dossier « . »",
+                "de": "Manche tar-Dateien öffnen sich als Ordner „.“",
+                "it": "Alcuni file tar si aprono come una cartella «.»",
+                "ja": "一部の tar ファイルを開くと「.」フォルダが表示される",
+                "fa": "برخی فایل‌های tar به‌صورت یک پوشه «.» باز می‌شوند",
+                "pl": "Niektóre pliki tar otwierają się jako folder „.”",
+                "pt-BR": "Alguns arquivos tar abrem como uma pasta “.”",
+                "ru": "Некоторые tar-файлы открываются как папка «.»",
+                "uk": "Деякі tar-файли відкриваються як тека «.»",
+                "es-MX": "Algunos archivos tar se abren como una carpeta «.»",
+                "ko": "일부 tar 파일이 “.” 폴더로 열림",
+                "nl": "Sommige tar-bestanden openen als map “.”",
+                "tr": "Bazı tar dosyaları “.” klasörü olarak açılıyor",
+                "vi": "Một số tệp tar mở ra thành thư mục “.”",
+                "ar": "بعض ملفات tar تُفتح كمجلد باسم «.»",
+                "ca": "Alguns fitxers tar s’obren com una carpeta «.»",
+                "el": "Ορισμένα αρχεία tar ανοίγουν ως φάκελος «.»",
+                "nb": "Noen tar-filer åpnes som en mappe kalt «.»",
+                "zh-TW": "部分 tar 檔案開啟後只有一個「.」資料夾",
+                "hi": "कुछ tar फ़ाइलें “.” फ़ोल्डर के रूप में खुलती हैं"
+            },
+            "issues": [
+                "362"
+            ]
+          },
+          {
+            "type": "core",
+            "title": {
+                "en": "Launch parameter to skip the welcome window",
+                "zh-Hans": "用于跳过欢迎窗口的启动参数",
+                "fr": "Paramètre de lancement pour ignorer la fenêtre de bienvenue",
+                "de": "Startparameter zum Überspringen des Willkommensfensters",
+                "it": "Parametro di avvio per saltare la finestra di benvenuto",
+                "ja": "ウェルカムウインドウをスキップする起動パラメータ",
+                "fa": "پارامتر راه‌اندازی برای رد کردن پنجرهٔ خوش‌آمدگویی",
+                "pl": "Parametr uruchamiania pomijający okno powitalne",
+                "pt-BR": "Parâmetro de inicialização para pular a janela de boas-vindas",
+                "ru": "Параметр запуска для пропуска окна приветствия",
+                "uk": "Параметр запуску для пропуску вікна привітання",
+                "es-MX": "Parámetro de inicio para omitir la ventana de bienvenida",
+                "ko": "환영 창을 건너뛰는 실행 매개변수",
+                "nl": "Startparameter om het welkomstvenster over te slaan",
+                "tr": "Karşılama penceresini atlamak için başlatma parametresi",
+                "vi": "Tham số khởi chạy để bỏ qua cửa sổ chào mừng",
+                "ar": "معامل تشغيل لتخطي نافذة الترحيب",
+                "ca": "Paràmetre d’inici per ometre la finestra de benvinguda",
+                "el": "Παράμετρος εκκίνησης για παράλειψη του παραθύρου καλωσορίσματος",
+                "nb": "Startparameter for å hoppe over velkomstvinduet",
+                "zh-TW": "用於略過歡迎視窗的啟動參數",
+                "hi": "स्वागत विंडो स्किप करने के लिए लॉन्च पैरामीटर"
+            },
+            "issues": [
+                "360"
+            ]
+          },
+          {
+            "type": "core",
+            "title": {
+                "en": "Update 7-Zip to v26.05",
+                "zh-Hans": "更新 7-Zip 至 v26.05",
+                "fr": "Mise à jour de 7-Zip vers la version 26.05",
+                "de": "7-Zip auf Version 26.05 aktualisiert",
+                "it": "Aggiornamento di 7-Zip alla versione 26.05",
+                "ja": "7-Zip を v26.05 に更新",
+                "fa": "به‌روزرسانی 7-Zip به نسخه 26.05",
+                "pl": "Aktualizacja 7-Zip do wersji 26.05",
+                "pt-BR": "Atualização do 7-Zip para a versão 26.05",
+                "ru": "Обновление 7-Zip до версии 26.05",
+                "uk": "Оновлення 7-Zip до версії 26.05",
+                "es-MX": "Actualización de 7-Zip a la versión 26.05",
+                "ko": "7-Zip을 v26.05로 업데이트",
+                "nl": "7-Zip bijgewerkt naar v26.05",
+                "tr": "7-Zip v26.05'e güncellendi",
+                "vi": "Cập nhật 7-Zip lên v26.05",
+                "ar": "تحديث 7-Zip إلى الإصدار 26.05",
+                "ca": "Actualització de 7-Zip a la versió 26.05",
+                "el": "Ενημέρωση του 7-Zip στην έκδοση 26.05",
+                "nb": "7-Zip oppdatert til versjon 26.05",
+                "zh-TW": "7-Zip 更新至 26.05 版",
+                "hi": "7-Zip को संस्करण 26.05 में अपडेट किया गया"
+            },
+            "issues": [
+                "367"
+            ]
+          },
+          {
+            "type": "lang",
+            "title": {
+                "en": "Now available in Hindi",
+                "zh-Hans": "现已支持印地语",
+                "fr": "Désormais disponible en hindi",
+                "de": "Jetzt auch auf Hindi",
+                "it": "Ora disponibile anche in hindi",
+                "ja": "ヒンディー語にも対応しました",
+                "fa": "اکنون به زبان هندی نیز در دسترس است",
+                "pl": "Dostępne teraz również w języku hindi",
+                "pt-BR": "Agora disponível em hindi",
+                "ru": "Теперь доступно на хинди",
+                "uk": "Тепер доступно мовою гінді",
+                "es-MX": "Ahora disponible en hindi",
+                "ko": "이제 힌디어로도 제공됩니다",
+                "nl": "Nu ook beschikbaar in het Hindi",
+                "tr": "Artık Hintçe de mevcut",
+                "vi": "Hiện đã có tiếng Hindi",
+                "ar": "متوفر الآن باللغة الهندية",
+                "ca": "Ara disponible en hindi",
+                "el": "Πλέον διαθέσιμο στα χίντι",
+                "nb": "Nå tilgjengelig på hindi",
+                "zh-TW": "現已支援印地文",
+                "hi": "अब हिन्दी में उपलब्ध"
+            },
+            "issues": [
+                "375"
+            ]
+          }
+        ]
+      },
       {
         "version": "1.1.0",
         "items": [

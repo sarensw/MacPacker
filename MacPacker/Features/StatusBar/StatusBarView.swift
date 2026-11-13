@@ -110,7 +110,7 @@ struct StatusBarView: View {
                         if let uncompressedSize = archiveState.uncompressedSize {
                             Text(verbatim: " • \(SystemHelper.shared.format(bytes: uncompressedSize))")
                         }
-                        
+
                         Spacer()
                         
                         if archiveState.selectedItems.count == 0 {
