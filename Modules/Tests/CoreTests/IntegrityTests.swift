@@ -65,6 +65,16 @@ extension AllCoreTests {
             #expect(job.testResult?.isIntact == true)
         }
 
+        /// A file compressed with a method 7-Zip can't decode is neither whole
+        /// nor damaged: the test says it can't be checked, and checks the file
+        /// beside it as usual.
+        @Test func aFileWithAnUnsupportedMethodCantBeChecked() async throws {
+            let job = try await test(fixture("zip/unsupportedMethod.zip"))
+
+            #expect(job.testResult == ArchiveTestResult(damagedEntries: [], uncheckedEntries: ["sound.wav"]))
+            #expect(job.hasOutcomeToShow)
+        }
+
         /// What is damaged is named, and only that: an archive with one damaged
         /// entry has others that are fine. An archive cut short says so itself,
         /// also where every entry that is left reads, and so does one whose own

@@ -94,17 +94,27 @@ public struct ArchiveExtractionResult: Sendable {
 public struct ArchiveTestResult: Equatable, Sendable {
     /// The entries that did not decode or did not match their checksum, by path.
     public let damagedEntries: [String]
+    /// The entries compressed with a method that can't be decoded here, by
+    /// path: whether they are whole can't be told, which is no damage.
+    public let uncheckedEntries: [String]
     /// How the archive reports damage of its own, nil when it reports none.
     /// Every entry can read and the archive still not be whole.
     public let archiveDamage: ArchiveDamage?
 
-    public init(damagedEntries: [String], archiveDamage: ArchiveDamage? = nil) {
+    public init(damagedEntries: [String], uncheckedEntries: [String] = [], archiveDamage: ArchiveDamage? = nil) {
         self.damagedEntries = damagedEntries
+        self.uncheckedEntries = uncheckedEntries
         self.archiveDamage = archiveDamage
     }
 
+    /// Whether anything is damaged: an entry, or the archive itself.
+    public var isDamaged: Bool {
+        !damagedEntries.isEmpty || archiveDamage != nil
+    }
+
+    /// Whether every entry was checked, and nothing is damaged.
     public var isIntact: Bool {
-        damagedEntries.isEmpty && archiveDamage == nil
+        !isDamaged && uncheckedEntries.isEmpty
     }
 }
 

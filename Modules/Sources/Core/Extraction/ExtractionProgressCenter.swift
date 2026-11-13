@@ -353,16 +353,16 @@ public final class ExtractionProgressCenter: ObservableObject {
     }
 
     /// Ends a test with what it found: done when the archive is intact, failed
-    /// when it is not. The window words the verdict from `testResult`; the
-    /// failure's message is for the log.
+    /// when it is not, or when not every entry could be checked. The window
+    /// words the verdict from `testResult`; the failure's message is for the log.
     public func finish(_ id: UUID, testedAs result: ArchiveTestResult) {
         if let index = jobs.firstIndex(where: { $0.id == id }), !jobs[index].isFinished {
             jobs[index].testResult = result
         }
-        let damaged = result.damagedEntries.isEmpty
-            ? "the archive itself"
-            : result.damagedEntries.joined(separator: ", ")
-        finish(id, result.isIntact ? .done : .failed("Damaged: \(damaged)"))
+        let found = !result.damagedEntries.isEmpty ? "Damaged: \(result.damagedEntries.joined(separator: ", "))"
+            : result.isDamaged ? "Damaged: the archive itself"
+            : "Can't check: \(result.uncheckedEntries.joined(separator: ", "))"
+        finish(id, result.isIntact ? .done : .failed(found))
     }
 
     /// Drops all finished jobs (the progress window calls this when it closes).

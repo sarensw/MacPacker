@@ -1933,6 +1933,7 @@ extension ArchiveState {
                 log.notice("Archive tested", context: [
                     "file": url.lastPathComponent,
                     "damagedEntries": "\(result.damagedEntries.count)",
+                    "uncheckedEntries": "\(result.uncheckedEntries.count)",
                     "archiveDamage": result.archiveDamage?.rawValue ?? "none"
                 ])
                 progressCenter.finish(jobId, testedAs: result)

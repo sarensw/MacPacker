@@ -210,7 +210,8 @@ private struct ExtractionProgressRowView: View {
     // MARK: Pieces
 
     /// What a test found: nothing, or what is damaged — the entries, or the
-    /// archive itself when it is broken where no entry shows it.
+    /// archive itself when it is broken where no entry shows it — and what
+    /// can't be checked.
     @ViewBuilder
     private func verdict(_ result: ArchiveTestResult) -> some View {
         if result.isIntact {
@@ -218,33 +219,54 @@ private struct ExtractionProgressRowView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
-            let names = result.damagedEntries.isEmpty ? [job.archiveName] : result.damagedEntries
             VStack(alignment: .leading, spacing: 2) {
-                // The names while the whole list fits on the line, else how many.
-                ViewThatFits(in: .horizontal) {
-                    // ponytail: past 20 names they never fit; spares measuring thousands
-                    if names.count <= 20 {
-                        Text(.archiveTestDamaged(names.joined(separator: ", ")))
-                    }
-                    if names.count > 1 {
-                        Text(.archiveTestDamagedFileCount(names.count))
+                if result.isDamaged {
+                    names(
+                        result.damagedEntries.isEmpty ? [job.archiveName] : result.damagedEntries,
+                        listed: { .archiveTestDamaged($0) },
+                        counted: { .archiveTestDamagedFileCount($0) })
+                    .foregroundStyle(.red)
+
+                    // Why, where the archive says so itself: its files may all read,
+                    // and "Damaged" alone would look like a mistake.
+                    switch result.archiveDamage {
+                    case .endsEarly: Text(.archiveTestEndsEarly)
+                    case .checksum: Text(.archiveTestChecksumMismatch)
+                    case .other, nil: EmptyView()
                     }
                 }
-                .foregroundStyle(.red)
-                .lineLimit(1)
-                .truncationMode(.tail)
-
-                // Why, where the archive says so itself: its files may all read,
-                // and "Damaged" alone would look like a mistake.
-                switch result.archiveDamage {
-                case .endsEarly: Text(.archiveTestEndsEarly)
-                case .checksum: Text(.archiveTestChecksumMismatch)
-                case .other, nil: EmptyView()
+                if !result.uncheckedEntries.isEmpty {
+                    // No damage: nothing here decodes them, to tell either way.
+                    names(
+                        result.uncheckedEntries,
+                        listed: { .archiveTestUnchecked($0) },
+                        counted: { .archiveTestUncheckedFileCount($0) })
+                    .foregroundStyle(.orange)
+                    Text(.archiveTestUnsupportedMethod)
                 }
             }
             .font(.caption)
             .foregroundStyle(.secondary)
         }
+    }
+
+    /// `names` while the whole list fits on the line, else how many.
+    private func names(
+        _ names: [String],
+        listed: (String) -> LocalizedStringResource,
+        counted: (Int) -> LocalizedStringResource
+    ) -> some View {
+        ViewThatFits(in: .horizontal) {
+            // ponytail: past 20 names they never fit; spares measuring thousands
+            if names.count <= 20 {
+                Text(listed(names.joined(separator: ", ")))
+            }
+            if names.count > 1 {
+                Text(counted(names.count))
+            }
+        }
+        .lineLimit(1)
+        .truncationMode(.tail)
     }
 
     private var typeBadge: some View {
@@ -293,7 +315,8 @@ private struct ExtractionProgressRowView: View {
                 .foregroundStyle(.green)
         case .failed:
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.red)
+                // orange where a test found no damage, only files it can't check
+                .foregroundStyle(job.testResult?.isDamaged == false ? .orange : .red)
         case .cancelled:
             Image(systemName: "slash.circle")
                 .foregroundStyle(.secondary)

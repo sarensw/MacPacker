@@ -6803,6 +6803,54 @@
         }
       }
     },
+    "archiveTestUnchecked": {
+      "comment": "Progress window, under the name of an archive that was tested: these files are compressed with a method MacPacker can't decompress, so whether they are intact can't be told. That is not damage. The placeholder lists the files, separated by commas.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can't check: %@"
+          }
+        }
+      }
+    },
+    "archiveTestUncheckedFileCount": {
+      "comment": "Progress window, in place of \"Can't check: <files>\" once the names don't fit on the line: how many files in the tested archive are compressed with a method MacPacker can't decompress, so whether they are intact can't be told.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Can't check: %lld file"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Can't check: %lld files"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "archiveTestUnsupportedMethod": {
+      "comment": "Progress window, under \"Can't check: <files>\" after a test: why those files can't be checked. Not damage: MacPacker can't decompress the method they are compressed with (WavPack audio in a zip, for example).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compressed with a method MacPacker doesn't support."
+          }
+        }
+      }
+    },
     "columnDateModified": {
       "comment": "Column that shows the date the file was modified",
       "extractionState": "manual",

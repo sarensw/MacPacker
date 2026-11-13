@@ -622,6 +622,34 @@ final class MacPackerUITests: XCTestCase {
         return (whole, damaged)
     }
 
+    /// A zip of `readme.txt` and `sound.wav`, stored, with `sound.wav` marked as
+    /// compressed with WavPack (method 97), which 7-Zip doesn't decode.
+    private func makeZipWithUnsupportedMethod(in dir: URL) throws -> URL {
+        let files = ["readme.txt", "sound.wav"]
+        for file in files {
+            try "Every byte of this file is checked.".write(to: dir.appendingPathComponent(file), atomically: true, encoding: .utf8)
+        }
+        let zip = dir.appendingPathComponent("unsupported.zip")
+        try run("/usr/bin/zip", ["-X", "-0", zip.path] + files, cwd: dir)
+        for file in files {
+            try FileManager.default.removeItem(at: dir.appendingPathComponent(file))
+        }
+
+        // a name follows its local header at 30, the method sitting at 8, and
+        // its central directory header at 46, the method sitting at 10
+        var bytes = try Data(contentsOf: zip)
+        for name in bytes.ranges(of: Data("sound.wav".utf8)) {
+            let local = name.lowerBound - 30, central = name.lowerBound - 46
+            if local >= 0, bytes[local..<local + 4] == Data([0x50, 0x4B, 0x03, 0x04]) {
+                bytes[local + 8] = 97
+            } else if central >= 0, bytes[central..<central + 4] == Data([0x50, 0x4B, 0x01, 0x02]) {
+                bytes[central + 10] = 97
+            }
+        }
+        try bytes.write(to: zip)
+        return zip
+    }
+
     /// Chooses `file` in the open panel that is up: Go to Folder (⇧⌘G) takes the
     /// path of a file too, and selects it.
     private func pick(_ file: URL, inOpenPanelOf app: XCUIApplication) {
@@ -637,8 +665,9 @@ final class MacPackerUITests: XCTestCase {
     /// The toolbar's Test Archive checks the archive the window shows and says
     /// what it found in the progress window: nothing for a whole archive, the
     /// damaged files for one whose CRCs no longer match while their names fit on
-    /// the line, else how many; for an archive cut short, also why. A click on
-    /// the row leaves the verdict where it is: a test has no chart to open (#232).
+    /// the line, else how many; for an archive cut short, also why; and a file
+    /// whose method 7-Zip can't decode as one it can't check. A click on the row
+    /// leaves the verdict where it is: a test has no chart to open (#232).
     func testTestArchiveFromTheToolbarShowsTheVerdict() throws {
         let dir = try makeWorkDir("test-archive")
         defer { try? FileManager.default.removeItem(at: dir) }
@@ -650,6 +679,7 @@ final class MacPackerUITests: XCTestCase {
         let directory = bytes[(bytes.count - 6)..<(bytes.count - 2)].reversed().reduce(0) { $0 << 8 | Int($1) }
         let cut = dir.appendingPathComponent("cut.zip")
         try bytes.prefix(directory).write(to: cut)
+        let unsupported = try makeZipWithUnsupportedMethod(in: dir)
         let few = try makeWholeAndDamagedZip(in: dir, files: ["a.txt", "b.txt", "c.txt"]).damaged
         let many = try makeWholeAndDamagedZip(in: dir, files: (1...12).map { String(format: "file%02d.txt", $0) }).damaged
 
@@ -659,6 +689,7 @@ final class MacPackerUITests: XCTestCase {
             (few, "a.txt", "Damaged: a.txt, b.txt, c.txt"),
             (many, "file01.txt", "Damaged: 12 files"),
             (cut, "readme.txt", "The archive ends early, so files may be missing."),
+            (unsupported, "readme.txt", "Can't check: sound.wav"),
         ] {
             let app = launchApp(arguments: ["-ArchivePath", zip.path])
             XCTAssertTrue(app.staticTexts[first].waitForExistence(timeout: 15), "\(zip.lastPathComponent) did not load")

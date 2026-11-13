@@ -230,16 +230,21 @@ final actor Archive7ZipEngine: ArchiveEngine {
                     found.archiveFlags & Self.unexpectedEnd != 0 ? .endsEarly
                     : found.archiveFlags & Self.crcError != 0 ? .checksum
                     : found.archiveIsDamaged ? .other : nil
-                if damage != nil || !found.damagedPaths.isEmpty {
+                if damage != nil || !found.damaged.isEmpty {
                     // a notice, so that it is in the logs a user exports
-                    log.notice("7-Zip found damage", context: [
+                    log.notice("7-Zip test findings", context: [
                         "file": url.lastPathComponent,
                         "archiveFlags": Self.names(of: found.archiveFlags, in: Self.errorFlagNames),
-                        "entryResults": Self.names(of: found.entryResults, in: Self.operationResultNames),
+                        "entryResults": Self.names(
+                            of: found.damaged.reduce(0) { $0 | 1 << $1.result }, in: Self.operationResultNames),
                         "message": found.archiveMessage ?? ""
                     ])
                 }
-                return ArchiveTestResult(damagedEntries: found.damagedPaths, archiveDamage: damage)
+                // A method 7-Zip can't decode is no damage: it can't tell either way.
+                return ArchiveTestResult(
+                    damagedEntries: found.damaged.filter { $0.result != Self.unsupportedMethod }.map(\.path),
+                    uncheckedEntries: found.damaged.filter { $0.result == Self.unsupportedMethod }.map(\.path),
+                    archiveDamage: damage)
             } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
                 szip.setPassword(try await attempts.next())
                 continue
@@ -252,6 +257,8 @@ final actor Archive7ZipEngine: ArchiveEngine {
     /// kpv_ErrorFlags_UnexpectedEnd and kpv_ErrorFlags_CrcError (PropID.h).
     private static let unexpectedEnd: UInt32 = 1 << 5
     private static let crcError: UInt32 = 1 << 10
+    /// NArchive::NExtract::NOperationResult::kUnsupportedMethod (IArchive.h).
+    private static let unsupportedMethod: Int32 = 1
     /// 7-Zip's kpv_ErrorFlags_* by bit (PropID.h), for the log.
     private static let errorFlagNames = [
         "isNotArc", "headersError", "encryptedHeadersError", "unavailableStart", "unconfirmedStart",

@@ -346,12 +346,13 @@ public class SevenZipArchive {
 
     /// Decodes every entry and checks it against its checksum, writing nothing.
     /// - Parameter progress: Optional byte-progress callback; return `false` to abort.
-    /// - Returns: the paths of the entries that did not decode or did not match
-    ///   their checksum, and whether the archive reports damage of its own — cut
-    ///   short, its headers broken — which no entry has to show. With them, to
-    ///   tell why: what the archive reports, as 7-Zip's error flags; what the
-    ///   entries ended with, bit (1 << r) per 7-Zip operation result r; and a
-    ///   message the archive gives of its own (see `sz_test_all`).
+    /// - Returns: the entries that did not decode or did not match their
+    ///   checksum, by path, each with what it ended with: 7-Zip's operation
+    ///   result (`NArchive::NExtract::NOperationResult`), 1 for a method it
+    ///   can't decode. With them whether the archive reports damage of its own —
+    ///   cut short, its headers broken — which no entry has to show, what it
+    ///   reports, as 7-Zip's error flags, and a message it gives of its own (see
+    ///   `sz_test_all`).
     /// - Throws: ``SevenZipError/passwordMissing`` if any entry is encrypted and
     ///   no password was set, ``SevenZipError/passwordWrong`` when the one set did
     ///   not decrypt them, ``SevenZipError/cancelled`` when the progress callback
@@ -359,18 +360,18 @@ public class SevenZipArchive {
     public func test(
         progress: ProgressHandler? = nil
     ) throws -> (
-        damagedPaths: [String], archiveIsDamaged: Bool,
-        archiveFlags: UInt32, entryResults: UInt32, archiveMessage: String?
+        damaged: [(path: String, result: Int32)], archiveIsDamaged: Bool,
+        archiveFlags: UInt32, archiveMessage: String?
     ) {
         if !hasPassword, try entries.contains(where: \.isEncrypted) {
             throw SevenZipError.passwordMissing
         }
         let box = progress.map(ProgressBox.init)
         var damaged: UnsafeMutablePointer<UInt32>?
+        var results: UnsafeMutablePointer<Int32>?
         var count: UInt32 = 0
         var archiveIsDamaged = false
         var archiveFlags: UInt32 = 0
-        var entryResults: UInt32 = 0
         var message: UnsafeMutablePointer<CChar>?
         var errorPtr: UnsafeMutablePointer<CChar>?
         let result = withExtendedLifetime(box) {
@@ -378,16 +379,17 @@ public class SevenZipArchive {
                 handle.ref,
                 box != nil ? Self.progressThunk : nil,
                 box.map { Unmanaged.passUnretained($0).toOpaque() },
-                &damaged, &count, &archiveIsDamaged,
-                &archiveFlags, &entryResults, &message, &errorPtr)
+                &damaged, &results, &count, &archiveIsDamaged,
+                &archiveFlags, &message, &errorPtr)
         }
-        defer { free(damaged); free(message) }
+        defer { free(damaged); free(results); free(message) }
         if result != SZ_TEST_DAMAGED {
             try Self.check(result, errorPtr)
         }
         let indices = UnsafeBufferPointer(start: damaged, count: Int(count))
-        return (indices.map(path(ofEntryAt:)), archiveIsDamaged,
-                archiveFlags, entryResults, message.map { String(cString: $0) })
+        let ended = UnsafeBufferPointer(start: results, count: Int(count))
+        return (zip(indices, ended).map { (path: path(ofEntryAt: $0), result: $1) }, archiveIsDamaged,
+                archiveFlags, message.map { String(cString: $0) })
     }
 
     /// The path the listing shows `index` under, or for an entry it leaves out —
