@@ -270,21 +270,65 @@ extension AllCoreTests {
 
     @MainActor struct CacheCleanerTests {
 
-        @Test func cleanRemovesTempDirectory() throws {
-            let tempDir = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString, isDirectory: true)
-            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-            #expect(FileManager.default.fileExists(atPath: tempDir.path))
-
-            let cleaner = CacheCleaner()
-            cleaner.clean(tempDirectories: [tempDir])
-
-            #expect(!FileManager.default.fileExists(atPath: tempDir.path))
+        /// A cache of the test's own: other test runs on this Mac may be
+        /// extracting into the real one.
+        private func makeCache(holding folders: String...) throws -> URL {
+            let cache = FileManager.default.temporaryDirectory
+                .appending(component: UUID().uuidString, directoryHint: .isDirectory)
+            for folder in folders {
+                try FileManager.default.createDirectory(
+                    at: cache.appending(path: folder, directoryHint: .isDirectory), withIntermediateDirectories: true)
+            }
+            return cache
         }
 
-        @Test func cleanEmptyArrayDoesNotCrash() {
-            let cleaner = CacheCleaner()
-            cleaner.clean(tempDirectories: [])
+        private func exists(_ path: String, in cache: URL) -> Bool {
+            FileManager.default.fileExists(atPath: cache.appending(path: path).path)
+        }
+
+        @Test func removesTheGivenFolders() async throws {
+            let cache = try makeCache(holding: "temp/sub", "other")
+
+            await CacheCleaner().remove([cache.appending(component: "temp")])
+
+            #expect(!exists("temp", in: cache))
+            #expect(exists("other", in: cache))
+        }
+
+        /// At launch, what earlier launches left goes, but not this launch's
+        /// folder: a window may be extracting into it already (#301).
+        @Test func leftoversGoButThisLaunchsFolderStays() async throws {
+            let cache = try makeCache(holding: "earlier/temp", "current/temp")
+
+            await CacheCleaner().removeLeftovers(in: cache, keeping: cache.appending(component: "current"))
+
+            #expect(!exists("earlier", in: cache))
+            #expect(exists("current/temp", in: cache))
+        }
+
+        /// What `removeLeftovers` keeps is where this launch extracts to.
+        @Test func temporaryFoldersAreMadeInThisLaunchsFolder() throws {
+            let temp = try #require(ArchiveSupportUtilities().createTempDirectory()).url
+            defer { try? FileManager.default.removeItem(at: temp) }
+
+            #expect(temp.deletingLastPathComponent().path == CacheCleaner.launchFolder.path)
+        }
+
+        /// Quit and Settings > Clear cache: this launch's files go too.
+        @Test func removeAllLeavesNothing() async throws {
+            let cache = try makeCache(holding: "earlier/temp", "current/temp")
+
+            await CacheCleaner().removeAll(in: cache)
+
+            #expect(!FileManager.default.fileExists(atPath: cache.path))
+        }
+
+        /// No cache is the usual case at launch, and it was logged as an error
+        /// on every launch (#301).
+        @Test func aCacheThatIsNotThereIsNoError() throws {
+            let missing = FileManager.default.temporaryDirectory.appending(component: UUID().uuidString)
+
+            #expect(throws: Never.self) { try CacheCleaner.removeItem(at: missing) }
         }
     }
 

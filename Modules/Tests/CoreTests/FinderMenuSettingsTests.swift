@@ -41,6 +41,14 @@ extension AllCoreTests {
                 #expect(FinderMenuSettings.isEnabled(item, in: defaults) == item.isEnabledByDefault)
             }
             #expect(FinderMenuSettings.isCascaded(in: defaults))
+            #expect(FinderMenuSettings.toolbarIcon(in: defaults) == .colored)
+        }
+
+        @Test("An unknown toolbar icon value falls back to the colored icon")
+        func unknownToolbarIconIsColored() {
+            let defaults = scratchDefaults()
+            defaults.set("rainbow", forKey: FinderMenuSettings.toolbarIconKey)
+            #expect(FinderMenuSettings.toolbarIcon(in: defaults) == .colored)
         }
 
         @Test("The default menu is the lean set")
@@ -57,16 +65,19 @@ extension AllCoreTests {
             defaults.set(false, forKey: FinderMenuSettings.key(for: .extractHere))
             defaults.set(true, forKey: FinderMenuSettings.key(for: .compressTo7z))
             defaults.set(false, forKey: FinderMenuSettings.cascadedKey)
+            defaults.set(ToolbarIcon.subtle.rawValue, forKey: FinderMenuSettings.toolbarIconKey)
 
             #expect(!FinderMenuSettings.isEnabled(.extractHere, in: defaults))
             #expect(FinderMenuSettings.isEnabled(.compressTo7z, in: defaults))
             #expect(!FinderMenuSettings.isCascaded(in: defaults))
+            #expect(FinderMenuSettings.toolbarIcon(in: defaults) == .subtle)
         }
 
         @Test("A single folder gets the compress entries and its contents, no extract entries")
         func singleFolder() {
             #expect(FinderMenuSettings.visibleItems(files: 0, folders: 1, in: everythingOn()) == [
-                .addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z, .compressFolderContents
+                .addToArchive, .compressToZip, .compressToDatedZip, .compressForWindows, .compressTo7z,
+                .compressFolderContents
             ])
         }
 
@@ -115,7 +126,8 @@ extension AllCoreTests {
             for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder] {
                 #expect(item.items(from: selection, isDirectory: isDirectory) == [archive, other])
             }
-            for item in [FinderMenuItem.addToArchive, .compressToZip, .compressToDatedZip, .compressTo7z, .compressEachSeparately] {
+            for item in [FinderMenuItem.addToArchive, .compressToZip, .compressToDatedZip, .compressForWindows,
+                         .compressTo7z, .compressEachSeparately] {
                 #expect(item.items(from: selection, isDirectory: isDirectory) == selection)
             }
         }
@@ -124,6 +136,7 @@ extension AllCoreTests {
         func onlyCompressItemsCarryAnExtension() {
             #expect(FinderMenuItem.compressToZip.archiveExtension == "zip")
             #expect(FinderMenuItem.compressToDatedZip.archiveExtension == "zip")
+            #expect(FinderMenuItem.compressForWindows.archiveExtension == "zip")
             #expect(FinderMenuItem.compressTo7z.archiveExtension == "7z")
             for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive] {
                 #expect(item.archiveExtension == nil)

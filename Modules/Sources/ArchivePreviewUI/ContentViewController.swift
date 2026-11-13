@@ -7,7 +7,6 @@
 
 import AppKit
 import Core
-import FinderMenu
 
 final class ContentViewController: NSViewController, ButtonBarDelegate {
     var state: ArchiveState? {
@@ -68,28 +67,11 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
         guard let state else { return }
         guard let selectedItems = archiveViewController.selectedItems, !selectedItems.isEmpty else { return }
         guard let window = view.window ?? NSApp.keyWindow ?? NSApp.mainWindow else { return }
-        let paths = selectedItems.compactMap(\.virtualPath)
 
-        // Next to the archive, as the setting says, by the app: this preview
-        // may not write there. Only entries of the archive itself, by their
-        // paths in it — not of an archive inside it, whose paths would point
-        // into the outer one.
-        let nextTo = Keys.extractNextToArchiveEnabled() ? state.url?.deletingLastPathComponent() : nil
-        let ask: @MainActor @Sendable () -> Void = { [weak self] in
-            self?.askWhereToExtract(in: window, startingIn: nextTo) { folder in
-                self?.extract(into: folder, names: selectedItems.map(\.name)) {
-                    state.extract(items: selectedItems, to: folder, smart: Keys.smartExtractionEnabled())
-                }
+        askWhereToExtract(in: window, startingIn: folderNextToTheArchive(of: state)) { [weak self] folder in
+            self?.extract(into: folder, names: selectedItems.map(\.name)) {
+                state.extract(items: selectedItems, to: folder, smart: Keys.smartExtractionEnabled())
             }
-        }
-        if let nextTo, let archive = state.url,
-           paths.count == selectedItems.count,
-           selectedItems.allSatisfy({ isInOuterArchive($0, of: state) }) {
-            handToTheApp(
-                AppUrl(action: .extractNextToArchive, files: [archive], target: nextTo, items: paths),
-                otherwise: ask)
-        } else {
-            ask()
         }
     }
 
@@ -98,52 +80,20 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
         guard let window = view.window ?? NSApp.keyWindow ?? NSApp.mainWindow else { return }
         let topLevel = state.root?.children?.compactMap { state.entries[$0]?.name } ?? []
 
-        // Next to the archive, as the setting says, by the app, with all its
-        // settings: this preview may not write there.
-        let nextTo = Keys.extractNextToArchiveEnabled() ? state.url?.deletingLastPathComponent() : nil
-        let ask: @MainActor @Sendable () -> Void = { [weak self] in
-            self?.askWhereToExtract(in: window, startingIn: nextTo) { folder in
-                self?.extract(into: folder, names: topLevel) {
-                    state.extract(to: folder, smart: Keys.smartExtractionEnabled())
-                }
+        askWhereToExtract(in: window, startingIn: folderNextToTheArchive(of: state)) { [weak self] folder in
+            self?.extract(into: folder, names: topLevel) {
+                state.extract(to: folder, smart: Keys.smartExtractionEnabled())
             }
-        }
-        if let nextTo, let archive = state.url {
-            handToTheApp(AppUrl(action: .extractNextToArchive, files: [archive], target: nextTo), otherwise: ask)
-        } else {
-            ask()
         }
     }
 
     // MARK: - Extracting
 
-    /// Whether `item` is an entry of the archive previewed itself, not of an
-    /// archive inside it.
-    private func isInOuterArchive(_ item: ArchiveItem, of state: ArchiveState) -> Bool {
-        var parent = item.parent
-        while let id = parent, let ancestor = state.entries[id] {
-            if ancestor.type == .archive { return false }
-            parent = ancestor.parent
-        }
-        return true
-    }
-
-    /// Hands `request` to the app through its url scheme, as the Finder
-    /// extension does. `otherwise` runs when the app cannot be reached.
-    private func handToTheApp(_ request: AppUrl, otherwise: @escaping @MainActor @Sendable () -> Void) {
-        let scheme = Bundle.main.object(forInfoDictionaryKey: "MacPackerURLScheme") as? String ?? ""
-        guard !scheme.isEmpty, let url = request.url(scheme: scheme) else {
-            PreviewLog.general.error("Cannot reach the app: no url scheme in the extension's Info.plist")
-            otherwise()
-            return
-        }
-        let configuration = NSWorkspace.OpenConfiguration()
-        configuration.activates = false
-        NSWorkspace.shared.open(url, configuration: configuration) { _, error in
-            guard let error else { return }
-            PreviewLog.general.error("Could not hand the extraction to the app", context: ["error": error.localizedDescription])
-            Task { @MainActor in otherwise() }
-        }
+    /// Where the folder dialog opens: the archive's own folder when "Extract
+    /// next to the archive" is on. The preview still asks — it may write only
+    /// where it is given access — but the answer is one click away.
+    private func folderNextToTheArchive(of state: ArchiveState) -> URL? {
+        Keys.extractNextToArchiveEnabled() ? state.url?.deletingLastPathComponent() : nil
     }
 
     /// Asks for the folder to extract into, as a sheet on the preview.

@@ -7,21 +7,18 @@
 
 import Foundation
 
-/// What the Finder extension — or the Quick Look preview — asks the main app
-/// to do.
+/// What the Finder extension asks the main app to do.
 public enum AppUrlAction: String, Sendable {
     case open
     case extractHere
     case extractToFolder
     case extractTo
     case compress
+    /// A zip without Mac-specific data, whatever the setting says.
+    case compressForWindows
     case compressEach
     case compressContents
     case addToArchive
-    /// One archive, next to itself — all of it, or only the entries named in
-    /// `AppUrl.items`: the Quick Look preview's Extract buttons, with "Extract
-    /// next to the archive" on. The preview may not write there; the app may.
-    case extractNextToArchive
 }
 
 public extension AppUrlAction {
@@ -36,9 +33,9 @@ public extension AppUrlAction {
     /// decides.
     var honorsSmartExtraction: Bool {
         switch self {
-        case .extractHere, .extractTo, .extractNextToArchive:
+        case .extractHere, .extractTo:
             true
-        case .extractToFolder, .open, .compress, .compressEach,
+        case .extractToFolder, .open, .compress, .compressForWindows, .compressEach,
              .compressContents, .addToArchive:
             false
         }
@@ -54,42 +51,37 @@ public extension AppUrlAction {
         switch self {
         case .open, .addToArchive, .extractTo:
             true
-        case .extractHere, .extractToFolder, .compress, .compressEach,
-             .compressContents, .extractNextToArchive:
+        case .extractHere, .extractToFolder, .compress, .compressForWindows, .compressEach,
+             .compressContents:
             false
         }
     }
 }
 
 /// A request from the Finder extension, sent as
-/// `<scheme>://<action>?files=…&target=…[&format=…][&dated=<seconds since 1970>][&items=…]`.
+/// `<scheme>://<action>?files=…&target=…[&format=…][&dated=<seconds since 1970>]`.
 ///
 /// The scheme is registered with Launch Services, so any app or web page can
-/// open such a url: all of it is untrusted input, and parsing is where it gets
-/// checked.
+/// open such a url. The app carries out only what its own Finder extension
+/// sent (#286), and parsing checks every url all the same.
 public struct AppUrl: Equatable, Sendable {
     public var action: AppUrlAction
     public var files: [URL]
     public var target: URL
-    /// Extension of the archive to produce, for `compress`; `nil` means zip.
+    /// Extension of the archive to produce, for the compress actions; `nil` means zip.
     /// Always one the menu itself produces — it ends up in a file name.
     public var format: String?
     /// When the menu showed the dated entry, for `compress`; `nil` for an
     /// undated archive. The name is built from this moment, not from when the
     /// archive gets written, so it matches what the menu displayed.
     public var datedAt: Date?
-    /// For `extractNextToArchive`: the entries to extract, by their paths
-    /// inside the archive (`files`' one), or none for all of it. Names to look
-    /// entries up by — never a path on disk.
-    public var items: [String]
 
-    public init(action: AppUrlAction, files: [URL], target: URL, format: String? = nil, datedAt: Date? = nil, items: [String] = []) {
+    public init(action: AppUrlAction, files: [URL], target: URL, format: String? = nil, datedAt: Date? = nil) {
         self.action = action
         self.files = files
         self.target = target
         self.format = format
         self.datedAt = datedAt
-        self.items = items
     }
 
     public enum ParseError: Error, Equatable {
@@ -98,11 +90,6 @@ public struct AppUrl: Equatable, Sendable {
         case missingFilesOrTarget
         case unsupportedFormat(String)
         case invalidDate(String)
-        /// `extractNextToArchive` for other than exactly one archive.
-        case notOneArchive
-        /// An entry of `items` that is empty or does not decode. Dropping it
-        /// instead could leave no entries, which means the whole archive.
-        case invalidItems
     }
 
     /// Parses a url in the Finder extension's format; throws for anything else.
@@ -150,20 +137,14 @@ public struct AppUrl: Equatable, Sendable {
         } else {
             self.datedAt = nil
         }
-        // Encoded twice, like the paths. No entries means all of the archive,
-        // which only a url without `items` may say: an entry that is empty, or
-        // does not decode, refuses the url.
-        if items.contains(where: { $0.name == "items" }) {
-            let entries = (value("items") ?? "").split(separator: ",", omittingEmptySubsequences: false).map(String.init)
-            let decoded = entries.compactMap { $0.removingPercentEncoding }
-            guard decoded.count == entries.count, !decoded.contains(where: \.isEmpty) else { throw .invalidItems }
-            self.items = decoded
-        } else {
-            self.items = []
-        }
-        if action == .extractNextToArchive, self.files.count != 1 {
-            throw .notOneArchive
-        }
+    }
+
+    /// Extract Here for archives the app was handed to open, when it extracts
+    /// them instead (#280): one request per folder, as the menu entry sends
+    /// for a selection, so that each archive lands next to itself.
+    public static func extractHere(_ archives: [URL]) -> [AppUrl] {
+        Dictionary(grouping: archives) { $0.deletingLastPathComponent() }
+            .map { AppUrl(action: .extractHere, files: $0.value, target: $0.key) }
     }
 
     /// The archive's file name for this request: `base` as the compress rule
@@ -194,11 +175,6 @@ public struct AppUrl: Equatable, Sendable {
         }
         if let datedAt {
             items.append(URLQueryItem(name: "dated", value: String(Int(datedAt.timeIntervalSince1970))))
-        }
-        if !self.items.isEmpty {
-            let entries = self.items.map { $0.addingPercentEncoding(withAllowedCharacters: pathAllowed) }
-            guard !entries.contains(nil) else { return nil }
-            items.append(URLQueryItem(name: "items", value: entries.compactMap { $0 }.joined(separator: ",")))
         }
         var components = URLComponents(string: "\(scheme)://\(action.rawValue)")
         components?.queryItems = items

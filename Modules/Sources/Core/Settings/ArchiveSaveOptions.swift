@@ -26,6 +26,8 @@ extension CompressionOptions.Format {
 /// never meant to lock or split.
 ///
 /// The save panel and Quick Compress each keep their own, in their own keys.
+/// Whether Mac-specific data is left out is not among them: that is one switch
+/// for every way of compressing, `Keys.excludeMacData`.
 @MainActor
 public final class ArchiveSaveOptions: ObservableObject {
     public typealias Format = CompressionOptions.Format
@@ -53,7 +55,6 @@ public final class ArchiveSaveOptions: ObservableObject {
         func settingsKey(_ format: Format) -> String {
             self == .savePanel ? Keys.saveOptionsSettings(format.rawValue) : Keys.dropWindowSettings(format.rawValue)
         }
-        var excludeDSStoreKey: String { self == .savePanel ? Keys.saveOptionsExcludeDSStore : Keys.dropWindowExcludeDSStore }
         /// Quick Compress kept one level for every format before this.
         var legacyLevelKey: String? { self == .savePanel ? nil : Keys.dropWindowLevel }
     }
@@ -90,9 +91,6 @@ public final class ArchiveSaveOptions: ObservableObject {
     @Published public var encryptFileNames = false { didSet { autosave() } }
     /// `nil` writes one file.
     @Published public var volumeSize: UInt64? = nil
-    /// Leave `.DS_Store` files out. Not per format: it is about the files, not
-    /// the archive.
-    @Published public var excludeDSStore: Bool { didSet { autosave() } }
 
     private let defaults: UserDefaults
     private let storage: Storage
@@ -116,7 +114,6 @@ public final class ArchiveSaveOptions: ObservableObject {
         }
         let format = defaults.string(forKey: storage.formatKey).flatMap(Format.init(rawValue:)) ?? .newArchive
         self.format = format
-        self.excludeDSStore = defaults.bool(forKey: storage.excludeDSStoreKey)
         apply(remembered[format] ?? Remembered())
     }
 
@@ -167,18 +164,21 @@ public final class ArchiveSaveOptions: ObservableObject {
             wordSize: compresses ? wordSize : nil,
             solidBlockSize: compresses && hasSolidBlocks && (solidBlockSize ?? 0) > 0 ? solidBlockSize : nil,
             volumeSize: volumeSize,
-            excludeDSStore: excludeDSStore)
+            excludeMacData: defaults.bool(forKey: Keys.excludeMacData))
     }
 
     /// What the start page's drop area writes: the format picked there, defaults
     /// for the rest. It shows no other option, so no password or volume size set
-    /// for Quick Compress may reach it.
-    public var startPageOptions: CompressionOptions { .init(format: format) }
+    /// for Quick Compress may reach it. Mac-specific data stays out when the
+    /// one switch for every way of compressing says so.
+    public var startPageOptions: CompressionOptions {
+        .init(format: format, excludeMacData: defaults.bool(forKey: Keys.excludeMacData))
+    }
 
     // MARK: Memory
 
-    /// Stores the settings for the next save — every format's, the format
-    /// itself, and the `.DS_Store` choice. Called when a save goes ahead.
+    /// Stores the settings for the next save — every format's, and the format
+    /// itself. Called when a save goes ahead.
     public func remember() {
         remembered[format] = snapshot()
         let encoder = JSONEncoder()
@@ -188,7 +188,6 @@ public final class ArchiveSaveOptions: ObservableObject {
             }
         }
         defaults.set(format.rawValue, forKey: storage.formatKey)
-        defaults.set(excludeDSStore, forKey: storage.excludeDSStoreKey)
     }
 
     private func autosave() {

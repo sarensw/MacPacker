@@ -16,6 +16,7 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
+    @AppStorage(Keys.showHiddenFiles, store: .macPackerShared) var showHiddenFiles: Bool = false
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
@@ -23,6 +24,8 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.extractNextToArchive, store: .macPackerShared) var extractNextToArchive: Bool = false
     @AppStorage(Keys.closeWindowAfterExtraction) var closeWindowAfterExtraction: Bool = false
     @AppStorage(Keys.trashArchiveAfterExtraction) var trashArchiveAfterExtraction: Bool = false
+    @AppStorage(Keys.extractOnOpen) var extractOnOpen: Bool = false
+    @AppStorage(Keys.excludeMacData) var excludeMacData: Bool = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -55,6 +58,21 @@ struct GeneralSettingsView: View {
 
                 HStack {
                     Toggle(isOn: $showParentRow) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            HStack(alignment: .top) {
+                Text(.settingsShowHiddenFiles)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $showHiddenFiles) {
+                        Text(.settingsShowHiddenFiles)
+                    }
+                    .labelsHidden()
+                    .accessibilityIdentifier(AccessibilityIdentifier.showHiddenFilesSetting)
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
@@ -152,6 +170,32 @@ struct GeneralSettingsView: View {
                 .frame(width: 240, alignment: .leading)
             }
             .help(Text(.settingsTrashArchiveAfterExtractionHint))
+
+            HStack(alignment: .top) {
+                Text(.settingsExtractOnOpen)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $extractOnOpen) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            Divider()
+
+            HStack(alignment: .top) {
+                Text(.archiveSaveExcludeMacData)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack(spacing: 6) {
+                    Toggle(isOn: $excludeMacData) {}
+                        .accessibilityIdentifier("settings.excludeMacData")
+                    MacDataInfoButton()
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
         }
         .padding()
         // Turning it off is a privacy switch, so what was collected goes with it —
