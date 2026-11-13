@@ -244,6 +244,24 @@ extension AllCoreTests {
             #expect(AppUrl.folder(containing: []) == nil)
         }
 
+        /// Extract To… into a folder the window doesn't show: Finder shows the
+        /// result in a window of its own, as it did before. Into the window's
+        /// folder, or one expanded in it, the window already shows it.
+        @Test("Extract To… elsewhere selects the result where the window can't show it", arguments: [
+            ("/Users/me/Desktop", ["/Users/me/Desktop/a", "/Users/me/Desktop/b"]),
+            ("/Users/me/Downloads", ["/Users/me/Downloads/a", "/Users/me/Downloads/b"]),
+            ("/Users/me/Downloads/Demo", []),
+            ("/Users/me/Downloads Old", ["/Users/me/Downloads Old/a", "/Users/me/Downloads Old/b"]),
+        ])
+        func extractedToAChosenFolder(folder: String, selected: [String]) {
+            let request = AppUrl(
+                action: .extractTo,
+                files: [URL(fileURLWithPath: "/Users/me/Downloads/a.zip"), URL(fileURLWithPath: "/Users/me/Downloads/b.zip")],
+                target: URL(fileURLWithPath: "/Users/me/Downloads"))
+            let placed = ["a", "b"].map { URL(fileURLWithPath: folder).appendingPathComponent($0) }
+            #expect(request.itemsToSelect(placed, placedIn: URL(fileURLWithPath: folder)).map(\.path) == selected)
+        }
+
         /// Archives opened with "Extract archives on open" on go through
         /// Extract Here, which writes into one folder. Opened from a search
         /// result they can come from several, and each lands next to itself

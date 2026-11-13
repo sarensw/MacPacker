@@ -219,4 +219,14 @@ public extension AppUrl {
         let window = target.standardizedFileURL.path
         return placed.filter { $0.deletingLastPathComponent().standardizedFileURL.path == window }
     }
+
+    /// Of what Extract To… put in `folder`, what to select in Finder
+    /// afterwards. Where the window shows that folder (its own, or one
+    /// expanded in it), as `itemsToSelect(_:)` has it. Anywhere else, all of
+    /// it: the window can't show it, and Finder shows it in a window of its own.
+    func itemsToSelect(_ placed: [URL], placedIn folder: URL) -> [URL] {
+        let window = target.standardizedFileURL.pathComponents
+        let shownByTheWindow = folder.standardizedFileURL.pathComponents.starts(with: window)
+        return shownByTheWindow ? itemsToSelect(placed) : placed
+    }
 }

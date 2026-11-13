@@ -14,8 +14,8 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Finder action "Extract to…": asks where to extract, extracts every
-/// selected archive there, then selects in Finder what came out in the
-/// window's own folder. Picking the folder also grants writing into it;
+/// selected archive there, then selects in Finder what came out: in the
+/// window's own folder, or anywhere the window doesn't show. Picking the folder also grants writing into it;
 /// archives outside the picked folder need their own read grant, which the
 /// folder-access store asks for only when no stored grant covers them.
 class AppUrlExtractToChosenFolderHandler: AppUrlHandler {
@@ -55,8 +55,9 @@ class AppUrlExtractToChosenFolderHandler: AppUrlHandler {
         for fileUrl in appUrl.files {
             extracted += await self.extractArchive(fileUrl, into: destination, smart: appUrl.action.honorsSmartExtraction && Keys.smartExtractionEnabled(), catalog: self.catalog, engineSelector: self.engineSelector)
         }
-        // only where it takes no second Finder window
-        let selected = appUrl.itemsToSelect(extracted)
+        // In the window, only where it takes no second Finder window; a
+        // folder the window doesn't show gets one.
+        let selected = appUrl.itemsToSelect(extracted, placedIn: destination)
         if !selected.isEmpty {
             NSWorkspace.shared.activateFileViewerSelecting(selected)
         }
