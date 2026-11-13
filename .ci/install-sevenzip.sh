@@ -8,7 +8,7 @@
 # `7z`, a 2021 fork, so without this step the runner checks against code years
 # behind what MacPacker embeds.
 #
-# Runs from the `pre-build-script` hook of LeanBytes/workflows-macos. Idempotent,
+# Runs from the `pre-build-script` hook of LeanBytes/workflows-apple. Idempotent,
 # so it costs nothing on a runner that already has it.
 set -euo pipefail
 

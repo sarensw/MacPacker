@@ -26,10 +26,18 @@ struct MacPackerApp: App {
     init() {
         tb.start()
         Keys.registerDefaults()
+        Keys.carryOverExcludeDSStore()
         log.notice("MacPackerApp.init — app process starting")
         
         #if DEBUG
         SandboxPilot.start()
+        // A screenshot plan's arguments come through SandboxPilot's own store,
+        // not the argument domain. Copied in, real arguments winning, they pin a
+        // preference (-dropWindowFormat zip) for this launch as `open --args` does.
+        let arguments = UserDefaults.standard.volatileDomain(forName: UserDefaults.argumentDomain)
+        let pilot: [String: Any] = SandboxPilot.launchParameters
+        UserDefaults.standard.setVolatileDomain(pilot.merging(arguments) { _, real in real },
+                                                forName: UserDefaults.argumentDomain)
         #endif
     }
     

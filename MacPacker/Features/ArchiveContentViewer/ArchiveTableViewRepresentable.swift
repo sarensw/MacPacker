@@ -141,7 +141,9 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             let cellView = NSTableCellView()
             cellView.identifier = columnIdentifier
             cellView.backgroundStyle = .raised
-            
+            // greyed out, as Finder shows a hidden file
+            if item.isHidden { cellView.alphaValue = 0.5 }
+
             if columnIdentifier == ArchiveViewerColumn.name.identifier {
                 var imageView: NSImageView?
                 

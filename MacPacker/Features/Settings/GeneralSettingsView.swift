@@ -16,11 +16,14 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
     @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
+    @AppStorage(Keys.showHiddenFiles, store: .macPackerShared) var showHiddenFiles: Bool = false
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
     @AppStorage(Keys.openArchivesInTabs) var openArchivesInTabs: Bool = true
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
+    @AppStorage(Keys.extractOnOpen) var extractOnOpen: Bool = false
+    @AppStorage(Keys.excludeMacData) var excludeMacData: Bool = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -53,6 +56,21 @@ struct GeneralSettingsView: View {
 
                 HStack {
                     Toggle(isOn: $showParentRow) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            HStack(alignment: .top) {
+                Text(.settingsShowHiddenFiles)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $showHiddenFiles) {
+                        Text(.settingsShowHiddenFiles)
+                    }
+                    .labelsHidden()
+                    .accessibilityIdentifier(AccessibilityIdentifier.showHiddenFilesSetting)
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
@@ -128,6 +146,32 @@ struct GeneralSettingsView: View {
 
                 HStack {
                     Toggle(isOn: $smartExtraction) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            HStack(alignment: .top) {
+                Text(.settingsExtractOnOpen)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $extractOnOpen) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            Divider()
+
+            HStack(alignment: .top) {
+                Text(.archiveSaveExcludeMacData)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack(spacing: 6) {
+                    Toggle(isOn: $excludeMacData) {}
+                        .accessibilityIdentifier("settings.excludeMacData")
+                    MacDataInfoButton()
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)

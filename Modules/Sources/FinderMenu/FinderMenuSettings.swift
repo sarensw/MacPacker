@@ -53,6 +53,14 @@ public enum FinderMenuSettings {
         defaults.object(forKey: cascadedKey) as? Bool ?? true
     }
 
+    /// The icon of the MacPacker button in Finder's toolbar. Finder takes it
+    /// when it starts the extension.
+    public static let toolbarIconKey = "finderToolbarIcon"
+
+    public static func toolbarIcon(in defaults: UserDefaults = defaults) -> ToolbarIcon {
+        defaults.string(forKey: toolbarIconKey).flatMap(ToolbarIcon.init(rawValue:)) ?? .colored
+    }
+
     /// The items to build a menu from, in catalog order, filtered by what the
     /// user enabled and by what the selection holds.
     public static func visibleItems(
@@ -64,4 +72,13 @@ public enum FinderMenuSettings {
             isEnabled(item, in: defaults) && item.applies(toFiles: files, folders: folders)
         }
     }
+}
+
+/// The icon of the MacPacker button in Finder's toolbar. Raw values are
+/// stored — never rename.
+public enum ToolbarIcon: String, CaseIterable, Sendable {
+    /// The app icon.
+    case colored
+    /// The menu bar glyph, in one color like Finder's own buttons.
+    case subtle
 }

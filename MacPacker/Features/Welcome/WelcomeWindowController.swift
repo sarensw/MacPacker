@@ -28,6 +28,7 @@ class WelcomeWindowController {
             backing: .buffered,
             defer: false
         )
+        window.setAccessibilityIdentifier(AccessibilityIdentifier.welcomeWindow)
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = true
         window.showsToolbarButton = true

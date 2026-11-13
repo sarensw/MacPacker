@@ -50,6 +50,7 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         // compact: traffic lights, no text
         window.title = String(localized: .commonExtracting)
         window.titleVisibility = .hidden
+        window.setAccessibilityIdentifier(AccessibilityIdentifier.progressWindow)
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.isReleasedWhenClosed = false
         // provisional size until the first measurement lands (before the

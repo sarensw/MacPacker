@@ -68,11 +68,13 @@ extension AllCoreTests {
             // compounds
             ("tar.bz2", "tar", 5, 2),
             ("tar.gz", "tar", 5, 2),
+            ("tar.lzma", "tar", 5, 2),
             ("tar.xz", "tar", 5, 2),
             ("tar.Z", "tar", 5, 2),
             // comounds with one ending
             ("tbz2", "tar", 5, 2),
             ("tgz", "tar", 5, 2),
+            ("tlzma", "tar", 5, 2),
             ("txz", "tar", 5, 2),
             ("taz", "tar", 5, 2)
         ])
@@ -97,6 +99,77 @@ extension AllCoreTests {
             #expect(state.root === state.selectedItem)
         }
         
+        /// A deb lists its members, not a lone "unknown". dpkg-deb names the
+        /// first member `debian-binary`, and 7-Zip then offers the compressed
+        /// `data.tar.*` as the main subfile, whose one nameless stream was all
+        /// that showed. fpm names it `debian-binary/`, which 7-Zip reads as a
+        /// plain ar, so that deb always listed its members.
+        @Test(arguments: [
+            ("defaultarchive-dpkg.deb", ["control.tar.xz", "data.tar.xz"]),
+            ("defaultarchive.deb", ["control.tar.gz", "data.tar.gz", "debian-binary"])
+        ])
+        func debListsItsMembers(arg: (String, [String])) async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let url = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+                .appendingPathComponent(arg.0)
+
+            state.open(url: url)
+            try await state.openTask?.value
+
+            let names = state.root?.children?.compactMap { state.entries[$0]?.name }.sorted()
+            #expect(names == arg.1)
+        }
+        
+        /// An entry the archive gives no name lists and extracts under the name
+        /// 7-Zip's own client gives it, not as "unknown": the archive's, less the
+        /// compression extension. bzip2, xz, lzma and compress store no name, and
+        /// gzip only optionally. An rpm's payload is such a stream, one level in,
+        /// so it is named after the payload the rpm describes.
+        @Test(arguments: [
+            ("compressed/hello world.txt.gz", "hello world.txt"),
+            ("compressed/hello world.txt.bz2", "hello world.txt"),
+            ("compressed/hello world.txt.xz", "hello world.txt"),
+            ("compressed/hello world.txt.lzma", "hello world.txt"),
+            ("compressed/hello world.txt.Z", "hello world.txt"),
+            ("defaultArchives/defaultArchive.rpm", "defaultArchive-1.0-1.aarch64.cpio")
+        ])
+        func namelessEntryIsNamedAfterTheArchive(arg: (String, String)) async throws {
+            let parts = arg.0.split(separator: "/")
+            let url = Bundle.module.url(forResource: String(parts[0]), withExtension: nil)!
+                .appendingPathComponent(String(parts[1]))
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: url)
+            try await state.openTask?.value
+            #expect(state.root?.children?.compactMap { state.entries[$0]?.name } == [arg.1])
+
+            let destination = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: destination) }
+            try await Archive7ZipEngine().extract(url, to: destination, passwordResolver: { _ in nil })
+            let written = try FileManager.default.contentsOfDirectory(atPath: destination.path)
+            #expect(written == [arg.1])
+        }
+
+        /// `tar -C dir .` stores every entry under "./", and "./" itself as a
+        /// folder; dpkg-deb writes the data.tar of every deb that way. Read as
+        /// written, "." was the archive's one folder, with everything in it.
+        @Test(arguments: [ArchiveEngineType.`7zip`, .xad])
+        func aTarOfDotListsWhatIsInIt(engine: ArchiveEngineType) async throws {
+            let selector: any ArchiveEngineSelectorProtocol = engine == .xad
+                ? ArchiveEngineSelectorXad() : ArchiveEngineSelector7zip()
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: selector)
+            let url = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+                .appendingPathComponent("defaultArchive-dotslash.tar")
+
+            state.open(url: url)
+            try await state.openTask?.value
+
+            let names = state.root?.children?.compactMap { state.entries[$0]?.name }.sorted()
+            #expect(names == ["folder", "hello world.txt"])
+            #expect(state.entries.count == 5) // the root and four entries, no "."
+        }
+
         @Test("Test all defaultArchives on xad", arguments: [
             ("zip", "zip"),
             ("7z", "7zip"),

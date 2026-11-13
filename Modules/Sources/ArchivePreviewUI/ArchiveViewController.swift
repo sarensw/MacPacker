@@ -103,17 +103,17 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
 //    private var rootNode: ArchiveItem { hierarchy?.root ?? .root }
     
     /// Resolves the child UUIDs stored on an `ArchiveItem` (or on the root, when
-    /// `item` is `nil`) into the actual `ArchiveItem`s via `state.entries`.
+    /// `item` is `nil`) into the actual `ArchiveItem`s the list shows, via
+    /// `state.listedChildren(of:)` — the same as the archive window, hidden
+    /// files included only when they are shown.
     ///
     /// `ArchiveItem.children` holds `[UUID]` (changed in `4659e4a`), so the
     /// outline view has to look the items up here. Returning the raw UUIDs makes
     /// every `as? ArchiveItem` cast in `viewFor` / `isItemExpandable` fail, which
     /// is why the preview showed empty, non-expandable rows.
     private func resolvedChildren(of item: Any?) -> [ArchiveItem] {
-        guard let state else { return [] }
-        let node = (item as? ArchiveItem) ?? state.root
-        guard let childIDs = node?.children else { return [] }
-        return childIDs.compactMap { state.entries[$0] }
+        guard let state, let node = (item as? ArchiveItem) ?? state.root else { return [] }
+        return state.listedChildren(of: node)
     }
 
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
@@ -188,7 +188,9 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
         
         let cellView = NSTableCellView()
         cellView.identifier = columnIdentifier
-        
+        // greyed out, as Finder shows a hidden file
+        if archiveItem.isHidden { cellView.alphaValue = 0.5 }
+
         switch columnIdentifier {
         case ArchiveViewerColumn.name.identifier:
             // Image — or a spinner while this nested archive is being unpacked

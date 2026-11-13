@@ -75,6 +75,7 @@ final class DropWindowController {
         // set but not drawn — the Window menu and accessibility still read it
         panel.title = String(localized: .commonQuickCompress)
         panel.titleVisibility = .hidden
+        panel.setAccessibilityIdentifier(AccessibilityIdentifier.quickCompressWindow)
         panel.titlebarAppearsTransparent = true
         panel.titlebarSeparatorStyle = .none
         // Required: `mouseDownCanMoveWindow` only lets a view opt *out*. Controls

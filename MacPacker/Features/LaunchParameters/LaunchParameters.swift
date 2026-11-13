@@ -28,9 +28,23 @@ import SandboxPilotKit
 ///                           right away, as if they had been dropped on it
 ///   -AddFiles     a,b,c     add these files — to the new archive, or to the
 ///                           opened one at the navigated-to path
-///   -QuickLookPreview <path>  DEBUG: show this archive in the Quick Look harness
+///   -SkipWelcome  1         don't show the welcome window (what's new)
+///   -DisableUpdateChecks 1  don't check for updates at launch
 ///
-/// This is a normal, shipping feature — not gated to debug builds. It also
+/// Debug builds only — states a screenshot or preview needs that a scripted
+/// launch can't reach otherwise, or not the same way on every run:
+///
+///   -QuickLookPreview <path>  show this archive in the Quick Look harness
+///   -ExtractDemo  1         show the extraction progress window with mock progress
+///   -DropZone     add|open|compress
+///                           pin that drop zone in its dragged-over state
+///   -RecentArchives a,b,c   list these as the start page's recent archives,
+///                           in place of the remembered ones
+///
+/// Any preference can be pinned for one launch the same way (`-dropWindowFormat
+/// zip`): that is the standard argument domain, and nothing is saved.
+///
+/// Apart from that second list this is a normal, shipping feature. It also
 /// encapsulates *where a parameter comes from*: it resolves each one from two
 /// sources, in priority order —
 ///   1. a real command-line launch argument (`open -a MacPacker --args …`), read
@@ -51,7 +65,9 @@ enum LaunchParameters {
     static let extractDemoKey = "ExtractDemo"
     static let quickLookPreviewKey = "QuickLookPreview"
     static let dropZoneKey = "DropZone"
+    static let recentArchivesKey = "RecentArchives"
     static let disableUpdateChecksKey = "DisableUpdateChecks"
+    static let skipWelcomeKey = "SkipWelcome"
 
     /// Resolves a launch parameter from its two sources (command line first,
     /// then SandboxPilot in debug builds).
@@ -117,10 +133,19 @@ enum LaunchParameters {
     /// state. It is its own drop target now, so it is not one of `ArchiveView`'s
     /// zones and needs its own switch.
     static var pinsCompressArea: Bool { value(dropZoneKey) == "compress" }
+
+    /// Screenshot-only: the start page lists these as its recent archives in
+    /// place of the remembered ones, so the shot comes out the same on every Mac
+    /// and every run, CI included. Nothing is written.
+    static var recentArchives: [URL]? { value(recentArchivesKey).map(files) }
     #endif
 
     /// True when launch parameters ask to skip the startup update check.
     static var disableUpdateChecks: Bool { flag(disableUpdateChecksKey) }
+
+    /// True when launch parameters ask to skip the welcome window: a launch
+    /// from a script or automation has no one to welcome.
+    static var skipsWelcome: Bool { flag(skipWelcomeKey) }
 
     /// Opens the requested archive (if any), navigates to the requested path,
     /// and selects the requested item.
@@ -160,10 +185,11 @@ enum LaunchParameters {
     }
 
     /// The `-AddFiles` list, resolved to readable urls.
-    static var filesToAdd: [URL] {
-        (value(addFilesKey) ?? "")
-            .split(separator: ",")
-            .map { resolveInputFile($0.trimmingCharacters(in: .whitespaces)) }
+    static var filesToAdd: [URL] { files(value(addFilesKey) ?? "") }
+
+    /// A comma-separated list of files, resolved to readable urls.
+    private static func files(_ list: String) -> [URL] {
+        list.split(separator: ",").map { resolveInputFile($0.trimmingCharacters(in: .whitespaces)) }
     }
 
     /// Resolves a file named by a launch parameter (the archive to open, or a
