@@ -6846,7 +6846,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compressed with a method MacPacker doesn't support."
+            "value": "Compression not supported"
           }
         }
       }
