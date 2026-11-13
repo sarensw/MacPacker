@@ -20,8 +20,15 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
 
     var willCloseHandler: (() -> Void)?
     var didBecomeMain: (() -> Void)?
+    /// Opens the home screen in a new tab of this window.
+    private let openNewTab: @MainActor @Sendable () -> Void
 
     private var cancellables = Set<AnyCancellable>()
+
+    /// Whether this window shows its tab bar (see `followTabBar`).
+    let tabBarPresence = TabBarPresence()
+    private weak var followedTabGroup: NSWindowTabGroup?
+    private var tabBarObservation: NSKeyValueObservation?
     
     init(
         archiveState: ArchiveState,
@@ -30,9 +37,11 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         quickCompressOptions: ArchiveSaveOptions,
         openQuickCompressWindow: @escaping @MainActor () -> Void,
         openArchiveInNewWindow: @escaping @MainActor (URL) -> Void,
+        openNewTab: @escaping @MainActor @Sendable () -> Void,
         cascadeFrom: NSWindow? = nil
     ) {
         self.archiveState = archiveState
+        self.openNewTab = openNewTab
 
         let window = ArchiveWindow()
         window.isRestorable = false
@@ -57,6 +66,11 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
 
         window.delegate = self
 
+        // Archives open as tabs of the front window when Settings say so, and
+        // as macOS's own preference has it otherwise.
+        window.tabbingIdentifier = "MacPackerArchiveWindow"
+        window.tabbingMode = UserDefaults.standard.bool(forKey: Keys.openArchivesInTabs) ? .preferred : .automatic
+
         window.toolbarStyle = .unified
 
         // show the content view
@@ -66,9 +80,11 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
             .environmentObject(dropCompressor)
             .environmentObject(quickCompressOptions)
             .environment(\.openArchiveInNewWindow, openArchiveInNewWindow)
+            .environment(\.openNewTab, openNewTab)
             .environment(\.openQuickCompressWindow, openQuickCompressWindow)
 
-        window.contentView = NSHostingView(rootView: contentView)
+        window.contentView = NSHostingView(rootView: TabBarAware(presence: tabBarPresence, content: contentView))
+        followTabBar()
 
         // native unsaved-changes affordance: the close button shows a dot while
         // there are pending edits (mirrors NSDocument's isDocumentEdited)
@@ -76,6 +92,16 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
             .map { !$0.isEmpty }
             .removeDuplicates()
             .sink { [weak window] edited in window?.isDocumentEdited = edited }
+            .store(in: &cancellables)
+
+        // As a tab, the home screen is a "New Tab"; with an archive, the tab
+        // reads as the window's title does. The title of a window on its own
+        // is not touched.
+        archiveState.$hasArchive
+            .removeDuplicates()
+            .sink { [weak window] hasArchive in
+                window?.tab.title = hasArchive ? nil : String(localized: .commonNewTab)
+            }
             .store(in: &cancellables)
     }
     
@@ -153,6 +179,55 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         archiveState.clean()
         willCloseHandler?()
     }
+
+    func windowDidBecomeKey(_ notification: Notification) { followTabBar() }
+
+    /// Keeps `tabBarPresence` in step with the tab bar of this window's tab
+    /// group. A window changes group when a tab is dragged out or windows are
+    /// merged, so the group is looked up again whenever the window becomes key.
+    private func followTabBar() {
+        guard let group = window?.tabGroup, group !== followedTabGroup else { return }
+        followedTabGroup = group
+        tabBarObservation = group.observe(\.isTabBarVisible, options: [.initial, .new]) { [weak self] group, _ in
+            let shown = group.isTabBarVisible
+            MainActor.assumeIsolated { self?.tabBarPresence.show(shown) }
+        }
+    }
+}
+
+/// Whether a window shows its tab bar, for the home screen (see
+/// `HomeView.clearanceBelowBars`). It shows at once, and hides only once the
+/// tab bar's closing animation is over, so the page doesn't run under the bars
+/// while the last separators are still moving.
+@MainActor
+final class TabBarPresence: ObservableObject {
+    @Published private(set) var isShown = false
+    private var pendingHide: Task<Void, Never>?
+
+    func show(_ shown: Bool) {
+        pendingHide?.cancel()
+        pendingHide = nil
+        if shown {
+            if !isShown { isShown = true }
+            return
+        }
+        guard isShown else { return }
+        pendingHide = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(600))
+            guard !Task.isCancelled else { return }
+            self?.isShown = false
+        }
+    }
+}
+
+/// Hands the window's tab bar state down to its content.
+private struct TabBarAware<Content: View>: View {
+    @ObservedObject var presence: TabBarPresence
+    let content: Content
+
+    var body: some View {
+        content.environment(\.windowShowsTabBar, presence.isShown)
+    }
 }
 
 class ArchiveWindow: NSWindow {
@@ -209,6 +284,19 @@ extension EnvironmentValues {
     var openArchiveInNewWindow: @MainActor (URL) -> Void {
         get { self[OpenArchiveInNewWindowKey.self] }
         set { self[OpenArchiveInNewWindowKey.self] = newValue }
+    }
+}
+
+/// Opens MacPacker's home screen in a new tab of the window: the toolbar's
+/// New Tab button.
+private struct OpenNewTabKey: EnvironmentKey {
+    static let defaultValue: @MainActor @Sendable () -> Void = { }
+}
+
+extension EnvironmentValues {
+    var openNewTab: @MainActor @Sendable () -> Void {
+        get { self[OpenNewTabKey.self] }
+        set { self[OpenNewTabKey.self] = newValue }
     }
 }
 
