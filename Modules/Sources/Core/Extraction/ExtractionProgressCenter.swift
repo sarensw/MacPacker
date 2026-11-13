@@ -220,6 +220,11 @@ public final class ExtractionProgressCenter: ObservableObject {
     /// extraction while one is running, compression when those are all that is
     /// left, `nil` when nothing is.
     public var runningKind: ExtractionJob.Kind? {
+        Self.runningKind(of: jobs)
+    }
+
+    /// `runningKind` over `jobs` only: those one window shows, say.
+    public static func runningKind(of jobs: [ExtractionJob]) -> ExtractionJob.Kind? {
         let running = jobs.filter { !$0.isFinished }
         if running.contains(where: { $0.kind == .extraction }) { return .extraction }
         return running.isEmpty ? nil : .compression

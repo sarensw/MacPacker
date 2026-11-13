@@ -14,11 +14,11 @@ struct StatusBarView: View {
     /// Where the window's extractions report — `ArchiveState.progressCenter`.
     @ObservedObject var progressCenter: ExtractionProgressCenter
 
-    /// The window's own extraction is shown just above, with its own Cancel:
-    /// the bar keeps saying what the archive holds meanwhile.
+    /// The window's own Extract archive is shown just above, with its own
+    /// Cancel: the bar keeps saying what the archive holds meanwhile. Anything
+    /// else under way still shows here.
     private var isExtractingHere: Bool {
-        guard let windowID = archiveState.windowID else { return false }
-        return progressCenter.jobs(shownIn: windowID).contains { !$0.isFinished }
+        archiveState.isBusyWithItsOwnExtraction
     }
     
     var typeName: String? {

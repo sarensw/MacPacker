@@ -467,6 +467,21 @@ extension AllCoreTests {
             center.dismiss(id)
             #expect(center.jobs.map(\.id) == [id])
         }
+
+        /// The progress window is named after what it shows: Finder's
+        /// compression, while an archive window shows its own extraction,
+        /// is "Compressing". The quit warning still counts every job.
+        @Test func whatIsRunningIsCountedOverTheJobsShown() {
+            let center = ExtractionProgressCenter()
+            let window = UUID()
+            center.windowOpened(window)
+            _ = center.begin(archiveName: "a.zip", destination: nil, shownIn: window, itemCount: 1, totalBytes: 10)
+            _ = center.begin(kind: .compression, archiveName: "b.zip", destination: nil, itemCount: 1, totalBytes: 10)
+
+            #expect(ExtractionProgressCenter.runningKind(of: center.windowlessJobs) == .compression)
+            #expect(ExtractionProgressCenter.runningKind(of: center.jobs(shownIn: window)) == .extraction)
+            #expect(center.runningKind == .extraction)
+        }
     }
 
     // MARK: - ArchiveState extraction reports jobs
@@ -623,6 +638,41 @@ extension AllCoreTests {
 
             #expect(center.jobs.count == 2)
             #expect(center.jobs.allSatisfy { $0.shownIn == window })
+        }
+
+        /// The status bar leaves to the window's own bar only an Extract
+        /// archive, which is what makes the state busy while it runs. Extract
+        /// selected never does: whatever makes the state busy meanwhile (an
+        /// add, a save) is something else, and the status bar shows it.
+        @Test(arguments: [true, false])
+        func theStatusBarLeavesTheWindowOnlyItsExtractArchive(inWindow: Bool) async throws {
+            let state = try await openedState()
+            let center = ExtractionProgressCenter()
+            state.progressCenter = center
+            let window = UUID()
+            if inWindow {
+                state.windowID = window
+                center.windowOpened(window)
+            }
+
+            let dest = try makeDest()
+            defer { try? FileManager.default.removeItem(at: dest) }
+            let fileItem = state.entries.values.first(where: { $0.type == .file && $0.uncompressedSize > 0 })!
+
+            var whileRunning: [Bool] = []
+            for run in [{ state.extract(items: [fileItem], to: dest, smart: false) },
+                        { state.extract(to: dest, smart: false) }] {
+                await withCheckedContinuation { continuation in
+                    state.onStatusChange = { status in
+                        if status == .done { continuation.resume() }
+                    }
+                    run()
+                    whileRunning.append(state.isBusyWithItsOwnExtraction)
+                }
+            }
+
+            #expect(whileRunning == [false, inWindow])
+            #expect(state.isBusyWithItsOwnExtraction == false)
         }
     }
 }
