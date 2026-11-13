@@ -23005,7 +23005,7 @@
       }
     },
     "settingsExtractNextToArchive": {
-      "comment": "General setting: the Extract buttons of the archive window and of the Quick Look preview extract into the folder the archive is in, without asking where to.",
+      "comment": "General setting: the Extract buttons of the archive window extract into the folder the archive is in, without asking where to.",
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -23017,13 +23017,13 @@
       }
     },
     "settingsExtractNextToArchiveHint": {
-      "comment": "Tooltip of the General setting that makes the Extract buttons of the archive window and of the Quick Look preview extract into the archive's own folder.",
+      "comment": "Tooltip of the General setting that makes the Extract buttons of the archive window extract into the archive's own folder; the Quick Look preview still asks, its dialog opening there.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The Extract buttons of the archive window and of Quick Look extract into the archive's own folder, without asking where to."
+            "value": "The archive window's Extract buttons extract into the archive's own folder, without asking where to. Quick Look still asks, starting there."
           }
         }
       }

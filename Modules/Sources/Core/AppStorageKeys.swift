@@ -29,10 +29,10 @@ public enum Keys {
         defaults.object(forKey: smartExtraction) as? Bool ?? true
     }
 
-    /// Whether the archive window's Extract buttons — and the Quick Look
-    /// preview's — extract next to the archive, in its own folder, rather than
-    /// asking where to. Off by default. Kept in the app group, like
-    /// `smartExtraction`, for the preview to read.
+    /// Whether the archive window's Extract buttons extract next to the
+    /// archive, in its own folder, rather than asking where to. Off by
+    /// default. Kept in the app group, like `smartExtraction`, for the Quick
+    /// Look preview, whose folder dialog then opens at the archive's folder.
     public static let extractNextToArchive = "extractNextToArchive"
 
     /// `extractNextToArchive`, read from the app group. Unset is off.

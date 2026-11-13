@@ -198,8 +198,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             AppUrlCompressEachHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
         case .compressContents:
             AppUrlCompressContentsHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
-        case .extractNextToArchive:
-            AppUrlExtractNextToArchiveHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
         }
     }
 

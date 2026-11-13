@@ -387,7 +387,6 @@ let package = Package(
             name: "ArchivePreviewUI",
             dependencies: [
                 "Core",
-                "FinderMenu",
                 .product(name: "tb", package: "TailBeatKit")
             ],
             resources: [
