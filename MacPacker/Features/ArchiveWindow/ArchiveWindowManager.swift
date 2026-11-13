@@ -165,11 +165,12 @@ class ArchiveWindowManager {
     /// A file dropped on the "open in a new window" zone of a window that is
     /// already busy: an archive opens, anything else starts a new archive holding
     /// it — the same rule an empty window applies (`ArchiveState.openDropped`).
+    /// It opens in a window, as the zone says, whatever Settings say about tabs.
     func openDroppedInNewWindow(_ url: URL) {
         if ArchiveTypeDetector(catalog: appState.catalog).detect(for: url) != nil {
-            openArchiveWindow(for: url)
+            openArchiveWindow(for: url, asWindow: true)
         } else {
-            openCreateArchiveWindow(with: [url])
+            openCreateArchiveWindow(with: [url], asWindow: true)
         }
     }
 
@@ -177,8 +178,8 @@ class ArchiveWindowManager {
     /// pre-filled with files (used by the Finder "Add to Archive…" action).
     /// The archive gets its place on disk when the user saves.
     @discardableResult
-    func openCreateArchiveWindow(with files: [URL] = []) -> ArchiveState {
-        let state = createAndShowArchiveWindow(nil)
+    func openCreateArchiveWindow(with files: [URL] = [], asWindow: Bool = false) -> ArchiveState {
+        let state = createAndShowArchiveWindow(nil, asWindow: asWindow)
         state.create(named: String(localized: .commonNewArchive))
         if !files.isEmpty {
             state.add(urls: files)
@@ -198,17 +199,18 @@ class ArchiveWindowManager {
     ///
     /// Returns the window's `ArchiveState`, so a caller that opened the archive
     /// on purpose (e.g. via launch parameters) can drive it afterwards —
-    /// navigate to a path, select an item.
+    /// navigate to a path, select an item. `asWindow`: a new window opens as
+    /// macOS's own preference has it, not as a tab Settings ask for.
     @discardableResult
-    func openArchiveWindow(for url: URL) -> ArchiveState {
-        let state = showWindow(for: url)
+    func openArchiveWindow(for url: URL, asWindow: Bool = false) -> ArchiveState {
+        let state = showWindow(for: url, asWindow: asWindow)
         // Home-screen recents. Only real archives — an "Open With" on a plain file
         // ends up in a new archive, which isn't something to reopen later.
         if state.isSupportedArchive(url: url) { RecentArchives.note(url) }
         return state
     }
 
-    private func showWindow(for url: URL) -> ArchiveState {
+    private func showWindow(for url: URL, asWindow: Bool = false) -> ArchiveState {
         if let wc = focusWindow(holding: url) {
             return wc.archiveState
         } else if let ewc = emptyWindowController {
@@ -218,7 +220,7 @@ class ArchiveWindowManager {
             return ewc.archiveState
         } else {
             log.notice("Opening a new window for \(url.lastPathComponent)")
-            return createAndShowArchiveWindow(url)
+            return createAndShowArchiveWindow(url, asWindow: asWindow)
         }
     }
 
