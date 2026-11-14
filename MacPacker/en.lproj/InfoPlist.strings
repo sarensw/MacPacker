@@ -1,0 +1,11 @@
+/*
+  App Store build only (the MacPacker target excludes this file).
+
+  That build installs as MacPackerStore.app (#258). macOS shows these names
+  instead, in the menu bar, the Dock, Finder, Launchpad and System Settings,
+  because Info_Store.plist sets LSHasLocalizedDisplayName and the Info.plist
+  display name matches the file name. Every other language falls back to this
+  file. The product name is never translated.
+*/
+"CFBundleDisplayName" = "MacPacker";
+"CFBundleName" = "MacPacker";

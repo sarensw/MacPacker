@@ -121,6 +121,7 @@
 		251114F72DC6D3AA0056D272 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"/Localized: InfoPlist.strings",
 				Info.plist,
 			);
 			target = 25C0A8A32A78DE5F002C1C2A /* MacPacker */;

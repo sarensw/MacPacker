@@ -1,6 +1,10 @@
 #include "Version.xcconfig"
 
-INFOPLIST_KEY_CFBundleDisplayName = MacPacker
+// The App Store build keeps the file name MacPackerStore.app: a renamed bundle
+// would stay installed beside the new one on update (#258). The name macOS
+// shows comes from MacPacker/en.lproj/InfoPlist.strings, which it uses only
+// while this name matches the file name.
+INFOPLIST_KEY_CFBundleDisplayName = $(PRODUCT_NAME)
 
 // Custom app URL scheme, injected into the Info.plists via $(APP_URL_SCHEME).
 APP_URL_SCHEME = app.macpacker
