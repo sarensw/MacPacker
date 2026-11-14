@@ -946,6 +946,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>LSHasLocalizedDisplayName</key>
+	<true/>
 	<key>MPAppGroupIdentifier</key>
 	<string>$(APP_GROUP_ID)</string>
 	<key>MacPackerURLScheme</key>
