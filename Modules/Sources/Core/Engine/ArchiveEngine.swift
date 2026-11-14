@@ -90,6 +90,45 @@ public struct ArchiveExtractionResult: Sendable {
     }
 }
 
+/// What testing an archive found.
+public struct ArchiveTestResult: Equatable, Sendable {
+    /// The entries that did not decode or did not match their checksum, by path.
+    public let damagedEntries: [String]
+    /// The entries compressed with a method that can't be decoded here, by
+    /// path: whether they are whole can't be told, which is no damage.
+    public let uncheckedEntries: [String]
+    /// How the archive reports damage of its own, nil when it reports none.
+    /// Every entry can read and the archive still not be whole.
+    public let archiveDamage: ArchiveDamage?
+
+    public init(damagedEntries: [String], uncheckedEntries: [String] = [], archiveDamage: ArchiveDamage? = nil) {
+        self.damagedEntries = damagedEntries
+        self.uncheckedEntries = uncheckedEntries
+        self.archiveDamage = archiveDamage
+    }
+
+    /// Whether anything is damaged: an entry, or the archive itself.
+    public var isDamaged: Bool {
+        !damagedEntries.isEmpty || archiveDamage != nil
+    }
+
+    /// Whether every entry was checked, and nothing is damaged.
+    public var isIntact: Bool {
+        !isDamaged && uncheckedEntries.isEmpty
+    }
+}
+
+/// How an archive is damaged of its own, where no entry has to show it.
+public enum ArchiveDamage: String, Sendable {
+    /// Cut short: what came after the cut is gone, files with it maybe.
+    case endsEarly
+    /// A checksum of its own no longer matches: part of it changed after it
+    /// was made.
+    case checksum
+    /// Anything else, its headers broken for one.
+    case other
+}
+
 /// Byte-level progress reported by an engine during extraction. `completed`
 /// and `total` share the engine's own processed-bytes unit. Return `false`
 /// to abort the extraction. Called on the extraction thread.
@@ -173,10 +212,32 @@ public protocol ArchiveEngine: Sendable {
         passwordResolver: @escaping ArchivePasswordResolver,
         onProgress: ArchiveExtractionProgress?
     ) async throws
+
+    /// Decodes every entry of the archive at `url` and checks it against its
+    /// checksum, writing nothing. Asked only of an engine whose catalog entry
+    /// declares `test`; the others keep the default implementation, which throws
+    /// ``ArchiveError/testUnsupported``.
+    func test(
+        _ url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveTestResult
 }
 
 public extension ArchiveEngine {
     func readingNames(as encoding: ArchiveNameEncoding?) -> any ArchiveEngine { self }
+
+    // ponytail: 7-Zip only, the one engine the catalog declares `test` for.
+    // XADMaster checks a checksum while it extracts, and its reads raise
+    // exceptions Swift cannot catch, so testing there means extracting to a temp
+    // folder; add it, and `test` to its catalog entries, if StuffIt users ask.
+    func test(
+        _ url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveTestResult {
+        throw ArchiveError.testUnsupported
+    }
 
     func extract(
         items: [ArchiveItem],

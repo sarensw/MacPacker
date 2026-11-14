@@ -152,6 +152,44 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
                    sz_progress_callback progress, void *progress_context,
                    char **error_out);
 
+// --- Testing ---
+
+/// The test found damage: see sz_test_all.
+#define SZ_TEST_DAMAGED 4
+
+/// Decodes every entry and checks it against its checksum, writing nothing:
+/// 7-Zip's extraction in test mode. The sidecars and alternate streams the
+/// listing leaves out are checked too.
+///
+/// @param damaged_out  Receives a malloc'd array of the entries that did not
+///                     decode or did not match their checksum, by index, or NULL
+///                     when there are none -- caller must free() it.
+/// @param damaged_results_out  Receives a malloc'd array, as long, of what each of
+///                     them ended with: 7-Zip's operation result
+///                     (NArchive::NExtract::NOperationResult, IArchive.h), 1 for
+///                     a method it can't decode -- caller must free() it.
+/// @param damaged_count_out  How many there are.
+/// @param archive_damaged_out  Set when the archive reports damage of its own,
+///                     on any level it is read through: cut short, its headers
+///                     broken. Then every entry can read and the archive is
+///                     still not whole.
+/// @param archive_flags_out  What it reports, as 7-Zip's kpv_ErrorFlags_* bits
+///                     (PropID.h): kpv_ErrorFlags_UnexpectedEnd when it is cut
+///                     short, kpv_ErrorFlags_CrcError when a checksum of its own
+///                     doesn't match. None with archive_damaged_out set: damage
+///                     7-Zip has no flag for.
+/// @param archive_message_out  Receives a malloc'd message the archive gives of
+///                     its own, in 7-Zip's English, or NULL -- caller must free() it.
+/// Returns SZ_EXTRACT_OK when nothing is damaged, SZ_TEST_DAMAGED when something
+/// is, SZ_EXTRACT_WRONG_PASSWORD, SZ_EXTRACT_ABORTED (when the progress callback
+/// returned false), or SZ_EXTRACT_FAILED when the test could not run.
+int sz_test_all(SZArchiveRef archive,
+                sz_progress_callback progress, void *progress_context,
+                uint32_t **damaged_out, int32_t **damaged_results_out,
+                uint32_t *damaged_count_out,
+                bool *archive_damaged_out, uint32_t *archive_flags_out,
+                char **archive_message_out, char **error_out);
+
 // --- Tree support ---
 
 /// Returns true if the archive natively provides parent-child relationships

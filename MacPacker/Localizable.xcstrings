@@ -6731,6 +6731,126 @@
         }
       }
     },
+    "archiveTestChecksumMismatch": {
+      "comment": "Progress window, under \"Damaged: <archive>\" after a test, when the checksum the archive keeps of itself (of the whole archive, or of its table of contents) no longer matches: part of it changed after it was made. Its files can still read, so this says why it counts as damaged.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checksum doesn't match"
+          }
+        }
+      }
+    },
+    "archiveTestDamaged": {
+      "comment": "Progress window, under the name of an archive that was tested and is damaged. The placeholder lists the damaged files inside it, separated by commas, or names the archive itself when that is what is damaged, cut short for example.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Damaged: %@"
+          }
+        }
+      }
+    },
+    "archiveTestDamagedFileCount": {
+      "comment": "Progress window, under the name of an archive that was tested and is damaged, when the names of the damaged files inside it don't fit on the line. The argument is how many files are damaged.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Damaged: %lld file"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Damaged: %lld files"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "archiveTestEndsEarly": {
+      "comment": "Progress window, under \"Damaged: <archive>\" after a test, when the archive is cut short, by a download or a copy that stopped before the end for example. What came after the cut is gone, so nobody can tell whether files are missing; the files before it can still be whole and be extracted.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The archive ends early, so files may be missing."
+          }
+        }
+      }
+    },
+    "archiveTestNoErrorsFound": {
+      "comment": "Progress window, under the name of an archive that was tested: every file in it decompresses and matches its checksum.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No errors found"
+          }
+        }
+      }
+    },
+    "archiveTestUnchecked": {
+      "comment": "Progress window, under the name of an archive that was tested: these files are compressed with a method MacPacker can't decompress, so whether they are intact can't be told. That is not damage. The placeholder lists the files, separated by commas.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can't check: %@"
+          }
+        }
+      }
+    },
+    "archiveTestUncheckedFileCount": {
+      "comment": "Progress window, in place of \"Can't check: <files>\" once the names don't fit on the line: how many files in the tested archive are compressed with a method MacPacker can't decompress, so whether they are intact can't be told.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Can't check: %lld file"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Can't check: %lld files"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "archiveTestUnsupportedMethod": {
+      "comment": "Progress window, under \"Can't check: <files>\" after a test: why those files can't be checked. Not damage: MacPacker can't decompress the method they are compressed with (WavPack audio in a zip, for example).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compression not supported"
+          }
+        }
+      }
+    },
     "columnDateModified": {
       "comment": "Column that shows the date the file was modified",
       "extractionState": "manual",
@@ -15374,6 +15494,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Terms & Conditions"
+          }
+        }
+      }
+    },
+    "commonTestArchive": {
+      "comment": "Menu entry, in Finder's context menu, the File menu and the list of context menu entries in Settings: checks that every file in the archive decompresses and matches its checksum, without extracting anything.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test Archive"
+          }
+        }
+      }
+    },
+    "commonTesting": {
+      "comment": "Name of the progress window while it shows an archive being tested. The title bar shows no text; VoiceOver and Mission Control read it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Testing"
           }
         }
       }

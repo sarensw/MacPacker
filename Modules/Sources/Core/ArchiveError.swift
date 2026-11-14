@@ -16,6 +16,8 @@ enum ArchiveError: Error, LocalizedError {
     case xadError(_ code: Int32, _ message: String)
     /// A save that cannot go ahead as asked, and says what to do instead.
     case saveRefused(_ message: String)
+    /// The engine that reads the archive cannot test it.
+    case testUnsupported
 
     /// Without this the UI shows `localizedDescription`'s generic "The operation
     /// couldn't be completed" for every one of these, which is how a wrong
@@ -28,6 +30,7 @@ enum ArchiveError: Error, LocalizedError {
         case .passwordCancelled: return "Password entry was cancelled."
         case .xadError(let code, let message): return "\(message) (error \(code))"
         case .saveRefused(let message): return message
+        case .testUnsupported: return "Testing isn't supported for this format."
         }
     }
 }

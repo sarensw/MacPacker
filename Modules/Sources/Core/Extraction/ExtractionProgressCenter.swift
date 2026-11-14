@@ -31,16 +31,19 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
         case cancelled
     }
 
-    /// What the job does. The window shows both alike; what is said around it
+    /// What the job does. The window shows all alike; what is said around it
     /// differs — the quit warning, the name of the window.
     public enum Kind: Equatable, Sendable {
         case extraction
         case compression
+        /// Decodes the archive and writes nothing: its outcome is the verdict.
+        case test
 
         fileprivate var label: String {
             switch self {
             case .extraction: "Extraction"
             case .compression: "Compression"
+            case .test: "Test"
             }
         }
     }
@@ -65,6 +68,8 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     public let startedAt: Date
     public internal(set) var finishedAt: Date?
     public internal(set) var state: State = .running
+    /// What a test found, once it has run to the end.
+    public internal(set) var testResult: ArchiveTestResult?
 
     /// Speed points for the details graph: the transfer is divided into
     /// `maxSpeedSamples` uniform slots, and crossing a slot boundary records
@@ -84,6 +89,16 @@ public struct ExtractionJob: Identifiable, Equatable, Sendable {
     var lastReportBytes: Int64 = 0
 
     public var isFinished: Bool { state != .running }
+
+    /// Whether the window goes on showing the job once it is over: a failure has
+    /// to be seen, and so does a test's verdict, which is what it was run for.
+    public var hasOutcomeToShow: Bool {
+        switch state {
+        case .failed: true
+        case .done: kind == .test
+        case .running, .cancelled: false
+        }
+    }
 
     /// The total used for fractions and display: the engine's own total
     /// when it reports progress, the listing total otherwise.
@@ -183,21 +198,19 @@ public final class ExtractionProgressCenter: ObservableObject {
     }
 
     /// What the running jobs are doing, for the wording around the window:
-    /// extraction while one is running, compression when those are all that is
-    /// left, `nil` when nothing is.
+    /// extraction while one is running, then compression, then a test, `nil`
+    /// when nothing is.
     public var runningKind: ExtractionJob.Kind? {
-        let running = jobs.filter { !$0.isFinished }
-        if running.contains(where: { $0.kind == .extraction }) { return .extraction }
-        return running.isEmpty ? nil : .compression
+        [.extraction, .compression, .test].first { kind in
+            jobs.contains { !$0.isFinished && $0.kind == kind }
+        }
     }
 
-    /// Whether a job has failed and is still listed: the progress window
-    /// shows it, or is about to, and keeps it until it is closed.
-    public var hasFailedJobs: Bool {
-        jobs.contains {
-            if case .failed = $0.state { return true }
-            return false
-        }
+    /// Whether a job that is over still has something to show — a failure, a
+    /// test's verdict: the progress window shows it, or is about to, and keeps
+    /// it until it is closed.
+    public var hasOutcomesToShow: Bool {
+        jobs.contains(where: \.hasOutcomeToShow)
     }
 
     /// Whether an action is under way: work that is several jobs, like
@@ -337,6 +350,19 @@ public final class ExtractionProgressCenter: ObservableObject {
         case .running:
             break
         }
+    }
+
+    /// Ends a test with what it found: done when the archive is intact, failed
+    /// when it is not, or when not every entry could be checked. The window
+    /// words the verdict from `testResult`; the failure's message is for the log.
+    public func finish(_ id: UUID, testedAs result: ArchiveTestResult) {
+        if let index = jobs.firstIndex(where: { $0.id == id }), !jobs[index].isFinished {
+            jobs[index].testResult = result
+        }
+        let found = !result.damagedEntries.isEmpty ? "Damaged: \(result.damagedEntries.joined(separator: ", "))"
+            : result.isDamaged ? "Damaged: the archive itself"
+            : "Can't check: \(result.uncheckedEntries.joined(separator: ", "))"
+        finish(id, result.isIntact ? .done : .failed(found))
     }
 
     /// Drops all finished jobs (the progress window calls this when it closes).

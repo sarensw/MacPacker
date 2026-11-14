@@ -598,6 +598,211 @@ final class MacPackerUITests: XCTestCase {
         app.terminate()
     }
 
+    /// A zip holding `files`, stored, and a copy with one byte of each file
+    /// changed: the copy opens and lists as before, and only the CRCs tell.
+    private func makeWholeAndDamagedZip(in dir: URL, files: [String] = ["readme.txt"]) throws -> (whole: URL, damaged: URL) {
+        let suffix = files.count == 1 ? "" : "\(files.count)"
+        for file in files {
+            try "Every byte of this file is checked.".write(to: dir.appendingPathComponent(file), atomically: true, encoding: .utf8)
+        }
+        let whole = dir.appendingPathComponent("whole\(suffix).zip")
+        try run("/usr/bin/zip", ["-X", "-0", whole.path] + files, cwd: dir)
+        for file in files {
+            try FileManager.default.removeItem(at: dir.appendingPathComponent(file))
+        }
+
+        var bytes = try Data(contentsOf: whole)
+        let ranges = bytes.ranges(of: Data("Every".utf8))
+        XCTAssertEqual(ranges.count, files.count)
+        for range in ranges {
+            bytes[range.lowerBound] ^= 0x20
+        }
+        let damaged = dir.appendingPathComponent("damaged\(suffix).zip")
+        try bytes.write(to: damaged)
+        return (whole, damaged)
+    }
+
+    /// A zip of `readme.txt` and `sound.wav`, stored, with `sound.wav` marked as
+    /// compressed with WavPack (method 97), which 7-Zip doesn't decode.
+    private func makeZipWithUnsupportedMethod(in dir: URL) throws -> URL {
+        let files = ["readme.txt", "sound.wav"]
+        for file in files {
+            try "Every byte of this file is checked.".write(to: dir.appendingPathComponent(file), atomically: true, encoding: .utf8)
+        }
+        let zip = dir.appendingPathComponent("unsupported.zip")
+        try run("/usr/bin/zip", ["-X", "-0", zip.path] + files, cwd: dir)
+        for file in files {
+            try FileManager.default.removeItem(at: dir.appendingPathComponent(file))
+        }
+
+        // a name follows its local header at 30, the method sitting at 8, and
+        // its central directory header at 46, the method sitting at 10
+        var bytes = try Data(contentsOf: zip)
+        for name in bytes.ranges(of: Data("sound.wav".utf8)) {
+            let local = name.lowerBound - 30, central = name.lowerBound - 46
+            if local >= 0, bytes[local..<local + 4] == Data([0x50, 0x4B, 0x03, 0x04]) {
+                bytes[local + 8] = 97
+            } else if central >= 0, bytes[central..<central + 4] == Data([0x50, 0x4B, 0x01, 0x02]) {
+                bytes[central + 10] = 97
+            }
+        }
+        try bytes.write(to: zip)
+        return zip
+    }
+
+    /// Chooses `file` in the open panel that is up: Go to Folder (⇧⌘G) takes the
+    /// path of a file too, and selects it.
+    private func pick(_ file: URL, inOpenPanelOf app: XCUIApplication) {
+        let open = app.windows.buttons["Open"].firstMatch
+        XCTAssertTrue(open.waitForExistence(timeout: 10), "no open panel")
+        app.typeKey("g", modifierFlags: [.command, .shift])
+        app.typeText(file.path)
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(open.wait(for: \.isEnabled, toEqual: true, timeout: 10), "\(file.lastPathComponent) is not selected")
+        open.click()
+    }
+
+    /// The toolbar's Test Archive checks the archive the window shows and says
+    /// what it found in the progress window: nothing for a whole archive, the
+    /// damaged files for one whose CRCs no longer match while their names fit on
+    /// the line, else how many; for an archive cut short, also why; and a file
+    /// whose method 7-Zip can't decode as one it can't check. A click on the row
+    /// leaves the verdict where it is: a test has no chart to open (#232).
+    func testTestArchiveFromTheToolbarShowsTheVerdict() throws {
+        let dir = try makeWorkDir("test-archive")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let (whole, damaged) = try makeWholeAndDamagedZip(in: dir)
+        // cut off where its central directory starts, at the offset the end of
+        // central directory record (the last 22 bytes) holds at 16: every file
+        // still reads, and only the archive itself can say it is incomplete
+        let bytes = try Data(contentsOf: whole)
+        let directory = bytes[(bytes.count - 6)..<(bytes.count - 2)].reversed().reduce(0) { $0 << 8 | Int($1) }
+        let cut = dir.appendingPathComponent("cut.zip")
+        try bytes.prefix(directory).write(to: cut)
+        let unsupported = try makeZipWithUnsupportedMethod(in: dir)
+        let few = try makeWholeAndDamagedZip(in: dir, files: ["a.txt", "b.txt", "c.txt"]).damaged
+        let many = try makeWholeAndDamagedZip(in: dir, files: (1...12).map { String(format: "file%02d.txt", $0) }).damaged
+
+        for (zip, first, verdict) in [
+            (whole, "readme.txt", "No errors found"),
+            (damaged, "readme.txt", "Damaged: readme.txt"),
+            (few, "a.txt", "Damaged: a.txt, b.txt, c.txt"),
+            (many, "file01.txt", "Damaged: 12 files"),
+            (cut, "readme.txt", "The archive ends early, so files may be missing."),
+            (unsupported, "readme.txt", "Can't check: sound.wav"),
+        ] {
+            let app = launchApp(arguments: ["-ArchivePath", zip.path])
+            XCTAssertTrue(app.staticTexts[first].waitForExistence(timeout: 15), "\(zip.lastPathComponent) did not load")
+            let test = app.toolbars.buttons["Test Archive"].firstMatch
+            XCTAssertTrue(test.waitForExistence(timeout: 5), "the toolbar has no Test Archive")
+            test.click()
+
+            let line = app.windows["progress.window"].staticTexts[verdict]
+            XCTAssertTrue(line.waitForExistence(timeout: 15), "no \"\(verdict)\" for \(zip.lastPathComponent)")
+            line.click()
+            XCTAssertFalse(line.waitForNonExistence(timeout: 2), "a click on the row hid \"\(verdict)\"")
+            add(screenshot(app, name: verdict))
+            app.terminate()
+        }
+    }
+
+    /// Test Archive on the start page and in the File menu asks which archives
+    /// to test: neither needs one open (#232).
+    ///
+    /// `-ArchivePath` keeps the welcome window away; ⌘⇧N then opens an empty
+    /// window, which shows the start page.
+    func testTestArchiveAsksWhichOneOnTheStartPageAndInTheFileMenu() throws {
+        let dir = try makeWorkDir("test-archive-panel")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let (whole, damaged) = try makeWholeAndDamagedZip(in: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", whole.path])
+        XCTAssertTrue(app.staticTexts["readme.txt"].waitForExistence(timeout: 15), "the archive did not load")
+        app.typeKey("n", modifierFlags: [.command, .shift])
+        let card = app.buttons["home.testArchive"]
+        XCTAssertTrue(card.waitForExistence(timeout: 10), "the start page has no Test Archive")
+        card.click()
+        pick(damaged, inOpenPanelOf: app)
+
+        let progress = app.windows["progress.window"]
+        XCTAssertTrue(progress.staticTexts["Damaged: readme.txt"].waitForExistence(timeout: 15),
+                      "no verdict for the start page's test")
+
+        app.menuBars.menuBarItems["File"].click()
+        app.menuBars.menuItems["Test Archive"].click()
+        pick(whole, inOpenPanelOf: app)
+        XCTAssertTrue(progress.staticTexts["No errors found"].waitForExistence(timeout: 15),
+                      "no verdict for the File menu's test")
+        add(screenshot(app, name: "start page and File menu verdicts"))
+        app.terminate()
+    }
+
+    /// Preview, Extract, Test and the search field act on the archive in the
+    /// window, so they are off on the start page, which has none. Preview and
+    /// Extract selected wait for a selection too, like Delete.
+    ///
+    /// The archive's window closes before the empty one opens: the start page
+    /// is then the only window, and its controls the only ones to find.
+    func testArchiveControlsAreOffOnTheStartPage() throws {
+        let dir = try makeWorkDir("controls-off")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let (whole, _) = try makeWholeAndDamagedZip(in: dir)
+
+        let app = launchApp(arguments: ["-ArchivePath", whole.path, "-\(quitOnLastWindowClosedKey)", "NO"])
+        let row = app.staticTexts["readme.txt"]
+        XCTAssertTrue(row.waitForExistence(timeout: 15), "the archive did not load")
+        let search = app.windows.searchFields["archive.searchField"]
+        func button(_ label: String) -> XCUIElement { app.toolbars.buttons[label].firstMatch }
+        func becomes(_ element: XCUIElement, _ enabled: Bool) -> Bool {
+            element.wait(for: \.isEnabled, toEqual: enabled, timeout: 5)
+        }
+
+        XCTAssertTrue(search.waitForExistence(timeout: 5), "no search field")
+        for control in [button("Extract archive"), button("Test Archive"), search] {
+            XCTAssertTrue(becomes(control, true), "\(control) is off with an archive open")
+        }
+        for label in ["Preview", "Extract selected"] {
+            XCTAssertTrue(becomes(button(label), false), "\(label) is on with nothing selected")
+        }
+        row.click()
+        for label in ["Preview", "Extract selected"] {
+            XCTAssertTrue(becomes(button(label), true), "\(label) is off with readme.txt selected")
+        }
+
+        app.typeKey("w", modifierFlags: .command)
+        app.typeKey("n", modifierFlags: [.command, .shift])
+        XCTAssertTrue(app.buttons["home.testArchive"].waitForExistence(timeout: 10), "no start page")
+        XCTAssertTrue(search.waitForExistence(timeout: 5), "no search field on the start page")
+        for label in ["Preview", "Extract selected", "Extract archive", "Test Archive"] {
+            XCTAssertTrue(becomes(button(label), false), "\(label) is on on the start page")
+        }
+        XCTAssertTrue(becomes(search, false), "the search field is on on the start page")
+        app.terminate()
+    }
+
+    /// Finder's Test Archive starts the app without a window of its own and puts
+    /// the verdict up in the progress window. The verdict is what the action was
+    /// for, so it holds the app up until it is closed (#232).
+    ///
+    /// The menu bar item is a window on screen too, and it keeps the app up:
+    /// off here, whatever the Debug app this test shares its settings with says.
+    func testFinderTestArchiveKeepsTheVerdictUntilItIsClosed() throws {
+        let dir = try makeWorkDir("finder-test-archive")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let (_, damaged) = try makeWholeAndDamagedZip(in: dir)
+
+        let app = launchApp(finderAction: "test", files: [damaged], target: dir, arguments: ["-showMenuBarItem", "NO"])
+        confirmAccessPanel(app, button: "Grant Access")
+
+        let progress = app.windows["progress.window"]
+        XCTAssertTrue(progress.staticTexts["Damaged: readme.txt"].waitForExistence(timeout: 15), "no verdict")
+        add(screenshot(app, name: "Finder test verdict"))
+        XCTAssertFalse(app.wait(for: .notRunning, timeout: 3), "the app quit under its verdict")
+
+        progress.buttons[XCUIIdentifierCloseWindow].click()
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 10), "the app stayed after its verdict was closed")
+    }
+
     /// Dragging a file from Finder onto the upper half of an editable archive adds
     /// it — the drop zones replaced the old ⌥-modifier gesture, so the plain drag
     /// has to land in the archive without any key held.

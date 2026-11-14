@@ -112,33 +112,14 @@ final actor ArchiveLoader {
     /// archive type, select the proper engine and then load all info like type info, entries,  ... . The hiarchy is built in a separate step.
     /// - Parameter url: The url to open
     public func loadEntries(url: URL) async throws -> ArchiveLoaderLoadResult {
-        // Before detection or any engine: gone is the same answer for all of
-        // them, and a recent archive outlives its file.
-        guard Sandbox.accessSync(url: url, perform: { FileManager.default.fileExists(atPath: url.path) }) else {
-            throw ArchiveError.loadFailed("\(url.lastPathComponent) no longer exists.")
-        }
-
         // in case this is a compount `archiveUrl` will hold the extracted url
         var archiveUrl: URL? = url
         // for a split, the resolved first volume (adopted as the window identity)
         var firstVolumeURL: URL? = nil
         var compoundTempUrl: URL? = nil
-        
-        guard let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true) else {
-            log.notice("No archive type detected", context: [
-                "file": url.lastPathComponent,
-                "ext": url.pathExtension
-            ])
-            throw ArchiveError.invalidArchive(
-                "\(url.lastPathComponent) is not a recognised archive type.")
-        }
-        log.info("Archive type detected", context: [
-            "file": url.lastPathComponent,
-            "type": detectorResult.type.id,
-            "composition": detectorResult.composition?.id ?? "none",
-            "split": detectorResult.split == nil ? "no" : "yes"
-        ])
-        
+
+        let detectorResult = try detect(url)
+
         if let compound = detectorResult.composition {
             // this is a compound, in which case we decompress first,
             // then check the actual archive later
@@ -188,17 +169,12 @@ final actor ArchiveLoader {
             yield(.processing(progress: nil, activity: .entryExtracted(extractedArchiveURL)))
         } else if let split = detectorResult.split {
             // A split archive — same shape as the compound step: reduce any volume to
-            // the real archive (its first segment). First the selected engine must be
-            // able to read split volumes, and we must hold folder access for the
-            // siblings — requested through the app via the resolver, exactly like a
-            // password. The read itself is wrapped in `Sandbox.access`.
+            // the real archive (its first segment). The read itself is wrapped in
+            // `Sandbox.access`.
             guard engineDeclares("splitVolumes", for: detectorResult.type) else {
                 throw ArchiveError.invalidArchive("The engine selected for \(detectorResult.type.name) can't read split archives. Switch to 7-Zip in Settings.")
             }
-            let firstVolume = SplitVolumeResolver.firstVolume(for: url, split: split)
-            guard await folderAccessResolver(firstVolume) else {
-                throw ArchiveError.invalidArchive("Access to the folder of \(firstVolume.lastPathComponent) was declined; the other volumes can't be read.")
-            }
+            let firstVolume = try await firstVolume(of: url, split: split)
             archiveUrl = firstVolume
             firstVolumeURL = firstVolume
             yield(.processing(progress: nil, activity: .splitFirstVolume(firstVolume.lastPathComponent)))
@@ -281,6 +257,71 @@ final actor ArchiveLoader {
         return result
     }
     
+    /// Tests the archive at `url` without listing it: every entry is decoded and
+    /// checked against its checksum, and nothing is written. It runs on the
+    /// engine the catalog says can test the format, whichever engine opens it,
+    /// and gets the file as it is, a split as its first volume, and a compound
+    /// as the compressed file around the archive, which holds all of it.
+    public func test(url: URL, onProgress: ArchiveExtractionProgress?) async throws -> ArchiveTestResult {
+        let detected = try detect(url)
+        let type = detected.composition?.components.last.flatMap { archiveTypeDetector.type(for: $0) } ?? detected.type
+        guard let testing = type.engines.first(where: \.canTest),
+              let tester = ArchiveEngineType(configId: testing.id),
+              // the volumes are read by the engine that tests, not the one picked to open the format
+              detected.split == nil || testing.capabilities.contains("splitVolumes") else {
+            log.notice("No engine can test the format", context: ["file": url.lastPathComponent, "type": type.id])
+            throw ArchiveError.testUnsupported
+        }
+        var file = url
+        if let split = detected.split {
+            file = try await firstVolume(of: url, split: split)
+        }
+        let engine = archiveEngineSelector.engine(for: tester)
+        log.info("Testing archive", context: [
+            "file": url.lastPathComponent,
+            "type": type.id,
+            "engine": tester.configId
+        ])
+        return try await Sandbox.access(url: file) {
+            try await engine.test(file, passwordResolver: passwordResolver, onProgress: onProgress)
+        }
+    }
+
+    /// What the archive at `url` is.
+    private func detect(_ url: URL) throws -> DetectionResult {
+        // Before detection or any engine: gone is the same answer for all of
+        // them, and a recent archive outlives its file.
+        guard Sandbox.accessSync(url: url, perform: { FileManager.default.fileExists(atPath: url.path) }) else {
+            throw ArchiveError.loadFailed("\(url.lastPathComponent) no longer exists.")
+        }
+        guard let detectorResult = archiveTypeDetector.detect(for: url, considerComposition: true) else {
+            log.notice("No archive type detected", context: [
+                "file": url.lastPathComponent,
+                "ext": url.pathExtension
+            ])
+            throw ArchiveError.invalidArchive(
+                "\(url.lastPathComponent) is not a recognised archive type.")
+        }
+        log.info("Archive type detected", context: [
+            "file": url.lastPathComponent,
+            "type": detectorResult.type.id,
+            "composition": detectorResult.composition?.id ?? "none",
+            "split": detectorResult.split == nil ? "no" : "yes"
+        ])
+        return detectorResult
+    }
+
+    /// The first volume of the split archive `url` is a part of. The folder
+    /// holding the volumes has to be readable: access to it is asked for through
+    /// the app, exactly like a password.
+    private func firstVolume(of url: URL, split: SplitTypeDto) async throws -> URL {
+        let firstVolume = SplitVolumeResolver.firstVolume(for: url, split: split)
+        guard await folderAccessResolver(firstVolume) else {
+            throw ArchiveError.invalidArchive("Access to the folder of \(firstVolume.lastPathComponent) was declined; the other volumes can't be read.")
+        }
+        return firstVolume
+    }
+
     /// Reads the archive with the configured engine, falling back to the other
     /// engines the catalog lists for the format if that one simply cannot open
     /// it.

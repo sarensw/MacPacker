@@ -145,6 +145,8 @@ private struct FinderMenuItemToggle: View {
             Text(.settingsCompressTo7Z)
         case .extractToChosenFolder:
             Text(.settingsExtractToChosenFolder)
+        case .testArchive:
+            Text(.commonTestArchive)
         case .compressToDatedZip:
             Text(.settingsCompressToZipDateTime)
         case .compressForWindows:
