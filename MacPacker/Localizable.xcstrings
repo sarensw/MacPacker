@@ -6738,7 +6738,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The archive no longer matches its checksum."
+            "value": "Checksum doesn't match"
           }
         }
       }
