@@ -331,6 +331,34 @@
             "issues": ["300"]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "App Store version shows up as MacPackerStore",
+                "zh-Hans": "App Store 版本显示为 MacPackerStore",
+                "fr": "La version App Store apparaît comme MacPackerStore",
+                "de": "App Store-Version erscheint als MacPackerStore",
+                "it": "La versione App Store appare come MacPackerStore",
+                "ja": "App Store版がMacPackerStoreと表示される",
+                "fa": "نسخه App Store با نام MacPackerStore نمایش داده می‌شود",
+                "pl": "Wersja z App Store wyświetla się jako MacPackerStore",
+                "pt-BR": "A versão da App Store aparece como MacPackerStore",
+                "ru": "Версия из App Store отображается как MacPackerStore",
+                "uk": "Версія з App Store відображається як MacPackerStore",
+                "es-MX": "La versión de App Store aparece como MacPackerStore",
+                "ko": "App Store 버전이 MacPackerStore로 표시됨",
+                "nl": "App Store-versie verschijnt als MacPackerStore",
+                "tr": "App Store sürümü MacPackerStore olarak görünüyor",
+                "vi": "Phiên bản App Store hiển thị với tên MacPackerStore",
+                "ar": "إصدار App Store يظهر باسم MacPackerStore",
+                "ca": "La versió de l’App Store apareix com a MacPackerStore",
+                "el": "Η έκδοση του App Store εμφανίζεται ως MacPackerStore",
+                "nb": "App Store-versjonen vises som MacPackerStore",
+                "zh-TW": "App Store 版本顯示為 MacPackerStore",
+                "hi": "App Store संस्करण MacPackerStore नाम से दिखता है"
+            },
+            "issues": ["258"]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.06",

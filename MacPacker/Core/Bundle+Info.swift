@@ -19,5 +19,7 @@ extension Bundle {
     var appBuild: String { getInfo("CFBundleVersion") }
     var appVersionLong: String { getInfo("CFBundleShortVersionString") }
 
-    private func getInfo(_ key: String) -> String { infoDictionary?[key] as? String ?? "⚠️" }
+    // Localized where InfoPlist.strings has the key: the App Store build is
+    // named MacPacker only there (#258).
+    private func getInfo(_ key: String) -> String { object(forInfoDictionaryKey: key) as? String ?? "⚠️" }
 }
