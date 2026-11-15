@@ -245,6 +245,43 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>zst</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Zstandard Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.facebook.zst-archive</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>tzst</string>
+				<string>tar.zst</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Zstandard Tarball Archive</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.facebook.tar-zst-archive</string>
+			</array>
+			<key>LSTypeIsPackage</key>
+			<false/>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>rar</string>
 			</array>
 			<key>CFBundleTypeName</key>
@@ -946,17 +983,22 @@
 			</array>
 		</dict>
 	</array>
+	<key>LSHasLocalizedDisplayName</key>
+	<true/>
 	<key>MPAppGroupIdentifier</key>
 	<string>$(APP_GROUP_ID)</string>
 	<key>MacPackerURLScheme</key>
 	<string>$(APP_URL_SCHEME)</string>
+	<!-- The titles name MacPacker literally: they are the keys of
+	     ServicesMenu.xcstrings, and this build's display name is its file
+	     name, MacPackerStore (#258). -->
 	<key>NSServices</key>
 	<array>
 		<dict>
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>Extract using $(INFOPLIST_KEY_CFBundleDisplayName)</string>
+				<string>Extract using MacPacker</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>extract</string>
@@ -978,7 +1020,7 @@
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>Compress using $(INFOPLIST_KEY_CFBundleDisplayName)</string>
+				<string>Compress using MacPacker</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>compress</string>
@@ -1000,7 +1042,7 @@
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>Create archive with $(INFOPLIST_KEY_CFBundleDisplayName)</string>
+				<string>Create archive with MacPacker</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>createArchive</string>
@@ -1195,6 +1237,46 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>tlzma</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Zstandard File</string>
+			<key>UTTypeIcons</key>
+			<dict/>
+			<key>UTTypeIdentifier</key>
+			<string>com.facebook.zst-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>zst</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.archive</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Zstandard Tar Archive</string>
+			<key>UTTypeIcons</key>
+			<dict/>
+			<key>UTTypeIdentifier</key>
+			<string>com.facebook.tar-zst-archive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>tzst</string>
 				</array>
 			</dict>
 		</dict>

@@ -610,10 +610,15 @@ extension AllCoreTests {
         }
 
         /// The quit warning and the window's name follow what is running:
-        /// extraction while there is one, compression when that is all there is.
+        /// extraction while there is one, compression next, a test when that is
+        /// all there is.
         @Test func whatIsRunningDecidesTheWording() {
             let center = ExtractionProgressCenter()
             #expect(center.runningKind == nil)
+
+            let test = center.begin(
+                kind: .test, archiveName: "t.zip", destination: nil, itemCount: 0, totalBytes: nil)
+            #expect(center.runningKind == .test)
 
             let compress = center.begin(
                 kind: .compression, archiveName: "a.zip", destination: nil, itemCount: 1, totalBytes: nil)
@@ -626,6 +631,8 @@ extension AllCoreTests {
             center.finish(extract, .done)
             #expect(center.runningKind == .compression)
             center.finish(compress, .cancelled)
+            #expect(center.runningKind == .test)
+            center.finish(test, .done)
             #expect(center.runningKind == nil)
         }
     }

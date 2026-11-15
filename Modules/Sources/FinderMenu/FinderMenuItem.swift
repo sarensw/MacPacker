@@ -30,6 +30,9 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
     case extractToFolder
     /// Ask where to extract, then extract there.
     case extractToChosenFolder
+    /// Check that every entry decompresses and matches its checksum, writing
+    /// nothing.
+    case testArchive
     /// New-archive window, pre-filled with the selection.
     case addToArchive
     /// Straight to `<name>.zip`, no questions.
@@ -53,7 +56,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         switch self {
         case .extractHere, .extractToChosenFolder, .compressToZip, .compressToDatedZip:
             true
-        case .open, .extractToFolder, .addToArchive, .compressForWindows, .compressTo7z,
+        case .open, .extractToFolder, .testArchive, .addToArchive, .compressForWindows, .compressTo7z,
              .compressEachSeparately, .compressFolderContents:
             false
         }
@@ -63,7 +66,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
     /// `folders` folders.
     public func applies(toFiles files: Int, folders: Int) -> Bool {
         switch self {
-        case .open, .extractHere, .extractToFolder, .extractToChosenFolder:
+        case .open, .extractHere, .extractToFolder, .extractToChosenFolder, .testArchive:
             // archives are files; extracting a folder is meaningless
             files > 0
         case .compressEachSeparately:
@@ -79,7 +82,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
     /// Whether the entry works on archives, which are files.
     public var actsOnArchives: Bool {
         switch self {
-        case .open, .extractHere, .extractToFolder, .extractToChosenFolder:
+        case .open, .extractHere, .extractToFolder, .extractToChosenFolder, .testArchive:
             true
         case .addToArchive, .compressToZip, .compressToDatedZip, .compressForWindows, .compressTo7z,
              .compressEachSeparately, .compressFolderContents:
@@ -101,6 +104,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         case .extractHere: .extractHere
         case .extractToFolder: .extractToFolder
         case .extractToChosenFolder: .extractTo
+        case .testArchive: .test
         case .addToArchive: .addToArchive
         case .compressToZip, .compressToDatedZip, .compressTo7z: .compress
         case .compressForWindows: .compressForWindows
@@ -116,7 +120,7 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         case .compressToZip, .compressToDatedZip, .compressForWindows, .compressEachSeparately,
              .compressFolderContents: "zip"
         case .compressTo7z: "7z"
-        case .open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive: nil
+        case .open, .extractHere, .extractToFolder, .extractToChosenFolder, .testArchive, .addToArchive: nil
         }
     }
 
