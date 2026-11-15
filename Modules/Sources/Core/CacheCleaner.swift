@@ -15,7 +15,10 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "cache")
 /// files or several GB, so it is removed off the main actor, like the loader,
 /// the extractor and the scanner do their work (#301).
 public final actor CacheCleaner {
-    /// `Caches/ta`, where the temporary folders are made.
+    /// `Caches/ta`, where the temporary folders are made. Each process has its
+    /// own: Quick Look's is in the extension's container, which the app cannot
+    /// reach. The app group's container would be shared, but Quick Look may
+    /// only read it.
     public static let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         .appending(component: "ta", directoryHint: .isDirectory)
     /// This launch's temporary folders go in here. Everything else in `folder`
@@ -37,6 +40,28 @@ public final actor CacheCleaner {
     /// Removes everything in the cache, this launch's files too.
     public func removeAll(in folder: URL = CacheCleaner.folder) async {
         await remove([folder])
+    }
+
+    /// Quick Look, as it opens an archive: removes what earlier previews left,
+    /// in this process and in earlier ones. Only what is there now: the
+    /// preview about to load makes its folder after this.
+    ///
+    /// ponytail: a preview still open in another Quick Look process loses its
+    /// files too; lock each launch folder if that ever shows.
+    @discardableResult
+    public static func removeEarlierPreviews(
+        in folder: URL = CacheCleaner.folder,
+        keeping launchFolder: URL = CacheCleaner.launchFolder
+    ) -> Task<Void, Never> {
+        let earlier = contents(of: folder).flatMap {
+            // a load makes its folder in this launch's
+            $0.lastPathComponent == launchFolder.lastPathComponent ? contents(of: $0) : [$0]
+        }
+        return Task { await CacheCleaner().remove(earlier) }
+    }
+
+    private static func contents(of folder: URL) -> [URL] {
+        (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
     }
 
     /// Removes the given folders and everything in them. Two removals can run

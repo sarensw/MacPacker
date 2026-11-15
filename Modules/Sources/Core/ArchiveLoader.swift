@@ -50,7 +50,9 @@ final actor ArchiveLoader {
 
     private var entries: [UUID: ArchiveItem] = [:]
     private var engine: (any ArchiveEngine)?
-    
+    /// Where a compound is decompressed to, from the moment it is made.
+    private var compoundTempUrl: URL?
+
     // status passthrough from the engine to the UI
     private var statusContinuation: AsyncStream<EngineStatus>.Continuation?
     private lazy var status: AsyncStream<EngineStatus> = {
@@ -112,11 +114,22 @@ final actor ArchiveLoader {
     /// archive type, select the proper engine and then load all info like type info, entries,  ... . The hiarchy is built in a separate step.
     /// - Parameter url: The url to open
     public func loadEntries(url: URL) async throws -> ArchiveLoaderLoadResult {
+        do {
+            return try await load(url: url)
+        } catch {
+            // The state learns of the tar's folder from a finished load only,
+            // so one that failed or was stopped would leave it behind.
+            if let compoundTempUrl { await CacheCleaner().remove([compoundTempUrl]) }
+            throw error
+        }
+    }
+
+    private func load(url: URL) async throws -> ArchiveLoaderLoadResult {
         // in case this is a compount `archiveUrl` will hold the extracted url
         var archiveUrl: URL? = url
         // for a split, the resolved first volume (adopted as the window identity)
         var firstVolumeURL: URL? = nil
-        var compoundTempUrl: URL? = nil
+        compoundTempUrl = nil
 
         let detectorResult = try detect(url)
 

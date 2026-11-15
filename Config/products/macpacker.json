@@ -388,6 +388,34 @@
             "issues": ["258"]
           },
           {
+            "type": "fix",
+            "title": {
+                "en": "Quick Look leaves temporary files behind",
+                "zh-Hans": "Quick Look 会留下临时文件",
+                "fr": "Quick Look laisse des fichiers temporaires",
+                "de": "Quick Look hinterlässt temporäre Dateien",
+                "it": "Quick Look lascia file temporanei",
+                "ja": "Quick Look が一時ファイルを残す",
+                "fa": "Quick Look فایل‌های موقت را باقی می‌گذارد",
+                "pl": "Quick Look pozostawia pliki tymczasowe",
+                "pt-BR": "Quick Look deixa arquivos temporários",
+                "ru": "Quick Look оставляет временные файлы",
+                "uk": "Quick Look залишає тимчасові файли",
+                "es-MX": "Quick Look deja archivos temporales",
+                "ko": "Quick Look이 임시 파일을 남김",
+                "nl": "Quick Look laat tijdelijke bestanden achter",
+                "tr": "Quick Look geçici dosyaları geride bırakıyor",
+                "vi": "Quick Look để lại tệp tạm",
+                "ar": "Quick Look يترك ملفات مؤقتة",
+                "ca": "Quick Look deixa fitxers temporals",
+                "el": "Το Quick Look αφήνει προσωρινά αρχεία",
+                "nb": "Quick Look etterlater midlertidige filer",
+                "zh-TW": "Quick Look 會留下暫存檔案",
+                "hi": "Quick Look अस्थायी फ़ाइलें छोड़ देता है"
+            },
+            "issues": ["410"]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.06",

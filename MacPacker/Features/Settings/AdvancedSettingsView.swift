@@ -10,6 +10,8 @@ import Foundation
 import SwiftUI
 import tb
 
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "cache")
+
 struct AdvancedSettingsView: View {
     private let applicationSupportDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
     
@@ -31,7 +33,7 @@ struct AdvancedSettingsView: View {
                     .disabled(applicationSupportDirectory == nil)
                     
                     Button {
-                        Task { await CacheCleaner().removeAll() }
+                        Task { await clearCache() }
                     } label: {
                         Text(.settingsClearCache)
                     }
@@ -57,7 +59,26 @@ struct AdvancedSettingsView: View {
         }
         .padding()
     }
-    
+
+    /// The app's cache, then Quick Look's. That one is in the extension's own
+    /// container, which the sandbox opens to the app only once the user grants
+    /// it: the first time, a panel asks; later, the stored grant is used.
+    private func clearCache() async {
+        await CacheCleaner().removeAll()
+        guard let home = FolderAccessStore.homeFolder, let app = Bundle.main.bundleIdentifier else { return }
+        let caches = home.appending(
+            path: "Library/Containers/\(app).QuickLookExtension/Data/Library/Caches", directoryHint: .isDirectory)
+        // Quick Look never ran: no panel for a folder that is not there.
+        guard FileManager.default.fileExists(atPath: caches.path) else {
+            log.info("No Quick Look cache to clear")
+            return
+        }
+        guard await FolderAccessStore.shared.ensureAccess(forFolder: caches) else { return }
+        await Sandbox.access(url: caches) {
+            await CacheCleaner().removeAll(in: caches.appending(component: "ta", directoryHint: .isDirectory))
+        }
+    }
+
     private func exportLogs() {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = "MacPacker-logs.ndjson"
