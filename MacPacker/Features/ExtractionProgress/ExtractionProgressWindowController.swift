@@ -18,7 +18,8 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 /// - shows itself as soon as a job is running (also for window-less flows
 ///   like the Finder extension's "Extract here" and "Compress to …"),
 /// - closes itself shortly after all jobs finished successfully,
-/// - stays open when a job failed so the error remains visible.
+/// - stays open when a job failed so the error remains visible, and after a
+///   test, whose verdict is what it was run for.
 @MainActor
 final class ExtractionProgressWindowController: NSWindowController, NSWindowDelegate {
     private let center: ExtractionProgressCenter
@@ -106,7 +107,11 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         if hasActive {
             // Named after what is running. The title bar shows no text; VoiceOver
             // and Mission Control read it.
-            let title = String(localized: center.runningKind == .compression ? .commonCompressing : .commonExtracting)
+            let title = switch center.runningKind {
+            case .compression: String(localized: .commonCompressing)
+            case .test: String(localized: .commonTesting)
+            case .extraction, nil: String(localized: .commonExtracting)
+            }
             if window?.title != title {
                 window?.title = title
             }
@@ -122,15 +127,11 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         // list may also be empty after clearFinished
         guard !jobs.isEmpty else { return }
 
-        let anyFailed = jobs.contains {
-            if case .failed = $0.state { return true }
-            return false
-        }
-        if anyFailed {
-            // an error must be seen — show even if the job died before the
-            // show delay, and never auto-close
+        if jobs.contains(where: \.hasOutcomeToShow) {
+            // an error must be seen, and so must a test's verdict — show even
+            // if the job ended before the show delay, and never auto-close
             if window?.isVisible != true {
-                presentWindow(reason: "failure")
+                presentWindow(reason: "outcome")
             }
             return
         }

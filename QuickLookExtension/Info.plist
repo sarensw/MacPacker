@@ -21,6 +21,8 @@
                 <string>cx.c3.cbz-archive</string>
                 <string>com.apple.self-extracting-archive</string>
                 <string>com.apple.xar-archive</string>
+                <string>com.facebook.tar-zst-archive</string>
+                <string>com.facebook.zst-archive</string>
 				<string>com.microsoft.cab</string>
                 <string>com.microsoft.lzx-archive</string>
                 <string>com.pkware.zip-archive</string>

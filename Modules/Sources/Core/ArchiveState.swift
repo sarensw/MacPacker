@@ -1009,6 +1009,13 @@ extension ArchiveState {
         canBeEdited && !isSaving && selectedItem.map { !isWithinOpenedArchive($0) } == true
     }
 
+    /// Whether there is an archive file to preview, extract or test from: the
+    /// start page and a new archive never saved have none, and a save is
+    /// rewriting it.
+    public var canReadArchive: Bool {
+        url != nil && root != nil && !isSaving
+    }
+
     /// Saves the pending changes.
     ///
     /// - For an archive loaded from disk, the changes are applied in place.
@@ -1891,6 +1898,61 @@ extension ArchiveState {
         }
     }
     
+    //
+    // MARK: Test
+    //
+
+    /// Tests the archive at `url`: every entry has to decompress and match its
+    /// checksum, and nothing is written. The File menu tests the window's own
+    /// archive, Finder's "Test Archive" a file no window has open — it is never
+    /// listed, so a compound is not decompressed to disk first. The verdict goes
+    /// to the progress center, and stays there until the window showing it is
+    /// closed.
+    @discardableResult
+    public func test(_ url: URL) -> Task<Void, Never> {
+        let jobId = progressCenter.begin(
+            kind: .test,
+            // not `name`: with a nested archive open, that is the nested one's
+            archiveName: splitSetName(for: url),
+            destination: nil,
+            itemCount: 0,
+            totalBytes: nil
+        )
+        let loader = ArchiveLoader(
+            archiveTypeDetector: archiveTypeDetector,
+            archiveEngineSelector: effectiveEngineSelector,
+            passwordResolver: makePasswordResolver(),
+            folderAccessResolver: makeFolderAccessResolver()
+        )
+        let cancelFlag = ExtractionCancelFlag()
+        let progress = makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
+        let task = Task {
+            do {
+                let result = try await loader.test(url: url, onProgress: progress)
+                // a notice, so that it is in the logs a user exports
+                log.notice("Archive tested", context: [
+                    "file": url.lastPathComponent,
+                    "damagedEntries": "\(result.damagedEntries.count)",
+                    "uncheckedEntries": "\(result.uncheckedEntries.count)",
+                    "archiveDamage": result.archiveDamage?.rawValue ?? "none"
+                ])
+                progressCenter.finish(jobId, testedAs: result)
+            } catch is CancellationError {
+                progressCenter.finish(jobId, .cancelled)
+            } catch ArchiveError.passwordCancelled {
+                progressCenter.finish(jobId, passwordCancelledOutcome())
+            } catch {
+                log.error("Archive test failed", context: ["file": url.lastPathComponent, "error": error.localizedDescription])
+                progressCenter.finish(jobId, .failed(error.localizedDescription))
+            }
+        }
+        progressCenter.setOnCancel(jobId) {
+            cancelFlag.cancel()
+            task.cancel()
+        }
+        return task
+    }
+
     /// Updates the quick look preview URL. The previewer we're using is the default systems
     /// preview that is called Quick Look and that can be reached via Space in Finder
     ///
