@@ -78,6 +78,8 @@ public final class ArchivePreviewViewController: NSViewController {
 
     deinit {
         scopedURL?.stopAccessingSecurityScopedResource()
+        // The preview is gone, so are its temporary files.
+        Task { @MainActor [state] in state?.clean() }
     }
 
     public override func loadView() {
@@ -141,6 +143,7 @@ public final class ArchivePreviewViewController: NSViewController {
         state.passwordProvider = { [weak self] request in
             await self?.requestPassword(request, generation: generation) ?? nil
         }
+        self.state?.clean()
         self.state = state
 
         state.open(url: url)

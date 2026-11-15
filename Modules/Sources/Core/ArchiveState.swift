@@ -349,7 +349,10 @@ extension ArchiveState {
         tempDirectories = []
     }
     
+    /// Closing the window or the Quick Look preview: a load still running
+    /// stops, so it can't bring its files back after they are gone.
     public func clean() {
+        cancelCurrentOperation()
         reset()
     }
 

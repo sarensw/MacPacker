@@ -25608,6 +25608,18 @@
         }
       }
     },
+    "settingsOpenQuickLookCache": {
+      "comment": "Button in Settings › Advanced, below \"Open cache directory\": shows in Finder the folder where Quick Look previews of archives keep their temporary files. Quick Look is the macOS feature, keep the name untranslated",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Quick Look cache"
+          }
+        }
+      }
+    },
     "settingsQuitOnLastWindowClosed": {
       "comment": "Quit the app when the last archive window is closed",
       "extractionState": "manual",

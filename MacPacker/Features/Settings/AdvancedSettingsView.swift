@@ -10,6 +10,8 @@ import Foundation
 import SwiftUI
 import tb
 
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "cache")
+
 struct AdvancedSettingsView: View {
     private let applicationSupportDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
     
@@ -29,9 +31,15 @@ struct AdvancedSettingsView: View {
                     }
                     .help(.settingsShowApplicationSupportFolder)
                     .disabled(applicationSupportDirectory == nil)
-                    
+
                     Button {
-                        Task { await CacheCleaner().removeAll() }
+                        Task { await openQuickLookCache() }
+                    } label: {
+                        Text(.settingsOpenQuickLookCache)
+                    }
+
+                    Button {
+                        Task { await clearCache() }
                     } label: {
                         Text(.settingsClearCache)
                     }
@@ -57,7 +65,41 @@ struct AdvancedSettingsView: View {
         }
         .padding()
     }
-    
+
+    /// The app's cache, then Quick Look's.
+    private func clearCache() async {
+        await CacheCleaner().removeAll()
+        guard let caches = await quickLookCaches() else { return }
+        await Sandbox.access(url: caches) {
+            await CacheCleaner().removeAll(in: caches.appending(component: "ta", directoryHint: .isDirectory))
+        }
+    }
+
+    private func openQuickLookCache() async {
+        guard let caches = await quickLookCaches() else { return }
+        // Finder is shown only what the app may read itself.
+        let shown = Sandbox.accessSync(url: caches) {
+            NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: caches.path)
+        }
+        log.info("Quick Look cache opened", context: ["shown": "\(shown)"])
+    }
+
+    /// Quick Look's `Caches`. It is in the extension's own container, which the
+    /// sandbox opens to the app only once the user grants it: the first time, a
+    /// panel asks; later, the stored grant is used. Nil when Quick Look never
+    /// ran or the user said no.
+    private func quickLookCaches() async -> URL? {
+        guard let home = FolderAccessStore.homeFolder, let app = Bundle.main.bundleIdentifier else { return nil }
+        let caches = home.appending(
+            path: "Library/Containers/\(app).QuickLookExtension/Data/Library/Caches", directoryHint: .isDirectory)
+        // Quick Look never ran: no panel for a folder that is not there.
+        guard FileManager.default.fileExists(atPath: caches.path) else {
+            log.info("No Quick Look cache")
+            return nil
+        }
+        return await FolderAccessStore.shared.ensureAccess(forFolder: caches) ? caches : nil
+    }
+
     private func exportLogs() {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = "MacPacker-logs.ndjson"
