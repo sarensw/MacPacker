@@ -34,6 +34,23 @@ extension AllCoreTests {
             #expect(state.error == nil)
         }
 
+        /// Preview, Extract and Test read the archive file, which only an opened
+        /// archive has: not the start page, not a new archive never saved.
+        @Test func onlyAnOpenedArchiveCanBeRead() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            #expect(!state.canReadArchive)
+
+            state.create(named: "New Archive")
+            #expect(state.root != nil)
+            #expect(!state.canReadArchive)
+
+            let opened = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            opened.open(url: Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+                .appendingPathComponent("defaultArchive.zip"))
+            try await opened.openTask?.value
+            #expect(opened.canReadArchive)
+        }
+
         @Test func open7zFile() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!

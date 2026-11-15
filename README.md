@@ -59,8 +59,8 @@ MacPacker reads and extracts 40+ formats across archives, disk images, and compr
 | --- | --- |
 | **Archives** | 7z · aar · apk · ar · arj · cab · cbr · cbz · chm · cpio · deb · exe · jar · lha · lzh · lzx · msi · pkg · rar · rpm · sea · sit · sitx · tar · xar · zip · zipx |
 | **Disk images** | dmg · fat · iso · ntfs · qcow2 · squashfs · vdi · vhd · vhdx · vmdk · wim |
-| **Compression** | bz2 · gz · lz4 · lzma · xz · z |
-| **Tarballs** | tar.gz (tgz) · tar.bz2 (tbz2) · tar.lzma (tlzma) · tar.xz (txz) · tar.lz4 · tar.z (taz) |
+| **Compression** | bz2 · gz · lz4 · lzma · xz · z · zst |
+| **Tarballs** | tar.gz (tgz) · tar.bz2 (tbz2) · tar.lzma (tlzma) · tar.xz (txz) · tar.lz4 · tar.z (taz) · tar.zst (tzst) |
 | **Split archives** | zip.001 · z01 · 7z.001 |
 
 See the [full format reference and per-format guides](https://macpacker.app/en/docs) on the website.
@@ -168,7 +168,8 @@ Pull requests may need rework or some wait time before they can be merged. Openi
 - [x] Wide format coverage (40+ formats)
 - [x] Create ZIP and 7z archives, with a password and split into volumes
 - [x] Edit ZIP and 7z archives: add, replace, and delete files
-- [ ] Integrity check and recovery (coming next)
+- [x] Integrity check: test an archive without extracting it
+- [ ] Recovery of damaged archives
 - [ ] Tree view of an archive's contents
 
 ## License

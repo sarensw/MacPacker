@@ -123,7 +123,7 @@ extension AllCoreTests {
             let selection = [archive, folder, other]
             let isDirectory: (URL) -> Bool = { $0 == folder }
 
-            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder] {
+            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .testArchive] {
                 #expect(item.items(from: selection, isDirectory: isDirectory) == [archive, other])
             }
             for item in [FinderMenuItem.addToArchive, .compressToZip, .compressToDatedZip, .compressForWindows,
@@ -138,9 +138,26 @@ extension AllCoreTests {
             #expect(FinderMenuItem.compressToDatedZip.archiveExtension == "zip")
             #expect(FinderMenuItem.compressForWindows.archiveExtension == "zip")
             #expect(FinderMenuItem.compressTo7z.archiveExtension == "7z")
-            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive] {
+            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .testArchive, .addToArchive] {
                 #expect(item.archiveExtension == nil)
             }
+        }
+
+        /// Test Archive is there for whoever wants it, as in Bandizip and
+        /// PeaZip: off until switched on, and then for the archives of a
+        /// selection, which are files. It asks the app to test them.
+        @Test func testArchiveIsOptInAndForFiles() throws {
+            #expect(!FinderMenuItem.testArchive.isEnabledByDefault)
+            #expect(FinderMenuItem.testArchive.applies(toFiles: 1, folders: 0))
+            #expect(!FinderMenuItem.testArchive.applies(toFiles: 0, folders: 2))
+            #expect(FinderMenuItem.testArchive.action == .test)
+
+            let request = AppUrl(
+                action: FinderMenuItem.testArchive.action,
+                files: [URL(fileURLWithPath: "/Users/me/a.zip")],
+                target: URL(fileURLWithPath: "/Users/me"))
+            let url = try #require(request.url(scheme: "app.macpacker"))
+            #expect(try AppUrl(url: url, scheme: "app.macpacker") == request)
         }
     }
 }

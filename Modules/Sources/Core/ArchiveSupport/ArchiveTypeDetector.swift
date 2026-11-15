@@ -52,6 +52,11 @@ final public class ArchiveTypeDetector: Sendable {
         self.catalog = catalog
     }
 
+    /// The format the catalog lists under `id`: one of a compound's components.
+    public func type(for id: String) -> ArchiveTypeDto? {
+        catalog.getType(for: id)
+    }
+
     public func getNameWithoutExtension(for url: URL) -> String {
         var name = url.lastPathComponent
         // `detectByExtension` matches case-insensitively, so a `MyArchive.ZIP`

@@ -40,11 +40,16 @@ extension NSWindow {
     /// the toolbar is empty until SwiftUI has populated it, so early calls simply
     /// find nothing.
     func publishAccessibilityIdentifiers() {
+        toolbarSearchField?.setAccessibilityIdentifier(AccessibilityIdentifier.searchField)
+    }
+
+    /// The field `.searchable` builds, through the toolbar item that backs it.
+    /// Nil until SwiftUI has populated the toolbar.
+    var toolbarSearchField: NSSearchField? {
         toolbar?.items
             .lazy
             .compactMap { $0 as? NSSearchToolbarItem }
             .first?
             .searchField
-            .setAccessibilityIdentifier(AccessibilityIdentifier.searchField)
     }
 }
