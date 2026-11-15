@@ -71,12 +71,14 @@ extension AllCoreTests {
             ("tar.lzma", "tar", 5, 2),
             ("tar.xz", "tar", 5, 2),
             ("tar.Z", "tar", 5, 2),
+            ("tar.zst", "tar", 5, 2),
             // comounds with one ending
             ("tbz2", "tar", 5, 2),
             ("tgz", "tar", 5, 2),
             ("tlzma", "tar", 5, 2),
             ("txz", "tar", 5, 2),
-            ("taz", "tar", 5, 2)
+            ("taz", "tar", 5, 2),
+            ("tzst", "tar", 5, 2)
         ])
         func testAll7zipEngine(arg: (String, String, Int, Int)) async throws {
             let ext = arg.0
@@ -120,17 +122,38 @@ extension AllCoreTests {
             #expect(names == arg.1)
         }
         
+        /// A deb's payload opens as the tar it is, whatever compresses it.
+        /// Ubuntu builds its debs with zstd since 21.10.
+        @Test(arguments: [
+            ("defaultarchive-dpkg.deb", "data.tar.xz"),
+            ("defaultarchive-dpkg-zstd.deb", "data.tar.zst")
+        ])
+        func aDebsPayloadOpens(arg: (String, String)) async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let url = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+                .appendingPathComponent(arg.0)
+
+            state.open(url: url)
+            try await state.openTask?.value
+            let payload = try #require(state.root?.children?.compactMap { state.entries[$0] }.first { $0.name == arg.1 })
+            try await state.openAsync(item: payload)
+
+            let names = payload.children?.compactMap { state.entries[$0]?.name }.sorted()
+            #expect(names == ["folder", "hello world.txt"])
+        }
+
         /// An entry the archive gives no name lists and extracts under the name
         /// 7-Zip's own client gives it, not as "unknown": the archive's, less the
-        /// compression extension. bzip2, xz, lzma and compress store no name, and
-        /// gzip only optionally. An rpm's payload is such a stream, one level in,
-        /// so it is named after the payload the rpm describes.
+        /// compression extension. bzip2, xz, lzma, zstd and compress store no
+        /// name, and gzip only optionally. An rpm's payload is such a stream, one
+        /// level in, so it is named after the payload the rpm describes.
         @Test(arguments: [
             ("compressed/hello world.txt.gz", "hello world.txt"),
             ("compressed/hello world.txt.bz2", "hello world.txt"),
             ("compressed/hello world.txt.xz", "hello world.txt"),
             ("compressed/hello world.txt.lzma", "hello world.txt"),
             ("compressed/hello world.txt.Z", "hello world.txt"),
+            ("compressed/hello world.txt.zst", "hello world.txt"),
             ("defaultArchives/defaultArchive.rpm", "defaultArchive-1.0-1.aarch64.cpio")
         ])
         func namelessEntryIsNamedAfterTheArchive(arg: (String, String)) async throws {
@@ -149,6 +172,31 @@ extension AllCoreTests {
             try await Archive7ZipEngine().extract(url, to: destination, passwordResolver: { _ in nil })
             let written = try FileManager.default.contentsOfDirectory(atPath: destination.path)
             #expect(written == [arg.1])
+        }
+
+        /// "Extract archive" on a zstd tarball writes what the tar holds.
+        @Test(arguments: ["tar.zst", "tzst"])
+        func aZstandardTarballExtracts(ext: String) async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let url = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+                .appendingPathComponent("defaultArchive.\(ext)")
+            state.open(url: url)
+            try await state.openTask?.value
+
+            let destination = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: destination) }
+            await withCheckedContinuation { continuation in
+                state.onStatusChange = { status in
+                    if status == .done { continuation.resume() }
+                }
+                state.extract(to: destination, smart: false)
+            }
+            state.onStatusChange = nil
+
+            #expect(state.error == nil)
+            let written = try FileManager.default.subpathsOfDirectory(atPath: destination.path).sorted()
+            #expect(written == ["folder", "folder/NestedArchive.zip", "folder/README.md", "hello world.txt"])
         }
 
         /// `tar -C dir .` stores every entry under "./", and "./" itself as a
