@@ -130,10 +130,16 @@ struct ExtractionProgressRowView: View {
     /// no close button of its own for it. `nil` in the progress window.
     var onDismiss: (() -> Void)? = nil
 
+    /// A test writes nothing, so it has no byte counts and no throughput to
+    /// open up to: its bar, then its verdict, is all there is.
+    private var canExpand: Bool { job.hasEngineProgress && job.kind != .test }
+
+    private var showsChart: Bool { isExpanded && canExpand }
+
     var body: some View {
         // collapsed: everything vertically centered on the badge line;
         // expanded: header on line with the controls, details fade in
-        HStack(alignment: isExpanded ? .top : .center, spacing: 12) {
+        HStack(alignment: showsChart ? .top : .center, spacing: 12) {
             typeBadge
 
             VStack(alignment: .leading, spacing: 6) {
@@ -149,14 +155,14 @@ struct ExtractionProgressRowView: View {
 
                     trailingControl
 
-                    if job.hasEngineProgress {
+                    if canExpand {
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                if isExpanded, job.hasEngineProgress {
+                if showsChart {
                     Group {
                         ExtractionSpeedChartView(
                             samples: job.speedSamples,
@@ -182,9 +188,11 @@ struct ExtractionProgressRowView: View {
                         .font(.caption)
                     }
                     .modifier(FadeInOnAppear())
-                } else if !isExpanded {
+                } else {
                     HStack(spacing: 10) {
-                        if case .failed(let message) = job.state {
+                        if let result = job.testResult {
+                            verdict(result)
+                        } else if case .failed(let message) = job.state {
                             Text(verbatim: message)
                                 .font(.caption)
                                 .foregroundStyle(.red)
@@ -201,13 +209,73 @@ struct ExtractionProgressRowView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            if job.hasEngineProgress {
+            if canExpand {
                 onToggleExpanded()
             }
         }
     }
 
     // MARK: Pieces
+
+    /// What a test found: nothing, or what is damaged — the entries, or the
+    /// archive itself when it is broken where no entry shows it — and what
+    /// can't be checked.
+    @ViewBuilder
+    private func verdict(_ result: ArchiveTestResult) -> some View {
+        if result.isIntact {
+            Text(.archiveTestNoErrorsFound)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        } else {
+            VStack(alignment: .leading, spacing: 2) {
+                if result.isDamaged {
+                    names(
+                        result.damagedEntries.isEmpty ? [job.archiveName] : result.damagedEntries,
+                        listed: { .archiveTestDamaged($0) },
+                        counted: { .archiveTestDamagedFileCount($0) })
+                    .foregroundStyle(.red)
+
+                    // Why, where the archive says so itself: its files may all read,
+                    // and "Damaged" alone would look like a mistake.
+                    switch result.archiveDamage {
+                    case .endsEarly: Text(.archiveTestEndsEarly)
+                    case .checksum: Text(.archiveTestChecksumMismatch)
+                    case .other, nil: EmptyView()
+                    }
+                }
+                if !result.uncheckedEntries.isEmpty {
+                    // No damage: nothing here decodes them, to tell either way.
+                    names(
+                        result.uncheckedEntries,
+                        listed: { .archiveTestUnchecked($0) },
+                        counted: { .archiveTestUncheckedFileCount($0) })
+                    .foregroundStyle(.orange)
+                    Text(.archiveTestUnsupportedMethod)
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    /// `names` while the whole list fits on the line, else how many.
+    private func names(
+        _ names: [String],
+        listed: (String) -> LocalizedStringResource,
+        counted: (Int) -> LocalizedStringResource
+    ) -> some View {
+        ViewThatFits(in: .horizontal) {
+            // ponytail: past 20 names they never fit; spares measuring thousands
+            if names.count <= 20 {
+                Text(listed(names.joined(separator: ", ")))
+            }
+            if names.count > 1 {
+                Text(counted(names.count))
+            }
+        }
+        .lineLimit(1)
+        .truncationMode(.tail)
+    }
 
     private var typeBadge: some View {
         Text(verbatim: String((job.archiveName as NSString).pathExtension.uppercased().prefix(4)))
@@ -219,7 +287,7 @@ struct ExtractionProgressRowView: View {
 
     @ViewBuilder
     private var bytesText: some View {
-        if let total = job.effectiveTotalBytes {
+        if job.kind != .test, let total = job.effectiveTotalBytes {
             Text(verbatim: "\(formatBytes(job.completedBytes)) / \(formatBytes(total))")
                 .font(.callout.weight(.semibold))
                 .foregroundStyle(.secondary)
@@ -255,7 +323,8 @@ struct ExtractionProgressRowView: View {
                 .foregroundStyle(.green)
         case .failed:
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.red)
+                // orange where a test found no damage, only files it can't check
+                .foregroundStyle(job.testResult?.isDamaged == false ? .orange : .red)
             if let onDismiss {
                 Button(action: onDismiss) {
                     Image(systemName: "xmark.circle.fill")

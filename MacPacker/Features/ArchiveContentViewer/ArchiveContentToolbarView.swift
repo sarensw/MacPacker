@@ -108,7 +108,8 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .help(.archiveBrowseQuickLook)
-            
+            .disabled(!archiveState.canReadArchive || archiveState.selectedItems.isEmpty)
+
             Button {
                 isExportingItem.toggle()
             } label: {
@@ -119,6 +120,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .help(.commonExtractSelected)
+            .disabled(!archiveState.canReadArchive || archiveState.selectedItems.isEmpty)
             .fileImporter(
                 isPresented: $isExportingItem,
                 allowedContentTypes: [.folder],
@@ -143,6 +145,7 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 }
             }
             .help(.commonExtractArchive)
+            .disabled(!archiveState.canReadArchive)
             .fileImporter(
                 isPresented: $isExportingAll,
                 allowedContentTypes: [.folder],
@@ -158,6 +161,20 @@ struct ArchiveContentToolbarView: ToolbarContent {
             
             Spacer()
             
+            Button {
+                if let url = archiveState.url { archiveState.test(url) }
+            } label: {
+                Label {
+                    Text(.commonTestArchive)
+                } icon: {
+                    Image(systemName: "checkmark.seal")
+                }
+            }
+            .help(.commonTestArchive)
+            .disabled(!archiveState.canReadArchive)
+
+            Spacer()
+
             Menu {
                 Button {
                     openQuickCompressWindow()

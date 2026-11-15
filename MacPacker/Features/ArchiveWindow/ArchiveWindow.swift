@@ -77,6 +77,12 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
             .removeDuplicates()
             .sink { [weak window] edited in window?.isDocumentEdited = edited }
             .store(in: &cancellables)
+
+        // read once the change is made: objectWillChange comes before it
+        archiveState.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.enableSearchField() }
+            .store(in: &cancellables)
     }
     
     required init?(coder: NSCoder) {
@@ -88,6 +94,14 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     /// reliably does; the call is idempotent and cheap.
     func windowDidUpdate(_ notification: Notification) {
         (notification.object as? NSWindow)?.publishAccessibilityIdentifiers()
+        enableSearchField()
+    }
+
+    /// Search filters what the window lists: on the start page there is
+    /// nothing. `.searchable` takes no `.disabled` of its own; one around it
+    /// would take the start page with it.
+    private func enableSearchField() {
+        window?.toolbarSearchField?.isEnabled = archiveState.root != nil
     }
 
     /// A single shared entry, not one per window: rewritten by whichever window the

@@ -470,6 +470,7 @@ let package = Package(
                 .copy("TestArchives/password"),
                 .copy("TestArchives/compressed"),
                 .copy("TestArchives/encodings"),
+                .copy("TestArchives/damaged"),
                 // One app bundle per archiver, so extraction can be checked against
                 // files nobody here tailored to it.
                 .copy("TestArchives/archivers")
