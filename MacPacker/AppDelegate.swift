@@ -125,7 +125,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 Task {
                     if finderLaunchIsOver {
                         log.notice("Launched for a refused Finder action — quitting")
-                        NSApp.terminate(nil)
+                        quit()
                     }
                 }
                 return
@@ -215,8 +215,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
             if finderLaunchIsOver {
                 log.notice("Launched for a Finder action, which is done — quitting")
-                NSApp.terminate(nil)
+                quit()
             }
+        }
+    }
+
+    /// Quits from the run loop, not from the Task that asks for it: called in
+    /// a Task on the main actor, `terminate(_:)` waits in that Task's job,
+    /// where nothing else on the main actor starts. Quit Anyway's wait for a
+    /// compression to stop would never end there (#413).
+    private func quit() {
+        MainRunLoop.perform {
+            // An archive opened since the check makes this a regular launch.
+            guard self.finderLaunchIsOver else { return }
+            NSApp.terminate(nil)
         }
     }
     
@@ -499,9 +511,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private func quitOnceCacheIsCleared() {
         log.notice("Quitting — clearing cache")
         NSApp.hide(nil)
-        Task {
+        // Not a Task on the main actor: when the quit was asked for from one,
+        // the main actor is busy waiting for this reply, and the app stayed
+        // hidden but running, with every archive opened in it left loading
+        // (#413). Cleared off the main actor, answered through the run loop.
+        Task.detached {
             await CacheCleaner().removeAll()
-            NSApp.reply(toApplicationShouldTerminate: true)
+            MainRunLoop.perform { NSApp.reply(toApplicationShouldTerminate: true) }
         }
     }
     
