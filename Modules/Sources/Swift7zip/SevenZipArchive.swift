@@ -76,6 +76,26 @@ public class SevenZipArchive {
         sz_format_name(handle.ref).map { String(cString: $0) }
     }
 
+    /// Every property 7-Zip reports for the archive as a whole, the outermost
+    /// level first: what `7zz l -slt` prints above the entries, and the error
+    /// and warning flags of a damaged one. A comment, a stored name or a path
+    /// comes as its length only.
+    public var archiveProperties: [SevenZipArchiveProperty] {
+        guard let raw = sz_archive_properties(handle.ref) else { return [] }
+        defer { free(raw) }
+        return String(cString: raw).split(separator: "\n").compactMap { line in
+            let fields = line.split(separator: "\t", maxSplits: 3, omittingEmptySubsequences: false)
+            guard fields.count == 4, let level = Int(fields[0]), let id = UInt32(fields[1]) else { return nil }
+            return SevenZipArchiveProperty(level: level, id: id, name: String(fields[2]), value: String(fields[3]))
+        }
+    }
+
+    /// How many items the archive holds, the AppleDouble sidecars and alternate
+    /// streams that ``entries`` leaves out included.
+    public var storedItemCount: Int {
+        Int(Swift.max(0, sz_entry_count(handle.ref)))
+    }
+
     /// How the entry at `index` is compressed, as 7-Zip names it — `Deflate`,
     /// `LZMA2:22`, `PPMD:o6:mem24`, `Copy`, `Store` — or `nil` when the archive
     /// does not say.

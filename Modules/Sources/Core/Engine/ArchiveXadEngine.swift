@@ -7,6 +7,9 @@
 
 import Foundation
 import XADMaster
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "engine")
 
 /// The one delegate XADArchive allows, doing both jobs that are needed of it.
 ///
@@ -528,12 +531,20 @@ final actor ArchiveXadEngine: ArchiveEngine {
         passwordResolver: @escaping ArchivePasswordResolver,
         delegate: XADArchiveDelegate
     ) async throws -> (XADArchiveWithPasswordSupport, ArchiveNameEncoding?) {
+        // as the 7-Zip engine logs its opens (#413)
+        log.notice("XAD opening", context: ["file": url.lastPathComponent])
+        let start = Date()
         let archive = try await XADArchiveWithPasswordSupport.open(
             url: url,
             attempts: ArchivePasswordAttempts(url: url, resolver: passwordResolver),
             delegate: delegate
         )
-        return (archive, try await archive.readNames(chosen: nameEncoding))
+        let names = try await archive.readNames(chosen: nameEncoding)
+        log.notice("XAD opened", context: [
+            "file": url.lastPathComponent,
+            "seconds": String(format: "%.3f", Date().timeIntervalSince(start))
+        ])
+        return (archive, names)
     }
 
     func loadArchive(

@@ -13,8 +13,11 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "cache")
 
 struct AdvancedSettingsView: View {
+    @EnvironmentObject private var appState: AppState
     private let applicationSupportDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
-    
+    /// The archive the analysis sheet is showing, if it is up.
+    @State private var analyzedArchive: URL?
+
     var body: some View {
         VStack {
             HStack(alignment: .top) {
@@ -59,11 +62,38 @@ struct AdvancedSettingsView: View {
                     } label: {
                         Text(.settingsExportLogs)
                     }
+
+                    Button {
+                        analyzedArchive = chooseArchiveToAnalyze()
+                    } label: {
+                        Text(.settingsAnalyzeArchive)
+                    }
                 }
                 .frame(width: 240, alignment: .leading)
             }
         }
         .padding()
+        .sheet(isPresented: Binding(
+            get: { analyzedArchive != nil },
+            set: { if !$0 { analyzedArchive = nil } }
+        )) {
+            if let analyzedArchive {
+                ArchiveAnalysisView(
+                    url: analyzedArchive,
+                    analyzer: ArchiveAnalyzer(catalog: appState.catalog, engineSelector: appState.engineSelector))
+            }
+        }
+    }
+
+    /// The archive to analyze. Any file can be picked: one MacPacker does not
+    /// take for an archive is what a report is most needed for.
+    private func chooseArchiveToAnalyze() -> URL? {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK else { return nil }
+        return panel.url
     }
 
     /// The app's cache, then Quick Look's.

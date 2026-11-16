@@ -274,6 +274,34 @@
             "issues": ["417"]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Analyze an archive for a bug report",
+                "zh-Hans": "分析压缩包以提交错误报告",
+                "fr": "Analyser une archive pour signaler un bug",
+                "de": "Archiv für einen Fehlerbericht analysieren",
+                "it": "Analizzare un archivio per segnalare un bug",
+                "ja": "バグ報告用にアーカイブを分析",
+                "fa": "تحلیل آرشیو برای گزارش خطا",
+                "pl": "Analiza archiwum do zgłoszenia błędu",
+                "pt-BR": "Analisar um arquivo compactado para relatar um bug",
+                "ru": "Анализ архива для отчёта об ошибке",
+                "uk": "Аналіз архіву для звіту про помилку",
+                "es-MX": "Analizar un archivo comprimido para reportar un error",
+                "ko": "버그 신고를 위한 압축 파일 분석",
+                "nl": "Archief analyseren voor een bugmelding",
+                "tr": "Hata raporu için arşivi analiz etme",
+                "vi": "Phân tích tệp nén để báo lỗi",
+                "ar": "تحليل الأرشيف للإبلاغ عن خطأ",
+                "ca": "Analitza un arxiu per a un informe d’error",
+                "el": "Ανάλυση συμπιεσμένου αρχείου για αναφορά σφάλματος",
+                "nb": "Analyser et arkiv for en feilrapport",
+                "zh-TW": "分析壓縮檔以回報錯誤",
+                "hi": "बग रिपोर्ट के लिए आर्काइव का विश्लेषण करें"
+            },
+            "issues": []
+          },
+          {
             "type": "fix",
             "title": {
                 "en": "Missing recent archive crashes the app",

@@ -300,6 +300,11 @@ final actor Archive7ZipEngine: ArchiveEngine {
         attempts: ArchivePasswordAttempts,
         nameEncoding: ArchiveNameEncoding?
     ) async throws -> (SevenZipArchive, ArchiveNameEncoding?) {
+        // Every open is logged before 7-Zip reads anything, and once the names
+        // are read: a hang between the two is in 7-Zip, or in a password prompt
+        // that would have its own line (#413).
+        log.notice("7-Zip opening", context: ["file": url.lastPathComponent])
+        let start = Date()
         var password: String?
         let archive: SevenZipArchive = try await {
             while true {
@@ -317,6 +322,13 @@ final actor Archive7ZipEngine: ArchiveEngine {
         }
         // blocking work, for as many names as the archive has
         let encoding = try await runBlocking { readNames(of: archive, chosen: nameEncoding) }
+        log.notice("7-Zip opened", context: [
+            "file": url.lastPathComponent,
+            "format": archive.formatName ?? "unknown",
+            "items": "\(archive.storedItemCount)",
+            "password": "\(archive.hasPassword)",
+            "seconds": String(format: "%.3f", Date().timeIntervalSince(start))
+        ])
         return (archive, encoding)
     }
 

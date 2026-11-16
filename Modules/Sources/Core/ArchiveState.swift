@@ -242,7 +242,7 @@ extension ArchiveState {
             }
 
             // if not cached, ask the user to provide the password
-            passwordLog.info("Password requested", context: [
+            passwordLog.notice("Password requested", context: [
                 "archive": request.url.lastPathComponent,
                 "attempt": String(request.attempt)
             ])
@@ -369,6 +369,13 @@ extension ArchiveState {
     /// Cancels the current operation which can be either loading the archive or extracting
     /// anything from the archive
     public func cancelCurrentOperation() {
+        // also on every window close, when nothing is running
+        if isBusy {
+            log.notice("Stopping the running operation", context: [
+                "file": url?.lastPathComponent ?? "-",
+                "adding": "\(addCancel != nil)"
+            ])
+        }
         // Files being read for an add: stop reading, and leave the archive as
         // it is. Below is for a load, and ends in a reset.
         if let addCancel {
@@ -1206,8 +1213,11 @@ extension ArchiveState {
         self.openedFile = FileStamp(url)
         self.name = splitSetName(for: url)
         self.ext = url.pathExtension
-        log.info("Opening archive", context: ["file": url.lastPathComponent, "ext": url.pathExtension])
-        
+        // The steps of an open are notices, the level macOS keeps for the logs
+        // a user exports: where they stop is where a load hung (#413).
+        log.notice("Opening archive", context: ["file": url.lastPathComponent, "ext": url.pathExtension])
+        let start = Date()
+
         openTask = Task {
             do {
                 let passwordResolver = makePasswordResolver()
@@ -1301,7 +1311,8 @@ extension ArchiveState {
                     "file": url.lastPathComponent,
                     "entries": "\(self.entries.count)",
                     "topLevelItems": "\(self.childItems?.count ?? 0)",
-                    "hasTree": "\(loaderResult.hasTree)"
+                    "hasTree": "\(loaderResult.hasTree)",
+                    "seconds": String(format: "%.3f", Date().timeIntervalSince(start))
                 ])
 
                 updateStatusText(nil)
@@ -1314,6 +1325,11 @@ extension ArchiveState {
                 
                 try Task.checkCancellation()
             } catch is CancellationError {
+                log.notice("Archive load stopped", context: [
+                    "file": url.lastPathComponent,
+                    "superseded": "\(generation != self.openGeneration)",
+                    "seconds": String(format: "%.3f", Date().timeIntervalSince(start))
+                ])
                 // Cancelled because a newer open replaced this one: that open now
                 // owns the state, so leave it alone.
                 guard generation == self.openGeneration else { return }
