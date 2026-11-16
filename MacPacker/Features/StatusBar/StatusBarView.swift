@@ -65,6 +65,14 @@ struct StatusBarView: View {
                     .controlSize(.small)
                     
                     Button {
+                        openURL(Constants.discordURL)
+                    } label: {
+                        Image("discord")
+                        Text(.feedbackJoin)
+                    }
+                    .controlSize(.small)
+                    
+                    Button {
                         guard let translateURL = URL(string: Constants.translateLink) else {
                             fatalError("Expected a valid URL")
                         }

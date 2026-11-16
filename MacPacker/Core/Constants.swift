@@ -17,6 +17,7 @@ class Constants {
     static let gitHubLink: String = "https://github.com/sarensw/MacPacker"
     static let translateLink: String = "https://poeditor.com/join/project/J2Qq2SUzYr"
     static let twitterLink: String = "https://x.com/macpackerapp"
+    static let discordURL: URL = URL(string: "https://discord.gg/dTawuWEvBx")!
     
     static let homepageURL: URL = URL(string: "https://macpacker.app")!
     /// Docs, opened from the start page of an empty window. Tagged so Plausible

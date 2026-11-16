@@ -17730,6 +17730,18 @@
         }
       }
     },
+    "feedbackJoin": {
+      "comment": "Status bar button next to the Discord logo, on the start page of an empty window. Opens the invite to MacPacker's Discord server: join as in joining a community.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join"
+          }
+        }
+      }
+    },
     "feedbackReview": {
       "comment": "A button label that translates to \"Review\" in different languages.",
       "extractionState": "manual",
@@ -27410,6 +27422,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "即將推出"
+          }
+        }
+      }
+    },
+    "welcomeJoinDiscord": {
+      "comment": "Button in the welcome window's header that opens the invite to MacPacker's Discord server. Discord is a brand name: keep it as is.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join us on Discord"
           }
         }
       }
