@@ -29,14 +29,6 @@ struct WelcomeView: View {
                         .font(.title3)
                         .foregroundStyle(.secondary)
                 }
-                Spacer()
-                Button {
-                    openURL(Constants.discordURL)
-                } label: {
-                    Image("discord")
-                    Text(.welcomeJoinDiscord)
-                }
-                .controlSize(.large)
             }
             .padding(.top, 4)
             .padding(.horizontal, 24)

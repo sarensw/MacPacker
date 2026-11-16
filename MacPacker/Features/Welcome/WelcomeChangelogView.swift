@@ -91,6 +91,11 @@ struct WelcomeChangelogView: View {
                 WelcomeAllChangesView(versions: versions)
             }
 
+            Link(destination: Constants.discordURL) {
+                WelcomeArrowLabel(.welcomeJoinDiscord)
+            }
+            .padding(.top, 8)
+
             Spacer(minLength: 16)
 
             if !comingNext.isEmpty {

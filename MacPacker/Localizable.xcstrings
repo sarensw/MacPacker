@@ -27427,7 +27427,7 @@
       }
     },
     "welcomeJoinDiscord": {
-      "comment": "Button in the welcome window's header that opens the invite to MacPacker's Discord server. Discord is a brand name: keep it as is.",
+      "comment": "Link below the welcome window's release highlights, under \"View all changes\", that opens the invite to MacPacker's Discord server. Discord is a brand name: keep it as is.",
       "extractionState": "manual",
       "localizations": {
         "en": {
