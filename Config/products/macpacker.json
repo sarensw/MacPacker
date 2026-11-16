@@ -416,6 +416,34 @@
             "issues": ["410"]
           },
           {
+            "type": "feat",
+            "title": {
+                "en": "Turn off the Services menu entries from Settings",
+                "zh-Hans": "在设置中关闭“服务”菜单项",
+                "fr": "Désactiver les entrées du menu Services dans Réglages",
+                "de": "Einträge im Menü „Dienste“ in den Einstellungen abschalten",
+                "it": "Disattivare le voci del menu Servizi da Impostazioni",
+                "ja": "設定から「サービス」メニューの項目をオフにする",
+                "fa": "خاموش کردن موارد منوی سرویس‌ها از تنظیمات",
+                "pl": "Wyłączanie pozycji menu Usługi w Ustawieniach",
+                "pt-BR": "Desativar os itens do menu Serviços nos Ajustes",
+                "ru": "Отключение пунктов меню «Службы» в настройках",
+                "uk": "Вимкнення пунктів меню «Служби» в параметрах",
+                "es-MX": "Desactivar los elementos del menú Servicios en Ajustes",
+                "ko": "설정에서 서비스 메뉴 항목 끄기",
+                "nl": "Onderdelen van het menu Voorzieningen uitzetten via Instellingen",
+                "tr": "Servisler menüsü öğelerini Ayarlar'dan kapatma",
+                "vi": "Tắt các mục menu Dịch vụ trong Cài đặt",
+                "ar": "إيقاف عناصر قائمة الخدمات من الإعدادات",
+                "ca": "Desactiva les entrades del menú Serveis des de Configuració",
+                "el": "Απενεργοποίηση στοιχείων του μενού Υπηρεσίες από τις Ρυθμίσεις",
+                "nb": "Slå av oppføringene i Tjenester-menyen fra Innstillinger",
+                "zh-TW": "在設定中關閉「服務」選單項目",
+                "hi": "सेटिंग्स से सेवाएँ मेनू की प्रविष्टियाँ बंद करें"
+            },
+            "issues": ["415"]
+          },
+          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.06",
