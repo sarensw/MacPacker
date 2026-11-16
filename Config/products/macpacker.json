@@ -416,34 +416,6 @@
             "issues": ["410"]
           },
           {
-            "type": "fix",
-            "title": {
-                "en": "App hangs on quit, archives stay empty",
-                "zh-Hans": "退出时应用卡住，压缩包显示为空",
-                "fr": "L’app se fige en quittant, les archives restent vides",
-                "de": "App hängt beim Beenden, Archive bleiben leer",
-                "it": "L’app si blocca all’uscita, gli archivi restano vuoti",
-                "ja": "終了時にアプリが固まり、アーカイブが空のまま",
-                "fa": "برنامه هنگام خروج گیر می‌کند و آرشیوها خالی می‌مانند",
-                "pl": "Aplikacja zawiesza się przy zamykaniu, archiwa są puste",
-                "pt-BR": "O app trava ao sair e os arquivos ficam vazios",
-                "ru": "Приложение зависает при выходе, архивы пустые",
-                "uk": "Застосунок зависає під час виходу, архіви порожні",
-                "es-MX": "La app se congela al salir y los archivos quedan vacíos",
-                "ko": "종료 시 앱이 멈추고 압축 파일이 비어 보임",
-                "nl": "App loopt vast bij stoppen, archieven blijven leeg",
-                "tr": "Uygulama çıkarken donuyor, arşivler boş kalıyor",
-                "vi": "Ứng dụng treo khi thoát, tệp nén hiển thị trống",
-                "ar": "يتجمّد التطبيق عند الإنهاء وتبقى الأرشيفات فارغة",
-                "ca": "L’app es penja en sortir i els arxius queden buits",
-                "el": "Η εφαρμογή κολλάει στην έξοδο, τα αρχεία μένουν κενά",
-                "nb": "Appen henger ved avslutning, arkiver forblir tomme",
-                "zh-TW": "結束時 App 卡住，壓縮檔顯示為空",
-                "hi": "बंद करते समय ऐप अटक जाता है, आर्काइव खाली दिखते हैं"
-            },
-            "issues": ["413"]
-          },
-          {
             "type": "core",
             "title": {
                 "en": "Update 7-Zip to v26.06",
