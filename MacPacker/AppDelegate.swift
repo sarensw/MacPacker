@@ -225,7 +225,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     /// where nothing else on the main actor starts. Quit Anyway's wait for a
     /// compression to stop would never end there (#413).
     private func quit() {
-        MainRunLoop.perform { NSApp.terminate(nil) }
+        MainRunLoop.perform {
+            // An archive opened since the check makes this a regular launch.
+            guard self.finderLaunchIsOver else { return }
+            NSApp.terminate(nil)
+        }
     }
     
     public func applicationDidFinishLaunching(_ notification: Notification) {
