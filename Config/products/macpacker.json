@@ -299,7 +299,7 @@
                 "zh-TW": "分析壓縮檔以回報錯誤",
                 "hi": "बग रिपोर्ट के लिए आर्काइव का विश्लेषण करें"
             },
-            "issues": []
+            "issues": ["416"]
           },
           {
             "type": "fix",
@@ -1986,7 +1986,7 @@
               "ko": "폴더가 포함된 압축 파일의 전체 크기 수정",
               "nl": "Correcte totale grootte voor archieven met mappen"
             },
-            "issues": []
+            "issues": ["416"]
           },
           {
             "type": "fix",
@@ -2408,7 +2408,7 @@
               "es-MX": "Comprime archivos y carpetas a zip directo desde el Finder",
               "ko": "Finder에서 바로 파일과 폴더를 zip으로 압축"
             },
-            "issues": []
+            "issues": ["416"]
           },
           {
             "type": "feat",
@@ -2427,7 +2427,7 @@
               "es-MX": "Abre un archivo comprimido y ve directo a un archivo dentro de él mediante parámetros de lanzamiento",
               "ko": "실행 매개변수로 아카이브를 열고 그 안의 파일로 바로 이동"
             },
-            "issues": []
+            "issues": ["416"]
           },
           {
             "type": "fix",
@@ -2493,7 +2493,7 @@
               "es-MX": "\"Extraer archivo\" no producía archivos para archivos zip/7z",
               "ko": "zip/7z 아카이브에서 \"아카이브 추출\"이 파일을 생성하지 않던 문제 수정"
             },
-            "issues": []
+            "issues": ["416"]
           },
           {
             "type": "fix",
@@ -2696,7 +2696,7 @@
               "es-MX": "Actualizaciones de las traducciones al chino y polaco",
               "ko": "중국어 및 폴란드어 번역 업데이트"
             },
-            "issues": []
+            "issues": ["416"]
           }
         ]
       },
