@@ -15,6 +15,10 @@ struct IntegrationSettingsView: View {
 
     @State var isFinderSyncEnabled: Bool = false
 
+    /// System Settings ▸ Keyboard ▸ Keyboard Shortcuts ▸ Services, where the
+    /// entries MacPacker adds to Finder's Services menu are turned off (#342).
+    private static let servicesSettings = URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Services")!
+
     var body: some View {
         VStack(spacing: 8) {
             HStack(alignment: .top) {
@@ -94,6 +98,29 @@ struct IntegrationSettingsView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .padding(.leading, 8)
+                }
+                .frame(width: 240, alignment: .leading)
+            }
+
+            Divider()
+
+            HStack(alignment: .top) {
+                Text(.settingsServicesMenu)
+                    .frame(width: 160, alignment: .trailing)
+
+                // macOS keeps whether a service shows, per user, out of the
+                // sandbox's reach: the app can only lead there.
+                VStack(alignment: .leading, spacing: 4) {
+                    Button {
+                        NSWorkspace.shared.open(Self.servicesSettings)
+                    } label: {
+                        Text(.settingsManageInSystemSettings)
+                    }
+
+                    Text(.settingsServicesMenuHint)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(width: 240, alignment: .leading)
             }

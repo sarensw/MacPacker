@@ -25896,6 +25896,30 @@
         }
       }
     },
+    "settingsServicesMenu": {
+      "comment": "Settings label for MacPacker's entries in Finder's Services menu, which macOS also lists at the end of Finder's context menu",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Services Menu"
+          }
+        }
+      }
+    },
+    "settingsServicesMenuHint": {
+      "comment": "Hint under the Services Menu setting: the three MacPacker entries at the end of Finder's context menu come from the Services menu, and are turned off in System Settings, which the button above opens",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract, Compress and Create archive at the end of Finder's context menu. Uncheck them under Files and Folders to hide them."
+          }
+        }
+      }
+    },
     "settingsShowApplicationSupportFolder": {
       "comment": "Help text shown in a tooltip when hovering the \"Open cache directory\" button",
       "extractionState": "manual",
