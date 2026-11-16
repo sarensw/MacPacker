@@ -9622,7 +9622,7 @@
       }
     },
     "commonDisabled": {
-      "comment": "The text displayed in the \"Enabled\" / \"Disabled\" toggle for the file provider extension.",
+      "comment": "Status in Settings > Extensions: MacPacker's Finder extension, or its Services entries, are turned off.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
@@ -9898,7 +9898,7 @@
       }
     },
     "commonEnabled": {
-      "comment": "A label indicating that the file provider extension is enabled.",
+      "comment": "Status in Settings > Extensions: MacPacker's Finder extension, or its Services entries, are turned on.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
@@ -9928,7 +9928,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "enabled"
+            "value": "Enabled"
           }
         },
         "es-mx": {
@@ -23676,140 +23676,26 @@
         }
       }
     },
-    "settingsFileProviderExtension": {
-      "comment": "The title of a section in the settings view related to the file provider extension.",
+    "settingsFinderExtension": {
+      "comment": "Settings label of the section about MacPacker's Finder extension, which adds the MacPacker menu and toolbar button to Finder. \"Finder\" stays untranslated.",
       "extractionState": "manual",
       "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "امتداد موفر الملفات"
-          }
-        },
-        "ca": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extensió del proveïdor d'arxius"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dateianbieter-Erweiterungen"
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Επέκταση παρόχου αρχείων"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "File provider extension"
+            "value": "Finder Extension"
           }
-        },
-        "es-mx": {
+        }
+      }
+    },
+    "settingsFinderExtensionHint": {
+      "comment": "Hint under the Finder Extension setting. Finder shows no extension menus in iCloud Drive, OneDrive, Dropbox and other cloud folders; the Services setting below covers those. Keep \"Finder\", \"MacPacker\", \"iCloud Drive\", \"OneDrive\" and \"Dropbox\" untranslated.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Extensión de proveedor de archivos"
-          }
-        },
-        "fa": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "File provider extension"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extension du fournisseur de fichiers"
-          }
-        },
-        "hi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "फ़ाइल प्रदाता एक्सटेंशन"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fornitore estensione file"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "File provider extension"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "파일 제공자 확장 프로그램"
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extensie voor bestandsprovider"
-          }
-        },
-        "no": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Filleverandørens utvidelse"
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rozszerzenie typu pliku"
-          }
-        },
-        "pt-br": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Extensão do File Provider"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Расширение файлового менеджера"
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dosya sağlayıcı uzantısı"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Розширення менеджера файлів"
-          }
-        },
-        "vi": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Phần mở rộng của tệp tin"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "文件提供程序扩展"
-          }
-        },
-        "zh-TW": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "File provider extension"
+            "value": "Adds the MacPacker menu and toolbar button to Finder, except in iCloud Drive, OneDrive and Dropbox."
           }
         }
       }
@@ -25195,7 +25081,7 @@
       }
     },
     "settingsManageInSystemSettings": {
-      "comment": "A button label that, when tapped, shows the user how to manage the file provider extension in System Settings.",
+      "comment": "Button that opens System Settings at the place where the user turns MacPacker's Finder extension, or its Services entries, on or off.",
       "extractionState": "manual",
       "localizations": {
         "ar": {
@@ -25897,25 +25783,25 @@
       }
     },
     "settingsServicesMenu": {
-      "comment": "Settings label for MacPacker's entries in Finder's Services menu, which macOS also lists at the end of Finder's context menu",
+      "comment": "Settings label of the section about MacPacker's entries in the macOS Services menu (Extract, Compress, Create archive), which Finder also shows in its context menu. Use the name macOS uses for Services in your language.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Services Menu"
+            "value": "Services"
           }
         }
       }
     },
     "settingsServicesMenuHint": {
-      "comment": "Hint under the Services Menu setting: the three MacPacker entries at the end of Finder's context menu come from the Services menu, and are turned off in System Settings, which the button above opens",
+      "comment": "Hint under the Services setting. The button above opens System Settings > Keyboard > Keyboard Shortcuts > Services, where MacPacker's entries are listed in the group \"Files and Folders\": use the exact name macOS shows for that group in your language. Keep \"Finder\", \"iCloud Drive\", \"OneDrive\" and \"Dropbox\" untranslated.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Extract, Compress and Create archive at the end of Finder's context menu. Uncheck them under Files and Folders to hide them."
+            "value": "Adds Extract, Compress and Create archive to Finder's context menu, in iCloud Drive, OneDrive and Dropbox too. Uncheck them under Files and Folders to hide them."
           }
         }
       }
