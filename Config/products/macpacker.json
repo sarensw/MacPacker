@@ -245,8 +245,36 @@
             "issues": ["363"]
           },
           {
-            "type": "fix",
+            "type": "feat",
             "highlight": true,
+            "title": {
+                "en": "Join the MacPacker community on Discord",
+                "zh-Hans": "加入 Discord 上的 MacPacker 社区",
+                "fr": "Rejoignez la communauté MacPacker sur Discord",
+                "de": "Werde Teil der MacPacker-Community auf Discord",
+                "it": "Unisciti alla community di MacPacker su Discord",
+                "ja": "Discord の MacPacker コミュニティに参加",
+                "fa": "به جامعهٔ MacPacker در Discord بپیوندید",
+                "pl": "Dołącz do społeczności MacPacker na Discordzie",
+                "pt-BR": "Participe da comunidade do MacPacker no Discord",
+                "ru": "Присоединяйтесь к сообществу MacPacker в Discord",
+                "uk": "Приєднуйтеся до спільноти MacPacker у Discord",
+                "es-MX": "Únete a la comunidad de MacPacker en Discord",
+                "ko": "Discord에서 MacPacker 커뮤니티에 참여하세요",
+                "nl": "Word lid van de MacPacker-community op Discord",
+                "tr": "Discord'daki MacPacker topluluğuna katılın",
+                "vi": "Tham gia cộng đồng MacPacker trên Discord",
+                "ar": "انضموا إلى مجتمع MacPacker على Discord",
+                "ca": "Uneix-te a la comunitat de MacPacker a Discord",
+                "el": "Γίνετε μέλος της κοινότητας του MacPacker στο Discord",
+                "nb": "Bli med i MacPacker-fellesskapet på Discord",
+                "zh-TW": "加入 Discord 上的 MacPacker 社群",
+                "hi": "Discord पर MacPacker समुदाय से जुड़ें"
+            },
+            "issues": ["417"]
+          },
+          {
+            "type": "fix",
             "title": {
                 "en": "Missing recent archive crashes the app",
                 "zh-Hans": "已不存在的最近压缩包会导致应用程序崩溃",
