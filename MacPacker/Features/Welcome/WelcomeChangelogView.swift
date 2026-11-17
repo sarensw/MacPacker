@@ -65,7 +65,6 @@ struct WelcomeArrowLabel: View {
 
 struct WelcomeChangelogView: View {
     private let versions = ChangelogLoader.versions
-    private let comingNext = ChangelogLoader.changelog?.comingNext ?? [:]
     @State private var showsAllChanges = false
 
     var body: some View {
@@ -75,9 +74,14 @@ struct WelcomeChangelogView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(versions.first?.highlights ?? []) { item in
-                    ChangelogPillView(item: item)
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(verbatim: "•")
+                        Text(localizedChangelogText(item.title))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
+            .padding(.leading, 4)
             .padding(.top, 14)
 
             Button {
@@ -89,22 +93,6 @@ struct WelcomeChangelogView: View {
             .padding(.top, 16)
             .popover(isPresented: $showsAllChanges, arrowEdge: .bottom) {
                 WelcomeAllChangesView(versions: versions)
-            }
-
-            Spacer(minLength: 16)
-
-            if !comingNext.isEmpty {
-                Divider()
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Image(systemName: "clock")
-                    Text(.welcomeComingNext)
-                        .fontWeight(.semibold)
-                    Text(localizedChangelogText(comingNext))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .padding(.top, 12)
             }
         }
     }

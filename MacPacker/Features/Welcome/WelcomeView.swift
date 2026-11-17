@@ -10,15 +10,19 @@ import Foundation
 import SwiftUI
 
 struct WelcomeView: View {
-    @Environment(\.openURL) private var openURL
-
     /// The app's own icon at the size shown. It carries the standard macOS
     /// margin (the body is 824 of 1024), so 60pt draws a 48pt body, with the
     /// margin padded away.
     private var appIcon: NSImage { .appIcon(size: 60) }
 
-    /// Discord's brand color, #5865F2.
-    private static let discordBlurple = Color(red: 88 / 255, green: 101 / 255, blue: 242 / 255)
+    /// Names the version whose highlights the window lists.
+    private var whatsNew: LocalizedStringResource {
+        if let version = ChangelogLoader.versions.first?.version {
+            .welcomeWhatsNewInVersion(version)
+        } else {
+            .commonWhatsNew
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -28,7 +32,7 @@ struct WelcomeView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(.welcomeTitle(Bundle.main.displayName))
                         .font(.largeTitle.bold())
-                    Text(.commonWhatsNew)
+                    Text(whatsNew)
                         .font(.title3)
                         .foregroundStyle(.secondary)
                 }
@@ -46,74 +50,19 @@ struct WelcomeView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
                 Divider()
+                    .padding(.vertical, 24)
 
-                VStack(alignment: .leading, spacing: 0) {
-                    WelcomeMoreFromLeanBytesView()
-                    // level with "Coming next" at the bottom of the other column
-                    Spacer(minLength: 16)
-                    Divider()
-                    discordRow
-                        .padding(.top, 12)
-                }
-                .padding(24)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                WelcomeMoreFromLeanBytesView()
+                    .padding(24)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
-            // both columns as tall as the taller one, so "Coming next" sits at the bottom
+            // as tall as the taller column, which the divider spans
             .fixedSize(horizontal: false, vertical: true)
 
-            #if !STORE
             Divider()
-            HStack(spacing: 16) {
-                Image(systemName: "heart")
-                    .font(.system(size: 28, weight: .medium))
-                    .foregroundStyle(.orange)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(.welcomeSupportTitle(Constants.appName))
-                        .font(.title3.weight(.semibold))
-                    Text(.welcomeSupportSubtitle)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Button {
-                    openURL(URL(string: "https://www.buymeacoffee.com/sarensw")!)
-                } label: {
-                    Text(.welcomeSupportButton(Constants.appName))
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
-                .controlSize(.large)
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
-            .background(.orange.opacity(0.08))
-            #endif
-
-            Divider()
+                .padding(.horizontal, 24)
 
             WelcomeFooterView()
-        }
-    }
-
-    private var discordRow: some View {
-        HStack(spacing: 12) {
-            Image("discord")
-                .font(.system(size: 17))
-                .foregroundStyle(.white)
-                .frame(width: 32, height: 32)
-                .background(Self.discordBlurple, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(.welcomeDiscordTitle(Constants.appName))
-                    .fontWeight(.semibold)
-                Text(.welcomeDiscordSubtitle)
-                    .foregroundStyle(.secondary)
-            }
-            .font(.callout)
-            Spacer()
-            Button {
-                openURL(Constants.discordURL)
-            } label: {
-                Text(.feedbackJoin)
-            }
         }
     }
 }

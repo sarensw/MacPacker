@@ -22,17 +22,13 @@ struct OtherApp {
 }
 
 struct WelcomeMoreFromLeanBytesView: View {
-    /// A different app each time the window opens; "See all my apps" has the rest.
+    /// A different app each time the window opens.
     @State private var app = OtherApp.all.randomElement()!
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(.LeanBytes.welcomeFromTheMaker(Constants.appName))
                 .font(.title2.bold())
-            Text(.LeanBytes.welcomeOtherAppsFund)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 4)
 
             HStack(alignment: .top, spacing: 14) {
                 Image(app.icon)
@@ -51,12 +47,7 @@ struct WelcomeMoreFromLeanBytesView: View {
                     .padding(.top, 3)
                 }
             }
-            .padding(.top, 16)
-
-            Link(destination: Constants.otherAppsURL) {
-                WelcomeArrowLabel(.LeanBytes.welcomeSeeAllApps)
-            }
-            .padding(.top, 16)
+            .padding(.top, 14)
         }
     }
 }
