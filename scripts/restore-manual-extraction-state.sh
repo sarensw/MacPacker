@@ -11,6 +11,12 @@
 # exports them in its own order, so without this every download shows up as
 # thousands of moved lines, even when it carries the field already.
 #
+# And it fills plural forms POEditor exports empty. An untranslated plural
+# comes out with English in `one` and "" in `few`, `many` and `other`, so the
+# app would show a blank label for any count but one. Each empty form gets the
+# language's own `other`, else its translated `one` (right where nouns don't
+# change after a number, readable where they do), else the English `other`.
+#
 # Run this after every POEditor download, before building:
 #   scripts/restore-manual-extraction-state.sh
 #
@@ -42,10 +48,32 @@ for entry in data["strings"].values():
     else:
         already += 1
 
+def plural_value(forms, name):
+    return ((forms.get(name) or {}).get("stringUnit") or {}).get("value") or ""
+
+filled = 0
+for entry in data["strings"].values():
+    localizations = entry.get("localizations", {})
+    english = (localizations.get("en", {}).get("variations") or {}).get("plural") or {}
+    for language, localization in localizations.items():
+        forms = (localization.get("variations") or {}).get("plural")
+        if language == "en" or not forms:
+            continue
+        own_one = plural_value(forms, "one")
+        fallback = (plural_value(forms, "other")
+                    or (own_one if own_one != plural_value(english, "one") else "")
+                    or plural_value(english, "other"))
+        for form in forms.values():
+            unit = form.get("stringUnit")
+            if unit is not None and not unit.get("value") and fallback:
+                unit["value"] = fallback
+                filled += 1
+
 with open(path, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=2, sort_keys=True, ensure_ascii=False)
 
 total = len(data["strings"])
 print(f"{path}: restored extractionState on {fixed} entr{'y' if fixed == 1 else 'ies'} "
-      f"({already} already had it, {total} total)")
+      f"({already} already had it, {total} total), filled {filled} empty plural form"
+      f"{'' if filled == 1 else 's'}")
 PYEOF
