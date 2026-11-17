@@ -152,4 +152,20 @@ public enum FinderMenuItem: String, CaseIterable, Sendable {
         let stem = name.hasSuffix(suffix) ? String(name.dropLast(suffix.count)) : name
         return "\(stem) \(formatter.string(from: date))\(suffix)"
     }
+
+    /// The name `Extract to "…"` shows: the folder the app creates for one
+    /// archive (`report.csv.zip` → `report.csv`), `*/` for several, one
+    /// folder each.
+    ///
+    /// ponytail: one extension off, where the app strips what its catalog
+    /// knows, which this module cannot link: `x.tar.gz` shows `x.tar` and
+    /// extracts to `x`, `x.zip.001` shows `x.zip`. Exact needs the extension
+    /// to read the app's catalog.
+    public static func extractFolderName(for archives: [URL]) -> String {
+        switch archives.count {
+        case 0: ""
+        case 1: archives[0].deletingPathExtension().lastPathComponent
+        default: "*/"
+        }
+    }
 }

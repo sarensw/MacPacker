@@ -498,6 +498,34 @@
                 "hi": "7-Zip को संस्करण 26.06 में अपडेट किया गया"
             },
             "issues": ["398"]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Finder menu shows the wrong folder name",
+                "zh-Hans": "Finder 菜单显示的文件夹名称有误",
+                "fr": "Le menu du Finder affiche un mauvais nom de dossier",
+                "de": "Finder-Menü zeigt den falschen Ordnernamen",
+                "it": "Il menu del Finder mostra un nome di cartella errato",
+                "ja": "Finder メニューに誤ったフォルダ名が表示される",
+                "fa": "منوی Finder نام پوشه را اشتباه نشان می‌دهد",
+                "pl": "Menu Findera pokazuje błędną nazwę folderu",
+                "pt-BR": "O menu do Finder mostra o nome errado da pasta",
+                "ru": "Меню Finder показывает неверное имя папки",
+                "uk": "Меню Finder показує неправильну назву теки",
+                "es-MX": "El menú del Finder muestra un nombre de carpeta incorrecto",
+                "ko": "Finder 메뉴에 잘못된 폴더 이름이 표시됨",
+                "nl": "Finder-menu toont de verkeerde mapnaam",
+                "tr": "Finder menüsü yanlış klasör adı gösteriyor",
+                "vi": "Menu Finder hiển thị sai tên thư mục",
+                "ar": "قائمة Finder تعرض اسم مجلد خاطئًا",
+                "ca": "El menú del Finder mostra un nom de carpeta erroni",
+                "el": "Το μενού του Finder δείχνει λάθος όνομα φακέλου",
+                "nb": "Finder-menyen viser feil mappenavn",
+                "zh-TW": "Finder 選單顯示錯誤的資料夾名稱",
+                "hi": "Finder मेनू में फ़ोल्डर का गलत नाम दिखता है"
+            },
+            "issues": ["317"]
           }
         ]
       },

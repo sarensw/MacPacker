@@ -9,6 +9,7 @@
 //  name must stay a valid file name that sorts by date.
 //
 
+import Core
 import Foundation
 import Testing
 @testable import FinderMenu
@@ -104,6 +105,20 @@ extension AllCoreTests {
 
             #expect(FinderMenuItem.datedName("photos.zip", extension: "zip", at: date, timeZone: utc) == "photos 2026-09-10 14.30.zip")
             #expect(FinderMenuItem.datedName("photos", extension: "zip", at: date, timeZone: utc) == "photos 2026-09-10 14.30.zip")
+        }
+
+        /// #317: Finder compresses `Artists Full.csv` to `Artists Full.csv.zip`.
+        /// The menu said "Artists Full" while the app made "Artists Full.csv".
+        @Test("Extract to shows the name of the folder the app creates")
+        func extractFolderNameIsTheAppsFolder() {
+            let detector = ArchiveTypeDetector(catalog: ArchiveTypeCatalog())
+            for file in ["Artists Full.csv.zip", "My.Archive.zip", "v1.2.3.7z", "photos.rar"] {
+                let archive = URL(fileURLWithPath: "/Users/me/\(file)")
+                #expect(FinderMenuItem.extractFolderName(for: [archive])
+                        == detector.getNameWithoutExtension(for: archive), "\(file)")
+            }
+            let two = [URL(fileURLWithPath: "/Users/me/a.zip"), URL(fileURLWithPath: "/Users/me/b.zip")]
+            #expect(FinderMenuItem.extractFolderName(for: two) == "*/")
         }
 
         @Test("Only the extensions the menu produces pass as a format")

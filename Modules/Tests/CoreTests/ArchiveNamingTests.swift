@@ -210,5 +210,48 @@ extension AllCoreTests {
         @Test func everySplitSchemeHasNamingSamples() {
             #expect(Set(catalog.allSplits().map(\.id)) == ["zip-spanned", "zip-numeric", "7z-numeric"])
         }
+
+        // MARK: - The folder Extract to "name" creates
+
+        /// #317: Finder compresses `Artists Full.csv` to `Artists Full.csv.zip`,
+        /// whose folder would take the file's name. The file stays as it was,
+        /// the folder is "name 2".
+        @Test func aFileWithTheFolderNameStays() throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let csv = dir.appending(path: "Artists Full.csv")
+            try "a,b".write(to: csv, atomically: true, encoding: .utf8)
+            let center = ExtractionProgressCenter()
+
+            let folder = try #require(ExtractToFolder.makeFolder(
+                for: dir.appending(path: "Artists Full.csv.zip"), in: dir, catalog: catalog, progressCenter: center))
+
+            #expect(folder.lastPathComponent == "Artists Full.csv 2")
+            #expect(try folder.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true)
+            #expect(try String(contentsOf: csv, encoding: .utf8) == "a,b")
+            #expect(center.jobs.isEmpty)
+        }
+
+        /// A folder that cannot be created — a read-only volume, a folder the
+        /// user may not write to — is a failed job, which the progress window
+        /// shows. The action used to end without a word.
+        @Test func aFolderThatCannotBeCreatedIsAFailedJob() throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer {
+                try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: dir.path)
+                try? FileManager.default.removeItem(at: dir)
+            }
+            try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: dir.path)
+            let center = ExtractionProgressCenter()
+
+            let folder = ExtractToFolder.makeFolder(
+                for: dir.appending(path: "photos.zip"), in: dir, catalog: catalog, progressCenter: center)
+
+            #expect(folder == nil)
+            #expect(center.jobs.map(\.archiveName) == ["photos.zip"])
+            #expect(center.hasOutcomesToShow)
+        }
     }
 }
