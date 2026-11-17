@@ -47,6 +47,12 @@ struct WelcomeFooterView: View {
         .controlSize(.extraLarge)
         .padding(.horizontal, 24)
         .padding(.vertical, 20)
-        .background(.regularMaterial)
+        // Drawn only: a background that takes clicks keeps the window from
+        // being dragged by this band, as it can be by the rest of the window.
+        .background {
+            Rectangle()
+                .fill(.fill.secondary)
+                .allowsHitTesting(false)
+        }
     }
 }

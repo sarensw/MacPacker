@@ -21,17 +21,19 @@ struct WelcomeView: View {
                 Image(nsImage: appIcon)
                     .padding(-6)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(.welcomeTitle(Bundle.main.displayName))
-                        .font(.largeTitle.bold())
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(.commonWhatsNew)
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(.welcomeTitle(Bundle.main.displayName))
+                            .font(.largeTitle.bold())
                         // the version whose highlights the window lists
                         if let version = ChangelogLoader.versions.first?.version {
-                            PillView(.release, label: "v\(version)")
+                            Text(verbatim: version)
+                                .font(.title)
+                                .foregroundStyle(.secondary)
                         }
                     }
+                    Text(.commonWhatsNew)
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
                 }
             }
             .padding(.top, 4)
