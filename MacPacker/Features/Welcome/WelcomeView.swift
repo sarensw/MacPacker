@@ -24,12 +24,10 @@ struct WelcomeView: View {
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                         Text(.welcomeTitle(Bundle.main.displayName))
                             .font(.largeTitle.bold())
-                        // the version whose highlights the window lists
-                        if let version = ChangelogLoader.versions.first?.version {
-                            Text(verbatim: version)
-                                .font(.title)
-                                .foregroundStyle(.secondary)
-                        }
+                        // the build's own version, so a beta shows its suffix
+                        Text(verbatim: Bundle.main.appVersionLong)
+                            .font(.title)
+                            .foregroundStyle(.secondary)
                     }
                     Text(.commonWhatsNew)
                         .font(.title3)
