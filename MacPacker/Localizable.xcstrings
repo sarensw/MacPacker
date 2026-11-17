@@ -8388,7 +8388,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Checksum doesn't match"
+            "value": "Wrong checksum"
           }
         },
         "es-mx": {
