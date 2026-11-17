@@ -15,15 +15,6 @@ struct WelcomeView: View {
     /// margin padded away.
     private var appIcon: NSImage { .appIcon(size: 60) }
 
-    /// Names the version whose highlights the window lists.
-    private var whatsNew: LocalizedStringResource {
-        if let version = ChangelogLoader.versions.first?.version {
-            .welcomeWhatsNewInVersion(version)
-        } else {
-            .commonWhatsNew
-        }
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 16) {
@@ -32,9 +23,15 @@ struct WelcomeView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(.welcomeTitle(Bundle.main.displayName))
                         .font(.largeTitle.bold())
-                    Text(whatsNew)
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(.commonWhatsNew)
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                        // the version whose highlights the window lists
+                        if let version = ChangelogLoader.versions.first?.version {
+                            PillView(.release, label: "v\(version)")
+                        }
+                    }
                 }
             }
             .padding(.top, 4)
@@ -60,7 +57,6 @@ struct WelcomeView: View {
             .fixedSize(horizontal: false, vertical: true)
 
             Divider()
-                .padding(.horizontal, 24)
 
             WelcomeFooterView()
         }

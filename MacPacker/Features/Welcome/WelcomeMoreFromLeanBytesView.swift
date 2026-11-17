@@ -22,7 +22,7 @@ struct OtherApp {
 }
 
 struct WelcomeMoreFromLeanBytesView: View {
-    /// A different app each time the window opens.
+    /// A different app each time the window opens; "See all my apps" has the rest.
     @State private var app = OtherApp.all.randomElement()!
 
     var body: some View {
@@ -48,6 +48,11 @@ struct WelcomeMoreFromLeanBytesView: View {
                 }
             }
             .padding(.top, 14)
+
+            Link(destination: Constants.otherAppsURL) {
+                WelcomeArrowLabel(.LeanBytes.welcomeSeeAllApps)
+            }
+            .padding(.top, 16)
         }
     }
 }

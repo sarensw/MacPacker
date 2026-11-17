@@ -29,7 +29,7 @@ struct WelcomeFooterView: View {
             Button {
                 openURL(URL(string: "https://www.buymeacoffee.com/sarensw")!)
             } label: {
-                Image(systemName: "heart")
+                Image(systemName: "heart.fill")
                     .foregroundStyle(.orange)
                 Text(.welcomeSupportButton(Constants.appName))
             }
@@ -47,5 +47,6 @@ struct WelcomeFooterView: View {
         .controlSize(.extraLarge)
         .padding(.horizontal, 24)
         .padding(.vertical, 20)
+        .background(.regularMaterial)
     }
 }
