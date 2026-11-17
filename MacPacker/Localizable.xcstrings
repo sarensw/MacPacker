@@ -17731,7 +17731,7 @@
       }
     },
     "feedbackJoin": {
-      "comment": "Status bar button next to the Discord logo, on the start page of an empty window. Opens the invite to MacPacker's Discord server: join as in joining a community.",
+      "comment": "Button next to the Discord logo, in the status bar of an empty window and at the bottom of the welcome window. Opens the invite to MacPacker's Discord server: join as in joining a community.",
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -27426,14 +27426,26 @@
         }
       }
     },
-    "welcomeJoinDiscord": {
-      "comment": "Link below the welcome window's release highlights, under \"View all changes\", that opens the invite to MacPacker's Discord server. Discord is a brand name: keep it as is.",
+    "welcomeDiscordSubtitle": {
+      "comment": "Line below \"%@ on Discord\" in the welcome window: what people find on the app's Discord server.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Join us on Discord"
+            "value": "Questions, ideas and release news"
+          }
+        }
+      }
+    },
+    "welcomeDiscordTitle": {
+      "comment": "Title of the welcome window's row that invites to the app's Discord server. %@ is the app name. Discord is a brand name: keep it as is.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ on Discord"
           }
         }
       }

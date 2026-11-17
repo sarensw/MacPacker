@@ -17,6 +17,9 @@ struct WelcomeView: View {
     /// margin padded away.
     private var appIcon: NSImage { .appIcon(size: 60) }
 
+    /// Discord's brand color, #5865F2.
+    private static let discordBlurple = Color(red: 88 / 255, green: 101 / 255, blue: 242 / 255)
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 16) {
@@ -44,9 +47,16 @@ struct WelcomeView: View {
 
                 Divider()
 
-                WelcomeMoreFromLeanBytesView()
-                    .padding(24)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                VStack(alignment: .leading, spacing: 0) {
+                    WelcomeMoreFromLeanBytesView()
+                    // level with "Coming next" at the bottom of the other column
+                    Spacer(minLength: 16)
+                    Divider()
+                    discordRow
+                        .padding(.top, 12)
+                }
+                .padding(24)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
             // both columns as tall as the taller one, so "Coming next" sits at the bottom
             .fixedSize(horizontal: false, vertical: true)
@@ -81,6 +91,29 @@ struct WelcomeView: View {
             Divider()
 
             WelcomeFooterView()
+        }
+    }
+
+    private var discordRow: some View {
+        HStack(spacing: 12) {
+            Image("discord")
+                .font(.system(size: 17))
+                .foregroundStyle(.white)
+                .frame(width: 32, height: 32)
+                .background(Self.discordBlurple, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            VStack(alignment: .leading, spacing: 1) {
+                Text(.welcomeDiscordTitle(Constants.appName))
+                    .fontWeight(.semibold)
+                Text(.welcomeDiscordSubtitle)
+                    .foregroundStyle(.secondary)
+            }
+            .font(.callout)
+            Spacer()
+            Button {
+                openURL(Constants.discordURL)
+            } label: {
+                Text(.feedbackJoin)
+            }
         }
     }
 }
