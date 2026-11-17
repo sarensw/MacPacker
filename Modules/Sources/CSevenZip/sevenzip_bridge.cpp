@@ -1498,6 +1498,168 @@ const char *sz_format_name(SZArchiveRef archive) {
     return handle->levels.back().format.c_str();
 }
 
+/// A name for each standard archive-level property 7-Zip's handlers report,
+/// or NULL. Their own properties come with a name; one neither names shows as
+/// its number.
+static const char *ArchivePropertyName(PROPID id) {
+    switch (id) {
+    case kpidMainSubfile: return "Main subfile";
+    case kpidPath: return "Path";
+    case kpidName: return "Name";
+    case kpidExtension: return "Extension";
+    case kpidSize: return "Size";
+    case kpidPackSize: return "Packed size";
+    case kpidCTime: return "Created";
+    case kpidMTime: return "Modified";
+    case kpidSolid: return "Solid";
+    case kpidCommented: return "Commented";
+    case kpidEncrypted: return "Encrypted";
+    case kpidCRC: return "CRC";
+    case kpidMethod: return "Method";
+    case kpidHostOS: return "Host OS";
+    case kpidFileSystem: return "File system";
+    case kpidComment: return "Comment";
+    case kpidNumSubFiles: return "Files";
+    case kpidUnpackVer: return "Version needed";
+    case kpidVolume: return "Volume";
+    case kpidIsVolume: return "Is volume";
+    case kpidOffset: return "Offset";
+    case kpidNumBlocks: return "Blocks";
+    case kpidNumVolumes: return "Volumes";
+    case kpidBit64: return "64-bit";
+    case kpidBigEndian: return "Big-endian";
+    case kpidCpu: return "CPU";
+    case kpidPhySize: return "Physical size";
+    case kpidHeadersSize: return "Headers size";
+    case kpidChecksum: return "Checksum";
+    case kpidCharacts: return "Characteristics";
+    case kpidVa: return "Virtual address";
+    case kpidId: return "ID";
+    case kpidCreatorApp: return "Creator";
+    case kpidSectorSize: return "Sector size";
+    case kpidError: return "Error";
+    case kpidFreeSpace: return "Free space";
+    case kpidClusterSize: return "Cluster size";
+    case kpidVolumeName: return "Volume name";
+    case kpidIsTree: return "Is tree";
+    case kpidErrorFlags: return "Error flags";
+    case kpidWarningFlags: return "Warning flags";
+    case kpidWarning: return "Warning";
+    case kpidNumStreams: return "Streams";
+    case kpidTotalPhySize: return "Total physical size";
+    case kpidVolumeIndex: return "Volume index";
+    case kpidSubType: return "Subtype";
+    case kpidShortComment: return "Short comment";
+    case kpidCodePage: return "Code page";
+    case kpidIsNotArcType: return "Not an archive type";
+    case kpidPhySizeCantBeDetected: return "Physical size unknown";
+    case kpidTailSize: return "Tail size";
+    case kpidEmbeddedStubSize: return "Embedded stub size";
+    default: return nullptr;
+    }
+}
+
+/// `kpv_ErrorFlags_*` bits by name, as 7-Zip's own messages call them.
+static std::string ErrorFlagsToString(UInt32 flags) {
+    static const struct { UInt32 bit; const char *name; } kFlags[] = {
+        { kpv_ErrorFlags_IsNotArc, "isNotArc" },
+        { kpv_ErrorFlags_HeadersError, "headersError" },
+        { kpv_ErrorFlags_EncryptedHeadersError, "encryptedHeadersError" },
+        { kpv_ErrorFlags_UnavailableStart, "unavailableStart" },
+        { kpv_ErrorFlags_UnconfirmedStart, "unconfirmedStart" },
+        { kpv_ErrorFlags_UnexpectedEnd, "unexpectedEnd" },
+        { kpv_ErrorFlags_DataAfterEnd, "dataAfterEnd" },
+        { kpv_ErrorFlags_UnsupportedMethod, "unsupportedMethod" },
+        { kpv_ErrorFlags_UnsupportedFeature, "unsupportedFeature" },
+        { kpv_ErrorFlags_DataError, "dataError" },
+        { kpv_ErrorFlags_CrcError, "crcError" },
+    };
+    std::string s;
+    for (const auto &flag : kFlags) {
+        if ((flags & flag.bit) == 0) continue;
+        if (!s.empty()) s += ",";
+        s += flag.name;
+    }
+    UInt32 known = 0;
+    for (const auto &flag : kFlags) known |= flag.bit;
+    if ((flags & ~known) != 0) {
+        char hex[16];
+        snprintf(hex, sizeof hex, "0x%X", (unsigned)(flags & ~known));
+        if (!s.empty()) s += ",";
+        s += hex;
+    }
+    return s;
+}
+
+char *sz_archive_properties(SZArchiveRef archive) {
+    if (!archive) return nullptr;
+    try {
+        auto *handle = static_cast<SZArchiveHandle *>(archive);
+        // Asked of every level whether its handler lists them or not: they are
+        // where an open that went wrong says why, and how much of the file the
+        // archive takes up.
+        static const PROPID kAlwaysAsked[] = {
+            kpidPhySize, kpidHeadersSize, kpidOffset, kpidTailSize, kpidEmbeddedStubSize,
+            kpidPhySizeCantBeDetected, kpidErrorFlags, kpidWarningFlags, kpidError, kpidWarning,
+            kpidIsNotArcType, kpidMainSubfile, kpidIsVolume, kpidNumVolumes, kpidVolumeIndex,
+            kpidTotalPhySize, kpidCodePage,
+        };
+        std::string out;
+        for (size_t level = 0; level < handle->levels.size(); level++) {
+            IInArchive *arc = handle->levels[level].archive;
+            std::vector<std::pair<PROPID, UString>> props;
+            for (PROPID id : kAlwaysAsked) props.push_back({ id, UString() });
+            UInt32 numProps = 0;
+            if (arc->GetNumberOfArchiveProperties(&numProps) == S_OK) {
+                for (UInt32 i = 0; i < numProps; i++) {
+                    CMyComBSTR name;
+                    PROPID id;
+                    VARTYPE vt;
+                    if (arc->GetArchivePropertyInfo(i, &name, &id, &vt) != S_OK) continue;
+                    bool known = false;
+                    for (const auto &p : props) known = known || p.first == id;
+                    if (!known) props.push_back({ id, name ? UString((const wchar_t *)name) : UString() });
+                }
+            }
+            for (const auto &p : props) {
+                NWindows::NCOM::CPropVariant prop;
+                if (arc->GetArchiveProperty(p.first, &prop) != S_OK || prop.vt == VT_EMPTY) continue;
+                std::string value;
+                if (p.first == kpidErrorFlags || p.first == kpidWarningFlags) {
+                    if (prop.vt != VT_UI4 || prop.ulVal == 0) continue;
+                    value = ErrorFlagsToString(prop.ulVal);
+                } else if (prop.vt == VT_BSTR) {
+                    UString text = prop.bstrVal ? UString(prop.bstrVal) : UString();
+                    // The user's own words, or a name of theirs: shown by length only,
+                    // so the result can be shown and sent as it is.
+                    if (p.first == kpidComment || p.first == kpidShortComment
+                        || p.first == kpidPath || p.first == kpidName) {
+                        value = "<" + std::to_string(text.Len()) + " characters>";
+                    } else {
+                        value = UStringToUTF8(text);
+                    }
+                } else {
+                    char buffer[64];
+                    ConvertPropVariantToShortString(prop, buffer);
+                    value = buffer;
+                }
+                if (value.empty()) continue;
+                for (char &c : value)
+                    if (c == '\t' || c == '\n' || c == '\r') c = ' ';
+                const char *known = ArchivePropertyName(p.first);
+                std::string name = known ? known
+                    : !p.second.IsEmpty() ? UStringToUTF8(p.second)
+                    : "Property " + std::to_string(p.first);
+                out += std::to_string(level) + "\t" + std::to_string(p.first) + "\t"
+                    + name + "\t" + value + "\n";
+            }
+        }
+        return strdup(out.c_str());
+    } catch (...) {
+        return nullptr;
+    }
+}
+
 bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
     if (!archive || !entry_out) return false;
     try {

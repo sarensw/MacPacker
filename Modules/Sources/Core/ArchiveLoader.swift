@@ -179,6 +179,10 @@ final actor ArchiveLoader {
                 )
             }
             archiveUrl = extractedArchiveURL
+            log.notice("Compound unpacked", context: [
+                "file": url.lastPathComponent,
+                "inner": extractedArchiveURL.lastPathComponent
+            ])
             yield(.processing(progress: nil, activity: .entryExtracted(extractedArchiveURL)))
         } else if let split = detectorResult.split {
             // A split archive — same shape as the compound step: reduce any volume to
@@ -190,6 +194,10 @@ final actor ArchiveLoader {
             let firstVolume = try await firstVolume(of: url, split: split)
             archiveUrl = firstVolume
             firstVolumeURL = firstVolume
+            log.notice("Split read from its first volume", context: [
+                "file": url.lastPathComponent,
+                "firstVolume": firstVolume.lastPathComponent
+            ])
             yield(.processing(progress: nil, activity: .splitFirstVolume(firstVolume.lastPathComponent)))
         }
 
@@ -210,7 +218,7 @@ final actor ArchiveLoader {
         self.engine = engine
         // Which engine actually ran is the single most useful fact when an open
         // fails — the same archive behaves differently on 7-Zip and XAD.
-        log.info("Engine selected", context: [
+        log.notice("Engine selected", context: [
             "file": url.lastPathComponent,
             "type": detectorResult.type.id,
             "engine": archiveEngineSelector.engineType(for: detectorResult.type.id)?.configId ?? "unknown"
@@ -225,11 +233,19 @@ final actor ArchiveLoader {
         defer { forwardTask.cancel() }
         
         // set the entries
+        let listingStart = Date()
         let (engineLoadResult, usedEngine) = try await loadArchiveWithFallback(
             url: archiveUrl,
             type: detectorResult.type,
             selected: engine
         )
+        log.notice("Entries listed", context: [
+            "file": url.lastPathComponent,
+            "engine": usedEngine?.configId ?? "unknown",
+            "entries": "\(engineLoadResult.items.count)",
+            "encrypted": "\(engineLoadResult.isEncrypted)",
+            "seconds": String(format: "%.3f", Date().timeIntervalSince(listingStart))
+        ])
         self.entries = engineLoadResult.items
         yield(.processing(progress: nil, activity: .entriesFound(self.entries.count)))
         if let nameEncoding = engineLoadResult.nameEncoding {
@@ -315,7 +331,7 @@ final actor ArchiveLoader {
             throw ArchiveError.invalidArchive(
                 "\(url.lastPathComponent) is not a recognised archive type.")
         }
-        log.info("Archive type detected", context: [
+        log.notice("Archive type detected", context: [
             "file": url.lastPathComponent,
             "type": detectorResult.type.id,
             "composition": detectorResult.composition?.id ?? "none",

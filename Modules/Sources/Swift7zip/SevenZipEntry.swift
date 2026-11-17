@@ -29,3 +29,15 @@ public struct SevenZipEntry: Sendable, Hashable {
     /// Last modification date, or `nil` if unknown.
     public let modificationDate: Date?
 }
+
+/// A property of an archive as a whole, as 7-Zip reports it.
+public struct SevenZipArchiveProperty: Sendable, Hashable {
+    /// 0 for the archive the file is; 1 for what 7-Zip found inside it and
+    /// lists the entries of, such as a disk image's file system.
+    public let level: Int
+    /// 7-Zip's id for it, `kpid…` in `PropID.h`.
+    public let id: UInt32
+    /// What `7zz l -slt` calls it.
+    public let name: String
+    public let value: String
+}

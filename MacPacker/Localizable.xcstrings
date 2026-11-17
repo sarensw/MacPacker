@@ -1,6 +1,18 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "analyzeArchiveTitle": {
+      "comment": "Title of the sheet showing the technical report about an archive (Settings › Advanced › Analyze Archive…).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archive Analysis"
+          }
+        }
+      }
+    },
     "appCompressionInProgress": {
       "comment": "Title of the alert shown when the user quits while Finder's \"Compress to …\" is still writing an archive.",
       "extractionState": "manual",
@@ -9479,6 +9491,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "繼續"
+          }
+        }
+      }
+    },
+    "commonCopy": {
+      "comment": "Button that copies the text shown above it to the clipboard, such as the report in the Archive Analysis sheet (Settings › Advanced › Analyze Archive…).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
           }
         }
       }
@@ -19808,6 +19832,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "進階設定"
+          }
+        }
+      }
+    },
+    "settingsAnalyzeArchive": {
+      "comment": "Button in Settings › Advanced, below Export Logs. Opens a file panel; MacPacker then examines the chosen archive without opening it in a window, and shows a technical report about it that the user can copy into a bug report.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analyze Archive…"
           }
         }
       }

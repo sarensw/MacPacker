@@ -85,6 +85,14 @@ const char *sz_entry_method(SZArchiveRef archive, uint32_t index);
 /// handle.
 const char *sz_format_name(SZArchiveRef archive);
 
+/// Every archive-level property 7-Zip reports, for each level the handle
+/// opened, the outermost first: what `7zz l -slt` prints above the entries,
+/// plus the error and warning flags of a damaged one. One line per property,
+/// `level<TAB>propID<TAB>name<TAB>value`, UTF-8. A comment, a stored name or a
+/// path comes as its length only, so the result can be shown and sent as it
+/// is. NULL on failure; otherwise the caller frees it.
+char *sz_archive_properties(SZArchiveRef archive);
+
 typedef struct {
     uint32_t index;
     const char *path;        // UTF-8; pointer valid until sz_close()
