@@ -101,8 +101,11 @@ not how it was built.
 
 **Translate into every language already in the file**, not a fixed list.
 Translate meaning, not wording; keep each roughly as short as the English.
-`MacPacker`, format names (`zip`, `7z`) and macOS features (`Finder`,
-`Quick Look`) stay untranslated. Get the English approved first.
+`MacPacker` and format names (`zip`, `7z`) stay untranslated. macOS features
+take the name Apple gives them in that language: Quick Look is `Übersicht` in
+German and `Rychlý náhled` in Czech, while `Finder` stays `Finder`. A language
+macOS isn't translated into keeps the English name. Get the English approved
+first.
 
 ## Conventions
 

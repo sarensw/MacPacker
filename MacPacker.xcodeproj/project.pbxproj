@@ -151,8 +151,8 @@
 		257A675B2E829CF100532C84 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Assets.xcassets,
 				Localizable.xcstrings,
+				Shared.xcassets,
 			);
 			target = 252F12012E7ABDD9004CCEBE /* FinderExtension */;
 		};
@@ -464,6 +464,7 @@
 				el,
 				nb,
 				hi,
+				cs,
 			);
 			mainGroup = 25C0A89B2A78DE5F002C1C2A;
 			packageReferences = (

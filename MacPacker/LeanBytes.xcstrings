@@ -17,6 +17,12 @@
             "value" : "Copia o mou fitxers a les teves carpetes preferides i a les seves subcarpetes. Sense obrir noves finestres del Finder."
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopírujte nebo přesouvejte soubory do oblíbených složek a jejich podsložek. Bez otevírání nových oken Finderu."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -153,6 +159,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Organitza fitxers. Ràpid."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uspořádejte soubory. Rychle."
           }
         },
         "de" : {
@@ -293,6 +305,12 @@
             "value" : "Dictat privat, dissenyat per al macOS 26 i 27"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soukromé diktování navržené pro macOS 26 a 27"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -429,6 +447,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dictat privat"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soukromé diktování"
           }
         },
         "de" : {
@@ -569,6 +593,12 @@
             "value" : "Creació i automatització de recursos multimèdia"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tvorba a automatizace mediálních materiálů"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -705,6 +735,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Creació i automatització de recursos multimèdia"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tvorba a automatizace mediálních materiálů"
           }
         },
         "de" : {
@@ -845,6 +881,12 @@
             "value" : "Més apps"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Další aplikace"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -981,6 +1023,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descobreix %@"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prozkoumat %@"
           }
         },
         "de" : {
@@ -1121,6 +1169,12 @@
             "value" : "Del creador de %@"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Od tvůrce aplikace %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1257,6 +1311,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra totes les meves apps"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobrazit všechny mé aplikace"
           }
         },
         "de" : {

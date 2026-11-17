@@ -84,7 +84,7 @@ extension AllCoreTests {
             let services = try #require(info?["NSServices"] as? [[String: Any]])
             let catalog = try JSONSerialization.jsonObject(with: Data(contentsOf: repository.appending(path: "MacPacker/ServicesMenu.xcstrings"))) as? [String: Any]
             let titles = try #require(catalog?["strings"] as? [String: [String: Any]])
-            let languages = ["ar", "ca", "de", "el", "en", "es-MX", "fa", "fr", "hi", "it", "ja", "ko", "nl", "no", "pl", "pt-BR", "ru", "tr", "uk", "vi", "zh-Hans", "zh-TW"]
+            let languages = ["ar", "ca", "cs", "de", "el", "en", "es-MX", "fa", "fr", "hi", "it", "ja", "ko", "nl", "no", "pl", "pt-BR", "ru", "tr", "uk", "vi", "zh-Hans", "zh-TW"]
 
             for service in services {
                 let menuItem = try #require(service["NSMenuItem"] as? [String: String])
