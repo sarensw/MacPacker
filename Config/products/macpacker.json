@@ -157,7 +157,7 @@
                 "zh-TW": "透過「服務」選單在 iCloud 雲碟等位置使用 Finder 整合",
                 "hi": "सेवाएँ मेनू से iCloud Drive और अन्य जगहों के लिए Finder इंटीग्रेशन"
             },
-            "issues": ["342"]
+            "issues": ["342", "412"]
           },
           {
             "type": "feat",

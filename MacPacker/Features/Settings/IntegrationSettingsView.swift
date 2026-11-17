@@ -14,11 +14,14 @@ struct IntegrationSettingsView: View {
     private let applicationSupportDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
 
     @State var isFinderSyncEnabled: Bool = false
+    @State private var areServicesOn = true
 
     var body: some View {
         VStack(spacing: 8) {
+            // The Finder extension: the MacPacker menu and toolbar button,
+            // which Finder leaves out in File Provider folders (#305).
             HStack(alignment: .top) {
-                Text(.settingsFileProviderExtension)
+                Text(.settingsFinderExtension)
                     .frame(width: 160, alignment: .trailing)
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -29,30 +32,15 @@ struct IntegrationSettingsView: View {
                     }
                     .disabled(applicationSupportDirectory == nil)
 
-                    HStack(spacing: 4) {
-                        Circle()
-                            .frame(width: 6, height: 6)
-                            .foregroundStyle(isFinderSyncEnabled ? Color.green : Color.red)
+                    StatusLine(isOn: isFinderSyncEnabled, refresh: refresh)
 
-                        Text(isFinderSyncEnabled ? .commonEnabled : .commonDisabled)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-
-                        Button {
-                            isFinderSyncEnabled = FIFinderSyncController.isExtensionEnabled
-                            print(isFinderSyncEnabled)
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
-                        }
-                        .buttonStyle(.plain)
-                        .controlSize(.small)
+                    Text(.settingsFinderExtensionHint)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    }
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(width: 240, alignment: .leading)
             }
-
-            Divider()
 
             HStack(alignment: .top) {
                 Text(.settingsContextMenu)
@@ -97,10 +85,69 @@ struct IntegrationSettingsView: View {
                 }
                 .frame(width: 240, alignment: .leading)
             }
+
+            Divider()
+
+            // The Services: Extract, Compress and Create archive in Finder's
+            // context menu, File Provider folders included (#342). macOS keeps
+            // whether they show, per user, where the sandbox can read but not
+            // write: the app shows it and leads to the switches (#412).
+            HStack(alignment: .top) {
+                Text(.settingsServicesMenu)
+                    .frame(width: 160, alignment: .trailing)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Button {
+                        FinderServices.openSettings()
+                    } label: {
+                        Text(.settingsManageInSystemSettings)
+                    }
+
+                    StatusLine(isOn: areServicesOn, refresh: refresh)
+
+                    Text(.settingsServicesMenuHint)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(width: 240, alignment: .leading)
+            }
         }
         .padding()
-        .onAppear {
-            isFinderSyncEnabled = FIFinderSyncController.isExtensionEnabled
+        .onAppear(perform: refresh)
+        // Back from System Settings: show what was switched there.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            refresh()
+        }
+    }
+
+    private func refresh() {
+        isFinderSyncEnabled = FIFinderSyncController.isExtensionEnabled
+        areServicesOn = FinderServices.isOn
+    }
+}
+
+/// A green or red dot with Enabled or Disabled, and a button to look again.
+private struct StatusLine: View {
+    let isOn: Bool
+    let refresh: () -> Void
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Circle()
+                .frame(width: 6, height: 6)
+                .foregroundStyle(isOn ? Color.green : Color.red)
+
+            Text(isOn ? .commonEnabled : .commonDisabled)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Button(action: refresh) {
+                Image(systemName: "arrow.clockwise")
+            }
+            .buttonStyle(.plain)
+            .controlSize(.small)
+            .foregroundStyle(.secondary)
         }
     }
 }

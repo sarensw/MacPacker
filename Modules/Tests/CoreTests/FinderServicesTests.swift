@@ -128,5 +128,66 @@ extension AllCoreTests {
                 #expect(activates == action.bringsAppToFront, "\(message)")
             }
         }
+
+        // MARK: On or off (#412)
+
+        private let app = "com.sarensx.MacPacker"
+
+        /// The services as the App Store build declares them, titles written
+        /// out: macOS keeps a user's choice under the title.
+        private func declaredServices() throws -> [[String: Any]] {
+            let file = URL(fileURLWithPath: #filePath)
+                .deletingLastPathComponent().deletingLastPathComponent()
+                .deletingLastPathComponent().deletingLastPathComponent()
+                .appending(path: "MacPacker/Info_Store.plist")
+            let info = try PropertyListSerialization.propertyList(from: Data(contentsOf: file), format: nil) as? [String: Any]
+            return try #require(info?["NSServices"] as? [[String: Any]])
+        }
+
+        /// What System Settings writes to `pbs` for a checked or unchecked service.
+        private func choice(_ shown: Bool) -> [String: Any] {
+            let flag = shown ? 1 : 0
+            return ["enabled_context_menu": flag, "enabled_services_menu": flag,
+                    "presentation_modes": ["ContextMenu": flag, "ServicesMenu": flag]]
+        }
+
+        @Test func servicesNobodySwitchedAreOn() throws {
+            #expect(FinderServices.isOn(try declaredServices(), bundleIdentifier: app, status: [:]))
+        }
+
+        @Test func servicesAllUncheckedAreOff() throws {
+            let status = [
+                "\(app) - Extract using MacPacker - extract": choice(false),
+                "\(app) - Compress using MacPacker - compress": choice(false),
+                "\(app) - Create archive with MacPacker - createArchive": choice(false),
+            ]
+            #expect(!FinderServices.isOn(try declaredServices(), bundleIdentifier: app, status: status))
+        }
+
+        @Test func oneServiceLeftCheckedIsOn() throws {
+            let status = [
+                "\(app) - Extract using MacPacker - extract": choice(false),
+                "\(app) - Compress using MacPacker - compress": choice(false),
+            ]
+            #expect(FinderServices.isOn(try declaredServices(), bundleIdentifier: app, status: status))
+        }
+
+        /// The Debug build has its own bundle id and titles: what was switched
+        /// there leaves the release build alone.
+        @Test func anotherBuildsChoicesDoNotCount() throws {
+            let status = [
+                "\(app).debug - Extract using MacPacker - extract": choice(false),
+                "\(app).debug - Compress using MacPacker - compress": choice(false),
+                "\(app).debug - Create archive with MacPacker - createArchive": choice(false),
+            ]
+            #expect(FinderServices.isOn(try declaredServices(), bundleIdentifier: app, status: status))
+        }
+
+        /// Without a required context macOS lists a service but leaves it off.
+        @Test func serviceWithoutRequiredContextIsOffUntilChecked() {
+            let service: [String: Any] = ["NSMessage": "extract", "NSMenuItem": ["default": "Extract using MacPacker"]]
+            #expect(!FinderServices.isOn([service], bundleIdentifier: app, status: [:]))
+            #expect(FinderServices.isOn([service], bundleIdentifier: app, status: ["\(app) - Extract using MacPacker - extract": choice(true)]))
+        }
     }
 }
