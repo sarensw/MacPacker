@@ -29,10 +29,6 @@ struct WelcomeMoreFromLeanBytesView: View {
         VStack(alignment: .leading, spacing: 0) {
             Text(.LeanBytes.welcomeFromTheMaker(Constants.appName))
                 .font(.title2.bold())
-            Text(.LeanBytes.welcomeOtherAppsFund)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 4)
 
             HStack(alignment: .top, spacing: 14) {
                 Image(app.icon)
@@ -51,7 +47,7 @@ struct WelcomeMoreFromLeanBytesView: View {
                     .padding(.top, 3)
                 }
             }
-            .padding(.top, 16)
+            .padding(.top, 14)
 
             Link(destination: Constants.otherAppsURL) {
                 WelcomeArrowLabel(.LeanBytes.welcomeSeeAllApps)
