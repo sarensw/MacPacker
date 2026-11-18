@@ -14,8 +14,9 @@ import tb
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "url")
 
 /// Finder action "Extract to "<name>"": extracts each selected archive into a
-/// new folder named after it, then selects those folders in Finder. A folder
-/// that nothing was extracted into is removed again.
+/// new folder named after it, next to it, then selects in Finder those in the
+/// window's own folder. A folder that nothing was extracted into is removed
+/// again.
 class AppUrlExtractToFolderHandler: AppUrlHandler {
     private let catalog: ArchiveTypeCatalog
     private let engineSelector: ArchiveEngineSelectorProtocol
@@ -28,15 +29,21 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
     func handle(appUrl: AppUrl, archiveWindowManager: ArchiveWindowManager) async {
         log.debug("Extracting \(appUrl.files.count) archive(s) to folders in \(appUrl.target)")
 
-        // the selected archives share one folder: a single grant covers them all
-        guard await FolderAccessStore.shared.ensureAccess(forFolder: appUrl.target) else {
-            log.error("No access to \(appUrl.target.lastPathComponent) — cannot extract")
-            return
+        // Each folder goes next to its archive: in the window's folder, or in a
+        // folder expanded in it. One grant on the window's folder covers both.
+        for folder in Set(appUrl.files.map(appUrl.folder(of:))).sorted(by: { $0.path < $1.path }) {
+            guard await FolderAccessStore.shared.ensureAccess(forFolder: folder) else {
+                log.error("No access to \(folder.lastPathComponent) — cannot extract")
+                return
+            }
         }
         var folders: [URL] = []
         for fileUrl in appUrl.files {
-            // a folder that cannot be created is a failed job already
-            guard let folderUrl = ExtractToFolder.makeFolder(for: fileUrl, in: appUrl.target, catalog: self.catalog) else {
+            // A folder that cannot be created is a failed job already. It goes
+            // next to the archive: in the window's folder, or in one expanded
+            // in it.
+            guard let folderUrl = ExtractToFolder.makeFolder(
+                for: fileUrl, in: appUrl.folder(of: fileUrl), catalog: self.catalog) else {
                 continue
             }
             // `honorsSmartExtraction` is false for this action: the folder
@@ -51,8 +58,10 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
             }
             folders.append(folderUrl)
         }
-        if !folders.isEmpty {
-            NSWorkspace.shared.activateFileViewerSelecting(folders)
+        // only where it takes no second Finder window
+        let selected = appUrl.itemsToSelect(folders)
+        if !selected.isEmpty {
+            NSWorkspace.shared.activateFileViewerSelecting(selected)
         }
     }
 }
