@@ -85,6 +85,17 @@ struct MacPackerApp: App {
                 .keyboardShortcut("n", modifiers: [.command, .shift])
 
                 Button {
+                    appDelegate.openNewTab()
+                } label: {
+                    Label {
+                        Text(.commonNewTab)
+                    } icon: {
+                        Image(systemName: "plus.square.on.square")
+                    }
+                }
+                .keyboardShortcut("t", modifiers: [.command])
+
+                Button {
                     appDelegate.showDropWindow()
                 } label: {
                     Label {
