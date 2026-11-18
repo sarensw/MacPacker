@@ -21,6 +21,9 @@ struct GeneralSettingsView: View {
     @AppStorage(Keys.showMenuBarItem) var showMenuBarItem: Bool = false
     @AppStorage(Keys.rememberRecentArchives) var rememberRecentArchives: Bool = true
     @AppStorage(Keys.smartExtraction, store: .macPackerShared) var smartExtraction: Bool = true
+    @AppStorage(Keys.extractNextToArchive, store: .macPackerShared) var extractNextToArchive: Bool = false
+    @AppStorage(Keys.closeWindowAfterExtraction) var closeWindowAfterExtraction: Bool = false
+    @AppStorage(Keys.trashArchiveAfterExtraction) var trashArchiveAfterExtraction: Bool = false
     @AppStorage(Keys.extractOnOpen) var extractOnOpen: Bool = false
     @AppStorage(Keys.excludeMacData) var excludeMacData: Bool = false
 
@@ -137,6 +140,36 @@ struct GeneralSettingsView: View {
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
             }
+
+            HStack(alignment: .top) {
+                Text(.settingsExtractNextToArchive)
+                    .frame(width: 200, alignment: .trailing)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Toggle(isOn: $extractNextToArchive) {}
+                        .help(Text(.settingsExtractNextToArchiveHint))
+                    Toggle(isOn: $closeWindowAfterExtraction) {
+                        Text(.settingsCloseWindowAfterExtraction)
+                    }
+                    .toggleStyle(.checkbox)
+                    .disabled(!extractNextToArchive)
+                    .help(Text(.settingsCloseWindowAfterExtractionHint))
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+
+            HStack(alignment: .top) {
+                Text(.settingsTrashArchiveAfterExtraction)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    Toggle(isOn: $trashArchiveAfterExtraction) {}
+                }
+                .padding(.leading, 8)
+                .frame(width: 240, alignment: .leading)
+            }
+            .help(Text(.settingsTrashArchiveAfterExtractionHint))
 
             HStack(alignment: .top) {
                 Text(.settingsExtractOnOpen)

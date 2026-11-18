@@ -21,8 +21,6 @@ struct ArchiveContentToolbarView: ToolbarContent {
     @Environment(\.openQuickCompressWindow) private var openQuickCompressWindow
     @Environment(\.openURL) private var openURL
     @Environment(\.openSettings) private var openSettings
-    @State private var isExportingItem: Bool = false
-    @State private var isExportingAll: Bool = false
     
     @ObservedObject var archiveState: ArchiveState
     let contentService: ArchiveContentService = ArchiveContentService()
@@ -111,7 +109,8 @@ struct ArchiveContentToolbarView: ToolbarContent {
             .disabled(!archiveState.canReadArchive || archiveState.selectedItems.isEmpty)
 
             Button {
-                isExportingItem.toggle()
+                ExtractionFollowUp.extractSelectedAskingIfNeeded(
+                    archiveState, in: ExtractionFollowUp.window(showing: archiveState))
             } label: {
                 Label {
                     Text(.commonExtractSelected)
@@ -121,22 +120,10 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
             .help(.commonExtractSelected)
             .disabled(!archiveState.canReadArchive || archiveState.selectedItems.isEmpty)
-            .fileImporter(
-                isPresented: $isExportingItem,
-                allowedContentTypes: [.folder],
-                allowsMultipleSelection: false
-            ) { result in
-                if case .success(let urls) = result,
-                   let folderURL = urls.first {
-                        archiveState.extract(
-                            items: archiveState.selectedItems,
-                            to: folderURL,
-                            smart: Keys.smartExtractionEnabled())
-                }
-            }
             
             Button {
-                isExportingAll.toggle()
+                ExtractionFollowUp.extractArchiveAskingIfNeeded(
+                    archiveState, in: ExtractionFollowUp.window(showing: archiveState))
             } label: {
                 Label {
                     Text(.commonExtractArchive)
@@ -146,18 +133,6 @@ struct ArchiveContentToolbarView: ToolbarContent {
             }
             .help(.commonExtractArchive)
             .disabled(!archiveState.canReadArchive)
-            .fileImporter(
-                isPresented: $isExportingAll,
-                allowedContentTypes: [.folder],
-                allowsMultipleSelection: false
-            ) { result in
-                if case .success(let urls) = result,
-                   let folderURL = urls.first {
-                        archiveState.extract(
-                            to: folderURL,
-                            smart: Keys.smartExtractionEnabled())
-                }
-            }
             
             Spacer()
             
