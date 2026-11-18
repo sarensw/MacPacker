@@ -6,7 +6,6 @@
 //
 
 import AppKit
-import Combine
 import Core
 import FinderMenu
 import Foundation
@@ -65,16 +64,13 @@ extension AppUrlHandler {
             return []
         }
 
-        let before = Set(folderContents(destination))
-
-        // extract(to:) raises isBusy before it returns and lowers it once the
-        // job ends — done, cancelled or failed
-        state.extract(to: destination, smart: smart)
-        for await busy in state.$isBusy.values where !busy {
-            break
+        let topLevel = state.root?.children?.compactMap { state.entries[$0]?.name } ?? []
+        // inside the grant that covers the destination, held until the end;
+        // what it put there — nothing, for a run that did not finish
+        let (_, extracted) = await ExtractionFollowUp.extracting(into: destination, named: topLevel) {
+            await state.extract(to: destination, smart: smart).value
         }
-
-        return folderContents(destination).filter { !before.contains($0) }
+        return extracted
     }
 }
 
@@ -82,11 +78,4 @@ extension AppUrlHandler {
 @MainActor
 private final class PasswordPrompt {
     var wasCancelled = false
-}
-
-private func folderContents(_ folder: URL) -> [URL] {
-    // a folder granted on an earlier launch is listed through its stored grant
-    Sandbox.accessSync(url: folder) {
-        (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
-    }
 }
