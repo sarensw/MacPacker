@@ -1,0 +1,54 @@
+# ── Announce releases on Discord ──────────────────────────────────────────────
+# Posts the notes of every new release, beta or final, to the Discord
+# announcements channel. The webhook lives in the DISCORD_WEBHOOK_URL secret.
+#
+# Not `on: release`: Distribute and Distribute Release create the GH Release
+# with GITHUB_TOKEN, and GITHUB_TOKEN events start no workflows. So this runs
+# when either of them finishes and posts the release that run published: its
+# tag sits on the commit the run built, and it came out after the run started.
+# The commit alone is not enough: a final release is tagged on its last beta's
+# commit, and a lightweight tag dates the release to that commit, so the
+# release list puts the beta first. A run that published nothing posts nothing.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Announce Release
+
+on:
+  workflow_run:
+    workflows: [Distribute, Distribute Release]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  discord:
+    if: github.repository == 'sarensw/MacPacker' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post the release notes to Discord
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          # Not run_started_at: a re-run keeps created_at, so a release the
+          # first attempt published still counts.
+          RUN_CREATED_AT: ${{ github.event.workflow_run.created_at }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        # flags 4: no link preview. allowed_mentions: an "@everyone" in the notes
+        # pings nobody.
+        # ponytail: Discord rejects messages over 2000 characters, notes run ~750;
+        # a longer one fails this job: shorten the release text, re-run the job.
+        run: |
+          for tag in $(gh release list --repo "$GITHUB_REPOSITORY" --json tagName,publishedAt \
+              --jq '.[] | select(.publishedAt >= env.RUN_CREATED_AT) | .tagName'); do
+            [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$tag" --jq .sha)" = "$HEAD_SHA" ] && break
+            tag=
+          done
+          if [ -z "$tag" ]; then
+            echo "This run published no release."
+            exit 0
+          fi
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json tagName,body,url --jq '{
+            content: "## MacPacker \(.tagName)\n\(.body | sub("\\s+$"; ""))\n\n[Release notes and downloads](\(.url))",
+            flags: 4,
+            allowed_mentions: {parse: []}
+          }' | curl -sS --fail-with-body -H 'Content-Type: application/json' -d @- "$DISCORD_WEBHOOK_URL"

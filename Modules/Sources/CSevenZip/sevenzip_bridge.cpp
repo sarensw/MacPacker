@@ -540,6 +540,15 @@ public:
     /// through SetOperationResult and *still* returns S_OK from Extract(), so
     /// without this the caller cannot tell a wrong password from a success.
     Int32 failedOpResult = NArchive::NExtract::NOperationResult::kOK;
+    /// Every entry that did not decode, in the order they came.
+    std::vector<UInt32> failedEntries;
+    /// What each of those ended with, an NOperationResult.
+    std::vector<Int32> failedResults;
+    /// Set by a test: once an encrypted entry decoded and matched, the password
+    /// is right, and an encrypted entry failing after it is damaged.
+    /// Extraction still reads every such failure as a wrong password.
+    bool testing = false;
+    bool passwordProven = false;
     /// Extracted files whose name starts with "._", i.e. candidate AppleDouble
     /// sidecars. They cannot be resolved as they arrive: a sidecar may be stored
     /// before the entry it describes, and `._x` sorts before `x`, so that is the
@@ -575,6 +584,7 @@ private:
     FString _destDir;
     CMyComPtr<ISequentialOutStream> _outFileStream;
     FString _currentFilePath;
+    UInt32 _currentIndex = 0;        // entry GetStream was last asked for
     UInt32 _currentMode = 0;         // POSIX mode from kpidPosixAttrib; 0 if unknown
     EntryTime _currentTime;          // kpidMTime of the entry being written
     bool _currentIsSymlink = false;  // entry is a Unix symlink (S_IFLNK)
@@ -593,6 +603,7 @@ Z7_COM7F_IMF(CExtractCallback::GetStream(
 
     // Reset per-entry POSIX state. SetOperationResult only acts when GetStream
     // fills these in below for an actually-extracted file.
+    _currentIndex = index;
     _currentFilePath.Empty();
     _currentMode = 0;
     _currentTime = EntryTime();
@@ -906,6 +917,9 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
     // back, chmod it, or replace it with a symlink.
     _outFileStream.Release();
 
+    if (opRes == NArchive::NExtract::NOperationResult::kOK && _currentIsEncrypted)
+        passwordProven = true;
+
     if (opRes != NArchive::NExtract::NOperationResult::kOK) {
         // The entry did not decode. Whatever bytes landed on disk are garbage —
         // usually zero of them — so remove the file instead of leaving an empty
@@ -916,7 +930,7 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
         // 7z AES stores no password verifier, so the only sign of a bad
         // password is that the plaintext fails its CRC. On an encrypted entry
         // that is what a wrong password looks like, not a damaged archive.
-        if (_currentIsEncrypted &&
+        if (_currentIsEncrypted && !(testing && passwordProven) &&
             (opRes == NArchive::NExtract::NOperationResult::kDataError ||
              opRes == NArchive::NExtract::NOperationResult::kCRCError))
             opRes = NArchive::NExtract::NOperationResult::kWrongPassword;
@@ -926,6 +940,8 @@ Z7_COM7F_IMF(CExtractCallback::SetOperationResult(Int32 opRes))
         if (failedOpResult == NArchive::NExtract::NOperationResult::kOK ||
             opRes == NArchive::NExtract::NOperationResult::kWrongPassword)
             failedOpResult = opRes;
+        failedEntries.push_back(_currentIndex);
+        failedResults.push_back(opRes);
         _currentIsSymlink = false;
         _currentMode = 0;
         _currentTime = EntryTime();
@@ -1482,6 +1498,168 @@ const char *sz_format_name(SZArchiveRef archive) {
     return handle->levels.back().format.c_str();
 }
 
+/// A name for each standard archive-level property 7-Zip's handlers report,
+/// or NULL. Their own properties come with a name; one neither names shows as
+/// its number.
+static const char *ArchivePropertyName(PROPID id) {
+    switch (id) {
+    case kpidMainSubfile: return "Main subfile";
+    case kpidPath: return "Path";
+    case kpidName: return "Name";
+    case kpidExtension: return "Extension";
+    case kpidSize: return "Size";
+    case kpidPackSize: return "Packed size";
+    case kpidCTime: return "Created";
+    case kpidMTime: return "Modified";
+    case kpidSolid: return "Solid";
+    case kpidCommented: return "Commented";
+    case kpidEncrypted: return "Encrypted";
+    case kpidCRC: return "CRC";
+    case kpidMethod: return "Method";
+    case kpidHostOS: return "Host OS";
+    case kpidFileSystem: return "File system";
+    case kpidComment: return "Comment";
+    case kpidNumSubFiles: return "Files";
+    case kpidUnpackVer: return "Version needed";
+    case kpidVolume: return "Volume";
+    case kpidIsVolume: return "Is volume";
+    case kpidOffset: return "Offset";
+    case kpidNumBlocks: return "Blocks";
+    case kpidNumVolumes: return "Volumes";
+    case kpidBit64: return "64-bit";
+    case kpidBigEndian: return "Big-endian";
+    case kpidCpu: return "CPU";
+    case kpidPhySize: return "Physical size";
+    case kpidHeadersSize: return "Headers size";
+    case kpidChecksum: return "Checksum";
+    case kpidCharacts: return "Characteristics";
+    case kpidVa: return "Virtual address";
+    case kpidId: return "ID";
+    case kpidCreatorApp: return "Creator";
+    case kpidSectorSize: return "Sector size";
+    case kpidError: return "Error";
+    case kpidFreeSpace: return "Free space";
+    case kpidClusterSize: return "Cluster size";
+    case kpidVolumeName: return "Volume name";
+    case kpidIsTree: return "Is tree";
+    case kpidErrorFlags: return "Error flags";
+    case kpidWarningFlags: return "Warning flags";
+    case kpidWarning: return "Warning";
+    case kpidNumStreams: return "Streams";
+    case kpidTotalPhySize: return "Total physical size";
+    case kpidVolumeIndex: return "Volume index";
+    case kpidSubType: return "Subtype";
+    case kpidShortComment: return "Short comment";
+    case kpidCodePage: return "Code page";
+    case kpidIsNotArcType: return "Not an archive type";
+    case kpidPhySizeCantBeDetected: return "Physical size unknown";
+    case kpidTailSize: return "Tail size";
+    case kpidEmbeddedStubSize: return "Embedded stub size";
+    default: return nullptr;
+    }
+}
+
+/// `kpv_ErrorFlags_*` bits by name, as 7-Zip's own messages call them.
+static std::string ErrorFlagsToString(UInt32 flags) {
+    static const struct { UInt32 bit; const char *name; } kFlags[] = {
+        { kpv_ErrorFlags_IsNotArc, "isNotArc" },
+        { kpv_ErrorFlags_HeadersError, "headersError" },
+        { kpv_ErrorFlags_EncryptedHeadersError, "encryptedHeadersError" },
+        { kpv_ErrorFlags_UnavailableStart, "unavailableStart" },
+        { kpv_ErrorFlags_UnconfirmedStart, "unconfirmedStart" },
+        { kpv_ErrorFlags_UnexpectedEnd, "unexpectedEnd" },
+        { kpv_ErrorFlags_DataAfterEnd, "dataAfterEnd" },
+        { kpv_ErrorFlags_UnsupportedMethod, "unsupportedMethod" },
+        { kpv_ErrorFlags_UnsupportedFeature, "unsupportedFeature" },
+        { kpv_ErrorFlags_DataError, "dataError" },
+        { kpv_ErrorFlags_CrcError, "crcError" },
+    };
+    std::string s;
+    for (const auto &flag : kFlags) {
+        if ((flags & flag.bit) == 0) continue;
+        if (!s.empty()) s += ",";
+        s += flag.name;
+    }
+    UInt32 known = 0;
+    for (const auto &flag : kFlags) known |= flag.bit;
+    if ((flags & ~known) != 0) {
+        char hex[16];
+        snprintf(hex, sizeof hex, "0x%X", (unsigned)(flags & ~known));
+        if (!s.empty()) s += ",";
+        s += hex;
+    }
+    return s;
+}
+
+char *sz_archive_properties(SZArchiveRef archive) {
+    if (!archive) return nullptr;
+    try {
+        auto *handle = static_cast<SZArchiveHandle *>(archive);
+        // Asked of every level whether its handler lists them or not: they are
+        // where an open that went wrong says why, and how much of the file the
+        // archive takes up.
+        static const PROPID kAlwaysAsked[] = {
+            kpidPhySize, kpidHeadersSize, kpidOffset, kpidTailSize, kpidEmbeddedStubSize,
+            kpidPhySizeCantBeDetected, kpidErrorFlags, kpidWarningFlags, kpidError, kpidWarning,
+            kpidIsNotArcType, kpidMainSubfile, kpidIsVolume, kpidNumVolumes, kpidVolumeIndex,
+            kpidTotalPhySize, kpidCodePage,
+        };
+        std::string out;
+        for (size_t level = 0; level < handle->levels.size(); level++) {
+            IInArchive *arc = handle->levels[level].archive;
+            std::vector<std::pair<PROPID, UString>> props;
+            for (PROPID id : kAlwaysAsked) props.push_back({ id, UString() });
+            UInt32 numProps = 0;
+            if (arc->GetNumberOfArchiveProperties(&numProps) == S_OK) {
+                for (UInt32 i = 0; i < numProps; i++) {
+                    CMyComBSTR name;
+                    PROPID id;
+                    VARTYPE vt;
+                    if (arc->GetArchivePropertyInfo(i, &name, &id, &vt) != S_OK) continue;
+                    bool known = false;
+                    for (const auto &p : props) known = known || p.first == id;
+                    if (!known) props.push_back({ id, name ? UString((const wchar_t *)name) : UString() });
+                }
+            }
+            for (const auto &p : props) {
+                NWindows::NCOM::CPropVariant prop;
+                if (arc->GetArchiveProperty(p.first, &prop) != S_OK || prop.vt == VT_EMPTY) continue;
+                std::string value;
+                if (p.first == kpidErrorFlags || p.first == kpidWarningFlags) {
+                    if (prop.vt != VT_UI4 || prop.ulVal == 0) continue;
+                    value = ErrorFlagsToString(prop.ulVal);
+                } else if (prop.vt == VT_BSTR) {
+                    UString text = prop.bstrVal ? UString(prop.bstrVal) : UString();
+                    // The user's own words, or a name of theirs: shown by length only,
+                    // so the result can be shown and sent as it is.
+                    if (p.first == kpidComment || p.first == kpidShortComment
+                        || p.first == kpidPath || p.first == kpidName) {
+                        value = "<" + std::to_string(text.Len()) + " characters>";
+                    } else {
+                        value = UStringToUTF8(text);
+                    }
+                } else {
+                    char buffer[64];
+                    ConvertPropVariantToShortString(prop, buffer);
+                    value = buffer;
+                }
+                if (value.empty()) continue;
+                for (char &c : value)
+                    if (c == '\t' || c == '\n' || c == '\r') c = ' ';
+                const char *known = ArchivePropertyName(p.first);
+                std::string name = known ? known
+                    : !p.second.IsEmpty() ? UStringToUTF8(p.second)
+                    : "Property " + std::to_string(p.first);
+                out += std::to_string(level) + "\t" + std::to_string(p.first) + "\t"
+                    + name + "\t" + value + "\n";
+            }
+        }
+        return strdup(out.c_str());
+    } catch (...) {
+        return nullptr;
+    }
+}
+
 bool sz_get_entry(SZArchiveRef archive, uint32_t index, SZEntry *entry_out) {
     if (!archive || !entry_out) return false;
     try {
@@ -1698,6 +1876,112 @@ int sz_extract_all(SZArchiveRef archive, const char *dest_dir,
         return finishExtract(callback, hr, error_out);
     } catch (...) {
         if (error_out) *error_out = strdup("Internal error during extraction");
+        return SZ_EXTRACT_FAILED;
+    }
+}
+
+/// Whether `archive` reports damage of its own: an error flag or an error
+/// message, as 7-Zip's own client counts them, or a checksum of its own that
+/// doesn't match, which 7-Zip only warns of (a dmg's, a xar's table of
+/// contents). Other warnings are left out, as there: a zip the way Nextcloud
+/// writes it warns of a headers error and holds nothing that is wrong.
+/// What it reports goes into `found` as kpv_ErrorFlags_* bits, the checksum as
+/// kpv_ErrorFlags_CrcError, and its message into `message` unless one is there.
+static bool reportsDamage(IInArchive *archive, UInt32 &found, std::string &message) {
+    UInt32 own = 0;
+    NWindows::NCOM::CPropVariant flags;
+    if (archive->GetArchiveProperty(kpidErrorFlags, &flags) == S_OK && flags.vt == VT_UI4)
+        own |= flags.ulVal;
+    NWindows::NCOM::CPropVariant warnings;
+    if (archive->GetArchiveProperty(kpidWarningFlags, &warnings) == S_OK && warnings.vt == VT_UI4)
+        own |= warnings.ulVal & kpv_ErrorFlags_CrcError;
+    found |= own;
+    NWindows::NCOM::CPropVariant error;
+    const bool hasMessage = archive->GetArchiveProperty(kpidError, &error) == S_OK
+        && error.vt != VT_EMPTY;
+    if (hasMessage && message.empty())
+        message = PropVariantToUTF8(error);
+    return own != 0 || hasMessage;
+}
+
+int sz_test_all(SZArchiveRef archive,
+                sz_progress_callback progress, void *progress_context,
+                uint32_t **damaged_out, int32_t **damaged_results_out,
+                uint32_t *damaged_count_out,
+                bool *archive_damaged_out, uint32_t *archive_flags_out,
+                char **archive_message_out, char **error_out) {
+    if (damaged_out) *damaged_out = nullptr;
+    if (damaged_results_out) *damaged_results_out = nullptr;
+    if (damaged_count_out) *damaged_count_out = 0;
+    if (archive_damaged_out) *archive_damaged_out = false;
+    if (archive_flags_out) *archive_flags_out = 0;
+    if (archive_message_out) *archive_message_out = nullptr;
+    if (!archive) {
+        if (error_out) *error_out = strdup("Invalid arguments");
+        return SZ_EXTRACT_FAILED;
+    }
+    try {
+        auto *handle = static_cast<SZArchiveHandle *>(archive);
+
+        // No destination: in test mode the callback hands out no stream, and
+        // the handler decodes each entry into nothing.
+        auto *callback = new CExtractCallback(handle->activeArchive(), handle->sourceName,
+                                                handle->decodedPaths, FString(),
+                                                handle->password, handle->hasPassword,
+                                                progress, progress_context);
+        CMyComPtr<IArchiveExtractCallback> callbackRef(callback);
+        callback->testing = true;
+
+        const HRESULT hr = handle->activeArchive()->Extract(
+            nullptr, (UInt32)(Int32)-1, 1, callback);
+
+        if (callback->aborted || hr == E_ABORT)
+            return SZ_EXTRACT_ABORTED;
+        if (callback->failedOpResult == NArchive::NExtract::NOperationResult::kWrongPassword)
+            return SZ_EXTRACT_WRONG_PASSWORD;
+        // S_FALSE is a handler's word for data that is broken, with no entry to
+        // blame. Anything else is the test failing, not the archive.
+        if (hr != S_OK && hr != S_FALSE) {
+            if (error_out) *error_out = strdup("The archive could not be tested");
+            return SZ_EXTRACT_FAILED;
+        }
+
+        // Asked after the run, since some handlers find out while decoding: xz
+        // reports there what its decoder ran into.
+        bool archiveDamaged = hr == S_FALSE;
+        UInt32 archiveFlags = 0;
+        std::string archiveMessage;
+        for (const SZArchiveLevel &level : handle->levels)
+            archiveDamaged = reportsDamage(level.archive, archiveFlags, archiveMessage) || archiveDamaged;
+
+        const std::vector<UInt32> &damaged = callback->failedEntries;
+        if (archive_damaged_out) *archive_damaged_out = archiveDamaged;
+        if (archive_flags_out) *archive_flags_out = archiveFlags;
+        // only for the log: without it, nothing is lost
+        if (archive_message_out && !archiveMessage.empty())
+            *archive_message_out = strdup(archiveMessage.c_str());
+        if (!damaged.empty() && damaged_out && damaged_count_out) {
+            *damaged_out = (uint32_t *)malloc(damaged.size() * sizeof(uint32_t));
+            int32_t *results = damaged_results_out
+                ? (int32_t *)malloc(damaged.size() * sizeof(int32_t)) : nullptr;
+            // without the lists, damage would read as none
+            if (!*damaged_out || (damaged_results_out && !results)) {
+                free(*damaged_out);
+                *damaged_out = nullptr;
+                free(results);
+                if (error_out) *error_out = strdup("The archive could not be tested");
+                return SZ_EXTRACT_FAILED;
+            }
+            std::copy(damaged.begin(), damaged.end(), *damaged_out);
+            if (results) {
+                std::copy(callback->failedResults.begin(), callback->failedResults.end(), results);
+                *damaged_results_out = results;
+            }
+            *damaged_count_out = (uint32_t)damaged.size();
+        }
+        return damaged.empty() && !archiveDamaged ? SZ_EXTRACT_OK : SZ_TEST_DAMAGED;
+    } catch (...) {
+        if (error_out) *error_out = strdup("Internal error during the test");
         return SZ_EXTRACT_FAILED;
     }
 }

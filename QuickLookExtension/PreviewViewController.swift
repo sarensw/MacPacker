@@ -7,6 +7,7 @@
 
 import ArchivePreviewUI
 import Cocoa
+import Core
 import Quartz
 
 /// QuickLook entry point. All of the preview UI and archive loading lives in the
@@ -21,6 +22,9 @@ class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     func preparePreviewOfFile(at url: URL) async throws {
+        // Here, not in the shared controller: the harness runs it in the app,
+        // whose own files are not the earlier previews'.
+        CacheCleaner.removeEarlierPreviews()
         try await preview.loadPreview(of: url)
     }
 }

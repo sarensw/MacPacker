@@ -17,27 +17,63 @@
   },
   "changelog": {
     "comingNext": {
-      "en": "Integrity check and recovery",
-      "zh-Hans": "完整性检查与恢复",
-      "fr": "Vérification de l’intégrité et récupération",
-      "de": "Integritätsprüfung und Wiederherstellung",
-      "it": "Verifica dell’integrità e recupero",
-      "ja": "整合性チェックと復旧",
-      "fa": "بررسی یکپارچگی و بازیابی",
-      "pl": "Sprawdzanie integralności i odzyskiwanie",
-      "pt-BR": "Verificação de integridade e recuperação",
-      "ru": "Проверка целостности и восстановление",
-      "uk": "Перевірка цілісності та відновлення",
-      "es-MX": "Verificación de integridad y recuperación",
-      "ko": "무결성 검사 및 복구",
-      "nl": "Integriteitscontrole en herstel",
-      "vi": "Kiểm tra tính toàn vẹn và khôi phục",
-      "tr": "Bütünlük kontrolü ve kurtarma"
+      "en": "Tree view for archives + support for more formats",
+      "zh-Hans": "压缩包树状视图 + 支持更多格式",
+      "fr": "Vue arborescente des archives + prise en charge de nouveaux formats",
+      "de": "Baumansicht für Archive + Unterstützung weiterer Formate",
+      "it": "Vista ad albero per gli archivi + supporto per più formati",
+      "ja": "アーカイブのツリー表示 + 対応フォーマットの追加",
+      "fa": "نمای درختی برای آرشیوها + پشتیبانی از فرمت‌های بیشتر",
+      "pl": "Widok drzewa dla archiwów + obsługa kolejnych formatów",
+      "pt-BR": "Visualização em árvore para arquivos compactados + suporte a mais formatos",
+      "ru": "Просмотр архивов в виде дерева + поддержка новых форматов",
+      "uk": "Перегляд архівів у вигляді дерева + підтримка нових форматів",
+      "es-MX": "Vista de árbol para archivos comprimidos + compatibilidad con más formatos",
+      "ko": "압축 파일 트리 보기 + 더 많은 포맷 지원",
+      "nl": "Boomweergave voor archieven + ondersteuning voor meer formaten",
+      "tr": "Arşivler için ağaç görünümü + daha fazla biçim desteği",
+      "vi": "Chế độ xem dạng cây cho tệp nén + hỗ trợ thêm định dạng",
+      "ar": "عرض شجري للأرشيفات + دعم المزيد من الصيغ",
+      "ca": "Vista en arbre per als arxius + compatibilitat amb més formats",
+      "el": "Προβολή δέντρου για συμπιεσμένα αρχεία + υποστήριξη περισσότερων μορφών",
+      "nb": "Trevisning for arkiver + støtte for flere formater",
+      "zh-TW": "壓縮檔樹狀檢視 + 支援更多格式",
+      "hi": "आर्काइव के लिए ट्री व्यू + अधिक फ़ॉर्मैट का सपोर्ट"
     },
     "versions": [
       {
         "version": "1.3.0",
         "items": [
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Test an archive's integrity",
+                "zh-Hans": "测试压缩包的完整性",
+                "fr": "Tester l’intégrité d’une archive",
+                "de": "Integrität eines Archivs prüfen",
+                "it": "Verificare l’integrità di un archivio",
+                "ja": "アーカイブの整合性をテスト",
+                "fa": "بررسی یکپارچگی آرشیو",
+                "pl": "Testowanie integralności archiwum",
+                "pt-BR": "Testar a integridade de um arquivo compactado",
+                "ru": "Проверка целостности архива",
+                "uk": "Перевірка цілісності архіву",
+                "es-MX": "Probar la integridad de un archivo comprimido",
+                "ko": "압축 파일 무결성 테스트",
+                "nl": "Integriteit van een archief testen",
+                "tr": "Arşiv bütünlüğünü test etme",
+                "vi": "Kiểm tra tính toàn vẹn của tệp nén",
+                "ar": "اختبار سلامة الأرشيف",
+                "ca": "Comprova la integritat d’un arxiu",
+                "el": "Έλεγχος ακεραιότητας συμπιεσμένου αρχείου",
+                "nb": "Test integriteten til et arkiv",
+                "zh-TW": "測試壓縮檔的完整性",
+                "hi": "आर्काइव की अखंडता जाँचें",
+                "cs": "Testování integrity archivu"
+            },
+            "issues": ["232"]
+          },
           {
             "type": "feat",
             "highlight": true,
@@ -63,7 +99,8 @@
                 "el": "Εντοπισμός και επιλογή κωδικοποίησης ονομάτων αρχείων",
                 "nb": "Oppdag og velg koding av filnavn",
                 "zh-TW": "偵測並選擇檔案名稱編碼",
-                "hi": "फ़ाइल नामों की एनकोडिंग पहचानें और चुनें"
+                "hi": "फ़ाइल नामों की एनकोडिंग पहचानें और चुनें",
+                "cs": "Rozpoznání a volba kódování názvů souborů"
             },
             "issues": ["373"]
           },
@@ -91,7 +128,8 @@
                 "el": "Διακριτικό εικονίδιο στο Finder και στη γραμμή μενού",
                 "nb": "Diskret ikon i Finder og menylinjen",
                 "zh-TW": "Finder 與選單列的簡約圖像",
-                "hi": "Finder और मेनू बार के लिए सादा आइकन"
+                "hi": "Finder और मेनू बार के लिए सादा आइकन",
+                "cs": "Nenápadná ikona ve Finderu a na řádku nabídek"
             },
             "issues": ["311"]
           },
@@ -120,7 +158,8 @@
                 "el": "Ενσωμάτωση στο Finder για το iCloud Drive και άλλα μέσω του μενού Υπηρεσίες",
                 "nb": "Finder-integrasjon for iCloud Drive og andre via Tjenester-menyen",
                 "zh-TW": "透過「服務」選單在 iCloud 雲碟等位置使用 Finder 整合",
-                "hi": "सेवाएँ मेनू से iCloud Drive और अन्य जगहों के लिए Finder इंटीग्रेशन"
+                "hi": "सेवाएँ मेनू से iCloud Drive और अन्य जगहों के लिए Finder इंटीग्रेशन",
+                "cs": "Integrace do Finderu pro iCloud Drive a další přes nabídku Služby"
             },
             "issues": ["342"]
           },
@@ -148,7 +187,8 @@
                 "el": "Εξαίρεση όλων των δεδομένων του Mac από τα αρχεία",
                 "nb": "Utelat alle Mac-spesifikke data fra arkiver",
                 "zh-TW": "從壓縮檔中排除所有 Mac 專屬資料",
-                "hi": "आर्काइव से सभी Mac-विशिष्ट डेटा बाहर रखें"
+                "hi": "आर्काइव से सभी Mac-विशिष्ट डेटा बाहर रखें",
+                "cs": "Vynechání všech dat specifických pro Mac z archivů"
             },
             "issues": ["236"]
           },
@@ -176,13 +216,102 @@
                 "el": "Συμπίεση για Windows από το Finder",
                 "nb": "Komprimer for Windows fra Finder",
                 "zh-TW": "從 Finder 為 Windows 壓縮",
-                "hi": "Finder से Windows के लिए कंप्रेस करें"
+                "hi": "Finder से Windows के लिए कंप्रेस करें",
+                "cs": "Komprimace pro Windows z Finderu"
             },
             "issues": ["236"]
           },
           {
-            "type": "fix",
+            "type": "feat",
             "highlight": true,
+            "title": {
+                "en": "Open and extract Zstandard files",
+                "zh-Hans": "打开并解压 Zstandard 文件",
+                "fr": "Ouvrir et extraire les fichiers Zstandard",
+                "de": "Zstandard-Dateien öffnen und entpacken",
+                "it": "Aprire ed estrarre i file Zstandard",
+                "ja": "Zstandard ファイルを開いて展開",
+                "fa": "باز کردن و استخراج فایل‌های Zstandard",
+                "pl": "Otwieranie i wypakowywanie plików Zstandard",
+                "pt-BR": "Abrir e extrair arquivos Zstandard",
+                "ru": "Открытие и извлечение файлов Zstandard",
+                "uk": "Відкриття та розпакування файлів Zstandard",
+                "es-MX": "Abrir y extraer archivos Zstandard",
+                "ko": "Zstandard 파일 열기 및 압축 해제",
+                "nl": "Zstandard-bestanden openen en uitpakken",
+                "tr": "Zstandard dosyalarını açma ve çıkarma",
+                "vi": "Mở và giải nén tệp Zstandard",
+                "ar": "فتح ملفات Zstandard واستخراجها",
+                "ca": "Obre i extreu fitxers Zstandard",
+                "el": "Άνοιγμα και εξαγωγή αρχείων Zstandard",
+                "nb": "Åpne og pakk ut Zstandard-filer",
+                "zh-TW": "開啟並解壓縮 Zstandard 檔案",
+                "hi": "Zstandard फ़ाइलें खोलें और निकालें",
+                "cs": "Otevírání a rozbalování souborů Zstandard"
+            },
+            "issues": ["363"]
+          },
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Join the MacPacker community on Discord",
+                "zh-Hans": "加入 Discord 上的 MacPacker 社区",
+                "fr": "Rejoignez la communauté MacPacker sur Discord",
+                "de": "Werde Teil der MacPacker-Community auf Discord",
+                "it": "Unisciti alla community di MacPacker su Discord",
+                "ja": "Discord の MacPacker コミュニティに参加",
+                "fa": "به جامعهٔ MacPacker در Discord بپیوندید",
+                "pl": "Dołącz do społeczności MacPacker na Discordzie",
+                "pt-BR": "Participe da comunidade do MacPacker no Discord",
+                "ru": "Присоединяйтесь к сообществу MacPacker в Discord",
+                "uk": "Приєднуйтеся до спільноти MacPacker у Discord",
+                "es-MX": "Únete a la comunidad de MacPacker en Discord",
+                "ko": "Discord에서 MacPacker 커뮤니티에 참여하세요",
+                "nl": "Word lid van de MacPacker-community op Discord",
+                "tr": "Discord'daki MacPacker topluluğuna katılın",
+                "vi": "Tham gia cộng đồng MacPacker trên Discord",
+                "ar": "انضموا إلى مجتمع MacPacker على Discord",
+                "ca": "Uneix-te a la comunitat de MacPacker a Discord",
+                "el": "Γίνετε μέλος της κοινότητας του MacPacker στο Discord",
+                "nb": "Bli med i MacPacker-fellesskapet på Discord",
+                "zh-TW": "加入 Discord 上的 MacPacker 社群",
+                "hi": "Discord पर MacPacker समुदाय से जुड़ें",
+                "cs": "Připojte se ke komunitě MacPackeru na Discordu"
+            },
+            "issues": ["417"]
+          },
+          {
+            "type": "feat",
+            "title": {
+                "en": "Analyze an archive for a bug report",
+                "zh-Hans": "分析压缩包以提交错误报告",
+                "fr": "Analyser une archive pour signaler un bug",
+                "de": "Archiv für einen Fehlerbericht analysieren",
+                "it": "Analizzare un archivio per segnalare un bug",
+                "ja": "バグ報告用にアーカイブを分析",
+                "fa": "تحلیل آرشیو برای گزارش خطا",
+                "pl": "Analiza archiwum do zgłoszenia błędu",
+                "pt-BR": "Analisar um arquivo compactado para relatar um bug",
+                "ru": "Анализ архива для отчёта об ошибке",
+                "uk": "Аналіз архіву для звіту про помилку",
+                "es-MX": "Analizar un archivo comprimido para reportar un error",
+                "ko": "버그 신고를 위한 압축 파일 분석",
+                "nl": "Archief analyseren voor een bugmelding",
+                "tr": "Hata raporu için arşivi analiz etme",
+                "vi": "Phân tích tệp nén để báo lỗi",
+                "ar": "تحليل الأرشيف للإبلاغ عن خطأ",
+                "ca": "Analitza un arxiu per a un informe d’error",
+                "el": "Ανάλυση συμπιεσμένου αρχείου για αναφορά σφάλματος",
+                "nb": "Analyser et arkiv for en feilrapport",
+                "zh-TW": "分析壓縮檔以回報錯誤",
+                "hi": "बग रिपोर्ट के लिए आर्काइव का विश्लेषण करें",
+                "cs": "Analýza archivu pro hlášení chyby"
+            },
+            "issues": ["416"]
+          },
+          {
+            "type": "fix",
             "title": {
                 "en": "Missing recent archive crashes the app",
                 "zh-Hans": "已不存在的最近压缩包会导致应用程序崩溃",
@@ -205,7 +334,8 @@
                 "el": "Πρόσφατο αρχείο που λείπει προκαλεί κατάρρευση της εφαρμογής",
                 "nb": "Et manglende nylig arkiv krasjer appen",
                 "zh-TW": "最近使用的壓縮檔已不存在時 App 當機",
-                "hi": "हाल का आर्काइव गुम होने पर ऐप क्रैश हो जाता है"
+                "hi": "हाल का आर्काइव गुम होने पर ऐप क्रैश हो जाता है",
+                "cs": "Chybějící nedávný archiv způsobí pád aplikace"
             },
             "issues": [
                 "388"
@@ -235,7 +365,8 @@
                 "el": "Άλλες εφαρμογές μπορούν να ξεκινούν ενέργειες του Finder",
                 "nb": "Andre apper kan starte Finder-handlinger",
                 "zh-TW": "其他 App 可以啟動 Finder 動作",
-                "hi": "दूसरे ऐप Finder क्रियाएँ शुरू कर सकते हैं"
+                "hi": "दूसरे ऐप Finder क्रियाएँ शुरू कर सकते हैं",
+                "cs": "Jiné aplikace mohou spouštět akce Finderu"
             },
             "issues": ["286"]
           },
@@ -263,9 +394,10 @@
                 "el": "Η εκκαθάριση προσωρινών αρχείων μπορεί να παγώσει την εφαρμογή",
                 "nb": "Sletting av midlertidige filer kan fryse appen",
                 "zh-TW": "清除暫存檔案時 App 可能停止回應",
-                "hi": "अस्थायी फ़ाइलें साफ़ करने से ऐप फ़्रीज़ हो सकता है"
+                "hi": "अस्थायी फ़ाइलें साफ़ करने से ऐप फ़्रीज़ हो सकता है",
+                "cs": "Při mazání dočasných souborů může aplikace zamrznout"
             },
-            "issues": ["301"]
+            "issues": ["301", "413"]
           },
           {
             "type": "fix",
@@ -291,9 +423,68 @@
                 "el": "Το σύρσιμο αρχείου σε άλλο δίσκο μπορεί να παγώσει την εφαρμογή",
                 "nb": "Å dra en fil til en annen disk kan fryse appen",
                 "zh-TW": "將檔案拖到其他磁碟時 App 可能停止回應",
-                "hi": "किसी फ़ाइल को दूसरी डिस्क पर ड्रैग करने से ऐप फ़्रीज़ हो सकता है"
+                "hi": "किसी फ़ाइल को दूसरी डिस्क पर ड्रैग करने से ऐप फ़्रीज़ हो सकता है",
+                "cs": "Při přetažení souboru na jiný disk může aplikace zamrznout"
             },
             "issues": ["300"]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "App Store version shows up as MacPackerStore",
+                "zh-Hans": "App Store 版本显示为 MacPackerStore",
+                "fr": "La version App Store apparaît comme MacPackerStore",
+                "de": "App Store-Version erscheint als MacPackerStore",
+                "it": "La versione App Store appare come MacPackerStore",
+                "ja": "App Store版がMacPackerStoreと表示される",
+                "fa": "نسخه App Store با نام MacPackerStore نمایش داده می‌شود",
+                "pl": "Wersja z App Store wyświetla się jako MacPackerStore",
+                "pt-BR": "A versão da App Store aparece como MacPackerStore",
+                "ru": "Версия из App Store отображается как MacPackerStore",
+                "uk": "Версія з App Store відображається як MacPackerStore",
+                "es-MX": "La versión de App Store aparece como MacPackerStore",
+                "ko": "App Store 버전이 MacPackerStore로 표시됨",
+                "nl": "App Store-versie verschijnt als MacPackerStore",
+                "tr": "App Store sürümü MacPackerStore olarak görünüyor",
+                "vi": "Phiên bản App Store hiển thị với tên MacPackerStore",
+                "ar": "إصدار App Store يظهر باسم MacPackerStore",
+                "ca": "La versió de l’App Store apareix com a MacPackerStore",
+                "el": "Η έκδοση του App Store εμφανίζεται ως MacPackerStore",
+                "nb": "App Store-versjonen vises som MacPackerStore",
+                "zh-TW": "App Store 版本顯示為 MacPackerStore",
+                "hi": "App Store संस्करण MacPackerStore नाम से दिखता है",
+                "cs": "Verze z App Store se zobrazuje jako MacPackerStore"
+            },
+            "issues": ["258"]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Quick Look leaves temporary files behind",
+                "zh-Hans": "快速查看会留下临时文件",
+                "fr": "Coup d’œil laisse des fichiers temporaires",
+                "de": "„Übersicht“ hinterlässt temporäre Dateien",
+                "it": "Visualizzazione rapida lascia file temporanei",
+                "ja": "クイックルックが一時ファイルを残す",
+                "fa": "Quick Look فایل‌های موقت را باقی می‌گذارد",
+                "pl": "Szybki przegląd pozostawia pliki tymczasowe",
+                "pt-BR": "A Visualização Rápida deixa arquivos temporários",
+                "ru": "Быстрый просмотр оставляет временные файлы",
+                "uk": "Швидкий перегляд залишає тимчасові файли",
+                "es-MX": "Vista rápida deja archivos temporales",
+                "ko": "훑어보기가 임시 파일을 남김",
+                "nl": "Snelle weergave laat tijdelijke bestanden achter",
+                "tr": "Göz At geçici dosyaları geride bırakıyor",
+                "vi": "Xem nhanh để lại tệp tạm",
+                "ar": "المعاينة السريعة تترك ملفات مؤقتة",
+                "ca": "Vista ràpida deixa fitxers temporals",
+                "el": "Η Άμεση προβολή αφήνει προσωρινά αρχεία",
+                "nb": "Hurtigvisning etterlater midlertidige filer",
+                "zh-TW": "快速查看會留下暫存檔案",
+                "hi": "“झलक देखें” अस्थायी फ़ाइलें छोड़ देता है",
+                "cs": "Rychlý náhled zanechává dočasné soubory"
+            },
+            "issues": ["410"]
           },
           {
             "type": "core",
@@ -319,9 +510,97 @@
                 "el": "Ενημέρωση του 7-Zip στην έκδοση 26.06",
                 "nb": "7-Zip oppdatert til versjon 26.06",
                 "zh-TW": "7-Zip 更新至 26.06 版",
-                "hi": "7-Zip को संस्करण 26.06 में अपडेट किया गया"
+                "hi": "7-Zip को संस्करण 26.06 में अपडेट किया गया",
+                "cs": "Aktualizace 7-Zipu na verzi 26.06"
             },
             "issues": ["398"]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Finder menu shows the wrong folder name",
+                "zh-Hans": "Finder 菜单显示的文件夹名称有误",
+                "fr": "Le menu du Finder affiche un mauvais nom de dossier",
+                "de": "Finder-Menü zeigt den falschen Ordnernamen",
+                "it": "Il menu del Finder mostra un nome di cartella errato",
+                "ja": "Finder メニューに誤ったフォルダ名が表示される",
+                "fa": "منوی Finder نام پوشه را اشتباه نشان می‌دهد",
+                "pl": "Menu Findera pokazuje błędną nazwę folderu",
+                "pt-BR": "O menu do Finder mostra o nome errado da pasta",
+                "ru": "Меню Finder показывает неверное имя папки",
+                "uk": "Меню Finder показує неправильну назву теки",
+                "es-MX": "El menú del Finder muestra un nombre de carpeta incorrecto",
+                "ko": "Finder 메뉴에 잘못된 폴더 이름이 표시됨",
+                "nl": "Finder-menu toont de verkeerde mapnaam",
+                "tr": "Finder menüsü yanlış klasör adı gösteriyor",
+                "vi": "Menu Finder hiển thị sai tên thư mục",
+                "ar": "قائمة Finder تعرض اسم مجلد خاطئًا",
+                "ca": "El menú del Finder mostra un nom de carpeta erroni",
+                "el": "Το μενού του Finder δείχνει λάθος όνομα φακέλου",
+                "nb": "Finder-menyen viser feil mappenavn",
+                "zh-TW": "Finder 選單顯示錯誤的資料夾名稱",
+                "hi": "Finder मेनू में फ़ोल्डर का गलत नाम दिखता है",
+                "cs": "Nabídka Finderu ukazuje špatný název složky"
+            },
+            "issues": ["317"]
+          },
+          {
+            "type": "core",
+            "title": {
+                "en": "Smaller download",
+                "zh-Hans": "下载体积更小",
+                "fr": "Téléchargement plus léger",
+                "de": "Kleinerer Download",
+                "it": "Download più leggero",
+                "ja": "ダウンロードサイズを削減",
+                "fa": "حجم دانلود کمتر",
+                "pl": "Mniejszy plik do pobrania",
+                "pt-BR": "Download menor",
+                "ru": "Меньший размер загрузки",
+                "uk": "Менший розмір завантаження",
+                "es-MX": "Descarga más ligera",
+                "ko": "다운로드 크기 감소",
+                "nl": "Kleinere download",
+                "tr": "Daha küçük indirme boyutu",
+                "vi": "Dung lượng tải xuống nhỏ hơn",
+                "ar": "حجم تنزيل أصغر",
+                "ca": "Descàrrega més petita",
+                "el": "Μικρότερο μέγεθος λήψης",
+                "nb": "Mindre nedlasting",
+                "zh-TW": "下載檔案更小",
+                "hi": "छोटा डाउनलोड",
+                "cs": "Menší soubor ke stažení"
+            },
+            "issues": ["419"]
+          },
+          {
+            "type": "lang",
+            "title": {
+                "en": "Now available in Czech",
+                "zh-Hans": "现已支持捷克语",
+                "fr": "Désormais disponible en tchèque",
+                "de": "Jetzt auch auf Tschechisch",
+                "it": "Ora disponibile anche in ceco",
+                "ja": "チェコ語にも対応しました",
+                "fa": "اکنون به زبان چکی نیز در دسترس است",
+                "pl": "Dostępne teraz również w języku czeskim",
+                "pt-BR": "Agora disponível em tcheco",
+                "ru": "Теперь доступно на чешском",
+                "uk": "Тепер доступно чеською",
+                "es-MX": "Ahora disponible en checo",
+                "ko": "이제 체코어로도 제공됩니다",
+                "nl": "Nu ook beschikbaar in het Tsjechisch",
+                "tr": "Artık Çekçe de mevcut",
+                "vi": "Hiện đã có tiếng Séc",
+                "ar": "متوفر الآن باللغة التشيكية",
+                "ca": "Ara disponible en txec",
+                "el": "Πλέον διαθέσιμο στα τσεχικά",
+                "nb": "Nå tilgjengelig på tsjekkisk",
+                "zh-TW": "現已支援捷克文",
+                "hi": "अब चेक भाषा में उपलब्ध",
+                "cs": "Nově k dispozici v češtině"
+            },
+            "issues": ["419"]
           }
         ]
       },
@@ -1172,21 +1451,21 @@
             "highlight": true,
             "title": {
                 "en": "Quick Look preview for cbz and cbr",
-                "zh-Hans": "cbz 和 cbr 的 Quick Look 预览",
-                "fr": "Aperçu Quick Look pour cbz et cbr",
-                "de": "Quick Look-Vorschau für cbz und cbr",
-                "it": "Anteprima Quick Look per cbz e cbr",
-                "ja": "cbz と cbr の Quick Look プレビュー",
+                "zh-Hans": "cbz 和 cbr 的快速查看预览",
+                "fr": "Aperçu Coup d’œil pour cbz et cbr",
+                "de": "Übersicht-Vorschau für cbz und cbr",
+                "it": "Visualizzazione rapida per cbz e cbr",
+                "ja": "cbz と cbr のクイックルックプレビュー",
                 "fa": "پیش‌نمایش Quick Look برای cbz و cbr",
-                "pl": "Podgląd Quick Look dla cbz i cbr",
-                "pt-BR": "Visualização do Quick Look para cbz e cbr",
-                "ru": "Просмотр cbz и cbr в Quick Look",
-                "uk": "Перегляд cbz і cbr у Quick Look",
-                "es-MX": "Vista previa de Quick Look para cbz y cbr",
-                "ko": "cbz 및 cbr의 Quick Look 미리보기",
-                "nl": "Quick Look-voorbeeld voor cbz en cbr",
-                "tr": "cbz ve cbr için Quick Look önizlemesi",
-                "vi": "Xem trước Quick Look cho cbz và cbr"
+                "pl": "Podgląd cbz i cbr w Szybkim przeglądzie",
+                "pt-BR": "Visualização Rápida para cbz e cbr",
+                "ru": "Быстрый просмотр для cbz и cbr",
+                "uk": "Швидкий перегляд для cbz і cbr",
+                "es-MX": "Vista rápida para cbz y cbr",
+                "ko": "cbz 및 cbr의 훑어보기 미리보기",
+                "nl": "Snelle weergave voor cbz en cbr",
+                "tr": "cbz ve cbr için Göz At önizlemesi",
+                "vi": "Xem nhanh cho cbz và cbr"
             },
             "issues": [
                 "187"
@@ -1196,21 +1475,21 @@
             "type": "feat",
             "title": {
                 "en": "Quick Look follows your engine settings",
-                "zh-Hans": "Quick Look 遵循引擎设置",
-                "fr": "Quick Look suit les réglages de moteur",
-                "de": "Quick Look folgt den Engine-Einstellungen",
-                "it": "Quick Look segue le impostazioni del motore",
-                "ja": "Quick Look がエンジン設定に従うように",
+                "zh-Hans": "快速查看遵循引擎设置",
+                "fr": "Coup d’œil suit les réglages de moteur",
+                "de": "„Übersicht“ folgt den Engine-Einstellungen",
+                "it": "Visualizzazione rapida segue le impostazioni del motore",
+                "ja": "クイックルックがエンジン設定に従うように",
                 "fa": "Quick Look از تنظیمات موتور پیروی می‌کند",
-                "pl": "Quick Look korzysta z ustawień silnika",
-                "pt-BR": "Quick Look segue as configurações de motor",
-                "ru": "Quick Look учитывает настройки движка",
-                "uk": "Quick Look враховує налаштування рушія",
-                "es-MX": "Quick Look sigue la configuración del motor",
-                "ko": "Quick Look이 엔진 설정을 따릅니다",
-                "nl": "Quick Look volgt de engine-instellingen",
-                "tr": "Quick Look motor ayarlarını uygular",
-                "vi": "Quick Look theo cài đặt engine bạn chọn"
+                "pl": "Szybki przegląd korzysta z ustawień silnika",
+                "pt-BR": "A Visualização Rápida segue as configurações de motor",
+                "ru": "Быстрый просмотр учитывает настройки движка",
+                "uk": "Швидкий перегляд враховує налаштування рушія",
+                "es-MX": "Vista rápida sigue la configuración del motor",
+                "ko": "훑어보기가 엔진 설정을 따릅니다",
+                "nl": "Snelle weergave volgt de engine-instellingen",
+                "tr": "Göz At motor ayarlarını uygular",
+                "vi": "Xem nhanh theo cài đặt engine bạn chọn"
             },
             "issues": [
                 "149"
@@ -1221,21 +1500,21 @@
             "highlight": true,
             "title": {
                 "en": "Open nested archives in Quick Look",
-                "zh-Hans": "在 Quick Look 中打开嵌套压缩包",
-                "fr": "Ouvrir les archives imbriquées dans Quick Look",
-                "de": "Verschachtelte Archive in Quick Look öffnen",
-                "it": "Aprire gli archivi annidati in Quick Look",
-                "ja": "Quick Look で入れ子のアーカイブを開く",
+                "zh-Hans": "在快速查看中打开嵌套压缩包",
+                "fr": "Ouvrir les archives imbriquées dans Coup d’œil",
+                "de": "Verschachtelte Archive in „Übersicht“ öffnen",
+                "it": "Aprire gli archivi annidati in Visualizzazione rapida",
+                "ja": "クイックルックで入れ子のアーカイブを開く",
                 "fa": "باز کردن آرشیوهای تودرتو در Quick Look",
-                "pl": "Otwieranie zagnieżdżonych archiwów w Quick Look",
-                "pt-BR": "Abrir arquivos aninhados no Quick Look",
-                "ru": "Открытие вложенных архивов в Quick Look",
-                "uk": "Відкриття вкладених архівів у Quick Look",
-                "es-MX": "Abrir archivos anidados en Quick Look",
-                "ko": "Quick Look에서 중첩된 압축 파일 열기",
-                "nl": "Geneste archieven openen in Quick Look",
-                "tr": "Quick Look’ta iç içe arşivleri açma",
-                "vi": "Mở tệp nén lồng nhau trong Quick Look"
+                "pl": "Otwieranie zagnieżdżonych archiwów w Szybkim przeglądzie",
+                "pt-BR": "Abrir arquivos aninhados na Visualização Rápida",
+                "ru": "Открытие вложенных архивов в Быстром просмотре",
+                "uk": "Відкриття вкладених архівів у Швидкому перегляді",
+                "es-MX": "Abrir archivos anidados en Vista rápida",
+                "ko": "훑어보기에서 중첩된 압축 파일 열기",
+                "nl": "Geneste archieven openen in Snelle weergave",
+                "tr": "Göz At’ta iç içe arşivleri açma",
+                "vi": "Mở tệp nén lồng nhau trong Xem nhanh"
             },
             "issues": [
                 "212"
@@ -2487,17 +2766,17 @@
             "title": {
               "en": "Quick Look preview not working",
               "zh-Hans": "快速查看预览无法使用",
-              "fr": "L’aperçu Quick Look ne fonctionnait pas",
-              "de": "Quick-Look-Vorschau funktionierte nicht",
-              "it": "L’anteprima Quick Look non funzionava",
-              "ja": "Quick Look プレビューが機能しない問題を修正",
+              "fr": "L’aperçu Coup d’œil ne fonctionnait pas",
+              "de": "Übersicht-Vorschau funktionierte nicht",
+              "it": "Visualizzazione rapida non funzionava",
+              "ja": "クイックルックプレビューが機能しない問題を修正",
               "fa": "پیش‌نمایش Quick Look کار نمی‌کرد",
-              "pl": "Podgląd Quick Look nie działał",
-              "pt-BR": "A visualização do Quick Look não funcionava",
-              "ru": "Предпросмотр Quick Look не работал",
-              "uk": "Попередній перегляд Quick Look не працював",
-              "es-MX": "La vista previa de Quick Look no funcionaba",
-              "ko": "Quick Look 미리보기가 동작하지 않던 문제 수정"
+              "pl": "Podgląd w Szybkim przeglądzie nie działał",
+              "pt-BR": "A Visualização Rápida não funcionava",
+              "ru": "Быстрый просмотр не работал",
+              "uk": "Швидкий перегляд не працював",
+              "es-MX": "Vista rápida no funcionaba",
+              "ko": "훑어보기 미리보기가 동작하지 않던 문제 수정"
             },
             "issues": [
               "106"

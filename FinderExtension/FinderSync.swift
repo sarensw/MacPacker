@@ -218,6 +218,7 @@ class FinderSync: FIFinderSync {
         case .extractHere: #selector(extractHere(_:))
         case .extractToFolder: #selector(extractToFolder(_:))
         case .extractToChosenFolder: #selector(extractToChosenFolder(_:))
+        case .testArchive: #selector(testArchive(_:))
         case .addToArchive: #selector(addToArchive(_:))
         case .compressToZip: #selector(compressToZip(_:))
         case .compressToDatedZip: #selector(compressToDatedZip(_:))
@@ -238,28 +239,16 @@ class FinderSync: FIFinderSync {
             return String(localized: .commonExtractHere)
 
         case .extractToFolder:
-            // "Extract to "*\"" > if multiple archives files are selected
-            // "Extract to defaultArchive\"" > if one archive is selected
-            var folderName: String = ""
-            if fileItems.count == 1 {
-                // We're deleting the path extension here twice by purpose because compound archives
-                // will be extracted twice. First decompressed, then extracted. And we need to show
-                // the correct folder name
-                //
-                // Examples:
-                // - archive.zip > archive
-                // - archive.tar.gz > archive
-                folderName = fileItems[0].deletingPathExtension().deletingPathExtension().lastPathComponent
-            } else if fileItems.count > 1 {
-                folderName = "*/"
-            }
-            return String(localized: .commonExtractTo(folderName))
+            return String(localized: .commonExtractTo(FinderMenuItem.extractFolderName(for: fileItems)))
 
         case .addToArchive:
             return String(localized: .commonAddToArchive)
 
         case .extractToChosenFolder:
             return String(localized: .settingsExtractToChosenFolder)
+
+        case .testArchive:
+            return String(localized: .commonTestArchive)
 
         case .compressToZip, .compressToDatedZip, .compressTo7z:
             let ext = item.archiveExtension ?? "zip"
@@ -390,6 +379,11 @@ class FinderSync: FIFinderSync {
     @objc func extractToChosenFolder(_ sender: Any?) {
         log.notice("Finder menu: Extract to…")
         communicateWithMainApp(item: .extractToChosenFolder)
+    }
+
+    @objc func testArchive(_ sender: Any?) {
+        log.notice("Finder menu: Test Archive")
+        communicateWithMainApp(item: .testArchive)
     }
 
     @objc func compressToDatedZip(_ sender: Any?) {

@@ -7,6 +7,9 @@
 
 import Foundation
 import Swift7zip
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "engine")
 
 final actor Archive7ZipEngine: ArchiveEngine {
     /// What the user picked for this archive's names; `nil` leaves it to detection.
@@ -207,6 +210,73 @@ final actor Archive7ZipEngine: ArchiveEngine {
         }
     }
 
+    func test(
+        _ url: URL,
+        passwordResolver: @escaping ArchivePasswordResolver,
+        onProgress: ArchiveExtractionProgress?
+    ) async throws -> ArchiveTestResult {
+        let attempts = ArchivePasswordAttempts(url: url, resolver: passwordResolver)
+        let (szip, _) = try await Self.open(url: url, attempts: attempts, nameEncoding: nameEncoding)
+
+        // Same retry shape as extract(items:): a wrong password only shows once
+        // an entry is decrypted.
+        while true {
+            do {
+                // blocking C call — keep it off the cooperative pool
+                let found = try await runBlocking {
+                    try szip.test(progress: Self.bridgeProgress(onProgress))
+                }
+                let damage: ArchiveDamage? =
+                    found.archiveFlags & Self.unexpectedEnd != 0 ? .endsEarly
+                    : found.archiveFlags & Self.crcError != 0 ? .checksum
+                    : found.archiveIsDamaged ? .other : nil
+                if damage != nil || !found.damaged.isEmpty {
+                    // a notice, so that it is in the logs a user exports
+                    log.notice("7-Zip test findings", context: [
+                        "file": url.lastPathComponent,
+                        "archiveFlags": Self.names(of: found.archiveFlags, in: Self.errorFlagNames),
+                        "entryResults": Self.names(
+                            of: found.damaged.reduce(0) { $0 | 1 << $1.result }, in: Self.operationResultNames),
+                        "message": found.archiveMessage ?? ""
+                    ])
+                }
+                // A method 7-Zip can't decode is no damage: it can't tell either way.
+                return ArchiveTestResult(
+                    damagedEntries: found.damaged.filter { $0.result != Self.unsupportedMethod }.map(\.path),
+                    uncheckedEntries: found.damaged.filter { $0.result == Self.unsupportedMethod }.map(\.path),
+                    archiveDamage: damage)
+            } catch SevenZipError.passwordMissing, SevenZipError.passwordWrong {
+                szip.setPassword(try await attempts.next())
+                continue
+            } catch SevenZipError.cancelled {
+                throw CancellationError()
+            }
+        }
+    }
+
+    /// kpv_ErrorFlags_UnexpectedEnd and kpv_ErrorFlags_CrcError (PropID.h).
+    private static let unexpectedEnd: UInt32 = 1 << 5
+    private static let crcError: UInt32 = 1 << 10
+    /// NArchive::NExtract::NOperationResult::kUnsupportedMethod (IArchive.h).
+    private static let unsupportedMethod: Int32 = 1
+    /// 7-Zip's kpv_ErrorFlags_* by bit (PropID.h), for the log.
+    private static let errorFlagNames = [
+        "isNotArc", "headersError", "encryptedHeadersError", "unavailableStart", "unconfirmedStart",
+        "unexpectedEnd", "dataAfterEnd", "unsupportedMethod", "unsupportedFeature", "dataError", "crcError",
+    ]
+    /// 7-Zip's NArchive::NExtract::NOperationResult by value (IArchive.h), for the log.
+    private static let operationResultNames = [
+        "ok", "unsupportedMethod", "dataError", "crcError", "unavailable",
+        "unexpectedEnd", "dataAfterEnd", "isNotArc", "headersError", "wrongPassword",
+    ]
+
+    /// The names of the bits set in `bits`, by number where the table has none.
+    private static func names(of bits: UInt32, in table: [String]) -> String {
+        (0..<32).filter { bits & 1 << $0 != 0 }
+            .map { $0 < table.count ? table[$0] : "\($0)" }
+            .joined(separator: ",")
+    }
+
     /// Opens the archive with the password it needs, asked for here rather than
     /// when something later fails.
     ///
@@ -230,6 +300,11 @@ final actor Archive7ZipEngine: ArchiveEngine {
         attempts: ArchivePasswordAttempts,
         nameEncoding: ArchiveNameEncoding?
     ) async throws -> (SevenZipArchive, ArchiveNameEncoding?) {
+        // Every open is logged before 7-Zip reads anything, and once the names
+        // are read: a hang between the two is in 7-Zip, or in a password prompt
+        // that would have its own line (#413).
+        log.notice("7-Zip opening", context: ["file": url.lastPathComponent])
+        let start = Date()
         var password: String?
         let archive: SevenZipArchive = try await {
             while true {
@@ -247,6 +322,13 @@ final actor Archive7ZipEngine: ArchiveEngine {
         }
         // blocking work, for as many names as the archive has
         let encoding = try await runBlocking { readNames(of: archive, chosen: nameEncoding) }
+        log.notice("7-Zip opened", context: [
+            "file": url.lastPathComponent,
+            "format": archive.formatName ?? "unknown",
+            "items": "\(archive.storedItemCount)",
+            "password": "\(archive.hasPassword)",
+            "seconds": String(format: "%.3f", Date().timeIntervalSince(start))
+        ])
         return (archive, encoding)
     }
 

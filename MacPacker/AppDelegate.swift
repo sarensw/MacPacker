@@ -125,7 +125,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
                 Task {
                     if finderLaunchIsOver {
                         log.notice("Launched for a refused Finder action — quitting")
-                        NSApp.terminate(nil)
+                        quit()
                     }
                 }
                 return
@@ -194,6 +194,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             AppUrlAddToArchiveHandler()
         case .extractTo:
             AppUrlExtractToChosenFolderHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
+        case .test:
+            AppUrlTestHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
         case .compressEach:
             AppUrlCompressEachHandler(catalog: appState.catalog, engineSelector: appState.engineSelector)
         case .compressContents:
@@ -213,8 +215,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
             }
             if finderLaunchIsOver {
                 log.notice("Launched for a Finder action, which is done — quitting")
-                NSApp.terminate(nil)
+                quit()
             }
+        }
+    }
+
+    /// Quits from the run loop, not from the Task that asks for it: called in
+    /// a Task on the main actor, `terminate(_:)` waits in that Task's job,
+    /// where nothing else on the main actor starts. Quit Anyway's wait for a
+    /// compression to stop would never end there (#413).
+    private func quit() {
+        MainRunLoop.perform {
+            // An archive opened since the check makes this a regular launch.
+            guard self.finderLaunchIsOver else { return }
+            NSApp.terminate(nil)
         }
     }
     
@@ -433,8 +447,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         return launch.isOver(
             usedAsApp: archiveWindowManager?.hasOpenedWindow ?? false,
             actionUnderWay: center.isRunningAction,
-            // a failed job is on screen in a moment: the progress window puts it up and keeps it
-            somethingOnScreen: center.hasFailedJobs || NSApp.windows.contains { $0.isVisible || $0.isMiniaturized }
+            // a failure or a verdict is on screen in a moment: the progress window puts it up and keeps it
+            somethingOnScreen: center.hasOutcomesToShow || NSApp.windows.contains { $0.isVisible || $0.isMiniaturized }
         )
     }
 
@@ -453,18 +467,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
 
         // "extraction" / "compression": the lines an extraction always logged, as they were
-        let what = running == .extraction ? "extraction" : "compression"
-        log.notice("Quit requested while \(what) is running — asking user")
+        let what: String
         let alert = NSAlert()
         alert.alertStyle = .warning
         switch running {
         case .extraction:
+            what = "extraction"
             alert.messageText = String(localized: .appExtractionInProgress)
             alert.informativeText = String(localized: .appQuitDuringExtractionWarning)
         case .compression:
+            what = "compression"
             alert.messageText = String(localized: .appCompressionInProgress)
             alert.informativeText = String(localized: .appQuitDuringCompressionWarning)
+        case .test:
+            // a test writes nothing, so stopping one loses nothing; the cache still goes
+            quitOnceCacheIsCleared()
+            return .terminateLater
         }
+        log.notice("Quit requested while \(what) is running — asking user")
         alert.addButton(withTitle: String(localized: .commonCancel))
         alert.addButton(withTitle: String(localized: .appQuitAnyway))
 
@@ -491,9 +511,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     private func quitOnceCacheIsCleared() {
         log.notice("Quitting — clearing cache")
         NSApp.hide(nil)
-        Task {
+        // Not a Task on the main actor: when the quit was asked for from one,
+        // the main actor is busy waiting for this reply, and the app stayed
+        // hidden but running, with every archive opened in it left loading
+        // (#413). Cleared off the main actor, answered through the run loop.
+        Task.detached {
             await CacheCleaner().removeAll()
-            NSApp.reply(toApplicationShouldTerminate: true)
+            MainRunLoop.perform { NSApp.reply(toApplicationShouldTerminate: true) }
         }
     }
     
@@ -513,6 +537,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         }
     }
     
+    /// File ▸ Test Archive: asks which archives to test, with or without a
+    /// window open.
+    func testArchivesUsingOpenPanel() {
+        let appState = appState
+        ArchiveTestPanel.run { url in
+            AppUrlTestHandler.test(url, catalog: appState.catalog, engineSelector: appState.engineSelector)
+        }
+    }
+
     func openNewArchiveWindow() {
         self.archiveWindowManager?.openNewArchiveWindow()
     }

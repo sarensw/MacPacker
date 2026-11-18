@@ -39,25 +39,11 @@ class AppUrlExtractToFolderHandler: AppUrlHandler {
         }
         var folders: [URL] = []
         for fileUrl in appUrl.files {
-            // The folder we create next to the archive is named after it,
-            // so the name comes from `fileUrl`. A folder of that name already
-            // there is left alone: the new one is "name 2".
-            let parent = appUrl.folder(of: fileUrl)
-            let name = ArchiveTypeDetector(catalog: self.catalog).getNameWithoutExtension(for: fileUrl)
-            let folderUrl: URL
-            do {
-                // Inside the grant that covers the archive's folder: a stored
-                // one is not active until it is taken, and the free name is
-                // looked for in there too. The extraction below takes it again
-                // for its own reads and writes.
-                folderUrl = try Sandbox.accessSync(url: parent) {
-                    let folderUrl = parent.appendingPathComponent(
-                        SmartExtraction.freeName(name, in: parent, isDirectory: true))
-                    try FileManager.default.createDirectory(at: folderUrl, withIntermediateDirectories: true)
-                    return folderUrl
-                }
-            } catch {
-                log.error(error.localizedDescription)
+            // A folder that cannot be created is a failed job already. It goes
+            // next to the archive: in the window's folder, or in one expanded
+            // in it.
+            guard let folderUrl = ExtractToFolder.makeFolder(
+                for: fileUrl, in: appUrl.folder(of: fileUrl), catalog: self.catalog) else {
                 continue
             }
             // `honorsSmartExtraction` is false for this action: the folder

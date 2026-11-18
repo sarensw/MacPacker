@@ -9,6 +9,7 @@
 //  name must stay a valid file name that sorts by date.
 //
 
+import Core
 import Foundation
 import Testing
 @testable import FinderMenu
@@ -106,6 +107,20 @@ extension AllCoreTests {
             #expect(FinderMenuItem.datedName("photos", extension: "zip", at: date, timeZone: utc) == "photos 2026-09-10 14.30.zip")
         }
 
+        /// #317: Finder compresses `Artists Full.csv` to `Artists Full.csv.zip`.
+        /// The menu said "Artists Full" while the app made "Artists Full.csv".
+        @Test("Extract to shows the name of the folder the app creates")
+        func extractFolderNameIsTheAppsFolder() {
+            let detector = ArchiveTypeDetector(catalog: ArchiveTypeCatalog())
+            for file in ["Artists Full.csv.zip", "My.Archive.zip", "v1.2.3.7z", "photos.rar"] {
+                let archive = URL(fileURLWithPath: "/Users/me/\(file)")
+                #expect(FinderMenuItem.extractFolderName(for: [archive])
+                        == detector.getNameWithoutExtension(for: archive), "\(file)")
+            }
+            let two = [URL(fileURLWithPath: "/Users/me/a.zip"), URL(fileURLWithPath: "/Users/me/b.zip")]
+            #expect(FinderMenuItem.extractFolderName(for: two) == "*/")
+        }
+
         @Test("Only the extensions the menu produces pass as a format")
         func formatAllowlist() {
             #expect(FinderMenuItem.isArchiveExtension("zip"))
@@ -123,7 +138,7 @@ extension AllCoreTests {
             let selection = [archive, folder, other]
             let isDirectory: (URL) -> Bool = { $0 == folder }
 
-            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder] {
+            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .testArchive] {
                 #expect(item.items(from: selection, isDirectory: isDirectory) == [archive, other])
             }
             for item in [FinderMenuItem.addToArchive, .compressToZip, .compressToDatedZip, .compressForWindows,
@@ -138,9 +153,26 @@ extension AllCoreTests {
             #expect(FinderMenuItem.compressToDatedZip.archiveExtension == "zip")
             #expect(FinderMenuItem.compressForWindows.archiveExtension == "zip")
             #expect(FinderMenuItem.compressTo7z.archiveExtension == "7z")
-            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .addToArchive] {
+            for item in [FinderMenuItem.open, .extractHere, .extractToFolder, .extractToChosenFolder, .testArchive, .addToArchive] {
                 #expect(item.archiveExtension == nil)
             }
+        }
+
+        /// Test Archive is there for whoever wants it, as in Bandizip and
+        /// PeaZip: off until switched on, and then for the archives of a
+        /// selection, which are files. It asks the app to test them.
+        @Test func testArchiveIsOptInAndForFiles() throws {
+            #expect(!FinderMenuItem.testArchive.isEnabledByDefault)
+            #expect(FinderMenuItem.testArchive.applies(toFiles: 1, folders: 0))
+            #expect(!FinderMenuItem.testArchive.applies(toFiles: 0, folders: 2))
+            #expect(FinderMenuItem.testArchive.action == .test)
+
+            let request = AppUrl(
+                action: FinderMenuItem.testArchive.action,
+                files: [URL(fileURLWithPath: "/Users/me/a.zip")],
+                target: URL(fileURLWithPath: "/Users/me"))
+            let url = try #require(request.url(scheme: "app.macpacker"))
+            #expect(try AppUrl(url: url, scheme: "app.macpacker") == request)
         }
     }
 }

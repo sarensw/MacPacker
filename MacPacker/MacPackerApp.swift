@@ -109,6 +109,16 @@ struct MacPackerApp: App {
                         Image(systemName: "arrow.up.right.square")
                     }
                 }
+
+                Button {
+                    appDelegate.testArchivesUsingOpenPanel()
+                } label: {
+                    Label {
+                        Text(.commonTestArchive)
+                    } icon: {
+                        Image(systemName: "checkmark.seal")
+                    }
+                }
             }
         }
     }

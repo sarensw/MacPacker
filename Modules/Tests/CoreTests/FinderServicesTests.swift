@@ -72,9 +72,11 @@ extension AllCoreTests {
 
         /// macOS looks a service's title up in `ServicesMenu.strings` by the
         /// title itself, as a release build has it: one changed in Info.plist
-        /// alone shows in English in every language.
-        @Test(arguments: ["MacPacker/Info.plist", "MacPacker/Info_Store.plist"])
-        func everyServiceTitleIsTranslated(plist: String) throws {
+        /// alone shows in English in every language. Each plist pairs with the
+        /// display name its release build has: the App Store build's is its
+        /// file name, MacPackerStore (#258).
+        @Test(arguments: zip(["MacPacker/Info.plist", "MacPacker/Info_Store.plist"], ["MacPacker", "MacPackerStore"]))
+        func everyServiceTitleIsTranslated(plist: String, displayName: String) throws {
             let repository = URL(fileURLWithPath: #filePath)
                 .deletingLastPathComponent().deletingLastPathComponent()
                 .deletingLastPathComponent().deletingLastPathComponent()
@@ -82,11 +84,11 @@ extension AllCoreTests {
             let services = try #require(info?["NSServices"] as? [[String: Any]])
             let catalog = try JSONSerialization.jsonObject(with: Data(contentsOf: repository.appending(path: "MacPacker/ServicesMenu.xcstrings"))) as? [String: Any]
             let titles = try #require(catalog?["strings"] as? [String: [String: Any]])
-            let languages = ["ar", "ca", "de", "el", "en", "es-MX", "fa", "fr", "hi", "it", "ja", "ko", "nl", "no", "pl", "pt-BR", "ru", "tr", "uk", "vi", "zh-Hans", "zh-TW"]
+            let languages = ["ar", "ca", "cs", "de", "el", "en", "es-MX", "fa", "fr", "hi", "it", "ja", "ko", "nl", "no", "pl", "pt-BR", "ru", "tr", "uk", "vi", "zh-Hans", "zh-TW"]
 
             for service in services {
                 let menuItem = try #require(service["NSMenuItem"] as? [String: String])
-                let title = try #require(menuItem["default"]).replacingOccurrences(of: "$(INFOPLIST_KEY_CFBundleDisplayName)", with: "MacPacker")
+                let title = try #require(menuItem["default"]).replacingOccurrences(of: "$(INFOPLIST_KEY_CFBundleDisplayName)", with: displayName)
                 let localizations = try #require(titles[title]?["localizations"] as? [String: Any], "\(title)")
                 #expect(localizations.keys.sorted() == languages, "\(title)")
             }

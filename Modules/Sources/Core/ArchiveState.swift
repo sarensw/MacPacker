@@ -242,7 +242,7 @@ extension ArchiveState {
             }
 
             // if not cached, ask the user to provide the password
-            passwordLog.info("Password requested", context: [
+            passwordLog.notice("Password requested", context: [
                 "archive": request.url.lastPathComponent,
                 "attempt": String(request.attempt)
             ])
@@ -349,7 +349,10 @@ extension ArchiveState {
         tempDirectories = []
     }
     
+    /// Closing the window or the Quick Look preview: a load still running
+    /// stops, so it can't bring its files back after they are gone.
     public func clean() {
+        cancelCurrentOperation()
         reset()
     }
 
@@ -366,6 +369,13 @@ extension ArchiveState {
     /// Cancels the current operation which can be either loading the archive or extracting
     /// anything from the archive
     public func cancelCurrentOperation() {
+        // also on every window close, when nothing is running
+        if isBusy {
+            log.notice("Stopping the running operation", context: [
+                "file": url?.lastPathComponent ?? "-",
+                "adding": "\(addCancel != nil)"
+            ])
+        }
         // Files being read for an add: stop reading, and leave the archive as
         // it is. Below is for a load, and ends in a reset.
         if let addCancel {
@@ -1009,6 +1019,13 @@ extension ArchiveState {
         canBeEdited && !isSaving && selectedItem.map { !isWithinOpenedArchive($0) } == true
     }
 
+    /// Whether there is an archive file to preview, extract or test from: the
+    /// start page and a new archive never saved have none, and a save is
+    /// rewriting it.
+    public var canReadArchive: Bool {
+        url != nil && root != nil && !isSaving
+    }
+
     /// Saves the pending changes.
     ///
     /// - For an archive loaded from disk, the changes are applied in place.
@@ -1196,8 +1213,11 @@ extension ArchiveState {
         self.openedFile = FileStamp(url)
         self.name = splitSetName(for: url)
         self.ext = url.pathExtension
-        log.info("Opening archive", context: ["file": url.lastPathComponent, "ext": url.pathExtension])
-        
+        // The steps of an open are notices, the level macOS keeps for the logs
+        // a user exports: where they stop is where a load hung (#413).
+        log.notice("Opening archive", context: ["file": url.lastPathComponent, "ext": url.pathExtension])
+        let start = Date()
+
         openTask = Task {
             do {
                 let passwordResolver = makePasswordResolver()
@@ -1291,7 +1311,8 @@ extension ArchiveState {
                     "file": url.lastPathComponent,
                     "entries": "\(self.entries.count)",
                     "topLevelItems": "\(self.childItems?.count ?? 0)",
-                    "hasTree": "\(loaderResult.hasTree)"
+                    "hasTree": "\(loaderResult.hasTree)",
+                    "seconds": String(format: "%.3f", Date().timeIntervalSince(start))
                 ])
 
                 updateStatusText(nil)
@@ -1304,6 +1325,11 @@ extension ArchiveState {
                 
                 try Task.checkCancellation()
             } catch is CancellationError {
+                log.notice("Archive load stopped", context: [
+                    "file": url.lastPathComponent,
+                    "superseded": "\(generation != self.openGeneration)",
+                    "seconds": String(format: "%.3f", Date().timeIntervalSince(start))
+                ])
                 // Cancelled because a newer open replaced this one: that open now
                 // owns the state, so leave it alone.
                 guard generation == self.openGeneration else { return }
@@ -1891,6 +1917,61 @@ extension ArchiveState {
         }
     }
     
+    //
+    // MARK: Test
+    //
+
+    /// Tests the archive at `url`: every entry has to decompress and match its
+    /// checksum, and nothing is written. The File menu tests the window's own
+    /// archive, Finder's "Test Archive" a file no window has open — it is never
+    /// listed, so a compound is not decompressed to disk first. The verdict goes
+    /// to the progress center, and stays there until the window showing it is
+    /// closed.
+    @discardableResult
+    public func test(_ url: URL) -> Task<Void, Never> {
+        let jobId = progressCenter.begin(
+            kind: .test,
+            // not `name`: with a nested archive open, that is the nested one's
+            archiveName: splitSetName(for: url),
+            destination: nil,
+            itemCount: 0,
+            totalBytes: nil
+        )
+        let loader = ArchiveLoader(
+            archiveTypeDetector: archiveTypeDetector,
+            archiveEngineSelector: effectiveEngineSelector,
+            passwordResolver: makePasswordResolver(),
+            folderAccessResolver: makeFolderAccessResolver()
+        )
+        let cancelFlag = ExtractionCancelFlag()
+        let progress = makeEngineProgress(jobId: jobId, cancelFlag: cancelFlag)
+        let task = Task {
+            do {
+                let result = try await loader.test(url: url, onProgress: progress)
+                // a notice, so that it is in the logs a user exports
+                log.notice("Archive tested", context: [
+                    "file": url.lastPathComponent,
+                    "damagedEntries": "\(result.damagedEntries.count)",
+                    "uncheckedEntries": "\(result.uncheckedEntries.count)",
+                    "archiveDamage": result.archiveDamage?.rawValue ?? "none"
+                ])
+                progressCenter.finish(jobId, testedAs: result)
+            } catch is CancellationError {
+                progressCenter.finish(jobId, .cancelled)
+            } catch ArchiveError.passwordCancelled {
+                progressCenter.finish(jobId, passwordCancelledOutcome())
+            } catch {
+                log.error("Archive test failed", context: ["file": url.lastPathComponent, "error": error.localizedDescription])
+                progressCenter.finish(jobId, .failed(error.localizedDescription))
+            }
+        }
+        progressCenter.setOnCancel(jobId) {
+            cancelFlag.cancel()
+            task.cancel()
+        }
+        return task
+    }
+
     /// Updates the quick look preview URL. The previewer we're using is the default systems
     /// preview that is called Quick Look and that can be reached via Space in Finder
     ///

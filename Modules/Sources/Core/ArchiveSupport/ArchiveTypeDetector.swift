@@ -11,14 +11,14 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
-public enum DetectionSource: String {
+public enum DetectionSource: String, Sendable {
     case fileExtension
     case systemUTI
     case magic
     case combined
 }
 
-public struct DetectionResult: CustomStringConvertible {
+public struct DetectionResult: CustomStringConvertible, Sendable {
     public let type: ArchiveTypeDto
     public let composition: CompositionTypeDto?
     /// Non-nil when the file is a *volume part* of a split / multi-volume archive
@@ -50,6 +50,11 @@ final public class ArchiveTypeDetector: Sendable {
 
     public init(catalog: ArchiveTypeCatalog) {
         self.catalog = catalog
+    }
+
+    /// The format the catalog lists under `id`: one of a compound's components.
+    public func type(for id: String) -> ArchiveTypeDto? {
+        catalog.getType(for: id)
     }
 
     public func getNameWithoutExtension(for url: URL) -> String {
@@ -226,26 +231,42 @@ final public class ArchiveTypeDetector: Sendable {
     }
 
     private func detectByMagicNumberInScope(for url: URL) -> DetectionResult? {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
-        defer { handle.closeFile() }
-
-        // read the first 65.536 bytes (iso files are detected at 0x8000..0x9000)
-        guard let headerData = try? handle.read(upToCount: 65536), !headerData.isEmpty else { return nil }
-        let headerBytes = [UInt8](headerData)
-
-        // read the last 512 bytes (big enough for e.g. a dmg's koly trailer)
-        guard let fileSize = getFileSize(for: url) else { return nil }
-        let trailerSize = min(fileSize, 512)
-        do { try handle.seek(toOffset: fileSize - trailerSize) } catch { return nil }
-        guard let trailerData = try? handle.read(upToCount: Int(trailerSize)), !trailerData.isEmpty else { return nil }
-        let trailerBytes = [UInt8](trailerData)
-
+        guard let bytes = headerAndTrailer(of: url) else { return nil }
         for type in catalog.getAllTypes() {
-            for group in type.rules where matches(group, header: headerBytes, trailer: trailerBytes) {
+            for group in type.rules where matches(group, header: bytes.header, trailer: bytes.trailer) {
                 return DetectionResult(type: type, source: .magic)
             }
         }
         return nil
+    }
+
+    /// Every catalog signature the file has and where, like "tar at 257", in
+    /// the order `detectByMagicNumber` tries them: it goes by the first.
+    func signatures(in url: URL) -> [String] {
+        Sandbox.accessSync(url: url) {
+            guard let bytes = headerAndTrailer(of: url) else { return [] }
+            return catalog.getAllTypes().compactMap { type in
+                let offsets = type.rules
+                    .filter { matches($0, header: bytes.header, trailer: bytes.trailer) }
+                    .flatMap(\.tests)
+                    .filter { matches($0, header: bytes.header, trailer: bytes.trailer) }
+                    .map { $0.type == "end_signature" ? "end − \($0.offset)" : "\($0.offset)" }
+                return offsets.isEmpty ? nil : "\(type.id) at \(offsets.joined(separator: ", "))"
+            }
+        }
+    }
+
+    /// The first 65,536 bytes (iso files are detected at 0x8000..0x9000) and the
+    /// last 512 (big enough for e.g. a dmg's koly trailer).
+    private func headerAndTrailer(of url: URL) -> (header: [UInt8], trailer: [UInt8])? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { handle.closeFile() }
+        guard let headerData = try? handle.read(upToCount: 65536), !headerData.isEmpty else { return nil }
+        guard let fileSize = getFileSize(for: url) else { return nil }
+        let trailerSize = min(fileSize, 512)
+        do { try handle.seek(toOffset: fileSize - trailerSize) } catch { return nil }
+        guard let trailerData = try? handle.read(upToCount: Int(trailerSize)), !trailerData.isEmpty else { return nil }
+        return ([UInt8](headerData), [UInt8](trailerData))
     }
 
     private func matches(_ group: RuleGroupDto, header: [UInt8], trailer: [UInt8]) -> Bool {

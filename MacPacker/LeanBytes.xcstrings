@@ -17,6 +17,12 @@
             "value" : "Copia o mou fitxers a les teves carpetes preferides i a les seves subcarpetes. Sense obrir noves finestres del Finder."
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopírujte nebo přesouvejte soubory do oblíbených složek a jejich podsložek. Bez otevírání nových oken Finderu."
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -153,6 +159,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Organitza fitxers. Ràpid."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uspořádejte soubory. Rychle."
           }
         },
         "de" : {
@@ -293,6 +305,12 @@
             "value" : "Dictat privat, dissenyat per al macOS 26 i 27"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soukromé diktování navržené pro macOS 26 a 27"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -429,6 +447,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dictat privat"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soukromé diktování"
           }
         },
         "de" : {
@@ -569,6 +593,12 @@
             "value" : "Creació i automatització de recursos multimèdia"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tvorba a automatizace mediálních materiálů"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -705,6 +735,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Creació i automatització de recursos multimèdia"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tvorba a automatizace mediálních materiálů"
           }
         },
         "de" : {
@@ -845,6 +881,12 @@
             "value" : "Més apps"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Další aplikace"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -981,6 +1023,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descobreix %@"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prozkoumat %@"
           }
         },
         "de" : {
@@ -1121,6 +1169,12 @@
             "value" : "Del creador de %@"
           }
         },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Od tvůrce aplikace %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1243,144 +1297,6 @@
         }
       }
     },
-    "welcomeOtherAppsFund" : {
-      "comment" : "Shown under 'From the maker of MacPacker' on the welcome window",
-      "extractionState" : "manual",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تطبيقاتي الأخرى تساعد في تمويل هذا المشروع مفتوح المصدر."
-          }
-        },
-        "ca" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les meves altres apps ajuden a finançar aquest projecte de codi obert."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meine anderen Apps helfen, dieses Open-Source-Projekt zu finanzieren."
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Οι άλλες εφαρμογές μου βοηθούν στη χρηματοδότηση αυτού του έργου ανοιχτού κώδικα."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "My other apps help fund this open-source project."
-          }
-        },
-        "es-MX" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mis otras apps ayudan a financiar este proyecto de código abierto."
-          }
-        },
-        "fa" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "برنامه‌های دیگرم به تأمین هزینه‌های این پروژهٔ متن‌باز کمک می‌کنند."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mes autres apps aident à financer ce projet open source."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "मेरे अन्य ऐप्स इस ओपन-सोर्स प्रोजेक्ट को फ़ंड करने में मदद करते हैं।"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le mie altre app aiutano a finanziare questo progetto open source."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "私のほかのアプリが、このオープンソースプロジェクトを資金面で支えています。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "제 다른 앱들이 이 오픈 소스 프로젝트에 자금을 보태고 있습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mijn andere apps helpen dit opensourceproject te financieren."
-          }
-        },
-        "no" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mine andre apper bidrar til å finansiere dette prosjektet med åpen kildekode."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Moje inne aplikacje pomagają finansować ten projekt open source."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meus outros apps ajudam a financiar este projeto de código aberto."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Мои другие приложения помогают финансировать этот проект с открытым исходным кодом."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Diğer uygulamalarım bu açık kaynaklı projenin finansmanına katkı sağlıyor."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Мої інші програми допомагають фінансувати цей проєкт із відкритим кодом."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Các ứng dụng khác của tôi giúp tài trợ cho dự án mã nguồn mở này."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "我的其他应用为这个开源项目提供资金支持。"
-          }
-        },
-        "zh-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "我的其他 App 協助資助這個開放原始碼專案。"
-          }
-        }
-      }
-    },
     "welcomeSeeAllApps" : {
       "comment" : "Link on the welcome window that opens a website listing every app by the same developer",
       "extractionState" : "manual",
@@ -1395,6 +1311,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra totes les meves apps"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobrazit všechny mé aplikace"
           }
         },
         "de" : {

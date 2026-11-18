@@ -10,8 +10,6 @@ import Foundation
 import SwiftUI
 
 struct WelcomeView: View {
-    @Environment(\.openURL) private var openURL
-
     /// The app's own icon at the size shown. It carries the standard macOS
     /// margin (the body is 824 of 1024), so 60pt draws a 48pt body, with the
     /// margin padded away.
@@ -23,8 +21,14 @@ struct WelcomeView: View {
                 Image(nsImage: appIcon)
                     .padding(-6)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(.welcomeTitle(Bundle.main.displayName))
-                        .font(.largeTitle.bold())
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(.welcomeTitle(Bundle.main.displayName))
+                            .font(.largeTitle.bold())
+                        // the build's own version, so a beta shows its suffix
+                        Text(verbatim: Bundle.main.appVersionLong)
+                            .font(.title)
+                            .foregroundStyle(.secondary)
+                    }
                     Text(.commonWhatsNew)
                         .font(.title3)
                         .foregroundStyle(.secondary)
@@ -43,40 +47,14 @@ struct WelcomeView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
                 Divider()
+                    .padding(.vertical, 24)
 
                 WelcomeMoreFromLeanBytesView()
                     .padding(24)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
-            // both columns as tall as the taller one, so "Coming next" sits at the bottom
+            // as tall as the taller column, which the divider spans
             .fixedSize(horizontal: false, vertical: true)
-
-            #if !STORE
-            Divider()
-            HStack(spacing: 16) {
-                Image(systemName: "heart")
-                    .font(.system(size: 28, weight: .medium))
-                    .foregroundStyle(.orange)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(.welcomeSupportTitle(Constants.appName))
-                        .font(.title3.weight(.semibold))
-                    Text(.welcomeSupportSubtitle)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Button {
-                    openURL(URL(string: "https://www.buymeacoffee.com/sarensw")!)
-                } label: {
-                    Text(.welcomeSupportButton(Constants.appName))
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
-                .controlSize(.large)
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
-            .background(.orange.opacity(0.08))
-            #endif
 
             Divider()
 

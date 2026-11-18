@@ -314,6 +314,59 @@ extension AllCoreTests {
             #expect(temp.deletingLastPathComponent().path == CacheCleaner.launchFolder.path)
         }
 
+        /// As Quick Look opens an archive, what earlier previews left goes, in
+        /// earlier extension processes and in this one. Nothing else removes
+        /// them, and they had grown to 20 GB. The preview now loading keeps its
+        /// files.
+        @Test func quickLookRemovesEarlierPreviewsButNotTheOneLoading() async throws {
+            let cache = try makeCache(holding: "earlier/temp", "current/previous")
+            let current = cache.appending(component: "current", directoryHint: .isDirectory)
+
+            let removal = CacheCleaner.removeEarlierPreviews(in: cache, keeping: current)
+            // what the preview makes once it loads
+            try FileManager.default.createDirectory(
+                at: current.appending(component: "loading"), withIntermediateDirectories: true)
+            await removal.value
+
+            #expect(!exists("earlier", in: cache))
+            #expect(!exists("current/previous", in: cache))
+            #expect(exists("current/loading", in: cache))
+        }
+
+        /// A tar.gz that fails to open leaves no tar behind: the state learns of
+        /// the tar's folder only from a load that finished.
+        @Test func aCompoundThatFailsToOpenLeavesNoTar() async throws {
+            let before = launchFolderContents()
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+
+            state.open(url: Bundle.module.url(forResource: "damaged", withExtension: nil)!
+                .appendingPathComponent("crc.tar.gz"))
+            try await state.openTask?.value
+
+            #expect(state.error != nil)
+            #expect(launchFolderContents() == before)
+        }
+
+        /// Closing a window or a Quick Look preview while its archive still
+        /// loads stops the load, and nothing it wrote stays.
+        @Test func closingDuringALoadLeavesNothing() async throws {
+            let before = launchFolderContents()
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+
+            state.open(url: Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+                .appendingPathComponent("defaultArchive.tar.gz"))
+            state.clean()
+            try await state.openTask?.value
+            await state.cleanTask?.value
+
+            #expect(state.root == nil)
+            #expect(launchFolderContents() == before)
+        }
+
+        private func launchFolderContents() -> Set<String> {
+            Set((try? FileManager.default.contentsOfDirectory(atPath: CacheCleaner.launchFolder.path)) ?? [])
+        }
+
         /// Quit and Settings > Clear cache: this launch's files go too.
         @Test func removeAllLeavesNothing() async throws {
             let cache = try makeCache(holding: "earlier/temp", "current/temp")
