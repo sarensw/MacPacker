@@ -4,8 +4,11 @@
 #
 # Not `on: release`: Distribute and Distribute Release create the GH Release
 # with GITHUB_TOKEN, and GITHUB_TOKEN events start no workflows. So this runs
-# when either of them finishes and posts the newest release whose tag sits on
-# the commit that run built. A run that published nothing posts nothing.
+# when either of them finishes and posts the release that run published: its
+# tag sits on the commit the run built, and it came out after the run started.
+# The commit alone is not enough: a final release is tagged on its last beta's
+# commit, and a lightweight tag dates the release to that commit, so the
+# release list puts the beta first. A run that published nothing posts nothing.
 # ─────────────────────────────────────────────────────────────────────────────
 name: Announce Release
 
@@ -26,13 +29,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          # Not run_started_at: a re-run keeps created_at, so a release the
+          # first attempt published still counts.
+          RUN_CREATED_AT: ${{ github.event.workflow_run.created_at }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         # flags 4: no link preview. allowed_mentions: an "@everyone" in the notes
         # pings nobody.
         # ponytail: Discord rejects messages over 2000 characters, notes run ~750;
         # a longer one fails this job: shorten the release text, re-run the job.
         run: |
-          for tag in $(gh release list --repo "$GITHUB_REPOSITORY" --limit 3 --json tagName --jq '.[].tagName'); do
+          for tag in $(gh release list --repo "$GITHUB_REPOSITORY" --json tagName,publishedAt \
+              --jq '.[] | select(.publishedAt >= env.RUN_CREATED_AT) | .tagName'); do
             [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$tag" --jq .sha)" = "$HEAD_SHA" ] && break
             tag=
           done
