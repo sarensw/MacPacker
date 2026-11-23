@@ -119,6 +119,9 @@ public class ArchiveState: ObservableObject {
     /// window looks saved.
     @Published private(set) public var saveError: String? = nil
     @Published public var isReloadNeeded: Bool = false
+    /// How often a save has read the archive anew, every entry a new object:
+    /// the list opens again the folders it had open (#251 G7).
+    @Published public private(set) var rereadsAfterSave = 0
     /// What this archive's names are read in, where they could be in something
     /// else. `nil` when the archive says, or they are ASCII: nothing to choose.
     @Published private(set) public var nameEncoding: ArchiveNameEncoding? = nil
@@ -1119,6 +1122,11 @@ extension ArchiveState {
                 self.progress = nil
                 log.notice("Archive saved", context: ["target": target.lastPathComponent])
 
+                // The list where it was, found again by name: the reload makes
+                // every entry anew (#251 G7, C2).
+                let shown = selectedItem.flatMap(namesFromTop(of:))
+                let selected = selectedItems.compactMap(namesFromTop(of:))
+
                 // reload from disk so entries and indices reflect the file
                 let engines = pinnedEngines
                 let chosenEncoding = chosenNameEncoding
@@ -1142,6 +1150,13 @@ extension ArchiveState {
                     readNames(as: readEncoding)
                     _ = try? await openTask?.value
                 }
+                if let shown, !shown.isEmpty, let folder = entry(atNamesFromTop: shown), folder.isFolder {
+                    selectedItem = folder
+                    loadChildren()
+                }
+                selectedItems = selected.compactMap(entry(atNamesFromTop:))
+                rereadsAfterSave += 1
+                isReloadNeeded = true
                 self.isSaving = false
                 return .written
             } catch SevenZipError.cancelled {
@@ -1488,6 +1503,31 @@ extension ArchiveState {
     ///
     /// - Parameter item: file to open
     public func openFile(_ item: ArchiveItem) async throws {
+        try await openFile(item, navigating: true)
+    }
+
+    /// Opens an archive inside the archive where it is listed, on its triangle:
+    /// what it holds hangs below its row, and the window stays where it is,
+    /// in its folder, with its title, selection and search (#251 B15). The
+    /// Quick Look preview opens one the same way. A file that turns out to be
+    /// no archive is left alone: nothing opens in another app.
+    public func openInPlace(item: ArchiveItem) async throws {
+        guard item.type == .file, item.children == nil else { return }
+        updateStatus(.processing)
+        isBusy = true
+        error = nil
+        updateStatusText(String(localized: "extracting...", bundle: .module, comment: "Archive operation status"))
+        defer {
+            isBusy = false
+            updateStatusText(nil)
+            updateStatus(.done)
+        }
+        try await openFile(item, navigating: false)
+    }
+
+    /// - Parameter navigating: whether the window goes into an archive it
+    ///   finds, or opens it in place below its row.
+    private func openFile(_ item: ArchiveItem, navigating: Bool) async throws {
         // Extract the item first as we have to either open it in the system
         // default preview or treat it as an archive
         let passwordResolver = makePasswordResolver()
@@ -1524,22 +1564,26 @@ extension ArchiveState {
            let engine = effectiveEngineSelector.engine(for: detectionResult.type.id) {
             
             // set the services required for this nested archive
-            clearSearch()
+            if navigating { clearSearch() }
             item.set(
                 url: tempUrl,
                 typeId: detectionResult.type.id
             )
 
             // nested archive is extracted > time to parse its hierarchy
-            try await unfold(item, using: engine)
+            try await unfold(item, using: engine, navigating: navigating)
 
             // set the nested archive as item
-            selectedItem = item
-            loadChildren()
-        } else {
+            if navigating {
+                selectedItem = item
+                loadChildren()
+            }
+        } else if navigating {
             // Could not detect any archive, just open the file in the system
             // editor — via the app-injected opener (no-op under tests).
             openFileExternally(tempUrl)
+        } else {
+            log.notice("Opened in place, but no archive", context: ["name": item.name])
         }
     }
     
@@ -1548,12 +1592,16 @@ extension ArchiveState {
     /// - Parameters:
     ///   - archiveItem: item to load as archive
     ///   - engine: engine to use
-    private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine) async throws {
+    ///   - navigating: whether the window goes into it, taking its name as the
+    ///     title, or keeps its place while the archive opens below its row
+    private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine, navigating: Bool) async throws {
         if let url = archiveItem.url {
             self.isBusy = true
             self.error = nil
-            self.name = url.lastPathComponent
-            self.ext = url.pathExtension
+            if navigating {
+                self.name = url.lastPathComponent
+                self.ext = url.pathExtension
+            }
             
             do {
                 let passwordResolver = makePasswordResolver()
@@ -1586,7 +1634,7 @@ extension ArchiveState {
                     updateStatusText(String(localized: "failed to load", bundle: .module, comment: "Archive operation status"))
                     self.error = loaderResult.error
                 }
-                self.selectedItem = archiveItem
+                if navigating { self.selectedItem = archiveItem }
                 
                 updateStatusText(String(localized: "building tree...", bundle: .module, comment: "Archive operation status"))
                 
@@ -1605,7 +1653,7 @@ extension ArchiveState {
                 
                 self.isBusy = false
                 self.isReloadNeeded = true
-                self.selectedItems = []
+                if navigating { self.selectedItems = [] }
             } catch {
                 self.error = error.localizedDescription
                 self.isBusy = false
@@ -2019,6 +2067,45 @@ extension ArchiveState {
         }
     }
     
+    /// The names from the top level down to `item`, `["docs", "sub"]`; empty
+    /// for the top itself. Nil for an entry no longer in the archive.
+    func namesFromTop(of item: ArchiveItem) -> [String]? {
+        var names: [String] = []
+        var node: ArchiveItem? = item
+        while let current = node, current.type != .root {
+            names.insert(current.name, at: 0)
+            guard let parent = current.parent else { return nil }
+            node = entries[parent]
+        }
+        return node == nil ? nil : names
+    }
+
+    /// The entry those names lead to from the top level, if it is there.
+    func entry(atNamesFromTop names: [String]) -> ArchiveItem? {
+        var node = root
+        for name in names {
+            node = (node?.children ?? []).lazy.compactMap { self.entries[$0] }.first { $0.name == name }
+        }
+        return node
+    }
+
+    /// `items` without those inside a folder or an archive also among them. A
+    /// tree lets a folder be selected together with rows below it, and what
+    /// the folder brings must not come a second time on its own (#251 C4):
+    /// dragged out, each row is extracted on its own. Extracting a selection
+    /// needs none of this, its batches take each entry once already.
+    public func withoutNested(_ items: [ArchiveItem]) -> [ArchiveItem] {
+        let ids = Set(items.map(\.id))
+        return items.filter { item in
+            var parent = item.parent
+            while let id = parent {
+                if ids.contains(id) { return false }
+                parent = entries[id]?.parent
+            }
+            return true
+        }
+    }
+
     /// What the list has selected, by entry rather than by row: the toolbar,
     /// the status bar and the Quick Look panel act on it, and it stays with its
     /// entries when the rows around them change (#251 C1, C2). With the Quick

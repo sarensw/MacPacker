@@ -26,6 +26,8 @@ enum AccessibilityIdentifier {
     /// Settings ▸ General ▸ Show hidden files. Its row label is a separate text,
     /// so the toggle itself has no name to find it by.
     static let showHiddenFilesSetting = "settings.showHiddenFiles"
+    /// Settings ▸ General ▸ Show contents as: Tree or Table (#251 B18).
+    static let archiveListStyleSetting = "settings.archiveListStyle"
 }
 
 extension NSWindow {

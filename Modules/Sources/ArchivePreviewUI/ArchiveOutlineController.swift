@@ -91,6 +91,12 @@ public final class ArchiveOutlineController: NSViewController {
     private var subscriptions: Set<AnyCancellable> = []
     /// Set while the list itself puts the state's selection on its rows.
     private var applyingSelection = false
+    /// The folders open when a search began, to open again when it ends.
+    private var openBeforeSearch: [ArchiveItem]?
+    /// The folders open when a save began, by name, to open again once the
+    /// archive has been read anew; and the rereads already done.
+    private var openAtSave: [[String]] = []
+    private var seenRereads = 0
     private var dragOut: ArchiveDragOut?
 
     public init(features: ArchiveOutlineFeatures, layout: ArchiveOutlineLayout) {
@@ -215,10 +221,58 @@ public final class ArchiveOutlineController: NSViewController {
     /// state's selection back on its rows.
     public func reload() {
         guard isViewLoaded else { return }
+        // A search lists flat results, which drops the folders opened in the
+        // tree; they open again once it is cleared (#251 D2).
+        let searching = features.contains(.navigation) && state?.isSearching == true
+        if searching, openBeforeSearch == nil {
+            openBeforeSearch = openItems()
+        }
+        // A save reads the archive anew: every entry is a new object, and the
+        // folders open when the save began are found again by name (#251 G7).
+        var openBeforeReread: [[String]] = []
+        if let state, state.rereadsAfterSave != seenRereads {
+            seenRereads = state.rereadsAfterSave
+            openBeforeReread = openAtSave
+            openAtSave = []
+        }
         childrenCache.removeAll()
         topRows = currentTopRows()
         outlineView.reloadData()
+        if !searching, let open = openBeforeSearch {
+            openBeforeSearch = nil
+            for item in open { outlineView.expandItem(item) }
+        }
+        for names in openBeforeReread { expandRow(at: names) }
         applySelection()
+    }
+
+    /// The names of the rows from the top of the list down to `item`, read
+    /// off the rows themselves, which still hold the entries of before.
+    private func namesOfRow(_ item: ArchiveItem) -> [String] {
+        var names = [item.name]
+        var parent = outlineView.parent(forItem: item)
+        while let row = parent as? ArchiveItem {
+            names.insert(row.name, at: 0)
+            parent = outlineView.parent(forItem: row)
+        }
+        return names
+    }
+
+    /// Opens the row those names lead to, if the list still has it.
+    private func expandRow(at names: [String]) {
+        var item: ArchiveItem?
+        for name in names {
+            guard let next = children(of: item).first(where: { $0.name == name && $0 !== parentRow }) else { return }
+            outlineView.expandItem(next)
+            item = next
+        }
+    }
+
+    /// The folders and archives inside that are open, outer ones first.
+    private func openItems() -> [ArchiveItem] {
+        (0..<outlineView.numberOfRows)
+            .compactMap { outlineView.item(atRow: $0) as? ArchiveItem }
+            .filter { outlineView.isItemExpanded($0) }
     }
 
     private func currentTopRows() -> [ArchiveItem] {
@@ -249,6 +303,18 @@ public final class ArchiveOutlineController: NSViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 MainActor.assumeIsolated { self?.applySelection() }
+            }
+            .store(in: &subscriptions)
+        // Before the save reads the archive anew, while the rows still hold the
+        // entries of before.
+        seenRereads = state.rereadsAfterSave
+        state.$isSaving
+            .filter { $0 }
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.openAtSave = self.openItems().map(self.namesOfRow)
+                }
             }
             .store(in: &subscriptions)
     }
@@ -330,7 +396,7 @@ public final class ArchiveOutlineController: NSViewController {
     }
 
     /// Unpacks an archive inside the archive to a temporary place and hangs
-    /// what it holds below its row.
+    /// what it holds below its row; the window stays where it is (#251 B15).
     private func openNestedArchive(_ item: ArchiveItem) {
         guard let state, loadingItems.insert(item.id).inserted else { return }
         outlineView.reloadItem(item)
@@ -338,7 +404,7 @@ public final class ArchiveOutlineController: NSViewController {
 
         Task {
             do {
-                try await state.openAsync(item: item)
+                try await state.openInPlace(item: item)
                 PreviewLog.general.info("Nested archive opened", context: [
                     "name": item.name,
                     "items": "\(item.children?.count ?? 0)",
@@ -431,6 +497,9 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
     public func outlineView(_ outlineView: NSOutlineView, pasteboardWriterForItem item: Any) -> NSPasteboardWriting? {
         guard features.contains(.dragOut), let state,
               let item = item as? ArchiveItem, item !== parentRow else { return nil }
+        // a row inside a folder dragged along comes with the folder (#251 C4)
+        let dragged = state.selectedItems.contains { $0 === item } ? state.selectedItems : [item]
+        guard state.withoutNested(dragged).contains(where: { $0 === item }) else { return nil }
         if dragOut?.state !== state { dragOut = ArchiveDragOut(state: state) }
         let type = (item.ext.isEmpty ? UTType.data : UTType(filenameExtension: item.ext))?.identifier
             ?? UTType.data.identifier

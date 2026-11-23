@@ -145,6 +145,167 @@ extension AllCoreTests {
             #expect((list.outlineView.item(atRow: list.outlineView.selectedRow) as? ArchiveItem) === zeta)
         }
 
+        /// #251 B14, B4. In the window's Tree layout a folder opens in place on
+        /// its triangle: its rows follow it, one level in, and the window stays
+        /// in the folder it shows. The `..` row is the table's alone, whatever
+        /// the setting says.
+        @Test func aFolderOpensInPlaceInTheTree() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            state.defaults.set(true, forKey: Keys.showParentRow)
+            let list = makeList(.window, .tree, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            #expect(list.outlineView.isExpandable(docs))
+
+            list.outlineView.expandItem(docs)
+
+            #expect(names(list) == ["docs", "sub", "a.txt", "b.txt", "top.txt", "zeta.txt"])
+            #expect(list.outlineView.level(forItem: try #require(state.entries.values.first { $0.name == "a.txt" })) == 1)
+            #expect(state.selectedItem === state.root, "the window left the folder it shows")
+        }
+
+        /// #251 B15. An archive inside opens in place on its triangle: what it
+        /// holds hangs below its row, and the window keeps its folder, its title
+        /// and its selection. Before, opening one took the window into it.
+        @Test func anArchiveInsideOpensInPlace() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+            try Data("inside".utf8).write(to: source.appendingPathComponent("inside.txt"))
+            try Data("top".utf8).write(to: source.appendingPathComponent("top.txt"))
+            try run("/usr/bin/zip", ["inner.zip", "inside.txt"], cwd: source)
+            let outer = dir.appendingPathComponent("outer.zip")
+            try run("/usr/bin/zip", [outer.path, "inner.zip", "top.txt"], cwd: source)
+
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: outer)
+            try await state.openTask?.value
+            let top = try #require(state.childItems?.first { $0.name == "top.txt" })
+            state.select([top])
+            let inner = try #require(state.childItems?.first { $0.name == "inner.zip" })
+
+            try await state.openInPlace(item: inner)
+
+            #expect(state.displayedChildren(of: inner).map(\.name) == ["inside.txt"])
+            #expect(state.selectedItem === state.root, "the window went into the archive")
+            #expect(state.name == "outer.zip", "the title follows the archive inside")
+            #expect(state.selectedItems.map(\.name) == ["top.txt"], "the selection is gone")
+        }
+
+        /// #251 D2. A search lists flat results; cleared, the tree is back with
+        /// the folders that were open.
+        @Test func clearingASearchOpensTheFoldersAgain() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            list.outlineView.expandItem(docs)
+
+            state.search("txt")
+            list.reload()
+            #expect(!list.outlineView.isExpandable(docs), "a search result has a triangle")
+            state.search("")
+            list.reload()
+
+            #expect(list.outlineView.isItemExpanded(docs), "the folder opened before the search is closed")
+            #expect(names(list) == ["docs", "sub", "a.txt", "b.txt", "top.txt", "zeta.txt"])
+        }
+
+        /// #251 C4, F2. In a tree a folder can be selected together with rows
+        /// inside it. Extracted, what the folder holds comes once, in the
+        /// folder, not a second time on its own. (It held before the tree:
+        /// a guard against a change of the extraction.)
+        @Test func aFolderSelectedWithRowsInsideItIsExtractedOnce() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            let a = try #require(state.entries.values.first { $0.name == "a.txt" })
+            let dest = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
+
+            await withCheckedContinuation { continuation in
+                state.onStatusChange = { status in
+                    if status == .done { continuation.resume() }
+                }
+                state.extract(items: [docs, a], to: dest, smart: false)
+            }
+
+            let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
+            #expect(contents == ["docs"], "a file of the folder came a second time: \(contents)")
+            let inDocs = try FileManager.default.contentsOfDirectory(atPath: dest.appendingPathComponent("docs").path).sorted()
+            #expect(inDocs == ["a.txt", "b.txt", "sub"], "a file of the folder came a second time: \(inDocs)")
+        }
+
+        /// #251 C4, F5. Dragged out together with its folder, a row inside it
+        /// comes with the folder, not a second time on its own: each dragged row
+        /// is a file of its own that Finder asks for.
+        @Test func aRowInsideAFolderDraggedAlongComesWithTheFolder() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            let a = try #require(state.entries.values.first { $0.name == "a.txt" })
+            let top = try #require(state.childItems?.first { $0.name == "top.txt" })
+
+            state.select([docs, a, top])
+
+            #expect(list.outlineView(list.outlineView, pasteboardWriterForItem: docs) != nil)
+            #expect(list.outlineView(list.outlineView, pasteboardWriterForItem: top) != nil)
+            #expect(list.outlineView(list.outlineView, pasteboardWriterForItem: a) == nil, "the file comes a second time, beside its folder")
+        }
+
+        /// Adds a file, so there is something to save, and saves.
+        private func addAndSave(_ state: ArchiveState, in dir: URL) async throws {
+            let added = dir.appendingPathComponent("added.txt")
+            try Data("added".utf8).write(to: added)
+            #expect(await state.add(url: added).value)
+            let save = try #require(state.save())
+            await save.value
+            #expect(state.error == nil)
+        }
+
+        /// #251 G7, C2. A save reads the archive anew, every entry a new
+        /// object; the window stays in the folder it shows, and the selection
+        /// stays with its entries. 1.3.0 went back to the top level.
+        @Test func aSaveKeepsTheFolderShownAndTheSelection() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            try await enter("docs", in: state)
+            let a = try #require(state.childItems?.first { $0.name == "a.txt" })
+            state.select([a])
+
+            try await addAndSave(state, in: dir)
+
+            #expect(state.selectedItem?.name == "docs", "the window went back to the top level")
+            #expect(state.selectedItems.map(\.name) == ["a.txt"])
+            #expect(state.selectedItems.first !== a, "the entry was not read anew")
+        }
+
+        /// #251 G7. The folders open in the tree when a save began are open
+        /// again once it has read the archive anew.
+        @Test func aSaveKeepsTheFoldersOpen() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            list.outlineView.expandItem(docs)
+            let sub = try #require(state.entries.values.first { $0.name == "sub" })
+            list.outlineView.expandItem(sub)
+
+            try await addAndSave(state, in: dir)
+            list.reload()
+
+            let names = names(list)
+            #expect(names.prefix(5) == ["docs", "sub", "c.txt", "a.txt", "b.txt"], "\(names)")
+        }
+
         /// #251 H1. The preview lists the whole archive as a tree from its top,
         /// and may only look: no double click into folders, nothing to drag
         /// out, no key that deletes.
