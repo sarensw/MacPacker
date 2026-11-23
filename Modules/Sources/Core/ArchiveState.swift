@@ -176,11 +176,14 @@ public class ArchiveState: ObservableObject {
     /// the app-wide center that feeds the extraction progress window;
     /// tests inject their own instance.
     public var progressCenter: ExtractionProgressCenter = .shared
-    /// Where this state reads its settings: the ".." row, the sort order, and
-    /// whether a save given no options leaves Mac-specific data out. Not the
-    /// hidden files: that setting lives in the app group the extensions share,
-    /// read through `Keys`. Tests inject their own.
+    /// Where this state reads its settings: the ".." row, and whether a save
+    /// given no options leaves Mac-specific data out. Not the hidden files: that
+    /// setting lives in the app group the extensions share, read through `Keys`.
+    /// Tests inject their own.
     var defaults: UserDefaults = .standard
+    /// Where the sort order is read: the app group, so the window and Quick
+    /// Look list in the same order (#251 B9, H6). Tests inject their own.
+    var listDefaults: UserDefaults = .macPackerShared
     /// Passwords the user gave, by the file they were given for. One window can
     /// hold more than one archive: an archive inside the archive opens in the
     /// same tree, extracted to a temp file, and each can have its own password.
@@ -444,20 +447,12 @@ extension ArchiveState {
     }
 
     /// All entries (any level) whose name contains the search text. Sorted
-    /// like the browse view; without a stored order, by name — dictionary
-    /// order would make the results jump around on every keystroke.
+    /// like the browse view — dictionary order would make the results jump
+    /// around on every keystroke.
     private func searchResults() -> [ArchiveItem] {
         let matches = entries.values.filter {
             $0.type != .root && $0.name.localizedCaseInsensitiveContains(searchText)
                 && (showsHiddenFiles || !isInHiddenPath($0))
-        }
-        guard defaults.string(forKey: Keys.defaultOrderColumn) != nil else {
-            return matches.sorted { a, b in
-                if a.isFolder != b.isFolder { return a.isFolder }
-                let cmp = a.name.localizedStandardCompare(b.name)
-                if cmp != .orderedSame { return cmp == .orderedAscending }
-                return isBeforeByPath(a, b)
-            }
         }
         return sortedForDisplay(matches)
     }
@@ -492,6 +487,13 @@ extension ArchiveState {
         return showsHiddenFiles ? children : children.filter { !$0.isHidden }
     }
 
+    /// `listedChildren(of:)` in the order the list shows them, at any level:
+    /// the folder the window shows, a folder opened below it, and every level
+    /// of the Quick Look preview.
+    public func displayedChildren(of node: ArchiveItem) -> [ArchiveItem] {
+        sortedForDisplay(listedChildren(of: node))
+    }
+
     public func loadChildren() {
         guard let selectedItem else { return }
 
@@ -500,18 +502,15 @@ extension ArchiveState {
             return
         }
 
-        let children = listedChildren(of: selectedItem)
-        guard defaults.string(forKey: Keys.defaultOrderColumn) != nil else {
-            childItems = children
-            return
-        }
-
-        childItems = sortedForDisplay(children)
+        childItems = displayedChildren(of: selectedItem)
     }
 
+    /// Sorted by the column the user chose last, in the window or in Quick
+    /// Look; until then by name, folders first (`Keys.sortOrder`).
     private func sortedForDisplay(_ items: [ArchiveItem]) -> [ArchiveItem] {
-        let defaultOrderColumn = defaults.string(forKey: Keys.defaultOrderColumn)
-        let defaultOrderColumnAscending = defaults.bool(forKey: Keys.defaultOrderColumnAscending)
+        let sortOrder = Keys.sortOrder(in: listDefaults)
+        let defaultOrderColumn = sortOrder.column.rawValue
+        let defaultOrderColumnAscending = sortOrder.ascending
 
         return items.sorted { a, b in
                 switch defaultOrderColumn {
