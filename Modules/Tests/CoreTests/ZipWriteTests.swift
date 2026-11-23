@@ -1058,18 +1058,10 @@ extension AllCoreTests {
             #expect(!state.canBeEdited)
         }
 
-        /// An archive opened inside the archive keeps its entries in an archive of
-        /// its own, and a save writes only the outer one: nothing inside can be
-        /// removed or added from here. Deleting `x.txt` inside `inner.zip` deleted
-        /// the outer archive's `a.txt`, since both were entry 0. The row of the
-        /// inner archive is the outer one's, and goes alone. Whichever of the two
-        /// is a zip and whichever a 7z.
-        @Test(arguments: CompressionOptions.Format.allCases, CompressionOptions.Format.allCases)
-        func anArchiveOpenedInsideIsNotChangedThroughTheOuterOne(
-            outer outerFormat: CompressionOptions.Format, inner innerFormat: CompressionOptions.Format
-        ) async throws {
-            let dir = try makeTempDir()
-            defer { try? FileManager.default.removeItem(at: dir) }
+        /// An outer archive of `a.txt`, `b.txt` and `inner.<format>`, which holds
+        /// `x.txt` and `y.txt`, each written by 7-Zip in the format given.
+        private func makeNested(outer outerFormat: CompressionOptions.Format, inner innerFormat: CompressionOptions.Format,
+                                in dir: URL) throws -> (outer: URL, inner: URL) {
             let inner = dir.appendingPathComponent("inner.\(innerFormat.rawValue)")
             try SevenZipArchive.writeArchive(
                 destination: inner,
@@ -1083,6 +1075,24 @@ extension AllCoreTests {
                         .addData(archivePath: "b.txt", data: Data("b".utf8)),
                         .addFile(archivePath: inner.lastPathComponent, diskPath: inner)],
                 options: .init(format: outerFormat))
+            return (outer, inner)
+        }
+
+        /// #251 G5. An archive opened inside the archive is changed like a
+        /// folder: a file deleted in it and one added to it are written into it
+        /// on Save, and it takes the place of its entry in the outer archive. The
+        /// outer archive's own entries stay: once, deleting `x.txt` inside
+        /// deleted the outer `a.txt`, since both were entry 0. Whichever of the
+        /// two is a zip and whichever a 7z.
+        @Test(arguments: CompressionOptions.Format.allCases, CompressionOptions.Format.allCases)
+        func anArchiveOpenedInsideIsChangedAndWrittenBack(
+            outer outerFormat: CompressionOptions.Format, inner innerFormat: CompressionOptions.Format
+        ) async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (outer, inner) = try makeNested(outer: outerFormat, inner: innerFormat, in: dir)
+            let added = dir.appendingPathComponent("added.txt")
+            try Data("added".utf8).write(to: added)
             let state = makeState()
             state.open(url: outer)
             try await state.openTask?.value
@@ -1090,19 +1100,137 @@ extension AllCoreTests {
             try await state.openAsync(item: innerRow)
 
             let x = try #require(state.entries.values.first { $0.name == "x.txt" })
-            #expect(!state.canRemove([x]))
+            #expect(state.canRemove([x]))
             state.remove(items: [x])
-            #expect(!state.canAddHere)
-            #expect(await !state.add(url: inner).value)
+            #expect(state.canAddHere)
+            #expect(await state.add(url: added).value)
+            #expect(state.hasPendingChanges)
+            #expect(state.diff.isEmpty, "a change inside went to the outer archive")
+
+            await state.save()?.value
+            #expect(state.saveError == nil, "\(state.saveError ?? "")")
+            #expect(try systemEntries(outer).sorted() == ["a.txt", "b.txt", inner.lastPathComponent])
+            let out = dir.appendingPathComponent("out")
+            try systemExtract(outer, to: out)
+            #expect(try systemEntries(out.appendingPathComponent(inner.lastPathComponent)).sorted() == ["added.txt", "y.txt"])
+            #expect(try String(contentsOf: out.appendingPathComponent("a.txt"), encoding: .utf8) == "a")
             #expect(!state.hasPendingChanges)
+        }
+
+        /// #251 G5. The row of an archive inside is the outer archive's entry:
+        /// deleted, it goes on Save, and what was pending inside it goes with it.
+        @Test func deletingAnArchiveInsideDropsWhatWasPendingInIt() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (outer, inner) = try makeNested(outer: .zip, inner: .zip, in: dir)
+            let state = makeState()
+            state.open(url: outer)
+            try await state.openTask?.value
+            let innerRow = try #require(item(inner.lastPathComponent, in: state))
+            try await state.openAsync(item: innerRow)
+            state.remove(items: [try #require(state.entries.values.first { $0.name == "x.txt" })])
+            #expect(!state.nestedDiffs.isEmpty)
 
             state.openParent()
-            #expect(state.canAddHere)
             #expect(state.canRemove([innerRow]))
             state.remove(items: [innerRow])
+            #expect(state.nestedDiffs.isEmpty, "the changes inside a deleted archive are still pending")
+
             await state.save()?.value
             #expect(state.saveError == nil, "\(state.saveError ?? "")")
             #expect(try systemEntries(outer).sorted() == ["a.txt", "b.txt"])
+        }
+
+        /// #251 G5. Inside an archive that can't be written, as a rar, nothing
+        /// can be added or deleted: the rar couldn't take a change back. Its row
+        /// is the outer zip's, and can go.
+        @Test func insideAnArchiveThatCantBeWrittenNothingChanges() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let outer = try copyOfFixture("nested", "rarInZip.zip", in: dir)
+            let state = makeState()
+            state.open(url: outer)
+            try await state.openTask?.value
+            let innerRow = try #require(state.childItems?.first { $0.name == "inner.rar" })
+            try await state.openAsync(item: innerRow)
+            let inside = try #require(state.childItems?.first)
+
+            #expect(!state.canRemove([inside]))
+            #expect(!state.canAddHere)
+            state.openParent()
+            #expect(state.canRemove([innerRow]))
+        }
+
+        /// #251 G5. An archive inside with a password of its own is written
+        /// back with it: the save asks nobody again, and it still lists only
+        /// with that password.
+        @Test func anArchiveInsideIsWrittenBackWithItsOwnPassword() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+            let locked = try copyOfFixture("password", "7z_encrypted_header.7z", in: source)
+            let outer = dir.appendingPathComponent("outer.zip")
+            try SevenZipArchive.writeArchive(
+                destination: outer,
+                items: [.addData(archivePath: "a.txt", data: Data("a".utf8)),
+                        .addFile(archivePath: locked.lastPathComponent, diskPath: locked)],
+                options: .init(format: .zip))
+            let added = dir.appendingPathComponent("added.txt")
+            try Data("added".utf8).write(to: added)
+            let state = makeState()
+            let prompts = Prompts()
+            state.passwordProvider = { _ in await prompts.answer("password") }
+            state.open(url: outer)
+            try await state.openTask?.value
+            let row = try #require(item(locked.lastPathComponent, in: state))
+            try await state.openAsync(item: row)
+            #expect(await prompts.count == 1)
+            #expect(await state.add(url: added).value)
+
+            await state.save()?.value
+
+            #expect(state.saveError == nil, "\(state.saveError ?? "")")
+            #expect(await prompts.count == 1, "the save asked for the password again")
+            let out = dir.appendingPathComponent("out")
+            try systemExtract(outer, to: out)
+            let written = out.appendingPathComponent(locked.lastPathComponent)
+            let withPassword = makeState()
+            withPassword.passwordProvider = { _ in "password" }
+            withPassword.open(url: written)
+            try await withPassword.openTask?.value
+            #expect(withPassword.childItems?.contains { $0.name == "added.txt" } == true,
+                    "\(withPassword.childItems?.map(\.name) ?? [])")
+            let without = makeState()
+            without.passwordProvider = { _ in nil }
+            without.open(url: written)
+            try? await without.openTask?.value
+            #expect(without.childItems?.contains { $0.name == "added.txt" } != true, "it lists without its password")
+        }
+
+        /// #251 G5. A save whose write-back of an archive inside fails leaves
+        /// the outer archive as it was, and keeps what is pending.
+        @Test func aFailedWriteBackLeavesTheOuterArchiveAsItWas() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (outer, inner) = try makeNested(outer: .zip, inner: .zip, in: dir)
+            let added = dir.appendingPathComponent("added.txt")
+            try Data("added".utf8).write(to: added)
+            let state = makeState()
+            state.open(url: outer)
+            try await state.openTask?.value
+            let innerRow = try #require(item(inner.lastPathComponent, in: state))
+            try await state.openAsync(item: innerRow)
+            #expect(await state.add(url: added).value)
+            let before = try Data(contentsOf: outer)
+            // the copy of the archive inside that the write-back reads is gone
+            try FileManager.default.removeItem(at: try #require(innerRow.url))
+
+            await state.save()?.value
+
+            #expect(state.saveError != nil, "the save went through without the archive inside")
+            #expect(try Data(contentsOf: outer) == before, "the outer archive changed")
+            #expect(state.hasPendingChanges, "what was pending is gone")
         }
 
         /// The archives of `nested/`: each stores the inner archive as it is.
@@ -2269,5 +2397,15 @@ extension AllCoreTests {
             let recorded = try recordedMethod(of: saved)
             #expect(recorded.name == c.recordedName, "the carried-over entry recorded \(recorded.full)")
         }
+    }
+}
+
+/// Answers the password prompt, and counts how often it was asked.
+private actor Prompts {
+    private(set) var count = 0
+
+    func answer(_ password: String) -> String {
+        count += 1
+        return password
     }
 }

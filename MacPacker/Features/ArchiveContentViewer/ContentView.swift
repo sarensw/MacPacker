@@ -129,7 +129,7 @@ struct ContentView: View {
             .frame(width: 366)
         }
         .navigationTitle(archiveState.hasArchive == false ? Constants.appName : archiveState.name!)
-        .navigationSubtitle(Text(verbatim: "\(archiveState.diff.count > 0 ? String(localized: .archiveBrowseEdited) + " • " : "")\(archiveState.url == nil ? "" : archiveState.url!.deletingLastPathComponent().path + "/")"))
+        .navigationSubtitle(Text(verbatim: "\(archiveState.hasPendingChanges ? String(localized: .archiveBrowseEdited) + " • " : "")\(archiveState.url == nil ? "" : archiveState.url!.deletingLastPathComponent().path + "/")"))
         .environmentObject(archiveState)
     }
 }

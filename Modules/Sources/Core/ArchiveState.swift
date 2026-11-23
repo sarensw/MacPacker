@@ -65,6 +65,12 @@ public class ArchiveState: ObservableObject {
     // Full list of entries
     @Published private(set) public var entries: [UUID: ArchiveItem] = [:]
     @Published private(set) public var diff: [ArchiveUpdateItem] = []
+    /// The pending changes of each archive opened inside this one, by its entry:
+    /// a save writes them into that archive, which then takes the place of its
+    /// entry in the archive around it (#251 G5).
+    @Published private(set) public var nestedDiffs: [UUID: [ArchiveUpdateItem]] = [:]
+    /// The archives opened inside this one whose engine writes their format.
+    private var editableNested: Set<UUID> = []
 
     /// Number of real items in the archive (files + directories across all
     /// levels), excluding the synthetic `<root>` node that `entries` also holds.
@@ -308,6 +314,8 @@ extension ArchiveState {
 
         self.hasArchive = false
         self.canBeEdited = false
+        self.nestedDiffs = [:]
+        self.editableNested = []
         // A failed open sets its reason after this, so its alert still shows.
         self.openError = nil
         self.saveError = nil
@@ -711,13 +719,16 @@ extension ArchiveState {
         // `create`, `open` or closing the window replaced the archive this was
         // for: whatever the window shows now is not where it goes.
         guard let target, generation == contentGeneration else { return false }
-        // A save writes only this archive. Added inside one opened within it,
-        // the file would land in this one, in a folder named like that archive.
-        guard !isWithinOpenedArchive(target) else {
-            log.notice("Ignoring add — inside an archive opened within this one", context: ["files": "\(urls.count)"])
+        // An add names no entry by number, so this archive takes one whichever
+        // engine read it: every save is 7-Zip's. One opened within it has to be
+        // written back, by an engine that writes its format.
+        guard archivesInsideCanBeWritten(down: target) else {
+            log.notice("Ignoring add — the archive inside here can't be written", context: ["files": "\(urls.count)"])
             return false
         }
-        let base = (target.virtualPath?.isEmpty == false && target.virtualPath != "/")
+        // Paths are the archive's own: at the top of an archive opened within
+        // this one, they start there, not at its name in the archive around it.
+        let base = (target.archiveTypeId == nil && target.virtualPath?.isEmpty == false && target.virtualPath != "/")
             ? target.virtualPath! + "/" : ""
 
         isBusy = true
@@ -818,11 +829,13 @@ extension ArchiveState {
             placed.append(item)
         }
 
-        var diff = self.diff
+        // into the archive the target lies in: this one, or one opened within it
+        let owner = archive(holding: target)
+        var diff = pendingChanges(of: owner)
         drop(replaced, from: &diff)
         diff.append(contentsOf: additions)
         self.entries = entries
-        self.diff = diff
+        setPendingChanges(diff, of: owner)
         if !replaced.isEmpty {
             // a replaced item must not stay selected — it is gone from `entries`
             selectedItems = selectedItems.filter { entries[$0.id] != nil }
@@ -903,19 +916,30 @@ extension ArchiveState {
             return
         }
 
-        // One change to `entries` and one to `diff`, as for an add: see `put`.
+        // One change to `entries` and one to each archive's changes, as for an
+        // add: see `put`. Each removal goes to the archive the item lies in.
         var entries = self.entries
-        var removal = Removal()
+        var removals: [UUID?: (archive: ArchiveItem?, removal: Removal)] = [:]
         for item in items {
+            let owner = item.parent.flatMap { self.entries[$0] }.flatMap(archive(holding:))
+            var removal = removals[owner?.id]?.removal ?? Removal()
             take(item, outOf: &entries, into: &removal)
+            removals[owner?.id] = (owner, removal)
             if let parentId = item.parent {
                 entries[parentId]?.removeChild(item.id)
             }
         }
-        var diff = self.diff
-        drop(removal, from: &diff)
+        for (archive, removal) in removals.values {
+            var diff = pendingChanges(of: archive)
+            drop(removal, from: &diff)
+            setPendingChanges(diff, of: archive)
+        }
+        // what was pending inside an archive that is gone, goes with it
+        for id in nestedDiffs.keys where entries[id] == nil {
+            nestedDiffs[id] = nil
+        }
         self.entries = entries
-        self.diff = diff
+        let removal = removals.values.reduce(into: Removal()) { $0.formUnion($1.removal) }
 
         log.notice("Marked items for removal", context: [
             "items": "\(items.count)",
@@ -979,17 +1003,6 @@ extension ArchiveState {
         diff.append(contentsOf: removal.indices.sorted().map { .remove(sourceIndex: $0) })
     }
 
-    /// Whether `item` is an archive opened within this one, or inside one: what
-    /// such an archive holds is that archive's, and a save writes only this one.
-    private func isWithinOpenedArchive(_ item: ArchiveItem) -> Bool {
-        var current: ArchiveItem? = item
-        while let node = current, node.type != .root {
-            if node.archiveTypeId != nil { return true }
-            current = node.parent.flatMap { entries[$0] }
-        }
-        return false
-    }
-
     /// Opens a dropped file in this window: a supported archive is opened directly,
     /// unless another window has it open already — that one comes forward instead;
     /// anything else becomes the first entry of a new archive. `open`/`create` reset
@@ -1005,20 +1018,73 @@ extension ArchiveState {
     }
 
     /// Whether there are unsaved changes (pending additions/removals).
-    public var hasPendingChanges: Bool { !diff.isEmpty }
+    public var hasPendingChanges: Bool { !diff.isEmpty || nestedDiffs.values.contains { !$0.isEmpty } }
 
-    /// Whether `items` can be removed: none of them is inside an archive opened
-    /// within this one. The row of such an archive is this archive's own entry,
-    /// and can go.
-    public func canRemove(_ items: [ArchiveItem]) -> Bool {
-        canBeEdited && !isSaving && !items.isEmpty
-            && !items.contains { item in item.parent.flatMap { entries[$0] }.map(isWithinOpenedArchive) ?? false }
+    /// `hasPendingChanges` as it changes, from the values published: a
+    /// subscriber reading the property instead would see the one before.
+    public var pendingChangesPublisher: AnyPublisher<Bool, Never> {
+        $diff.combineLatest($nestedDiffs)
+            .map { diff, nested in !diff.isEmpty || nested.values.contains { !$0.isEmpty } }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
     }
 
-    /// Whether files can be added where the window is: into this archive, not
-    /// into one opened within it.
+    /// Whether `items` can be removed: each from an archive that can be
+    /// written, inside archives that can all be written (#251 G5). The row of
+    /// an archive opened within this one is the entry of the archive around it.
+    public func canRemove(_ items: [ArchiveItem]) -> Bool {
+        // the top level is not always among the entries: a new archive keeps it apart
+        !items.isEmpty && items.allSatisfy { item in
+            (item.parent.flatMap { entries[$0] } ?? root).map(canChange) ?? false
+        }
+    }
+
+    /// Whether files can be added where the window is, also inside an archive
+    /// opened within this one (#251 G5).
     public var canAddHere: Bool {
-        canBeEdited && !isSaving && selectedItem.map { !isWithinOpenedArchive($0) } == true
+        selectedItem.map(canChange) ?? false
+    }
+
+    /// Whether what `folder` holds can change: this archive can be written, no
+    /// save is under way, and so can every archive opened within it on the way
+    /// down to `folder`. A zip inside a rar can't: the rar can't take it back.
+    public func canChange(_ folder: ArchiveItem) -> Bool {
+        canBeEdited && !isSaving && archivesInsideCanBeWritten(down: folder)
+    }
+
+    /// Whether every archive opened within this one, on the way down to
+    /// `folder`, can be written.
+    private func archivesInsideCanBeWritten(down folder: ArchiveItem) -> Bool {
+        var node: ArchiveItem? = folder
+        while let current = node, current.type != .root {
+            if current.archiveTypeId != nil, !editableNested.contains(current.id) { return false }
+            node = current.parent.flatMap { entries[$0] }
+        }
+        return true
+    }
+
+    /// The archive opened within this one that `folder` lies in, or is: its
+    /// changes are written into it. Nil for this archive itself.
+    private func archive(holding folder: ArchiveItem) -> ArchiveItem? {
+        var node: ArchiveItem? = folder
+        while let current = node, current.type != .root {
+            if current.archiveTypeId != nil { return current }
+            node = current.parent.flatMap { entries[$0] }
+        }
+        return nil
+    }
+
+    /// The pending changes of `archive`, this one's for nil.
+    private func pendingChanges(of archive: ArchiveItem?) -> [ArchiveUpdateItem] {
+        archive.map { nestedDiffs[$0.id] ?? [] } ?? diff
+    }
+
+    private func setPendingChanges(_ changes: [ArchiveUpdateItem], of archive: ArchiveItem?) {
+        if let archive {
+            nestedDiffs[archive.id] = changes.isEmpty ? nil : changes
+        } else {
+            diff = changes
+        }
     }
 
     /// Whether there is an archive file to preview, extract or test from: the
@@ -1070,13 +1136,15 @@ extension ArchiveState {
         guard let target = destination ?? url else { return nil }
         // Save with nothing pending is a no-op. A Save As is not, even of a clean
         // archive onto its own file: its options have to reach every entry.
-        guard !diff.isEmpty || destination != nil else { return nil }
+        guard hasPendingChanges || destination != nil else { return nil }
         // Given no options, the format follows the target's name, and which
         // name is which format's is the catalog's to say — a `jar` is a zip. A
         // name that says nothing is written as a new archive starts out. For a
         // Save in place neither matters: the writer asks 7-Zip what the archive is.
         let format = catalog.writtenFormat(forExtension: target.pathExtension) ?? .newArchive
-        let saver = ArchiveSaver(
+        // With the changes of this archive, and of the archives opened within
+        // it once they are written: known only then.
+        let makeSaver = { [self] (items: [ArchiveUpdateItem]) in ArchiveSaver(
             source: url,
             // From the file's name, by the catalog's split patterns — not by
             // comparing it with `name`, which follows an archive opened inside
@@ -1087,7 +1155,7 @@ extension ArchiveState {
             },
             sourceAsOpened: openedFile,
             target: target,
-            items: diff,
+            items: items,
             options: options ?? CompressionOptions(
                 format: format, excludeMacData: defaults.bool(forKey: Keys.excludeMacData)),
             isSaveAs: destination != nil,
@@ -1102,7 +1170,7 @@ extension ArchiveState {
                         job, completed: Int64(completed), total: Int64(total), at: date)
                 }
             },
-            cancel: cancel)
+            cancel: cancel) }
 
         isSaving = true
         isBusy = true
@@ -1117,8 +1185,10 @@ extension ArchiveState {
 
         return Task {
             do {
-                let saved = try await saver.save()
+                let items = try await writeBackNestedArchives(cancel: cancel)
+                let saved = try await makeSaver(items).save()
                 diff.removeAll()
+                nestedDiffs.removeAll()
                 self.progress = nil
                 log.notice("Archive saved", context: ["target": target.lastPathComponent])
 
@@ -1625,6 +1695,12 @@ extension ArchiveState {
                 if let used = loaderResult.engineType, pinnedEngines[loaderResult.type.id] == nil {
                     pinnedEngines[loaderResult.type.id] = used
                 }
+                // changed only by an engine that writes the format, as the
+                // archive around it (see `canBeEdited`)
+                if let used = loaderResult.engineType,
+                   loaderResult.type.engines.contains(where: { $0.id == used.configId && $0.canEdit }) {
+                    editableNested.insert(archiveItem.id)
+                }
                 
                 if let tempDirectory = loaderResult.tempDirectory {
                     tempDirectories.append(tempDirectory)
@@ -2067,6 +2143,60 @@ extension ArchiveState {
         }
     }
     
+    /// Writes each archive opened within this one that has changes into a new
+    /// file, the deepest first; each such file then takes the place of its
+    /// entry in the archive around it (#251 G5). Returns this archive's changes
+    /// with those replacements. What is pending stays as it is until the whole
+    /// save has gone through: a failure anywhere leaves it to be saved again.
+    private func writeBackNestedArchives(cancel: ExtractionCancelFlag?) async throws -> [ArchiveUpdateItem] {
+        var nested = nestedDiffs.filter { !$0.value.isEmpty }
+        var own = diff
+        let depth = { [self] (id: UUID) -> Int in
+            var count = 0
+            var node = entries[id]
+            while let current = node, current.type != .root {
+                count += 1
+                node = current.parent.flatMap { entries[$0] }
+            }
+            return count
+        }
+        while let id = nested.keys.max(by: { depth($0) < depth($1) }), let changes = nested.removeValue(forKey: id) {
+            guard let inner = entries[id], let source = inner.url, let index = inner.index, let path = inner.virtualPath else {
+                throw ArchiveError.saveRefused("An archive inside this one could not be written back.")
+            }
+            let folder = FileManager.default.temporaryDirectory.appendingPathComponent("written-\(UUID().uuidString)")
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            tempDirectories.append(folder)
+            let written = folder.appendingPathComponent(source.lastPathComponent)
+            let saver = ArchiveSaver(
+                source: source,
+                splitArchiveName: nil,
+                sourceAsOpened: nil,
+                target: written,
+                items: changes,
+                options: CompressionOptions(
+                    format: catalog.writtenFormat(forExtension: source.pathExtension) ?? .newArchive,
+                    excludeMacData: defaults.bool(forKey: Keys.excludeMacData)),
+                isSaveAs: false,
+                sourcePassword: passwords[source],
+                passwordResolver: makePasswordResolver(),
+                folderAccessProvider: nil,
+                onProgress: { _, _, _ in },
+                cancel: cancel)
+            _ = try await saver.save()
+            log.notice("Archive inside written back", context: ["name": inner.name, "changes": "\(changes.count)"])
+
+            // in the archive around it, the written file in place of its entry
+            let replacement: [ArchiveUpdateItem] = [.remove(sourceIndex: index), .addFile(archivePath: path, diskPath: written)]
+            if let around = inner.parent.flatMap({ entries[$0] }).flatMap(archive(holding:)) {
+                nested[around.id, default: []] += replacement
+            } else {
+                own += replacement
+            }
+        }
+        return own
+    }
+
     /// The names from the top level down to `item`, `["docs", "sub"]`; empty
     /// for the top itself. Nil for an entry no longer in the archive.
     func namesFromTop(of item: ArchiveItem) -> [String]? {

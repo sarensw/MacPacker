@@ -809,8 +809,7 @@ extension AllCoreTests {
             let nested = try #require(state.entries.values.first { $0.name == "inner.zip" })
             try await state.openAsync(item: nested)
             #expect(tree(of: state).contains("inner.zip/НјЖ¬"))
-            #expect(!state.canAddHere)
-            #expect(!state.canRemove((nested.children ?? []).compactMap { state.entries[$0] }))
+            // nothing changed inside: the save writes nothing into it (#251 G5)
 
             let copy = folder.appendingPathComponent("copy.zip")
             try await save(state, to: copy)
