@@ -216,7 +216,18 @@ public class ArchiveState: ObservableObject {
     /// add that was reading for the one before can tell.
     private var contentGeneration = 0
     private var archiveLoader: ArchiveLoader?
-    
+
+    /// Hands a copy of an entry to the editor chosen in Settings. The app wires
+    /// this to `NSWorkspace`; the default is a no-op, as for `openFileExternally`.
+    public var openInEditor: (URL) -> Void = { _ in }
+    /// The copies handed to an editor, which `takeBackEdits` reads back.
+    private var editedCopies: [EditedCopy] = []
+    /// Their folders. Not in `tempDirectories`: the editor still has the files
+    /// open after the reload that follows a save.
+    private var editDirectories: [URL] = []
+    /// Names of the files taken back from an editor since the last save.
+    @Published private(set) public var changedInEditor: [String] = []
+
     public init(catalog: ArchiveTypeCatalog, engineSelector: ArchiveEngineSelectorProtocol) {
         self.catalog = catalog
         self.archiveEngineSelector = engineSelector
@@ -345,14 +356,25 @@ extension ArchiveState {
         
         updateStatus(.idle)
 
+        // saved, or the archive is gone; the copies stay unless `forgetEdits` ran
+        changedInEditor = []
         cleanTask = Task { [tempDirectories] in await CacheCleaner().remove(tempDirectories) }
         tempDirectories = []
+    }
+
+    /// The window no longer shows the archive the copies were handed out for:
+    /// nothing to take them back into. They go with the temporary files.
+    private func forgetEdits() {
+        tempDirectories += editDirectories
+        editDirectories = []
+        editedCopies = []
     }
     
     /// Closing the window or the Quick Look preview: a load still running
     /// stops, so it can't bring its files back after they are gone.
     public func clean() {
         cancelCurrentOperation()
+        forgetEdits()
         reset()
     }
 
@@ -631,6 +653,7 @@ extension ArchiveState {
     /// `name` is what the window and the breadcrumb show until the archive is
     /// saved. Core has no string catalog, so the app passes its localized one.
     public func create(named name: String = "New Archive") {
+        forgetEdits()
         reset()
 
         self.canBeEdited = true
@@ -671,10 +694,11 @@ extension ArchiveState {
         add(urls: [url])
     }
 
-    private func add(urls: [URL], cancel: ExtractionCancelFlag) -> Task<Bool, Never> {
+    /// - Parameter folder: where it goes; `nil` is where the window is now.
+    private func add(urls: [URL], under folder: ArchiveItem? = nil, cancel: ExtractionCancelFlag) -> Task<Bool, Never> {
         // Where the window is now is where it goes, wherever the window is by
         // the time it has been read.
-        let target = selectedItem
+        let target = folder ?? selectedItem
         let generation = contentGeneration
         let cancellations = addCancellations
         let previous = addTask
@@ -1202,6 +1226,12 @@ extension ArchiveState {
         openGeneration += 1
         let generation = openGeneration
 
+        // Another archive. A reload of this one keeps the copies an editor has
+        // open: after a save, also a Save As to another name, or with other
+        // name encodings.
+        if url != self.url && !isSaving {
+            forgetEdits()
+        }
         reset()
         updateStatus(.processing)
         
@@ -1622,6 +1652,14 @@ extension ArchiveState {
     /// - Parameter item: item to extract
     /// - Returns: url of the extracted item in the temp location
     public func extractToTemp(item: ArchiveItem) async throws -> URL {
+        let result = try await extractCopy(of: item)
+        tempDirectories.append(result.tempDir)
+        return result.url
+    }
+
+    /// Extracts `item` into a temporary folder of its own, which the caller
+    /// keeps track of.
+    private func extractCopy(of item: ArchiveItem) async throws -> SingleExtractionResult {
         let batchResolver = ArchiveBatchResolver()
         let batches = try batchResolver.resolveBatches(for: [item], in: entries, using: effectiveEngineSelector)
         guard let batch = batches.first else {
@@ -1631,9 +1669,127 @@ extension ArchiveState {
             archiveEngineSelector: effectiveEngineSelector,
             passwordResolver: makePasswordResolver()
         )
-        let result = try await extractor.extract(batch: batch)
-        tempDirectories.append(result.tempDir)
-        return result.url
+        return try await extractor.extract(batch: batch)
+    }
+
+    //
+    // MARK: Edit in another app
+    //
+
+    /// A file handed to an editor, and where it goes back.
+    struct EditedCopy {
+        let url: URL
+        /// The path of the folder the entry is in: the folder's item is
+        /// another one after every reload.
+        let folderPath: String
+        /// The copy as handed out or last taken back.
+        var stamp: FileStamp?
+    }
+
+    /// Whether `item` can be edited in another app and taken back: a file of
+    /// this archive, which the format can write. Not one inside an archive
+    /// opened within it: a save writes only this one.
+    public func canEdit(_ item: ArchiveItem) -> Bool {
+        // in the archive's file: an add not saved yet is still only on disk.
+        // Not while busy: a copy still being extracted is not handed out yet,
+        // and a second request for it would bring a second copy.
+        guard item.type == .file, item.children == nil, item.index != nil, canBeEdited, canReadArchive, !isBusy,
+              let folder = item.parent.flatMap({ entries[$0] }) else { return false }
+        return !isWithinOpenedArchive(folder)
+    }
+
+    /// Extracts `item` and hands the copy to the editor (`openInEditor`). What
+    /// is saved there comes back with `takeBackEdits`.
+    public func edit(item: ArchiveItem) {
+        Task {
+            do {
+                try await editAsync(item: item)
+            } catch {
+                self.error = error.localizedDescription
+            }
+        }
+    }
+
+    public func editAsync(item: ArchiveItem) async throws {
+        guard canEdit(item), let folder = item.parent.flatMap({ entries[$0] }) else { return }
+        let folderPath = folder.virtualPath ?? "/"
+        // handed out before: its editor brings the file forward, no second copy
+        if let copy = editedCopies.first(where: { $0.folderPath == folderPath && $0.url.lastPathComponent == item.name }),
+           FileManager.default.fileExists(atPath: copy.url.path) {
+            openInEditor(copy.url)
+            return
+        }
+        // the window may have closed or show another archive once the copy is out
+        let generation = contentGeneration
+        isBusy = true
+        updateStatusText(String(localized: "extracting...", bundle: .module, comment: "Archive operation status"))
+        let result: SingleExtractionResult
+        do {
+            result = try await extractCopy(of: item)
+        } catch {
+            // for an archive no longer shown, there is nothing to report
+            guard generation == contentGeneration else { return }
+            isBusy = false
+            updateStatusText(nil)
+            throw error
+        }
+        // nothing to take it back into, and nothing else removes it
+        guard generation == contentGeneration else {
+            log.notice("Edit dropped — the window changed meanwhile")
+            await CacheCleaner().remove([result.tempDir])
+            return
+        }
+        isBusy = false
+        updateStatusText(nil)
+        editDirectories.append(result.tempDir)
+        editedCopies.append(EditedCopy(url: result.url, folderPath: folderPath, stamp: FileStamp(result.url)))
+        log.notice("Handed a file to the editor", context: ["copies": "\(editedCopies.count)"])
+        openInEditor(result.url)
+    }
+
+    /// The window is in front again: each copy saved in its editor since
+    /// replaces its entry, as a file of the same name dropped there would. A
+    /// save then writes it into the archive.
+    ///
+    /// - Returns: the last copy's take-back, whether it was added; the adds
+    ///   run in turn.
+    @discardableResult
+    public func takeBackEdits() -> Task<Bool, Never>? {
+        guard canBeEdited, !isSaving, root != nil else { return nil }
+        var last: Task<Bool, Never>?
+        var taken = 0
+        for index in editedCopies.indices {
+            let copy = editedCopies[index]
+            guard let stamp = FileStamp(copy.url), stamp != copy.stamp else { continue }
+            // by path: the folder's item is a new one after each reload
+            let folder = copy.folderPath == (root?.virtualPath ?? "/") ? root : entries.values.first {
+                $0.virtualPath == copy.folderPath && $0.isFolder && !isWithinOpenedArchive($0)
+            }
+            guard let folder else {
+                log.notice("Edited file not taken back — its folder is gone")
+                continue
+            }
+            // Marked now, so coming back twice meanwhile takes it once. Unmarked
+            // if the add fails: the next time in front tries again.
+            editedCopies[index].stamp = stamp
+            let add = add(urls: [copy.url], under: folder, cancel: ExtractionCancelFlag())
+            let name = copy.url.lastPathComponent
+            taken += 1
+            last = Task {
+                guard await add.value else {
+                    if let i = editedCopies.firstIndex(where: { $0.url == copy.url }), editedCopies[i].stamp == stamp {
+                        editedCopies[i].stamp = copy.stamp
+                    }
+                    return false
+                }
+                if !changedInEditor.contains(name) { changedInEditor.append(name) }
+                return true
+            }
+        }
+        if taken > 0 {
+            log.notice("Taking back edited files", context: ["files": "\(taken)"])
+        }
+        return last
     }
     
     /// Builds the engine byte-progress callback for a job: throttled,

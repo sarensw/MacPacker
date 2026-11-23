@@ -163,6 +163,11 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         }
     }
 
+    /// Back from the editor: what was saved there comes back as an unsaved change.
+    func windowDidBecomeKey(_ notification: Notification) {
+        archiveState.takeBackEdits()
+    }
+
     func windowWillClose(_ notification: Notification) {
         archiveState.clean()
         willCloseHandler?()

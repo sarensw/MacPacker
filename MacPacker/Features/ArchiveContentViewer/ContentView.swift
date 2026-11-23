@@ -25,6 +25,14 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if !archiveState.changedInEditor.isEmpty {
+                EditedElsewhereBar(state: archiveState)
+
+                Divider()
+                    .frame(height: 1)
+                    .background(.quinary)
+            }
+
             if breadcrumbPosition == .top {
                 if let selectedItem = archiveState.selectedItem {
                     BreadcrumbView(for: selectedItem)

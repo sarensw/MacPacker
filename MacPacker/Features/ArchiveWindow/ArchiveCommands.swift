@@ -17,6 +17,8 @@ import SwiftUI
 /// front window's state is resolved through its window controller instead,
 /// and the actions validate themselves (no-op when nothing applies).
 struct ArchiveCommands: Commands {
+    /// Read so "Edit with …" names the editor anew once Settings change it.
+    @AppStorage(Keys.textEditor) private var textEditor: String = ""
 
     @MainActor
     private static func frontArchiveState() -> ArchiveState? {
@@ -27,6 +29,17 @@ struct ArchiveCommands: Commands {
 
     var body: some Commands {
         CommandGroup(after: .newItem) {
+            Divider()
+
+            Button {
+                guard let state = Self.frontArchiveState(), state.selectedItems.count == 1,
+                      let item = state.selectedItems.first, state.canEdit(item) else { return }
+                state.edit(item: item)
+            } label: {
+                Text(.archiveBrowseEditWith(TextEditorApps.name(of: TextEditorApps.current(chosen: textEditor))))
+            }
+            .keyboardShortcut("e", modifiers: [.command])
+
             Divider()
 
             FilenameEncodingMenu()

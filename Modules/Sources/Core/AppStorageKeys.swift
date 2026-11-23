@@ -87,6 +87,11 @@ public enum Keys {
     /// to carry that choice over.
     public static let saveOptionsExcludeDSStore = "saveOptionsExcludeDSStore"
 
+    // editing
+    /// The app "Edit with …" opens a file of the archive in, by bundle
+    /// identifier. Unset, or no longer installed: `TextEditors.resolve` picks.
+    public static let textEditor = "textEditor"
+
     // compressing
     /// Leave Mac-specific data out of what MacPacker compresses: `.DS_Store`
     /// files, `._` sidecars, tags, custom icons, hidden flags (#236). One switch

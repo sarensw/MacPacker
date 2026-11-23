@@ -16,6 +16,11 @@ final class ArchiveSupportUtilities {
             let appSupportSubDirectory = CacheCleaner.launchFolder
                 .appendingPathComponent(id, isDirectory: true)
             try FileManager.default.createDirectory(at: appSupportSubDirectory, withIntermediateDirectories: true, attributes: nil)
+            // Application Support goes into backups, temporary files do not
+            var values = URLResourceValues()
+            values.isExcludedFromBackup = true
+            var folder = CacheCleaner.folder
+            try? folder.setResourceValues(values)
             print(appSupportSubDirectory.path) // /Users/.../Library/Application Support/YourBundleIdentifier
             return (id, appSupportSubDirectory)
         } catch {
