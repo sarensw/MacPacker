@@ -19,13 +19,17 @@ struct ArchiveListView: NSViewControllerRepresentable {
     @AppStorage(Keys.showColumnUncompressedSize, store: .macPackerShared) private var showUncompressedSize = true
     @AppStorage(Keys.showColumnModificationDate, store: .macPackerShared) private var showModificationDate = true
     @AppStorage(Keys.showColumnPosixPermissions, store: .macPackerShared) private var showPermissions = false
+    /// Tree or Table, Settings ▸ General (#251 B18).
+    @AppStorage(Keys.archiveListStyle) private var listStyle = "tree"
+
+    private var layout: ArchiveOutlineLayout { listStyle == "table" ? .table : .tree }
 
     func makeCoordinator() -> ContextMenu {
         ContextMenu()
     }
 
     func makeNSViewController(context: Context) -> ArchiveOutlineController {
-        let controller = ArchiveOutlineController(features: .window, layout: .table)
+        let controller = ArchiveOutlineController(features: .window, layout: layout)
         // the app's own strings: its app tests find the headers by their ids
         controller.columnTitles = [
             .name: String(localized: .columnName),
@@ -44,6 +48,7 @@ struct ArchiveListView: NSViewControllerRepresentable {
         _ = (showCompressedSize, showUncompressedSize, showModificationDate, showPermissions)
         context.coordinator.state = state
         controller.state = state
+        controller.layout = layout
         controller.applyColumnVisibility()
     }
 

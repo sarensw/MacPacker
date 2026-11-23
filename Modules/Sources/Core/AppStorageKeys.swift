@@ -35,6 +35,12 @@ public enum Keys {
     public static let extractOnOpen = "extractOnOpen"
 
     // table settings
+    /// How the archive window lists an archive: `tree`, folders and archives
+    /// inside opening in place (the default), or `table`, one folder at a time
+    /// (#251 B18). The window's own: Quick Look always shows a tree. In the
+    /// app's own defaults, so a launch argument can pin it for one launch.
+    public static let archiveListStyle = "archiveListStyle"
+    /// The `..` row, in the table only.
     public static let showParentRow = "showParentRow"
     /// Whether the archive window and Quick Look list the files Finder hides,
     /// greyed out as Finder shows them. Off by default (#304).

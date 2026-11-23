@@ -24690,6 +24690,42 @@
         }
       }
     },
+    "settingsArchiveView": {
+      "comment": "Settings ▸ General: label of the choice how the archive window lists an archive's contents, as a tree (folders open in place) or as a table (one folder at a time).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show contents as"
+          }
+        }
+      }
+    },
+    "settingsArchiveViewTable": {
+      "comment": "Settings ▸ General ▸ Show contents as: a table that lists one folder at a time, as 7-Zip does; a double click goes into a folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Table"
+          }
+        }
+      }
+    },
+    "settingsArchiveViewTree": {
+      "comment": "Settings ▸ General ▸ Show contents as: a tree, where a folder or an archive inside opens in place on its triangle, as in Finder's list view. The default.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tree"
+          }
+        }
+      }
+    },
     "settingsAutomaticEngineSelection": {
       "comment": "A toggle that lets users choose whether MacPacker should choose the archive engine automatically.",
       "extractionState": "manual",
