@@ -1008,6 +1008,18 @@
         }
       }
     },
+    "archiveBrowseEditWith": {
+      "comment": "Context menu of a file in the archive window, and the File menu: opens a copy of the file in the text editor chosen in Settings › General. %@ is that app's name, e.g. CotEditor or TextEdit. What is saved there comes back into the archive as an unsaved change.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit with %@"
+          }
+        }
+      }
+    },
     "archiveBrowseEdited": {
       "comment": "Window subtitle marker shown when the archive has unsaved changes",
       "extractionState": "manual",
@@ -2875,6 +2887,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "建立新的壓縮檔"
+          }
+        }
+      }
+    },
+    "archiveEditedElsewhere": {
+      "comment": "Bar at the top of the archive window once a file opened with “Edit with …” was saved in that app. %@ is the app's name, e.g. CotEditor. The Save button next to it writes the change into the archive.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes made in %@ are not in the archive yet."
           }
         }
       }
@@ -27138,6 +27162,30 @@
         }
       }
     },
+    "settingsEditFilesWith": {
+      "comment": "Settings › General: label of the menu that picks the app “Edit with …” opens a file of the archive in.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit files with"
+          }
+        }
+      }
+    },
+    "settingsEditorOther": {
+      "comment": "Settings › General, last entry of the “Edit files with” menu: opens a panel to pick any app.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other…"
+          }
+        }
+      }
+    },
     "settingsEditsArchivesHint": {
       "comment": "Legend in the engine info popover: the pencil next to an engine in the format table means that engine can also change archives of that format, where the others only open and extract them",
       "extractionState": "manual",
@@ -29294,6 +29342,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "一般設定"
+          }
+        }
+      }
+    },
+    "settingsGetCotEditor": {
+      "comment": "Settings › General, entry of the “Edit files with” menu when CotEditor is not installed: opens CotEditor's page in the App Store. CotEditor is a free text editor; its name stays as it is.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get CotEditor…"
           }
         }
       }

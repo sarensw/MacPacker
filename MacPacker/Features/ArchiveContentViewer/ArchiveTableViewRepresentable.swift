@@ -385,6 +385,14 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             open.isEnabled = hasSelection
             menu.addItem(open)
 
+            let edit = NSMenuItem(
+                title: String(localized: .archiveBrowseEditWith(TextEditorApps.name(of: TextEditorApps.current))),
+                action: #selector(contextEdit(_:)), keyEquivalent: "e")
+            edit.target = self
+            edit.image = NSImage(systemSymbolName: "pencil", accessibilityDescription: nil)
+            edit.isEnabled = state.selectedItems.count == 1 && state.canEdit(state.selectedItems[0])
+            menu.addItem(edit)
+
             let quickLook = NSMenuItem(
                 title: String(localized: .archiveBrowseQuickLook),
                 action: #selector(contextQuickLook(_:)), keyEquivalent: " ")
@@ -422,6 +430,11 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         @objc func contextOpen(_ sender: Any?) {
             guard let item = parent.archiveState.selectedItems.first else { return }
             parent.archiveState.open(item: item)
+        }
+
+        @objc func contextEdit(_ sender: Any?) {
+            guard let item = parent.archiveState.selectedItems.first else { return }
+            parent.archiveState.edit(item: item)
         }
 
         @objc func contextQuickLook(_ sender: Any?) {

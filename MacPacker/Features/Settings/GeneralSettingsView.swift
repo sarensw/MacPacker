@@ -163,6 +163,18 @@ struct GeneralSettingsView: View {
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)
             }
+
+            Divider()
+
+            HStack(alignment: .top) {
+                Text(.settingsEditFilesWith)
+                    .frame(width: 200, alignment: .trailing)
+
+                HStack {
+                    TextEditorPicker()
+                }
+                .frame(width: 240, alignment: .leading)
+            }
         }
         .padding()
         // Turning it off is a privacy switch, so what was collected goes with it —

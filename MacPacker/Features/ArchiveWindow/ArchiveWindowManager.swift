@@ -67,6 +67,8 @@ class ArchiveWindowManager {
         archiveState.folderAccessProvider = { await FolderAccessStore.shared.ensureAccess(forFileIn: $0) }
         // Opening a plain (non-archive) entry hands it to the system editor.
         archiveState.openFileExternally = { NSWorkspace.shared.open($0) }
+        // "Edit with …" hands a copy to the editor chosen in Settings.
+        archiveState.openInEditor = { TextEditorApps.open($0) }
         // One window per archive, for what the window opens itself too: the start
         // page and a drop on an empty window.
         archiveState.focusWindowHolding = { [weak self] in self?.focusWindow(holding: $0) != nil }
