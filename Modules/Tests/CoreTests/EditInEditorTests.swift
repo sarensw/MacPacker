@@ -190,11 +190,11 @@ extension AllCoreTests {
             let (state, handed) = try await open(try makeEncryptedArchive(in: dir))
             let gate = PasswordGate()
             state.passwordProvider = { _ in await gate.wait() }
-            let item = try #require(item("notes.txt", in: state))
+            let notes = try #require(item("notes.txt", in: state))
 
-            let first = Task { try await state.editAsync(item: item) }
+            let first = Task { try await state.editAsync(item: notes) }
             while await gate.asked == 0 { await Task.yield() }
-            let second = Task { try await state.editAsync(item: item) }
+            let second = Task { try await state.editAsync(item: notes) }
             for _ in 0..<50 { await Task.yield() }
             await gate.open()
             try await first.value
@@ -212,9 +212,9 @@ extension AllCoreTests {
             let before = Set((try? FileManager.default.contentsOfDirectory(atPath: CacheCleaner.launchFolder.path)) ?? [])
             let gate = PasswordGate()
             state.passwordProvider = { _ in await gate.wait() }
-            let item = try #require(item("notes.txt", in: state))
+            let notes = try #require(item("notes.txt", in: state))
 
-            let edit = Task { try await state.editAsync(item: item) }
+            let edit = Task { try await state.editAsync(item: notes) }
             while await gate.asked == 0 { await Task.yield() }
             state.clean()
             await gate.open()
