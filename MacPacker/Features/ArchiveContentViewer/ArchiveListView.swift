@@ -13,6 +13,7 @@ import SwiftUI
 
 struct ArchiveListView: NSViewControllerRepresentable {
     @EnvironmentObject var state: ArchiveState
+    @Environment(\.fileDragOverWindow) private var fileDragOverWindow
 
     // Read here so that a column shown or hidden anywhere reaches the list.
     @AppStorage(Keys.showColumnCompressedSize, store: .macPackerShared) private var showCompressedSize = true
@@ -41,13 +42,33 @@ struct ArchiveListView: NSViewControllerRepresentable {
         context.coordinator.state = state
         controller.contextMenu = context.coordinator.menu
         controller.state = state
+        controller.onFileDrag = fileDragOverWindow
+        // the status bar says where a dragged file goes, or why it can't (#251 G2)
+        controller.onDropHint = { [weak state] hint in
+            guard let state else { return }
+            state.dropHint = hint.map { Self.text(for: $0, in: state) }
+        }
         return controller
+    }
+
+    private static func text(for hint: ArchiveDropHint, in state: ArchiveState) -> String {
+        switch hint {
+        case .addInto(let names):
+            String(localized: .commonAddToNamed(names.isEmpty ? state.name ?? "" : names.joined(separator: " › ")))
+        case .cantChange(let name):
+            String(localized: .archiveDropCantChange(name))
+        case .needsPassword(let name):
+            String(localized: .archiveDropNeedsPassword(name))
+        case .opening(let name):
+            String(localized: .archiveDropOpening(name))
+        }
     }
 
     func updateNSViewController(_ controller: ArchiveOutlineController, context: Context) {
         _ = (showCompressedSize, showUncompressedSize, showModificationDate, showPermissions)
         context.coordinator.state = state
         controller.state = state
+        controller.onFileDrag = fileDragOverWindow
         controller.layout = layout
         controller.applyColumnVisibility()
     }

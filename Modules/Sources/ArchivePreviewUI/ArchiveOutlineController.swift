@@ -30,11 +30,33 @@ public struct ArchiveOutlineFeatures: OptionSet, Sendable {
     public static let quickLookPanel = Self(rawValue: 1 << 3)
     /// The header's menu shows and hides columns.
     public static let columnMenu = Self(rawValue: 1 << 4)
+    /// Files dropped on the list are added: on a folder row into that folder,
+    /// on a file row into its folder, on empty space into the folder shown.
+    public static let dropTargets = Self(rawValue: 1 << 5)
 
     /// The archive window.
-    public static let window: Self = [.navigation, .editing, .dragOut, .quickLookPanel, .columnMenu]
+    public static let window: Self = [.navigation, .editing, .dragOut, .quickLookPanel, .columnMenu, .dropTargets]
     /// The Quick Look preview.
     public static let preview: Self = []
+}
+
+/// What a file dragged over the list would do, for the window to say (#251 G2).
+public enum ArchiveDropHint: Equatable, Sendable {
+    /// It goes into this folder: its names from the top of the archive, none
+    /// for the top itself.
+    case addInto([String])
+    /// The archive named can't be changed, so nothing goes in.
+    case cantChange(String)
+    /// The archive named needs its password: a drop asks for it.
+    case needsPassword(String)
+    /// The archive named is being unpacked.
+    case opening(String)
+}
+
+/// A file dragged over the list: it came in, left, or the drag is over,
+/// dropped or not. The window shows its card that opens meanwhile.
+public enum ArchiveFileDrag: Sendable {
+    case entered, exited, ended
 }
 
 /// How the list lays out the entries.
@@ -77,7 +99,7 @@ public final class ArchiveOutlineController: NSViewController {
     private let scrollView = NSScrollView()
 
     /// Archives inside the archive being unpacked: their row shows a spinner.
-    private var loadingItems: Set<UUID> = []
+    private(set) var loadingItems: Set<UUID> = []
     /// What the list shows at its top level, taken at the last reload. The
     /// rows are read from this, never from the state's live list: between a
     /// change and the reload AppKit may still ask for a row of the list it
@@ -93,6 +115,25 @@ public final class ArchiveOutlineController: NSViewController {
     private var applyingSelection = false
     /// The folders open when a search began, to open again when it ends.
     private var openBeforeSearch: [ArchiveItem]?
+    /// Told what a file dragged over the list would do, nil once none is.
+    public var onDropHint: ((ArchiveDropHint?) -> Void)?
+    /// Told when a file dragged over the list comes in, leaves, or the drag is
+    /// over.
+    public var onFileDrag: ((ArchiveFileDrag) -> Void)?
+    private var lastHint: ArchiveDropHint?
+    /// Where the drop goes, as the last check of the drag found it.
+    private var dropTargetItem: ArchiveItem?
+
+    /// A file is being dragged over the list: rows that can't take it fade.
+    private(set) var isDraggingOver = false
+    /// The rows a drag opened by hovering, in the order it opened them.
+    private var openedByDrag: [ArchiveItem] = []
+    /// A reload was asked for while a file was over the list.
+    private var reloadsWhenTheDragEnds = false
+    /// An archive inside being unpacked for the drag hovering over it, which
+    /// stops once the drag moves on.
+    private var hoverLoad: (item: ArchiveItem, cancel: ExtractionCancelFlag)?
+
     /// The folders open when a save began, by name, to open again once the
     /// archive has been read anew; and the rereads already done.
     private var openAtSave: [[String]] = []
@@ -294,7 +335,13 @@ public final class ArchiveOutlineController: NSViewController {
             .sink { [weak self] _ in
                 MainActor.assumeIsolated {
                     guard let self, let state = self.state, state.isReloadNeeded else { return }
-                    self.reload()
+                    // AppKit's drop target goes with a reload, and the drop with
+                    // it: an archive inside that hovering opened asks for one
+                    if self.isDraggingOver {
+                        self.reloadsWhenTheDragEnds = true
+                    } else {
+                        self.reload()
+                    }
                     state.isReloadNeeded = false
                 }
             }
@@ -305,6 +352,20 @@ public final class ArchiveOutlineController: NSViewController {
                 MainActor.assumeIsolated { self?.applySelection() }
             }
             .store(in: &subscriptions)
+        if features.contains(.dropTargets) {
+            // A read-only archive leaves a dropped file to the window, whose one
+            // card opens it: registered, the list would take every drag over it.
+            state.$canBeEdited
+                .removeDuplicates()
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] editable in
+                    MainActor.assumeIsolated {
+                        guard let outline = self?.outlineView else { return }
+                        if editable { outline.registerForDraggedTypes([.fileURL]) } else { outline.unregisterDraggedTypes() }
+                    }
+                }
+                .store(in: &subscriptions)
+        }
         // Before the save reads the archive anew, while the rows still hold the
         // entries of before.
         seenRereads = state.rereadsAfterSave
@@ -399,12 +460,16 @@ public final class ArchiveOutlineController: NSViewController {
     /// what it holds below its row; the window stays where it is (#251 B15).
     private func openNestedArchive(_ item: ArchiveItem) {
         guard let state, loadingItems.insert(item.id).inserted else { return }
-        outlineView.reloadItem(item)
+        refresh(item)
         PreviewLog.general.info("Opening nested archive", context: ["name": item.name])
+        // opened by a drag hovering over it: no prompt, and it stops once the drag moves on
+        let duringDrag = isDraggingOver
+        let cancel = ExtractionCancelFlag()
+        if duringDrag { hoverLoad = (item, cancel) }
 
         Task {
             do {
-                try await state.openInPlace(item: item)
+                try await state.openInPlace(item: item, askingForPassword: !duringDrag, cancel: duringDrag ? cancel : nil)
                 PreviewLog.general.info("Nested archive opened", context: [
                     "name": item.name,
                     "items": "\(item.children?.count ?? 0)",
@@ -417,12 +482,29 @@ public final class ArchiveOutlineController: NSViewController {
                 ])
             }
             loadingItems.remove(item.id)
+            if hoverLoad?.item === item { hoverLoad = nil }
             childrenCache[item.id] = nil
-            outlineView.reloadItem(item, reloadChildren: true)
-            if !children(of: item).isEmpty {
+            refresh(item)
+            // a drag that moved on leaves it closed
+            if !children(of: item).isEmpty, !(duringDrag && cancel.isCancelled) {
                 outlineView.expandItem(item)
             }
         }
+    }
+
+    /// Draws `item`'s row anew: its spinner, its lock, its triangle. Under a
+    /// drag only its cells: reloaded as an item, the row loses the drop AppKit
+    /// is aiming at it, and the drop never arrives. Expanding asks for the
+    /// children anyway.
+    private func refresh(_ item: ArchiveItem) {
+        guard isDraggingOver else {
+            outlineView.reloadItem(item, reloadChildren: true)
+            return
+        }
+        let row = outlineView.row(forItem: item)
+        guard row >= 0 else { return }
+        outlineView.reloadData(forRowIndexes: IndexSet(integer: row),
+                               columnIndexes: IndexSet(integersIn: 0..<outlineView.numberOfColumns))
     }
 
     fileprivate func children(of item: Any?) -> [ArchiveItem] {
@@ -457,10 +539,170 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
     }
 
     public func outlineView(_ outlineView: NSOutlineView, shouldExpandItem item: Any) -> Bool {
-        guard let node = item as? ArchiveItem, isUnopenedArchive(node) else { return true }
+        guard let node = item as? ArchiveItem else { return true }
+        if isDraggingOver, let state {
+            // a drag opens only what it can drop into, and asks for no password
+            if !state.canChange(node) || state.lockedNested.contains(node.id) { return false }
+        }
+        guard isUnopenedArchive(node) else { return true }
         // nothing to show yet: unpack first, and open the row when it is in
         openNestedArchive(node)
         return false
+    }
+
+    public func outlineViewItemDidExpand(_ notification: Notification) {
+        if isDraggingOver, let item = notification.userInfo?["NSObject"] as? ArchiveItem {
+            openedByDrag.append(item)
+        }
+    }
+
+    // MARK: - Drops
+
+    /// Where a file dropped on `row` goes: a folder or an archive inside takes
+    /// it, a file row hands it to its folder, empty space to the folder shown.
+    private func dropTarget(for row: ArchiveItem?) -> ArchiveItem? {
+        guard let state else { return nil }
+        let shown = state.selectedItem ?? state.root
+        guard let row, row !== parentRow else { return shown }
+        if row.isFolder || row.archiveTypeId != nil || isUnopenedArchive(row) { return row }
+        // its own folder, also for a search result listed away from it
+        return row.parent.flatMap { state.entries[$0] } ?? state.root
+    }
+
+    private func hint(_ hint: ArchiveDropHint?) {
+        guard hint != lastHint else { return }
+        lastHint = hint
+        onDropHint?(hint)
+    }
+
+    private func canTakeDrop(_ row: ArchiveItem) -> Bool {
+        guard let state, let target = dropTarget(for: row) else { return false }
+        return state.canChange(target)
+    }
+
+    public func outlineView(_ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
+        guard features.contains(.dropTargets), let state, !(info.draggingSource is ArchiveOutlineView) else { return [] }
+        if !isDraggingOver { beginDragOver() }
+        var row = item as? ArchiveItem
+        if index != NSOutlineViewDropOnItemIndex {
+            // between two rows AppKit proposes their folder: the row under the
+            // pointer decides, an archive inside's own row included
+            let at = outlineView.row(at: outlineView.convert(info.draggingLocation, from: nil))
+            row = at >= 0 ? outlineView.item(atRow: at) as? ArchiveItem : nil
+        }
+        guard let target = dropTarget(for: row) else { return [] }
+        // the hover's archive stops unpacking once the drag has moved on
+        if let load = hoverLoad, load.item !== row, !(row.map { isInside($0, load.item) } ?? false) {
+            load.cancel.cancel()
+            hoverLoad = nil
+        }
+        // the folder row itself is the target, its block outlined; the folder
+        // shown, or one with no row (a search result's), is the whole list
+        let shown = state.selectedItem ?? state.root
+        let targetRow: ArchiveItem? = target === shown || outlineView.row(forItem: target) < 0 ? nil : target
+        outlineView.setDropItem(targetRow, dropChildIndex: NSOutlineViewDropOnItemIndex)
+        dropTargetItem = target
+
+        guard state.canChange(target) else {
+            let blocking = state.archiveThatCantBeChanged(down: target)
+            hint(.cantChange(blocking?.name ?? state.name ?? ""))
+            return []
+        }
+        if loadingItems.contains(target.id) {
+            hint(.opening(target.name))
+        } else if state.lockedNested.contains(target.id) {
+            hint(.needsPassword(target.name))
+        } else {
+            hint(.addInto(target === shown ? [] : state.namesFromTop(of: target) ?? []))
+        }
+        return .copy
+    }
+
+    public func outlineView(_ outlineView: NSOutlineView, acceptDrop info: NSDraggingInfo, item: Any?, childIndex index: Int) -> Bool {
+        let target = dropTargetItem
+        PreviewLog.general.debug("Drop on the list", context: [
+            "target": target?.name ?? "none",
+            "canChange": String(target.map { state?.canChange($0) ?? false } ?? false),
+        ])
+        endDragOver(droppedInto: target)
+        onFileDrag?(.ended)
+        guard let state, let target, state.canChange(target),
+              let urls = info.draggingPasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL],
+              !urls.isEmpty else { return false }
+        PreviewLog.general.notice("Files dropped on the list", context: ["files": String(urls.count)])
+        guard isUnopenedArchive(target) else {
+            state.add(urls: urls, into: target)
+            return true
+        }
+        // a closed archive inside: unpacked first, its password asked now, after the drop
+        loadingItems.insert(target.id)
+        outlineView.reloadItem(target)
+        Task {
+            do {
+                try await state.openInPlace(item: target)
+            } catch {
+                PreviewLog.general.error("An archive inside a drop went into could not be opened", context: ["name": target.name])
+            }
+            loadingItems.remove(target.id)
+            childrenCache[target.id] = nil
+            outlineView.reloadItem(target, reloadChildren: true)
+            // only once it is open: without its password nothing goes in
+            if target.children != nil { state.add(urls: urls, into: target) }
+        }
+        return true
+    }
+
+    private func isInside(_ item: ArchiveItem, _ folder: ArchiveItem) -> Bool {
+        var parent = outlineView.parent(forItem: item)
+        while let current = parent as? ArchiveItem {
+            if current === folder { return true }
+            parent = outlineView.parent(forItem: current)
+        }
+        return false
+    }
+
+    private func beginDragOver() {
+        isDraggingOver = true
+        openedByDrag = []
+        onFileDrag?(.entered)
+        restyleRows()
+    }
+
+    /// The drag left the list, or ended over it without a drop.
+    func dragLeft(ended: Bool) {
+        if isDraggingOver { PreviewLog.general.debug("Drag left the list", context: ["ended": String(ended)]) }
+        endDragOver()
+        onFileDrag?(ended ? .ended : .exited)
+    }
+
+    /// The drag is over: the rows it opened close again, except the ones the
+    /// file went into, and the list looks as before.
+    func endDragOver(droppedInto target: ArchiveItem? = nil) {
+        guard isDraggingOver else { return }
+        isDraggingOver = false
+        // an archive inside still being unpacked for the hover keeps on if the
+        // file was dropped on it: the drop's own open waits for it
+        if let load = hoverLoad, load.item !== target { load.cancel.cancel() }
+        hoverLoad = nil
+        for item in openedByDrag.reversed() where !(target.map { $0 === item || isInside($0, item) } ?? false) {
+            outlineView.collapseItem(item)
+        }
+        openedByDrag = []
+        dropTargetItem = nil
+        hint(nil)
+        if reloadsWhenTheDragEnds {
+            reloadsWhenTheDragEnds = false
+            reload()
+        } else {
+            restyleRows()
+        }
+    }
+
+    /// Redraws the rows' text: faded while a drag can't drop on them.
+    private func restyleRows() {
+        guard outlineView.numberOfRows > 0 else { return }
+        outlineView.reloadData(forRowIndexes: IndexSet(integersIn: 0..<outlineView.numberOfRows),
+                               columnIndexes: IndexSet(integersIn: 0..<outlineView.numberOfColumns))
     }
 
     public func outlineViewSelectionDidChange(_ notification: Notification) {
@@ -518,6 +760,8 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
         // greyed out, as Finder shows a hidden file
         if item.isHidden { cellView.alphaValue = 0.5 }
         let isParent = item === parentRow
+        // while a drag is over the list, the text of rows that can't take it fades
+        let faded = isDraggingOver && !isParent && !canTakeDrop(item)
 
         switch column {
         case .name:
@@ -532,6 +776,9 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
             if let permissions = item.posixPermissions {
                 addSecondaryText(EntryText.permissions(permissions), to: cellView, alignedRight: false)
             }
+        }
+        if faded {
+            for case let text as NSTextField in cellView.subviews { text.textColor = .tertiaryLabelColor }
         }
         return cellView
     }
@@ -572,6 +819,15 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
         label.usesSingleLineMode = true
         label.lineBreakMode = .byTruncatingTail
         cellView.textField = label
+        // an archive inside that a drag could not open without its password
+        if state?.lockedNested.contains(item.id) == true,
+           let lock = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: nil) {
+            let attachment = NSTextAttachment()
+            attachment.image = lock
+            let text = NSMutableAttributedString(string: item.name + " ")
+            text.append(NSAttributedString(attachment: attachment))
+            label.attributedStringValue = text
+        }
 
         cellView.addSubview(leadingView)
         cellView.addSubview(label)
@@ -639,6 +895,22 @@ public final class ArchiveOutlineView: NSOutlineView, NSMenuItemValidation {
         default:
             super.keyDown(with: event)
         }
+    }
+
+    public override func draggingExited(_ sender: NSDraggingInfo?) {
+        super.draggingExited(sender)
+        controller?.dragLeft(ended: false)
+    }
+
+    public override func draggingEnded(_ sender: NSDraggingInfo) {
+        super.draggingEnded(sender)
+        controller?.dragLeft(ended: true)
+    }
+
+    /// The controller closes what a drag opened, all but the rows the file
+    /// went into.
+    public override func shouldCollapseAutoExpandedItems(forDeposited deposited: Bool) -> Bool {
+        false
     }
 
     /// A right click outside the selection acts on the row clicked: it is

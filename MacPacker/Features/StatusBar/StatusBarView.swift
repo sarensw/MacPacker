@@ -86,7 +86,11 @@ struct StatusBarView: View {
                 }
             } else {
                 HStack(alignment: .firstTextBaseline, spacing: 0) {
-                    if archiveState.isBusy {
+                    if let dropHint = archiveState.dropHint {
+                        // where a file dragged over the list goes, or why it can't (#251 G2)
+                        Text(verbatim: dropHint)
+                        Spacer()
+                    } else if archiveState.isBusy {
                         CancelEngineActionButtonView() {
                             archiveState.cancelCurrentOperation()
                         }
