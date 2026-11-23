@@ -481,9 +481,11 @@ final actor ArchiveLoader {
                     }
                     parent = cached
                 } else {
-                    // Create virtual intermediate
+                    // Create virtual intermediate. It has no entry, but it has a
+                    // path: what is added inside it is saved under that path,
+                    // not at the top level (#251 G8).
                     let n = ArchiveItem(
-                        name: name, virtualPath: nil,
+                        name: name, virtualPath: String(nextPath.dropFirst()),
                         type: .virtual, parent: parent.id
                     )
                     parent.addChild(n.id)
