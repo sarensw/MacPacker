@@ -153,10 +153,10 @@ private final class FrontArchiveNames: ObservableObject {
         canChoose = false
         names = state.map { state in
             state.$nameEncoding
-                .combineLatest(state.$chosenNameEncoding, state.$diff, state.$isBusy)
-                .sink { [weak self] encoding, chosen, diff, isBusy in
+                .combineLatest(state.$chosenNameEncoding, state.pendingChangesPublisher, state.$isBusy)
+                .sink { [weak self] encoding, chosen, pending, isBusy in
                     self?.chosen = chosen
-                    self?.canChoose = encoding != nil && diff.isEmpty && !isBusy
+                    self?.canChoose = encoding != nil && !pending && !isBusy
                 }
         }
     }

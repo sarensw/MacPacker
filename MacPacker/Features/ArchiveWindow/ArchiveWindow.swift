@@ -72,9 +72,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
 
         // native unsaved-changes affordance: the close button shows a dot while
         // there are pending edits (mirrors NSDocument's isDocumentEdited)
-        archiveState.$diff
-            .map { !$0.isEmpty }
-            .removeDuplicates()
+        archiveState.pendingChangesPublisher
             .sink { [weak window] edited in window?.isDocumentEdited = edited }
             .store(in: &cancellables)
 
