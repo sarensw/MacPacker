@@ -300,10 +300,52 @@ extension AllCoreTests {
         @Test func leftoversGoButThisLaunchsFolderStays() async throws {
             let cache = try makeCache(holding: "earlier/temp", "current/temp")
 
-            await CacheCleaner().removeLeftovers(in: cache, keeping: cache.appending(component: "current"))
+            await CacheCleaner().removeLeftovers(
+                in: cache, keeping: cache.appending(component: "current"), legacy: cache.appending(component: "old"))
 
             #expect(!exists("earlier", in: cache))
             #expect(exists("current/temp", in: cache))
+        }
+
+        /// macOS may empty a cache folder whenever it runs short of space, also
+        /// under a window still using what is in it: an archive opened inside
+        /// the archive, a file handed to another app.
+        @Test func temporaryFoldersAreNotInACache() throws {
+            let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+
+            #expect(!CacheCleaner.folder.standardizedFileURL.path.hasPrefix(caches.standardizedFileURL.path))
+        }
+
+        /// The app and its extensions make them in their own Application Support,
+        /// which macOS leaves alone. Outside a sandbox that folder is the user's,
+        /// so the unit tests use the temporary folder.
+        @Test func theSandboxedAppMakesThemInApplicationSupport() {
+            let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+
+            #expect(CacheCleaner.folder(sandboxed: true).deletingLastPathComponent().standardizedFileURL
+                == support.standardizedFileURL)
+        }
+
+        /// Application Support goes into backups; temporary files do not belong there.
+        @Test func temporaryFoldersAreLeftOutOfBackups() throws {
+            let temp = try #require(ArchiveSupportUtilities().createTempDirectory()).url
+            defer { try? FileManager.default.removeItem(at: temp) }
+
+            #expect(try CacheCleaner.folder.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup == true)
+        }
+
+        /// Earlier versions made them in `Caches/ta`. Nothing writes there any
+        /// more, so all of it goes at the next launch.
+        @Test func theOldCacheFolderGoesWithTheLeftovers() async throws {
+            let cache = try makeCache(holding: "new/current/temp", "old/earlier/temp")
+
+            await CacheCleaner().removeLeftovers(
+                in: cache.appending(component: "new"),
+                keeping: cache.appending(path: "new/current"),
+                legacy: cache.appending(component: "old"))
+
+            #expect(!exists("old", in: cache))
+            #expect(exists("new/current/temp", in: cache))
         }
 
         /// What `removeLeftovers` keeps is where this launch extracts to.
@@ -319,10 +361,11 @@ extension AllCoreTests {
         /// them, and they had grown to 20 GB. The preview now loading keeps its
         /// files.
         @Test func quickLookRemovesEarlierPreviewsButNotTheOneLoading() async throws {
-            let cache = try makeCache(holding: "earlier/temp", "current/previous")
+            let cache = try makeCache(holding: "earlier/temp", "current/previous", "old/earlier/temp")
             let current = cache.appending(component: "current", directoryHint: .isDirectory)
 
-            let removal = CacheCleaner.removeEarlierPreviews(in: cache, keeping: current)
+            let removal = CacheCleaner.removeEarlierPreviews(
+                in: cache, keeping: current, legacy: cache.appending(component: "old"))
             // what the preview makes once it loads
             try FileManager.default.createDirectory(
                 at: current.appending(component: "loading"), withIntermediateDirectories: true)
@@ -330,6 +373,7 @@ extension AllCoreTests {
 
             #expect(!exists("earlier", in: cache))
             #expect(!exists("current/previous", in: cache))
+            #expect(!exists("old", in: cache))
             #expect(exists("current/loading", in: cache))
         }
 

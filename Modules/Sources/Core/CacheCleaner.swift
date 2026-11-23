@@ -15,11 +15,28 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "cache")
 /// files or several GB, so it is removed off the main actor, like the loader,
 /// the extractor and the scanner do their work (#301).
 public final actor CacheCleaner {
-    /// `Caches/ta`, where the temporary folders are made. Each process has its
-    /// own: Quick Look's is in the extension's container, which the app cannot
+    /// `Application Support/ta`, where the temporary folders are made. Not a
+    /// cache: macOS may empty one whenever it runs short of space, also under a
+    /// window still using what is in it. Application Support it leaves alone,
+    /// so what is made here is removed by this app: `removeLeftovers`,
+    /// `removeAll`, and each window as it closes. Each process has its own:
+    /// Quick Look's is in the extension's container, which the app cannot
     /// reach. The app group's container would be shared, but Quick Look may
     /// only read it.
-    public static let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+    public static let folder = folder(sandboxed: ProcessInfo.processInfo.environment["APP_SANDBOX_CONTAINER_ID"] != nil)
+
+    /// Outside a sandbox, Application Support is the user's own folder, shared
+    /// by every app: the unit tests make theirs in the temporary folder.
+    static func folder(sandboxed: Bool) -> URL {
+        let base = sandboxed
+            ? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            : FileManager.default.temporaryDirectory
+        return base.appending(component: "ta", directoryHint: .isDirectory)
+    }
+
+    /// `Caches/ta`, where earlier versions made them. Nothing writes there any
+    /// more: all of it is left over.
+    public static let legacyFolder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         .appending(component: "ta", directoryHint: .isDirectory)
     /// This launch's temporary folders go in here. Everything else in `folder`
     /// is left from earlier launches, and can go while this one is already
@@ -30,10 +47,14 @@ public final actor CacheCleaner {
 
     /// Removes what earlier launches left: a launch that crashed or was killed
     /// never cleaned up after itself.
-    public func removeLeftovers(in folder: URL = CacheCleaner.folder, keeping launchFolder: URL = CacheCleaner.launchFolder) async {
+    public func removeLeftovers(
+        in folder: URL = CacheCleaner.folder,
+        keeping launchFolder: URL = CacheCleaner.launchFolder,
+        legacy: URL = CacheCleaner.legacyFolder
+    ) async {
         try? await runBlocking {
             let contents = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
-            Self.removeLogged(contents.filter { $0.lastPathComponent != launchFolder.lastPathComponent })
+            Self.removeLogged(contents.filter { $0.lastPathComponent != launchFolder.lastPathComponent } + [legacy])
         }
     }
 
@@ -51,13 +72,14 @@ public final actor CacheCleaner {
     @discardableResult
     public static func removeEarlierPreviews(
         in folder: URL = CacheCleaner.folder,
-        keeping launchFolder: URL = CacheCleaner.launchFolder
+        keeping launchFolder: URL = CacheCleaner.launchFolder,
+        legacy: URL = CacheCleaner.legacyFolder
     ) -> Task<Void, Never> {
         let earlier = contents(of: folder).flatMap {
             // a load makes its folder in this launch's
             $0.lastPathComponent == launchFolder.lastPathComponent ? contents(of: $0) : [$0]
         }
-        return Task { await CacheCleaner().remove(earlier) }
+        return Task { await CacheCleaner().remove(earlier + [legacy]) }
     }
 
     private static func contents(of folder: URL) -> [URL] {
