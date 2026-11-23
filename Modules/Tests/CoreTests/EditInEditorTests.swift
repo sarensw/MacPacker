@@ -11,6 +11,28 @@ import Testing
 import Foundation
 @testable import Core
 
+/// Holds every password request until `open`, then answers each with the
+/// password; a request after that is answered at once.
+private actor PasswordGate {
+    private var waiting: [CheckedContinuation<Void, Never>] = []
+    private var isOpen = false
+    private(set) var asked = 0
+
+    func wait() async -> String? {
+        asked += 1
+        if !isOpen {
+            await withCheckedContinuation { waiting.append($0) }
+        }
+        return "secret"
+    }
+
+    func open() {
+        isOpen = true
+        waiting.forEach { $0.resume() }
+        waiting = []
+    }
+}
+
 extension AllCoreTests {
 
     @MainActor struct EditInEditorTests {
@@ -147,6 +169,81 @@ extension AllCoreTests {
             await state.cleanTask?.value
 
             #expect(!FileManager.default.fileExists(atPath: copy.path))
+        }
+
+        /// notes.txt, encrypted: extracting it asks for the password, which
+        /// `PasswordGate` holds until the test lets it through.
+        private func makeEncryptedArchive(in dir: URL) throws -> URL {
+            let src = dir.appending(component: "src")
+            try FileManager.default.createDirectory(at: src, withIntermediateDirectories: true)
+            try "notes\n".write(to: src.appending(component: "notes.txt"), atomically: true, encoding: .utf8)
+            let archive = dir.appending(component: "locked.zip")
+            try run("/usr/bin/zip", ["-P", "secret", archive.path, "notes.txt"], cwd: src)
+            return archive
+        }
+
+        /// A second Edit while the first copy is still being extracted brings
+        /// no second copy: two editor windows on one entry, one losing out.
+        @Test func editingAgainWhileTheCopyIsExtractedHandsOutOne() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (state, handed) = try await open(try makeEncryptedArchive(in: dir))
+            let gate = PasswordGate()
+            state.passwordProvider = { _ in await gate.wait() }
+            let item = try #require(item("notes.txt", in: state))
+
+            let first = Task { try await state.editAsync(item: item) }
+            while await gate.asked == 0 { await Task.yield() }
+            let second = Task { try await state.editAsync(item: item) }
+            for _ in 0..<50 { await Task.yield() }
+            await gate.open()
+            try await first.value
+            try await second.value
+
+            #expect(handed.urls.count == 1)
+        }
+
+        /// The window closed while the copy was being extracted: it is not
+        /// handed to the editor, and it does not stay behind.
+        @Test func aCopyDoneAfterTheWindowClosedIsDropped() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (state, handed) = try await open(try makeEncryptedArchive(in: dir))
+            let before = Set((try? FileManager.default.contentsOfDirectory(atPath: CacheCleaner.launchFolder.path)) ?? [])
+            let gate = PasswordGate()
+            state.passwordProvider = { _ in await gate.wait() }
+            let item = try #require(item("notes.txt", in: state))
+
+            let edit = Task { try await state.editAsync(item: item) }
+            while await gate.asked == 0 { await Task.yield() }
+            state.clean()
+            await gate.open()
+            try? await edit.value
+            await state.cleanTask?.value
+
+            #expect(handed.urls.isEmpty)
+            let after = Set((try? FileManager.default.contentsOfDirectory(atPath: CacheCleaner.launchFolder.path)) ?? [])
+            #expect(after.subtracting(before).isEmpty)
+        }
+
+        /// A copy that could not be put back is tried again the next time the
+        /// window comes to the front, and the bar names only what is pending.
+        @Test func aFailedTakeBackIsTriedAgain() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (state, handed) = try await open(try makeArchive(.zip, in: dir))
+            let copy = try await edit("notes.txt", in: state, handed)
+            try saveInEditor("changed\n", into: copy)
+
+            state.scanFiles = { _, _, _ in throw CocoaError(.fileReadNoPermission) }
+            #expect(await state.takeBackEdits()?.value == false)
+            #expect(state.changedInEditor.isEmpty)
+            #expect(!state.hasPendingChanges)
+
+            state.scanFiles = { urls, base, cancel in try await FileScanner().scan(urls, under: base, cancel: cancel) }
+            #expect(await state.takeBackEdits()?.value == true)
+            #expect(state.changedInEditor == ["notes.txt"])
+            #expect(state.hasPendingChanges)
         }
 
         @Test func foldersCannotBeEdited() async throws {

@@ -22,7 +22,7 @@ struct TextEditorPicker: View {
             chosen: chosen.isEmpty ? nil : chosen,
             systemDefault: TextEditorApps.systemDefault,
             isInstalled: TextEditorApps.isInstalled)
-        Picker(String(""), selection: Binding(get: { TextEditorApps.current(chosen: chosen) }, set: pick)) {
+        Picker(selection: Binding(get: { TextEditorApps.current(chosen: chosen) }, set: pick)) {
             ForEach(listed, id: \.self) { id in
                 Text(verbatim: TextEditorApps.name(of: id)).tag(id)
             }
@@ -31,6 +31,9 @@ struct TextEditorPicker: View {
                 Text(.settingsGetCotEditor).tag(Self.getCotEditor)
             }
             Text(.settingsEditorOther).tag(Self.other)
+        } label: {
+            // shown by the row's own text; VoiceOver reads it from here
+            Text(.settingsEditFilesWith)
         }
         .labelsHidden()
     }

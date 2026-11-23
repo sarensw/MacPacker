@@ -1690,8 +1690,10 @@ extension ArchiveState {
     /// this archive, which the format can write. Not one inside an archive
     /// opened within it: a save writes only this one.
     public func canEdit(_ item: ArchiveItem) -> Bool {
-        // in the archive's file: an add not saved yet is still only on disk
-        guard item.type == .file, item.children == nil, item.index != nil, canBeEdited, canReadArchive,
+        // in the archive's file: an add not saved yet is still only on disk.
+        // Not while busy: a copy still being extracted is not handed out yet,
+        // and a second request for it would bring a second copy.
+        guard item.type == .file, item.children == nil, item.index != nil, canBeEdited, canReadArchive, !isBusy,
               let folder = item.parent.flatMap({ entries[$0] }) else { return false }
         return !isWithinOpenedArchive(folder)
     }
@@ -1717,13 +1719,28 @@ extension ArchiveState {
             openInEditor(copy.url)
             return
         }
+        // the window may have closed or show another archive once the copy is out
+        let generation = contentGeneration
         isBusy = true
         updateStatusText(String(localized: "extracting...", bundle: .module, comment: "Archive operation status"))
-        defer {
+        let result: SingleExtractionResult
+        do {
+            result = try await extractCopy(of: item)
+        } catch {
+            // for an archive no longer shown, there is nothing to report
+            guard generation == contentGeneration else { return }
             isBusy = false
             updateStatusText(nil)
+            throw error
         }
-        let result = try await extractCopy(of: item)
+        // nothing to take it back into, and nothing else removes it
+        guard generation == contentGeneration else {
+            log.notice("Edit dropped — the window changed meanwhile")
+            await CacheCleaner().remove([result.tempDir])
+            return
+        }
+        isBusy = false
+        updateStatusText(nil)
         editDirectories.append(result.tempDir)
         editedCopies.append(EditedCopy(url: result.url, folderPath: folderPath, stamp: FileStamp(result.url)))
         log.notice("Handed a file to the editor", context: ["copies": "\(editedCopies.count)"])
@@ -1734,11 +1751,13 @@ extension ArchiveState {
     /// replaces its entry, as a file of the same name dropped there would. A
     /// save then writes it into the archive.
     ///
-    /// - Returns: the add of the last copy taken back; the adds run in turn.
+    /// - Returns: the last copy's take-back, whether it was added; the adds
+    ///   run in turn.
     @discardableResult
     public func takeBackEdits() -> Task<Bool, Never>? {
         guard canBeEdited, !isSaving, root != nil else { return nil }
         var last: Task<Bool, Never>?
+        var taken = 0
         for index in editedCopies.indices {
             let copy = editedCopies[index]
             guard let stamp = FileStamp(copy.url), stamp != copy.stamp else { continue }
@@ -1750,13 +1769,25 @@ extension ArchiveState {
                 log.notice("Edited file not taken back — its folder is gone")
                 continue
             }
+            // Marked now, so coming back twice meanwhile takes it once. Unmarked
+            // if the add fails: the next time in front tries again.
             editedCopies[index].stamp = stamp
-            last = add(urls: [copy.url], under: folder, cancel: ExtractionCancelFlag())
+            let add = add(urls: [copy.url], under: folder, cancel: ExtractionCancelFlag())
             let name = copy.url.lastPathComponent
-            if !changedInEditor.contains(name) { changedInEditor.append(name) }
+            taken += 1
+            last = Task {
+                guard await add.value else {
+                    if let i = editedCopies.firstIndex(where: { $0.url == copy.url }), editedCopies[i].stamp == stamp {
+                        editedCopies[i].stamp = copy.stamp
+                    }
+                    return false
+                }
+                if !changedInEditor.contains(name) { changedInEditor.append(name) }
+                return true
+            }
         }
-        if last != nil {
-            log.notice("Took back edited files", context: ["files": "\(changedInEditor.count)"])
+        if taken > 0 {
+            log.notice("Taking back edited files", context: ["files": "\(taken)"])
         }
         return last
     }
