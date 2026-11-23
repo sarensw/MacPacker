@@ -2019,56 +2019,16 @@ extension ArchiveState {
         }
     }
     
-    public func changeSelection(selection: IndexSet) {
-        log.debug("Selection changed: tableViewSelectionDidChange(_:)")
-        
-        guard selectedItem != nil else { return }
-        let hasParent = showsParentRow
-
-        // Adjust selection to account for parent row when present
-        var adjustedSelection: IndexSet? = selection
-        if hasParent {
-            // Shift each selected index down by 1 to skip the parent row (at index 0)
-            let shifted = selection.compactMap { idx -> Int? in
-                let v = idx - 1
-                return v >= 0 ? v : nil
-            }
-            adjustedSelection = IndexSet(shifted)
+    /// What the list has selected, by entry rather than by row: the toolbar,
+    /// the status bar and the Quick Look panel act on it, and it stays with its
+    /// entries when the rows around them change (#251 C1, C2). With the Quick
+    /// Look panel open, the panel follows.
+    public func select(_ items: [ArchiveItem]) {
+        guard items.map(\.id) != selectedItems.map(\.id) else { return }
+        selectedItems = items
+        if previewItemUrl != nil {
+            updateSelectedItemForQuickLook()
         }
-        
-        if let indexes = adjustedSelection,
-           let children = childItems {
-            
-            selectedItems.removeAll()
-            for index in indexes {
-                let archiveItem = children[index]
-                selectedItems.append(archiveItem)
-            }
-            
-            // in case quick look is open right now, then change the
-            // previewed item
-            if previewItemUrl != nil {
-                updateSelectedItemForQuickLook()
-            }
-        }
-    }
-    
-    public func selectionOffset(selection: IndexSet) -> IndexSet {
-        guard selectedItem != nil else { return selection }
-        let hasParent = showsParentRow
-        
-        var adjustedSelection: IndexSet = selection
-        if hasParent {
-            let shifted = selection.compactMap { idx -> Int? in
-                let v = idx + 1
-                return v < 0 ? nil : v
-            }
-            adjustedSelection = IndexSet(shifted)
-        } else {
-            adjustedSelection = selection
-        }
-        
-        return adjustedSelection
     }
 }
 

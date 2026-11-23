@@ -11,12 +11,13 @@ import Core
 final class ContentViewController: NSViewController, ButtonBarDelegate {
     var state: ArchiveState? {
         didSet {
-            archiveViewController.state = state
+            outlineController.state = state
         }
     }
     
     private let buttonBarViewController = ButtonBarViewController()
-    private let archiveViewController = ArchiveViewController()
+    /// The window's list, with what a preview may do: look, nothing more.
+    private let outlineController = ArchiveOutlineController(features: .preview, layout: .tree)
     
     private let breadcrumbBar = NSView()
     private let stack = NSStackView()
@@ -41,8 +42,8 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
         buttonBarView.translatesAutoresizingMaskIntoConstraints = false
         buttonBarViewController.delegate = self
         
-        addChild(archiveViewController)
-        let outlineView = archiveViewController.view
+        addChild(outlineController)
+        let outlineView = outlineController.view
         outlineView.translatesAutoresizingMaskIntoConstraints = false
         
         stack.addArrangedSubview(buttonBarView)
@@ -65,7 +66,8 @@ final class ContentViewController: NSViewController, ButtonBarDelegate {
     
     func didRequestExtractSelected() {
         guard let state else { return }
-        guard let selectedItems = archiveViewController.selectedItems else { return }
+        let selectedItems = outlineController.selectedItems
+        guard !selectedItems.isEmpty else { return }
         guard let window = view.window ?? NSApp.keyWindow ?? NSApp.mainWindow else { return }
         
         let panel = NSOpenPanel()

@@ -60,7 +60,7 @@ struct ArchiveCommands: Commands {
             .keyboardShortcut("s", modifiers: [.command, .shift])
 
             // Deletion is the standard Edit ▸ Delete menu item, handled by the
-            // archive table (ArchiveTableView.delete(_:)) — not a File command.
+            // archive list (ArchiveOutlineView.delete(_:)) — not a File command.
         }
 
         // Edit ▸ Find, right after Select All, as in Finder and Mail.

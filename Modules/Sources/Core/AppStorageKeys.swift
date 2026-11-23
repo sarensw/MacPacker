@@ -60,7 +60,13 @@ public enum Keys {
     /// columns the window does. The sizes and the date show until hidden, the
     /// permissions only when asked for.
     public static func showsColumn(_ key: String, in defaults: UserDefaults = .macPackerShared) -> Bool {
-        defaults.object(forKey: key) as? Bool ?? (key != showColumnPosixPermissions)
+        bool(key, in: defaults) ?? (key != showColumnPosixPermissions)
+    }
+
+    /// A stored Bool, or nil for none. `bool(forKey:)` reads it, as it reads
+    /// the text "YES" or "NO" a launch argument pins: `as? Bool` misses that.
+    private static func bool(_ key: String, in defaults: UserDefaults) -> Bool? {
+        defaults.object(forKey: key) == nil ? nil : defaults.bool(forKey: key)
     }
 
     /// The column the window and Quick Look sort by, read from the app group:
@@ -68,7 +74,7 @@ public enum Keys {
     /// order the header shows.
     public static func sortOrder(in defaults: UserDefaults = .macPackerShared) -> (column: ArchiveSortOrder, ascending: Bool) {
         let column = defaults.string(forKey: defaultOrderColumn).flatMap(ArchiveSortOrder.init(rawValue:)) ?? .name
-        return (column, defaults.object(forKey: defaultOrderColumnAscending) as? Bool ?? true)
+        return (column, bool(defaultOrderColumnAscending, in: defaults) ?? true)
     }
 
     /// The list settings the window and Quick Look share.

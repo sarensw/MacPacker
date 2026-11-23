@@ -322,23 +322,13 @@ extension AllCoreTests {
             #expect(state.childItems == nil)
         }
 
-        @Test func selectionOffsetWithEmptySelection() async throws {
+        @Test func selectingNothingSelectsNothing() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
             state.open(url: folderURL.appendingPathComponent("defaultArchive.zip"))
             try await state.openTask?.value
 
-            let offset = state.selectionOffset(selection: IndexSet())
-            #expect(offset.isEmpty)
-        }
-
-        @Test func changeSelectionWithEmptyChildren() async throws {
-            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
-            state.open(url: folderURL.appendingPathComponent("defaultArchive.zip"))
-            try await state.openTask?.value
-
-            state.changeSelection(selection: IndexSet())
+            state.select([])
             #expect(state.selectedItems.isEmpty)
         }
 

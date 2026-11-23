@@ -505,120 +505,38 @@ extension AllCoreTests {
         }
     }
 
-    // MARK: - changeSelection(selection:)
+    // MARK: - select(_:)
 
-    @MainActor struct ArchiveStateChangeSelectionTests {
+    /// #251 C1. The selection is a set of entries, not of row numbers: the
+    /// `..` row and the rows a tree opens no longer shift what a number means.
+    /// Where the rows sit is the list's business (`ArchiveOutlineTests`).
+    @MainActor struct ArchiveStateSelectTests {
 
-        @Test func changeSelectionAtRoot() async throws {
+        @Test func selectingAnEntrySelectsIt() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
-            let url = folderURL.appendingPathComponent("defaultArchive.zip")
-
-            state.open(url: url)
+            state.open(url: folderURL.appendingPathComponent("defaultArchive.zip"))
             try await state.openTask?.value
-
-            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
-            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
-
             state.loadChildren()
 
-            // At root, selectedItem.type == .root, so no offset shift
-            state.changeSelection(selection: IndexSet(integer: 0))
+            state.select([state.childItems![0]])
 
             #expect(state.selectedItems.count == 1)
             #expect(state.selectedItems[0] === state.childItems![0])
         }
 
-        @Test func changeSelectionWithParentRow() async throws {
+        @Test func selectingSeveralEntriesSelectsThemAll() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
-            let url = folderURL.appendingPathComponent("defaultArchive.zip")
-
-            state.open(url: url)
+            state.open(url: folderURL.appendingPathComponent("defaultArchive.zip"))
             try await state.openTask?.value
-
-            // Navigate into directory so selectedItem is not root
-            let dirChild = state.root!.children!
-                .compactMap { state.entries[$0] }
-                .first(where: { $0.type == .directory })!
-
-            try await state.openAsync(item: dirChild)
-
-            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
-            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
-
             state.loadChildren()
 
-            // With parent row, index 0 is the parent; index 1 maps to childItems[0].
-            // The row is off by default, so this test asks for it. No await until
-            // it is cleared again — the flag is global, the main actor is not.
-            UserDefaults.standard.set(true, forKey: Keys.showParentRow)
-            state.changeSelection(selection: IndexSet(integer: 1))
-            UserDefaults.standard.removeObject(forKey: Keys.showParentRow)
-
-            #expect(state.selectedItems.count == 1)
-            #expect(state.selectedItems[0] === state.childItems![0])
-        }
-
-        @Test func changeSelectionMultipleItems() async throws {
-            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
-            let url = folderURL.appendingPathComponent("defaultArchive.zip")
-
-            state.open(url: url)
-            try await state.openTask?.value
-
-            UserDefaults.standard.set(ArchiveSortOrder.name.rawValue, forKey: Keys.defaultOrderColumn)
-            UserDefaults.standard.set(true, forKey: Keys.defaultOrderColumnAscending)
-
-            state.loadChildren()
-
-            // Select both items at root (no parent offset)
-            state.changeSelection(selection: IndexSet([0, 1]))
+            state.select(state.childItems!)
 
             #expect(state.selectedItems.count == 2)
-        }
-    }
-
-    // MARK: - selectionOffset(selection:)
-
-    @MainActor struct ArchiveStateSelectionOffsetTests {
-
-        @Test func selectionOffsetAtRoot() async throws {
-            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
-            let url = folderURL.appendingPathComponent("defaultArchive.zip")
-
-            state.open(url: url)
-            try await state.openTask?.value
-
-            // At root, no offset shift
-            let input = IndexSet([0, 1])
-            let result = state.selectionOffset(selection: input)
-            #expect(result == input)
-        }
-
-        @Test func selectionOffsetWithParent() async throws {
-            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
-            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
-            let url = folderURL.appendingPathComponent("defaultArchive.zip")
-
-            state.open(url: url)
-            try await state.openTask?.value
-
-            // Navigate into directory
-            let dirChild = state.root!.children!
-                .compactMap { state.entries[$0] }
-                .first(where: { $0.type == .directory })!
-
-            try await state.openAsync(item: dirChild)
-
-            // Non-root with the parent row switched on: indices shift by +1
-            let input = IndexSet([0, 1])
-            UserDefaults.standard.set(true, forKey: Keys.showParentRow)
-            let result = state.selectionOffset(selection: input)
-            UserDefaults.standard.removeObject(forKey: Keys.showParentRow)
-            #expect(result == IndexSet([1, 2]))
+            state.select([])
+            #expect(state.selectedItems.isEmpty)
         }
     }
 

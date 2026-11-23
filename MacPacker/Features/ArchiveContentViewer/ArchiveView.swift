@@ -27,14 +27,9 @@ struct ArchiveView: View {
     @Environment(\.openArchiveInNewWindow) private var openArchiveInNewWindow
     @EnvironmentObject private var state: ArchiveState
 
-    @AppStorage(Keys.showColumnCompressedSize, store: .macPackerShared) var showCompressedSize: Bool = true
-    @AppStorage(Keys.showColumnUncompressedSize, store: .macPackerShared) var showUncompressedSize: Bool = true
-    @AppStorage(Keys.showColumnModificationDate, store: .macPackerShared) var showModificationDate: Bool = true
-    @AppStorage(Keys.showColumnPosixPermissions, store: .macPackerShared) var showPermissions: Bool = false
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
     @AppStorage(Keys.showHiddenFiles, store: .macPackerShared) var showHiddenFiles: Bool = false
 
-    @State private var selection: IndexSet?
     /// nil while no file is over the window; otherwise the zone the pointer is in.
     @State private var activeZone: ArchiveDropZone?
     /// The file being dragged, while it is over the window. nil when it couldn't be
@@ -62,14 +57,7 @@ struct ArchiveView: View {
     var body: some View {
         Group {
             if state.hasArchive {
-                ArchiveTableViewRepresentable(
-                    selection: $selection,
-                    isReloadNeeded: $state.isReloadNeeded,
-                    showCompressedSizeColumn: $showCompressedSize,
-                    showUncompressedSizeColumn: $showUncompressedSize,
-                    showModificationDateColumn: $showModificationDate,
-                    showPosixPermissionsColumn: $showPermissions
-                )
+                ArchiveListView()
             } else {
                 HomeView()
             }
@@ -96,8 +84,8 @@ struct ArchiveView: View {
                 dropZones(active: activeZone)
             }
         }
-        // The row count changes with the setting, and the table only reloads on
-        // this flag — the toggle is in another window, so nothing else nudges it.
+        // The `..` row comes and goes with the setting, and the list only reloads
+        // on this flag — the toggle is in another window, so nothing else nudges it.
         .onChange(of: showParentRow) { _, _ in state.isReloadNeeded = true }
         .onChange(of: showHiddenFiles) { _, show in state.showsHiddenFiles = show }
         .onAppear {
