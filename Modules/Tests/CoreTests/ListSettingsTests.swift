@@ -122,6 +122,21 @@ extension AllCoreTests {
             #expect(shared.object(forKey: Keys.showParentRow) == nil, "a setting of the window alone moved")
         }
 
+        /// #251 B10, B9. A launch argument pins a setting for one launch, and
+        /// `-showColumnPosixPermissions YES` arrives as the text "YES", not as a
+        /// Bool: it shows the column all the same, and `-…Ascending NO` turns
+        /// the order round. Read as a Bool, the text missed and the default won.
+        @Test func aPinnedSettingCountsAsTheUserMeantIt() {
+            let shared = makeDefaults()
+            shared.set("YES", forKey: Keys.showColumnPosixPermissions)
+            shared.set("NO", forKey: Keys.showColumnModificationDate)
+            shared.set("NO", forKey: Keys.defaultOrderColumnAscending)
+
+            #expect(Keys.showsColumn(Keys.showColumnPosixPermissions, in: shared))
+            #expect(!Keys.showsColumn(Keys.showColumnModificationDate, in: shared))
+            #expect(Keys.sortOrder(in: shared).ascending == false)
+        }
+
         /// #251 B10. With nothing chosen, the sizes and the date show and the
         /// permissions don't, in the window and in Quick Look.
         @Test func theColumnsShownUntilOneIsHidden() {
