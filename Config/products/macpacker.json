@@ -42,6 +42,70 @@
     },
     "versions": [
       {
+        "version": "1.4.0",
+        "items": [
+          {
+            "type": "feat",
+            "highlight": true,
+            "title": {
+                "en": "Edit files in an archive with any text editor",
+                "zh-Hans": "用任意文本编辑器编辑压缩包中的文件",
+                "fr": "Modifier les fichiers d’une archive dans tout éditeur de texte",
+                "de": "Dateien im Archiv mit jedem Texteditor bearbeiten",
+                "it": "Modificare i file di un archivio con qualsiasi editor di testo",
+                "ja": "アーカイブ内のファイルを好きなテキストエディタで編集",
+                "fa": "ویرایش فایل‌های آرشیو با هر ویرایشگر متنی",
+                "pl": "Edycja plików w archiwum w dowolnym edytorze tekstu",
+                "pt-BR": "Editar arquivos de um arquivo compactado em qualquer editor de texto",
+                "ru": "Редактирование файлов архива в любом текстовом редакторе",
+                "uk": "Редагування файлів архіву в будь-якому текстовому редакторі",
+                "es-MX": "Editar archivos de un archivo comprimido en cualquier editor de texto",
+                "ko": "원하는 텍스트 편집기로 압축 파일 속 파일 편집",
+                "nl": "Bestanden in een archief bewerken met elke teksteditor",
+                "tr": "Arşivdeki dosyaları herhangi bir metin düzenleyicide düzenleme",
+                "vi": "Sửa tệp trong tệp nén bằng bất kỳ trình soạn thảo văn bản nào",
+                "ar": "تحرير ملفات الأرشيف بأي محرر نصوص",
+                "ca": "Edita els fitxers d’un arxiu amb qualsevol editor de text",
+                "el": "Επεξεργασία αρχείων σε συμπιεσμένο αρχείο με οποιονδήποτε επεξεργαστή κειμένου",
+                "nb": "Rediger filer i et arkiv med hvilken som helst tekstredigerer",
+                "zh-TW": "用任何文字編輯器編輯壓縮檔中的檔案",
+                "hi": "किसी भी टेक्स्ट एडिटर में आर्काइव की फ़ाइलें संपादित करें",
+                "cs": "Úpravy souborů v archivu v libovolném textovém editoru"
+            },
+            "issues": ["433"]
+          },
+          {
+            "type": "fix",
+            "title": {
+                "en": "Opened files might vanish when space runs low",
+                "zh-Hans": "磁盘空间不足时，打开的文件可能会消失",
+                "fr": "Les fichiers ouverts peuvent disparaître si l’espace manque",
+                "de": "Geöffnete Dateien können bei wenig Speicherplatz verschwinden",
+                "it": "I file aperti possono sparire quando lo spazio scarseggia",
+                "ja": "空き容量が少ないと、開いたファイルが消えることがある",
+                "fa": "فایل‌های باز شده ممکن است هنگام کمبود فضا ناپدید شوند",
+                "pl": "Otwarte pliki mogą zniknąć, gdy brakuje miejsca",
+                "pt-BR": "Arquivos abertos podem sumir quando falta espaço",
+                "ru": "Открытые файлы могут исчезнуть при нехватке места",
+                "uk": "Відкриті файли можуть зникнути, коли бракує місця",
+                "es-MX": "Los archivos abiertos pueden desaparecer si falta espacio",
+                "ko": "공간이 부족하면 열어 둔 파일이 사라질 수 있음",
+                "nl": "Geopende bestanden kunnen verdwijnen bij weinig ruimte",
+                "tr": "Açılan dosyalar alan azaldığında kaybolabilir",
+                "vi": "Tệp đang mở có thể biến mất khi sắp hết dung lượng",
+                "ar": "قد تختفي الملفات المفتوحة عند نفاد المساحة",
+                "ca": "Els fitxers oberts poden desaparèixer si queda poc espai",
+                "el": "Τα ανοιγμένα αρχεία μπορεί να εξαφανιστούν όταν ο χώρος λιγοστεύει",
+                "nb": "Åpnede filer kan forsvinne når det er lite lagringsplass",
+                "zh-TW": "儲存空間不足時，開啟的檔案可能會消失",
+                "hi": "जगह कम होने पर खोली गई फ़ाइलें गायब हो सकती हैं",
+                "cs": "Otevřené soubory mohou při nedostatku místa zmizet"
+            },
+            "issues": ["433"]
+          }
+        ]
+      },
+      {
         "version": "1.3.0",
         "items": [
           {
