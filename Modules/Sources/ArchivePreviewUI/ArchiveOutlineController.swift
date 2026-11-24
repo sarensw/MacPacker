@@ -177,7 +177,9 @@ public final class ArchiveOutlineController: NSViewController {
         outlineView.usesAlternatingRowBackgroundColors = true
         outlineView.selectionHighlightStyle = .regular
         outlineView.style = .fullWidth
-        outlineView.rowSizeStyle = .small
+        // the names at the system size, as Finder lists them: `.small` set
+        // them in 11 pt, beside the other columns' 13
+        outlineView.rowSizeStyle = .custom
         outlineView.gridStyleMask = []
         outlineView.setAccessibilityIdentifier("archive.list")
         createColumns()
@@ -809,6 +811,10 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
             icon.size = NSSize(width: 16, height: 16)
             let imageView = NSImageView(image: icon)
             imageView.imageScaling = .scaleProportionallyDown
+            // An image view takes image and file drags of its own: over a
+            // row's icon a file dragged over the list went to the icon, which
+            // refused it, and the list took it for a drag that left.
+            imageView.unregisterDraggedTypes()
             cellView.imageView = imageView
             leadingView = imageView
         }

@@ -281,6 +281,43 @@ extension AllCoreTests {
             }
         }
 
+        /// #251 G2. No part of a row takes a file dragged over the list: the
+        /// list does. A row's icon, an image view, took image and file drags
+        /// of its own: over an icon the drag left the list, rows opened by
+        /// the drag closed, faded rows came back, and a drop there went nowhere.
+        @Test func noPartOfARowTakesADragAwayFromTheList() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+
+            for item in state.childItems ?? [] {
+                for column in list.outlineView.tableColumns {
+                    var views: [NSView] = (list.outlineView(list.outlineView, viewFor: column, item: item)).map { [$0] } ?? []
+                    while let view = views.popLast() {
+                        #expect(view.registeredDraggedTypes.isEmpty,
+                                "\(type(of: view)) in \(item.name)'s \(column.identifier.rawValue) takes drags of its own")
+                        views += view.subviews
+                    }
+                }
+            }
+        }
+
+        /// #251. The names read at the system size, as in Finder; the list's
+        /// small row style set them in 11 pt beside the other columns' 13.
+        @Test func theNamesReadAtTheSystemSize() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 400), styleMask: [.titled], backing: .buffered, defer: false)
+            window.contentView = list.view
+            list.view.layoutSubtreeIfNeeded()
+
+            let cell = list.outlineView.view(atColumn: 0, row: 0, makeIfNecessary: true) as? NSTableCellView
+            #expect(cell?.textField?.font?.pointSize == NSFont.systemFontSize, "the name reads in \(cell?.textField?.font?.pointSize ?? 0) pt")
+        }
+
         /// Adds a file, so there is something to save, and saves.
         private func addAndSave(_ state: ArchiveState, in dir: URL) async throws {
             let added = dir.appendingPathComponent("added.txt")
