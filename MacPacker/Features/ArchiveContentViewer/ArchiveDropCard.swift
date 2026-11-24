@@ -9,6 +9,9 @@
 import AppKit
 import ArchivePreviewUI
 import SwiftUI
+import tb
+
+private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
 /// A borderless child window over the toolbar and the tab bar: neither takes
 /// a dropped file, so the card has to be a window of its own that does.
@@ -46,12 +49,15 @@ final class ArchiveDropCard: NSWindow {
         setFrame(zone, display: true)
         contentView?.subviews.first?.frame = contentView?.bounds ?? .zero
         if parent == nil { window.addChildWindow(self, ordered: .above) }
+        log.debug("Drop card shown", context: ["frame": NSStringFromRect(zone)])
     }
 
     func hide() {
+        guard parent != nil || isVisible else { return }
         model.isActive = false
         parent?.removeChildWindow(self)
         orderOut(nil)
+        log.debug("Drop card hidden")
     }
 
     fileprivate final class Model: ObservableObject {

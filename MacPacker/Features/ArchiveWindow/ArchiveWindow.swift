@@ -111,6 +111,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     /// take it. A read-only archive has its one card over the whole window.
     func fileDrag(_ phase: ArchiveFileDrag) {
         guard let window else { return }
+        log.debug("File drag over the window", context: ["phase": "\(phase)"])
         switch phase {
         case .entered:
             guard archiveState.hasArchive, archiveState.canBeEdited else { return }

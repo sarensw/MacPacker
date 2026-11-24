@@ -755,7 +755,9 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
               let column = ArchiveViewerColumn(identifier: identifier),
               let item = item as? ArchiveItem else { return nil }
 
-        let cellView = NSTableCellView()
+        // Dragged out, a row shows its icon and its name, as in Finder: the
+        // other columns' cells add nothing to the image.
+        let cellView = column == .name ? NSTableCellView() : DetailCellView()
         cellView.identifier = identifier
         // greyed out, as Finder shows a hidden file
         if item.isHidden { cellView.alphaValue = 0.5 }
@@ -897,13 +899,21 @@ public final class ArchiveOutlineView: NSOutlineView, NSMenuItemValidation {
         }
     }
 
+    public override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        let operation = super.draggingEntered(sender)
+        PreviewLog.general.debug("Drag entered the list", context: ["operation": String(operation.rawValue)])
+        return operation
+    }
+
     public override func draggingExited(_ sender: NSDraggingInfo?) {
         super.draggingExited(sender)
         controller?.dragLeft(ended: false)
     }
 
+    /// No `super`: NSTableView has no `draggingEnded(_:)` of its own. Called,
+    /// it threw at the end of every drag over the list, and AppKit, swallowing
+    /// it, handed the window no drag ever after.
     public override func draggingEnded(_ sender: NSDraggingInfo) {
-        super.draggingEnded(sender)
         controller?.dragLeft(ended: true)
     }
 
@@ -1007,4 +1017,12 @@ final class ArchiveDragOut: NSObject, NSFilePromiseProviderDelegate, @unchecked 
     private struct Completion: @unchecked Sendable {
         let call: (Error?) -> Void
     }
+}
+
+/// A cell beside the name. It adds nothing to the image of a row dragged out:
+/// without an `imageView` or `textField` of its own, AppKit would take a
+/// snapshot of the whole cell, and a dragged row would show as a band across
+/// every column.
+final class DetailCellView: NSTableCellView {
+    override var draggingImageComponents: [NSDraggingImageComponent] { [] }
 }

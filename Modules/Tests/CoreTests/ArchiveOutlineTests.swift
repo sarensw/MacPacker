@@ -259,6 +259,28 @@ extension AllCoreTests {
             #expect(list.outlineView(list.outlineView, pasteboardWriterForItem: a) == nil, "the file comes a second time, beside its folder")
         }
 
+        /// #251 C. A row dragged out shows its icon and its name, as in
+        /// Finder: the other columns add nothing to its image. Their cells,
+        /// with no image or text outlet, went in as snapshots, a band across
+        /// every column.
+        @Test func aDraggedRowShowsOnlyItsIconAndName() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let top = try #require(state.childItems?.first { $0.name == "top.txt" })
+
+            for column in list.outlineView.tableColumns {
+                let cell = list.outlineView(list.outlineView, viewFor: column, item: top) as? NSTableCellView
+                let parts = cell?.draggingImageComponents.count ?? 0
+                if column.identifier == ArchiveViewerColumn.name.identifier {
+                    #expect(parts > 0, "the name adds nothing to the drag image")
+                } else {
+                    #expect(parts == 0, "\(column.identifier.rawValue) adds to the drag image")
+                }
+            }
+        }
+
         /// Adds a file, so there is something to save, and saves.
         private func addAndSave(_ state: ArchiveState, in dir: URL) async throws {
             let added = dir.appendingPathComponent("added.txt")
@@ -554,6 +576,27 @@ extension AllCoreTests {
             #expect(list.outlineView.numberOfRows == rows, "the list was read anew under the drag")
             list.outlineView.draggingExited(file)
             #expect(try await eventually { list.outlineView.numberOfRows == rows + 1 }, "not read anew once the drag left")
+        }
+
+        /// #251 G2. A drag that ends over the list ends cleanly: the rows look
+        /// as before, and the window is told. Its end threw once, in a call to
+        /// a `draggingEnded` NSTableView doesn't have, and the window took no
+        /// drag after the first.
+        @Test func aDragThatEndsOverTheListEndsCleanly() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            var phases: [ArchiveFileDrag] = []
+            list.onFileDrag = { phases.append($0) }
+            let (_, file) = try drag("dragged.txt", in: dir)
+
+            hover(list, file, over: nil)
+            #expect(list.isDraggingOver)
+            list.outlineView.draggingEnded(file)
+
+            #expect(!list.isDraggingOver, "the drag is still on")
+            #expect(phases.last == .ended, "the window was not told: \(phases)")
         }
 
         /// #251 G2. A drag that moves on before an archive inside is unpacked
