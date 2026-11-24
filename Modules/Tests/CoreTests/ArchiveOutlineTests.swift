@@ -259,6 +259,65 @@ extension AllCoreTests {
             #expect(list.outlineView(list.outlineView, pasteboardWriterForItem: a) == nil, "the file comes a second time, beside its folder")
         }
 
+        /// #251 C. A row dragged out shows its icon and its name, as in
+        /// Finder: the other columns add nothing to its image. Their cells,
+        /// with no image or text outlet, went in as snapshots, a band across
+        /// every column.
+        @Test func aDraggedRowShowsOnlyItsIconAndName() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let top = try #require(state.childItems?.first { $0.name == "top.txt" })
+
+            for column in list.outlineView.tableColumns {
+                let cell = list.outlineView(list.outlineView, viewFor: column, item: top) as? NSTableCellView
+                let parts = cell?.draggingImageComponents.count ?? 0
+                if column.identifier == ArchiveViewerColumn.name.identifier {
+                    #expect(parts > 0, "the name adds nothing to the drag image")
+                } else {
+                    #expect(parts == 0, "\(column.identifier.rawValue) adds to the drag image")
+                }
+            }
+        }
+
+        /// #251 G2. No part of a row takes a file dragged over the list: the
+        /// list does. A row's icon, an image view, took image and file drags
+        /// of its own: over an icon the drag left the list, rows opened by
+        /// the drag closed, faded rows came back, and a drop there went nowhere.
+        @Test func noPartOfARowTakesADragAwayFromTheList() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+
+            for item in state.childItems ?? [] {
+                for column in list.outlineView.tableColumns {
+                    var views: [NSView] = (list.outlineView(list.outlineView, viewFor: column, item: item)).map { [$0] } ?? []
+                    while let view = views.popLast() {
+                        #expect(view.registeredDraggedTypes.isEmpty,
+                                "\(type(of: view)) in \(item.name)'s \(column.identifier.rawValue) takes drags of its own")
+                        views += view.subviews
+                    }
+                }
+            }
+        }
+
+        /// #251. The names read at the system size, as in Finder; the list's
+        /// small row style set them in 11 pt beside the other columns' 13.
+        @Test func theNamesReadAtTheSystemSize() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 400), styleMask: [.titled], backing: .buffered, defer: false)
+            window.contentView = list.view
+            list.view.layoutSubtreeIfNeeded()
+
+            let cell = list.outlineView.view(atColumn: 0, row: 0, makeIfNecessary: true) as? NSTableCellView
+            #expect(cell?.textField?.font?.pointSize == NSFont.systemFontSize, "the name reads in \(cell?.textField?.font?.pointSize ?? 0) pt")
+        }
+
         /// Adds a file, so there is something to save, and saves.
         private func addAndSave(_ state: ArchiveState, in dir: URL) async throws {
             let added = dir.appendingPathComponent("added.txt")
@@ -324,5 +383,433 @@ extension AllCoreTests {
             state.select([docs])
             #expect(!list.canDeleteSelection)
         }
+
+        // MARK: Drops (#251 G2)
+
+        private func eventually(_ condition: () -> Bool) async throws -> Bool {
+            for _ in 0..<500 {
+                if condition() { return true }
+                try await Task.sleep(for: .milliseconds(10))
+            }
+            return condition()
+        }
+
+        /// A file to drop, and a drag carrying it.
+        private func drag(_ name: String, in dir: URL) throws -> (URL, FileDrag) {
+            let file = dir.appendingPathComponent(name)
+            try Data(name.utf8).write(to: file)
+            return (file, FileDrag(file))
+        }
+
+        /// Asks the list about a drop on `item` (nil: beside the rows), as
+        /// AppKit does while the file is over it.
+        @discardableResult
+        private func hover(_ list: ArchiveOutlineController, _ drag: FileDrag, over item: ArchiveItem?) -> NSDragOperation {
+            list.outlineView(list.outlineView, validateDrop: drag, proposedItem: item, proposedChildIndex: NSOutlineViewDropOnItemIndex)
+        }
+
+        private func drop(_ list: ArchiveOutlineController, _ drag: FileDrag, on item: ArchiveItem?) -> Bool {
+            hover(list, drag, over: item)
+            return list.outlineView(list.outlineView, acceptDrop: drag, item: item, childIndex: NSOutlineViewDropOnItemIndex)
+        }
+
+        private func isFaded(_ list: ArchiveOutlineController, _ item: ArchiveItem) throws -> Bool {
+            let column = try #require(list.outlineView.tableColumn(withIdentifier: ArchiveViewerColumn.name.identifier))
+            let cell = list.outlineView(list.outlineView, viewFor: column, item: item) as? NSTableCellView
+            return cell?.textField?.textColor == .tertiaryLabelColor
+        }
+
+        /// #251 G2. A file dropped on a folder row goes into that folder; on a
+        /// file row, into the folder that file is in; beside the rows, into the
+        /// folder shown. The status bar says where, while it is over the row.
+        @Test func aDropGoesWhereTheRowSays() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            var hints: [ArchiveDropHint?] = []
+            list.onDropHint = { hints.append($0) }
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            list.outlineView.expandItem(docs)
+            let sub = try #require(state.displayedChildren(of: docs).first { $0.name == "sub" })
+            let a = try #require(state.displayedChildren(of: docs).first { $0.name == "a.txt" })
+
+            let (_, onFolder) = try drag("onFolder.txt", in: dir)
+            #expect(drop(list, onFolder, on: sub))
+            #expect(hints.contains(.addInto(["docs", "sub"])), "the status bar did not say where: \(hints)")
+            let (_, onFile) = try drag("onFile.txt", in: dir)
+            #expect(drop(list, onFile, on: a))
+            let (_, beside) = try drag("beside.txt", in: dir)
+            #expect(drop(list, beside, on: nil))
+            #expect(hints.contains(.addInto([])))
+
+            #expect(try await eventually {
+                state.displayedChildren(of: sub).contains { $0.name == "onFolder.txt" } &&
+                state.displayedChildren(of: docs).contains { $0.name == "onFile.txt" } &&
+                (state.childItems ?? []).contains { $0.name == "beside.txt" }
+            }, "dropped elsewhere: \(state.entries.values.map(\.name).sorted())")
+            #expect(hints.last == .some(nil), "the status bar still names a target")
+        }
+
+        /// #251 G2, G5. A rar inside the zip can't take a file: its row fades
+        /// while a file is over the list, refuses the drop, doesn't open on
+        /// hover, and the status bar names it. The other rows take the file.
+        @Test func aRowThatCantTakeTheFileFadesAndRefusesIt() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let outer = try copyOfFixture("nested", "rarInZip.zip", in: dir)
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: outer)
+            try await state.openTask?.value
+            let list = makeList(.window, .tree, for: state)
+            var hints: [ArchiveDropHint?] = []
+            list.onDropHint = { hints.append($0) }
+            let rar = try #require(state.childItems?.first { $0.name == "inner.rar" })
+            let readme = try #require(state.childItems?.first { $0.name == "readme.txt" })
+            let (_, file) = try drag("dropped.txt", in: dir)
+            #expect(try !isFaded(list, rar), "faded with no drag under way")
+
+            #expect(hover(list, file, over: rar) == [])
+            #expect(hints.last == .some(.cantChange("inner.rar")))
+            #expect(try isFaded(list, rar))
+            #expect(try !isFaded(list, readme))
+            #expect(!list.outlineView(list.outlineView, shouldExpandItem: rar), "a drag opens an archive nothing goes into")
+            #expect(hover(list, file, over: readme) == .copy)
+            #expect(!drop(list, file, on: rar), "dropped into the rar")
+
+            #expect(try !isFaded(list, rar), "still faded once the drag is over")
+        }
+
+        /// #251 G2. A drop on an archive inside, still closed, unpacks it and
+        /// adds the file to its top level.
+        @Test func aDropOnAClosedArchiveInsideGoesIntoIt() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+            try Data("inside".utf8).write(to: source.appendingPathComponent("inside.txt"))
+            try run("/usr/bin/zip", ["inner.zip", "inside.txt"], cwd: source)
+            let outer = dir.appendingPathComponent("outer.zip")
+            try run("/usr/bin/zip", [outer.path, "inner.zip"], cwd: source)
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: outer)
+            try await state.openTask?.value
+            let list = makeList(.window, .tree, for: state)
+            let inner = try #require(state.childItems?.first { $0.name == "inner.zip" })
+            let (_, file) = try drag("dropped.txt", in: dir)
+
+            #expect(drop(list, file, on: inner))
+
+            #expect(try await eventually { state.displayedChildren(of: inner).contains { $0.name == "dropped.txt" } },
+                    "not added into the archive inside: \(state.displayedChildren(of: inner).map(\.name))")
+        }
+
+        /// The archive of `7z_encrypted_header.7z` inside a zip: its listing
+        /// needs the password, `password`.
+        private func openLockedInside(in dir: URL) async throws -> (ArchiveState, ArchiveItem) {
+            let source = dir.appendingPathComponent("source")
+            try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+            _ = try copyOfFixture("password", "7z_encrypted_header.7z", in: source)
+            let outer = dir.appendingPathComponent("outer.zip")
+            try run("/usr/bin/zip", [outer.path, "7z_encrypted_header.7z"], cwd: source)
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: outer)
+            try await state.openTask?.value
+            return (state, try #require(state.childItems?.first { $0.name == "7z_encrypted_header.7z" }))
+        }
+
+        /// #251 G2. A drag never asks for a password: an archive inside that
+        /// needs one stays closed, shows no alert, and the status bar says a
+        /// drop asks for it.
+        @Test func aDragOpensNoArchiveThatNeedsItsPassword() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (state, locked) = try await openLockedInside(in: dir)
+            let answers = Answers(["password"])
+            state.passwordProvider = { _ in await answers.next() }
+            let list = makeList(.window, .tree, for: state)
+            var hints: [ArchiveDropHint?] = []
+            list.onDropHint = { hints.append($0) }
+
+            try await state.openInPlace(item: locked, askingForPassword: false)
+
+            #expect(await answers.asked == 0, "asked for the password during a drag")
+            #expect(locked.children == nil, "opened without its password")
+            #expect(state.lockedNested.contains(locked.id))
+            #expect(state.error == nil, "an alert for the password a drag could not ask for")
+            let (_, file) = try drag("dropped.txt", in: dir)
+            #expect(hover(list, file, over: locked) == .copy)
+            #expect(hints.last == .some(.needsPassword("7z_encrypted_header.7z")))
+            #expect(!list.outlineView(list.outlineView, shouldExpandItem: locked), "a drag opens it again")
+        }
+
+        /// #251 G2. Dropped on, it asks for the password after the drop, and
+        /// the file goes in; Cancel adds nothing.
+        @Test func aDropOnALockedArchiveAsksAfterTheDrop() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (state, locked) = try await openLockedInside(in: dir)
+            try await state.openInPlace(item: locked, askingForPassword: false)
+            let list = makeList(.window, .tree, for: state)
+
+            let answers = Answers([nil, "password"])
+            state.passwordProvider = { _ in await answers.next() }
+            let (_, cancelled) = try drag("cancelled.txt", in: dir)
+            #expect(drop(list, cancelled, on: locked))
+            #expect(try await eventually { !list.loadingItems.contains(locked.id) })
+            #expect(await answers.asked == 1, "no password asked for after the drop")
+            #expect(locked.children == nil, "opened though the password was cancelled")
+
+            let (_, file) = try drag("dropped.txt", in: dir)
+            #expect(drop(list, file, on: locked))
+            #expect(try await eventually { state.displayedChildren(of: locked).contains { $0.name == "dropped.txt" } },
+                    "not added after the password: \(state.displayedChildren(of: locked).map(\.name))")
+            #expect(!state.displayedChildren(of: locked).contains { $0.name == "cancelled.txt" })
+            #expect(!state.lockedNested.contains(locked.id))
+        }
+
+        /// #251 G2. A drop on a locked archive inside while the drag's own
+        /// silent open of it is still running asks for the password all the
+        /// same, and the file goes in. Both opens running at once, the drop's
+        /// lost its leave to ask: the app test saw no prompt.
+        @Test func aDropWhileTheHoverStillOpensTheArchiveAsks() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (state, locked) = try await openLockedInside(in: dir)
+            let answers = Answers(["password"])
+            state.passwordProvider = { _ in await answers.next() }
+            let list = makeList(.window, .tree, for: state)
+            let (_, file) = try drag("dropped.txt", in: dir)
+
+            hover(list, file, over: locked)
+            #expect(!list.outlineView(list.outlineView, shouldExpandItem: locked))
+            #expect(list.loadingItems.contains(locked.id), "the hover did not start unpacking")
+            #expect(list.outlineView(list.outlineView, acceptDrop: file, item: locked, childIndex: NSOutlineViewDropOnItemIndex))
+
+            #expect(try await eventually { state.displayedChildren(of: locked).contains { $0.name == "dropped.txt" } },
+                    "not added: \(state.displayedChildren(of: locked).map(\.name))")
+            let asked = await answers.asked
+            #expect(asked == 1, "asked \(asked) times")
+        }
+
+        /// #251 G2. The list is not read anew while a file is dragged over it:
+        /// AppKit's drop target goes with a reload, and the drop with it. An
+        /// archive inside opened by hovering asked for one, and the app tests'
+        /// drops on it never arrived. Once the drag is over, it is read anew.
+        @Test func aReloadAskedForDuringADragWaitsForItsEnd() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let rows = list.outlineView.numberOfRows
+            let (_, file) = try drag("dragged.txt", in: dir)
+            let added = dir.appendingPathComponent("added.txt")
+            try Data("added".utf8).write(to: added)
+
+            hover(list, file, over: nil)
+            #expect(await state.add(url: added).value)
+            try await Task.sleep(for: .milliseconds(100))
+
+            #expect(list.outlineView.numberOfRows == rows, "the list was read anew under the drag")
+            list.outlineView.draggingExited(file)
+            #expect(try await eventually { list.outlineView.numberOfRows == rows + 1 }, "not read anew once the drag left")
+        }
+
+        /// #251 G2. A drag that ends over the list ends cleanly: the rows look
+        /// as before, and the window is told. Its end threw once, in a call to
+        /// a `draggingEnded` NSTableView doesn't have, and the window took no
+        /// drag after the first.
+        @Test func aDragThatEndsOverTheListEndsCleanly() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            var phases: [ArchiveFileDrag] = []
+            list.onFileDrag = { phases.append($0) }
+            let (_, file) = try drag("dragged.txt", in: dir)
+
+            hover(list, file, over: nil)
+            #expect(list.isDraggingOver)
+            list.outlineView.draggingEnded(file)
+
+            #expect(!list.isDraggingOver, "the drag is still on")
+            #expect(phases.last == .ended, "the window was not told: \(phases)")
+        }
+
+        /// #251 G2. A drag that moves on before an archive inside is unpacked
+        /// stops the unpacking: it stays closed.
+        @Test func aLoadADragStartedStopsOnceTheDragMovesOn() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+            try Data("inside".utf8).write(to: source.appendingPathComponent("inside.txt"))
+            try run("/usr/bin/zip", ["inner.zip", "inside.txt"], cwd: source)
+            let outer = dir.appendingPathComponent("outer.zip")
+            try run("/usr/bin/zip", [outer.path, "inner.zip"], cwd: source)
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: outer)
+            try await state.openTask?.value
+            let inner = try #require(state.childItems?.first { $0.name == "inner.zip" })
+            let movedOn = ExtractionCancelFlag()
+            movedOn.cancel()
+
+            await #expect(throws: (any Error).self) {
+                try await state.openInPlace(item: inner, askingForPassword: false, cancel: movedOn)
+            }
+
+            #expect(inner.children == nil, "opened after the drag moved on")
+        }
+
+        /// #251 G2. After the drop, the rows the drag opened stay open where
+        /// the file went in; the others close. A drag that strays out of the
+        /// window and comes back finds them open (user, 2026-11-24); one that
+        /// ends over the list without a drop closes them.
+        @Test func afterADropOnlyTheRowsGoneIntoStayOpen() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            let (_, file) = try drag("dropped.txt", in: dir)
+
+            hover(list, file, over: docs)
+            list.outlineView.expandItem(docs)
+            let sub = try #require(state.displayedChildren(of: docs).first { $0.name == "sub" })
+            list.outlineView.expandItem(sub)
+            #expect(drop(list, file, on: docs))
+
+            #expect(list.outlineView.isItemExpanded(docs), "the folder the file went into closed")
+            #expect(!list.outlineView.isItemExpanded(sub), "a folder the drag only passed stayed open")
+
+            list.outlineView.collapseItem(docs)
+            let (_, again) = try drag("again.txt", in: dir)
+            hover(list, again, over: docs)
+            list.outlineView.expandItem(docs)
+            list.outlineView.draggingExited(again)
+            #expect(list.outlineView.isItemExpanded(docs), "a drag that strayed out closed what it opened")
+            hover(list, again, over: docs)
+            list.outlineView.draggingEnded(again)
+            #expect(!list.outlineView.isItemExpanded(docs), "a drag that ended without a drop kept what it opened")
+        }
+
+        /// #251 G2. What a drag opened and left open, ending elsewhere, stays
+        /// open: the next drag doesn't close it.
+        @Test func whatAnEarlierDragLeftOpenStaysOpen() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            let (_, first) = try drag("first.txt", in: dir)
+            let (_, second) = try drag("second.txt", in: dir)
+
+            hover(list, first, over: docs)
+            list.outlineView.expandItem(docs)
+            list.outlineView.draggingExited(first)
+            hover(list, second, over: nil)
+            list.outlineView.draggingEnded(second)
+
+            #expect(list.outlineView.isItemExpanded(docs), "the next drag closed what an earlier one opened")
+        }
+
+        /// #251 G2. An archive inside under a drag is unpacked while the drag
+        /// rests on it, without a spinner, so that the hover opens it as it
+        /// opens a folder: ready when AppKit's own hover expand asks.
+        @Test func anArchiveInsideUnderADragIsReadyWhenTheHoverOpensIt() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+            try Data("inside".utf8).write(to: source.appendingPathComponent("inside.txt"))
+            try run("/usr/bin/zip", ["inner.zip", "inside.txt"], cwd: source)
+            let outer = dir.appendingPathComponent("outer.zip")
+            try run("/usr/bin/zip", [outer.path, "inner.zip"], cwd: source)
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: outer)
+            try await state.openTask?.value
+            let list = makeList(.window, .tree, for: state)
+            let inner = try #require(state.childItems?.first { $0.name == "inner.zip" })
+            let column = try #require(list.outlineView.tableColumn(withIdentifier: ArchiveViewerColumn.name.identifier))
+            let (_, file) = try drag("dropped.txt", in: dir)
+
+            hover(list, file, over: inner)
+            #expect(list.quietLoads.contains(inner.id), "not unpacking while the drag rests on it")
+            let cell = list.outlineView(list.outlineView, viewFor: column, item: inner) as? NSTableCellView
+            #expect(cell?.imageView != nil, "a spinner while the drag only passes")
+
+            #expect(try await eventually { inner.children != nil && !list.loadingItems.contains(inner.id) })
+            #expect(!list.outlineView.isItemExpanded(inner), "opened before the hover's own expand")
+            #expect(list.outlineView(list.outlineView, shouldExpandItem: inner), "not ready when the hover opens it")
+        }
+
+        /// #251 G2. A read-only archive leaves a dropped file to the window,
+        /// whose one card opens it; an editable one's list takes it.
+        @Test func onlyAnEditableArchivesListTakesDrops() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try await openArchive(in: dir)
+            let zipList = makeList(.window, .tree, for: zip)
+            let rar = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            rar.open(url: try copyOfFixture("defaultArchives", "defaultArchive.rar", in: dir))
+            try await rar.openTask?.value
+            let rarList = makeList(.window, .tree, for: rar)
+            let preview = makeList(.preview, .tree, for: zip)
+
+            #expect(try await eventually { zipList.outlineView.registeredDraggedTypes.contains(.fileURL) })
+            #expect(rarList.outlineView.registeredDraggedTypes.isEmpty)
+            #expect(preview.outlineView.registeredDraggedTypes.isEmpty, "Quick Look takes drops")
+        }
     }
+}
+
+/// What the password prompt answers, one after the other.
+private actor Answers {
+    private var given: [String?]
+    private(set) var asked = 0
+
+    init(_ given: [String?]) { self.given = given }
+
+    func next() -> String? {
+        asked += 1
+        return given.isEmpty ? nil : given.removeFirst()
+    }
+}
+
+/// A file dragged over the list, as AppKit hands it to the list's checks.
+@MainActor
+private final class FileDrag: NSObject, @preconcurrency NSDraggingInfo {
+    let draggingPasteboard: NSPasteboard
+
+    private static var drags = 0
+    /// Each drag its own, as AppKit numbers them.
+    let draggingSequenceNumber: Int
+
+    init(_ file: URL) {
+        Self.drags += 1
+        draggingSequenceNumber = Self.drags
+        draggingPasteboard = NSPasteboard(name: NSPasteboard.Name("ArchiveOutlineTests-\(UUID().uuidString)"))
+        draggingPasteboard.clearContents()
+        draggingPasteboard.writeObjects([file as NSURL])
+    }
+
+    var draggingDestinationWindow: NSWindow? { nil }
+    var draggingSourceOperationMask: NSDragOperation { .copy }
+    var draggingLocation: NSPoint { .zero }
+    var draggedImageLocation: NSPoint { .zero }
+    var draggedImage: NSImage? { nil }
+    var draggingSource: Any? { nil }
+    func slideDraggedImage(to screenPoint: NSPoint) {}
+    var draggingFormation: NSDraggingFormation = .default
+    var animatesToDestination = false
+    var numberOfValidItemsForDrop = 1
+    func enumerateDraggingItems(
+        options enumOpts: NSDraggingItemEnumerationOptions = [],
+        for view: NSView?,
+        classes classArray: [AnyClass],
+        searchOptions: [NSPasteboard.ReadingOptionKey: Any] = [:],
+        using block: (NSDraggingItem, Int, UnsafeMutablePointer<ObjCBool>) -> Void
+    ) {}
+    var springLoadingHighlight: NSSpringLoadingHighlight { .none }
+    func resetSpringLoading() {}
 }

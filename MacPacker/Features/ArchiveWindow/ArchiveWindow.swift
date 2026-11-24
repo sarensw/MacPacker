@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import ArchivePreviewUI
 import Combine
 import Core
 import SwiftUI
@@ -22,6 +23,22 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
     var didBecomeMain: (() -> Void)?
 
     private var cancellables = Set<AnyCancellable>()
+    private let openArchiveInNewWindow: @MainActor (URL) -> Void
+    /// The card over the toolbar that opens a file dragged over the window,
+    /// while the list adds it (#251 G2).
+    private lazy var dropCard: ArchiveDropCard = {
+        let card = ArchiveDropCard()
+        card.open = { [weak self] urls in
+            guard let self else { return }
+            self.dropCard.hide()
+            for url in urls {
+                log.notice("Drop → open in a new window", context: ["file": url.lastPathComponent])
+                self.openArchiveInNewWindow(url)
+            }
+        }
+        card.onLeave = { [weak self] phase in self?.fileDrag(phase) }
+        return card
+    }()
     
     init(
         archiveState: ArchiveState,
@@ -33,6 +50,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         cascadeFrom: NSWindow? = nil
     ) {
         self.archiveState = archiveState
+        self.openArchiveInNewWindow = openArchiveInNewWindow
 
         let window = ArchiveWindow()
         window.isRestorable = false
@@ -66,6 +84,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
             .environmentObject(dropCompressor)
             .environmentObject(quickCompressOptions)
             .environment(\.openArchiveInNewWindow, openArchiveInNewWindow)
+            .environment(\.fileDragOverWindow, { [weak self] phase in self?.fileDrag(phase) })
             .environment(\.openQuickCompressWindow, openQuickCompressWindow)
 
         window.contentView = NSHostingView(rootView: contentView)
@@ -87,6 +106,27 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
         fatalError("init(coder:) has not been implemented")
     }
     
+    /// A file dragged over the list, or another part of the window: the card
+    /// over the toolbar shows while it is over the window, if the list can
+    /// take it. A read-only archive has its one card over the whole window.
+    func fileDrag(_ phase: ArchiveFileDrag) {
+        guard let window else { return }
+        log.debug("File drag over the window", context: ["phase": "\(phase)"])
+        switch phase {
+        case .entered:
+            guard archiveState.hasArchive, archiveState.canBeEdited else { return }
+            let first = (NSPasteboard(name: .drag).readObjects(
+                forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]
+            ) as? [URL])?.first
+            dropCard.show(over: window, createsArchive: first.map { !archiveState.looksLikeArchive(url: $0) } ?? false)
+        case .exited:
+            // still over the window: into another part of it, the card's included
+            if !window.frame.contains(NSEvent.mouseLocation) { dropCard.hide() }
+        case .ended:
+            dropCard.hide()
+        }
+    }
+
     /// SwiftUI fills the toolbar after the hosting view is installed, so the
     /// search field does not exist yet at init. This is the first moment it
     /// reliably does; the call is idempotent and cheap.
