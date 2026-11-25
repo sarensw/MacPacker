@@ -37,6 +37,7 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
             }
         }
         card.onLeave = { [weak self] phase in self?.fileDrag(phase) }
+        card.goUp = { [weak self] in self?.archiveState.openParent() }
         return card
     }()
     
@@ -118,7 +119,10 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
             let first = (NSPasteboard(name: .drag).readObjects(
                 forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]
             ) as? [URL])?.first
-            dropCard.show(over: window, createsArchive: first.map { !archiveState.looksLikeArchive(url: $0) } ?? false)
+            // Back stays in sight: a drag resting on it goes up (#251 G2)
+            let back = window.toolbar?.items.first { $0.label == String(localized: .commonBack) }?.view
+            dropCard.show(over: window, back: back.map { $0.convert($0.bounds, to: nil) },
+                          createsArchive: first.map { !archiveState.looksLikeArchive(url: $0) } ?? false)
         case .exited:
             // still over the window: into another part of it, the card's included
             if !window.frame.contains(NSEvent.mouseLocation) { dropCard.hide() }

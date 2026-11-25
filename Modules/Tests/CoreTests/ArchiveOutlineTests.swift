@@ -778,6 +778,115 @@ extension AllCoreTests {
             #expect(phases.last == .ended, "the window was not told: \(phases)")
         }
 
+        /// Puts the pointer of `drag` on the row of `item`.
+        private func point(_ drag: FileDrag, at item: ArchiveItem, in list: ArchiveOutlineController) {
+            let outline = list.outlineView
+            let rect = outline.rect(ofRow: outline.row(forItem: item))
+            drag.location = outline.convert(NSPoint(x: rect.midX, y: rect.midY), to: nil)
+        }
+
+        /// #251 G2. In the table, a folder a drag rests on springs open after
+        /// the spring-loading delay, as in Finder, and the table goes into it;
+        /// moving to another row starts the wait over. A drag that ends over
+        /// the window without a drop goes back where it came; a drop stays.
+        @Test func inTheTableAFolderADragRestsOnSpringsOpen() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .table, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            let top = try #require(state.childItems?.first { $0.name == "top.txt" })
+            let (_, file) = try drag("dropped.txt", in: dir)
+
+            hover(list, file, over: nil)
+            point(file, at: docs, in: list)
+            list.dragUpdated(file, now: 0)
+            point(file, at: top, in: list)
+            list.dragUpdated(file, now: 100)
+            point(file, at: docs, in: list)
+            list.dragUpdated(file, now: 200)
+            list.dragUpdated(file, now: 200)
+            try await Task.sleep(for: .milliseconds(100))
+            #expect(state.selectedItem !== docs, "sprang open without waiting on the row")
+            list.dragUpdated(file, now: 300)
+            #expect(try await eventually { state.selectedItem === docs && names(list).contains("a.txt") }, "\(names(list))")
+            // NSOutlineView refuses the drop once its rows changed under the drag
+            #expect(list.operationAfterSpring == .copy, "the drop right after the spring is refused")
+
+            list.outlineView.draggingEnded(file)
+            #expect(try await eventually { state.selectedItem === state.root }, "the table stayed where the drag went")
+
+            let (_, kept) = try drag("kept.txt", in: dir)
+            hover(list, kept, over: nil)
+            point(kept, at: docs, in: list)
+            list.dragUpdated(kept, now: 400)
+            list.dragUpdated(kept, now: 500)
+            #expect(try await eventually { state.selectedItem === docs })
+            #expect(list.dropAfterSpring(kept), "a drop right after the spring went nowhere")
+            list.outlineView.draggingEnded(kept)
+            #expect(try await eventually { names(list).contains("kept.txt") }, "not added to docs: \(names(list))")
+            #expect(state.selectedItem === docs, "a drop went back where the drag came")
+        }
+
+        /// #251 G2. In the table, the `..` row a drag rests on goes up.
+        @Test func inTheTableTheParentRowADragRestsOnGoesUp() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            state.defaults.set(true, forKey: Keys.showParentRow)
+            try await enter("docs", in: state)
+            let list = makeList(.window, .table, for: state)
+            let parent = try #require(list.outlineView.item(atRow: 0) as? ArchiveItem)
+            let (_, file) = try drag("dropped.txt", in: dir)
+
+            hover(list, file, over: nil)
+            point(file, at: parent, in: list)
+            list.dragUpdated(file, now: 0)
+            list.dragUpdated(file, now: 100)
+
+            #expect(try await eventually { state.selectedItem === state.root }, "not gone up")
+            // docs comes under the resting pointer: it waits for the pointer to move
+            list.dragUpdated(file, now: 200)
+            list.dragUpdated(file, now: 300)
+            try await Task.sleep(for: .milliseconds(100))
+            #expect(state.selectedItem === state.root, "what came under the resting pointer sprang")
+            file.location.y += 1
+            list.dragUpdated(file, now: 400)
+            list.dragUpdated(file, now: 500)
+            #expect(try await eventually { state.selectedItem?.name == "docs" }, "moved on it, docs didn't spring")
+        }
+
+        /// #251 G2. Nothing springs in the tree, where rows open in place, nor
+        /// what can't take the file.
+        @Test func onlyTheTableSpringsAndOnlyWhatTakesTheFile() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            let tree = makeList(.window, .tree, for: state)
+            let (_, file) = try drag("dropped.txt", in: dir)
+            hover(tree, file, over: nil)
+            point(file, at: docs, in: tree)
+            tree.dragUpdated(file, now: 0)
+            tree.dragUpdated(file, now: 100)
+            try await Task.sleep(for: .milliseconds(100))
+            #expect(state.selectedItem === state.root || state.selectedItem == nil, "the tree sprang")
+
+            let outer = try copyOfFixture("nested", "rarInZip.zip", in: dir)
+            let rarState = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            rarState.open(url: outer)
+            try await rarState.openTask?.value
+            let table = makeList(.window, .table, for: rarState)
+            let rar = try #require(rarState.childItems?.first { $0.name == "inner.rar" })
+            let (_, other) = try drag("other.txt", in: dir)
+            hover(table, other, over: nil)
+            point(other, at: rar, in: table)
+            table.dragUpdated(other, now: 0)
+            table.dragUpdated(other, now: 100)
+            try await Task.sleep(for: .milliseconds(100))
+            #expect(rarState.selectedItem !== rar, "a rar sprang open")
+        }
+
         /// #251 G2. A drag that moves on before an archive inside is unpacked
         /// stops the unpacking: it stays closed.
         @Test func aLoadADragStartedStopsOnceTheDragMovesOn() async throws {
@@ -937,7 +1046,9 @@ private final class FileDrag: NSObject, @preconcurrency NSDraggingInfo {
 
     var draggingDestinationWindow: NSWindow? { nil }
     var draggingSourceOperationMask: NSDragOperation { .copy }
-    var draggingLocation: NSPoint { .zero }
+    /// Where the pointer is, in the coordinates a destination converts from.
+    var location: NSPoint = .zero
+    var draggingLocation: NSPoint { location }
     var draggedImageLocation: NSPoint { .zero }
     var draggedImage: NSImage? { nil }
     var draggingSource: Any? { nil }

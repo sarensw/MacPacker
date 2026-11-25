@@ -138,6 +138,14 @@ public final class ArchiveOutlineController: NSViewController {
     private var reloadsWhenTheDragEnds = false
     /// The archive whose top level was looked at for a single folder to open.
     private var openedSingleFolderOf: ObjectIdentifier?
+    /// The row a drag rests on, which springs open (table only).
+    private var springWait = SpringWait()
+    /// The table sprang into a folder under the drag, and NSOutlineView hasn't
+    /// asked where the drop goes since: the drop goes to the folder shown.
+    private(set) var dropsInShownFolder = false
+    /// The folder the window showed when the drag came, gone back to when it
+    /// ends over the window without a drop.
+    private(set) var folderWhenTheDragCame: ArchiveItem?
     /// An archive inside being unpacked for the drag hovering over it, which
     /// stops once the drag moves on.
     private var hoverLoad: (item: ArchiveItem, cancel: ExtractionCancelFlag)?
@@ -618,6 +626,7 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
     }
 
     public func outlineView(_ outlineView: NSOutlineView, validateDrop info: NSDraggingInfo, proposedItem item: Any?, proposedChildIndex index: Int) -> NSDragOperation {
+        dropsInShownFolder = false
         guard features.contains(.dropTargets), let state, !(info.draggingSource is ArchiveOutlineView) else { return [] }
         if !isDraggingOver { beginDragOver(info) }
         var row = item as? ArchiveItem
@@ -712,6 +721,7 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
             // another drag: what an earlier one opened and left open stays open
             dragSequence = info.draggingSequenceNumber
             openedByDrag = []
+            folderWhenTheDragCame = state?.selectedItem ?? state?.root
         }
         onFileDrag?(.entered)
         restyleRows()
@@ -719,6 +729,7 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
 
     /// The drag left the list, or ended over it without a drop.
     func dragLeft(ended: Bool) {
+        springWait = SpringWait()
         if isDraggingOver { PreviewLog.general.debug("Drag left the list", context: ["ended": String(ended)]) }
         if ended { finishDrag() } else { leaveDrag() }
         onFileDrag?(ended ? .ended : .exited)
@@ -753,6 +764,80 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
         }
         openedByDrag = []
         dragSequence = nil
+        springWait = SpringWait()
+        dropsInShownFolder = false
+        // Without a drop, the window goes back to the folder it showed when the
+        // drag came: the drag sprang it elsewhere, by a row or by Back. A drop
+        // stays where the file went.
+        if target == nil, features.contains(.navigation), let state, let start = folderWhenTheDragCame,
+           start !== (state.selectedItem ?? state.root) {
+            Task { try? await state.openAsync(item: start) }
+        }
+        folderWhenTheDragCame = nil
+    }
+
+    // MARK: - Spring-loading in the table
+
+    /// In the table, where rows have no triangles, a row the drag rests on
+    /// springs open after the system's spring-loading delay, as a folder in
+    /// Finder does: a folder, an archive inside that is unpacked already (the
+    /// drag's quiet unpacking did that), or the `..` row, which goes up. The
+    /// tree opens rows in place, by NSOutlineView's own hover expand.
+    ///
+    /// AppKit's own spring-loading (NSSpringLoadingDestination) doesn't do it:
+    /// it arms on pointer movement, and NSOutlineView resets it as its drop row
+    /// moves, so a pointer resting on a row never springs it. AppKit sends
+    /// drag updates all the while the pointer rests; the wait runs on them.
+    func dragUpdated(_ info: NSDraggingInfo, now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
+        let row = springTarget(info)
+        guard springWait.update(on: row, at: info.draggingLocation, now: now), let row, let state else { return }
+        PreviewLog.general.debug("Sprang open", context: ["up": row === parentRow ? "yes" : "no"])
+        Task {
+            if row === parentRow { state.openParent() } else { try? await state.openAsync(item: row) }
+            showFolderUnderDrag()
+        }
+    }
+
+    /// The table shows the folder the drag went into, at once. Its rows are
+    /// swapped, not reloaded: a reload under a drag loses the drop.
+    private func showFolderUnderDrag() {
+        reloadsWhenTheDragEnds = false
+        // NSOutlineView refuses the drop after its rows change under a drag,
+        // without asking again until the pointer moves. Till then the drop
+        // goes to the folder now shown, the list's own doing.
+        dropTargetItem = state?.selectedItem ?? state?.root
+        dropsInShownFolder = true
+        hint(.addInto([]))
+        let shown = topRows.count
+        childrenCache.removeAll()
+        topRows = currentTopRows()
+        outlineView.beginUpdates()
+        outlineView.removeItems(at: IndexSet(integersIn: 0..<shown), inParent: nil, withAnimation: [])
+        outlineView.insertItems(at: IndexSet(integersIn: 0..<topRows.count), inParent: nil, withAnimation: [])
+        outlineView.endUpdates()
+        applySelection()
+    }
+
+    /// What the list answers for a drag NSOutlineView refuses after a spring.
+    var operationAfterSpring: NSDragOperation? {
+        guard dropsInShownFolder, let state, let target = dropTargetItem, state.canChange(target) else { return nil }
+        return .copy
+    }
+
+    /// The drop NSOutlineView refused after a spring, taken by the list.
+    func dropAfterSpring(_ info: NSDraggingInfo) -> Bool {
+        guard dropsInShownFolder else { return false }
+        return outlineView(outlineView, acceptDrop: info, item: nil, childIndex: NSOutlineViewDropOnItemIndex)
+    }
+
+    private func springTarget(_ info: NSDraggingInfo) -> ArchiveItem? {
+        guard layout == .table, features.contains(.navigation), features.contains(.dropTargets),
+              let state, !state.isSearching else { return nil }
+        let at = outlineView.row(at: outlineView.convert(info.draggingLocation, from: nil))
+        guard at >= 0, let row = outlineView.item(atRow: at) as? ArchiveItem else { return nil }
+        if row === parentRow { return state.canGoUp ? row : nil }
+        guard row.isFolder || (row.archiveTypeId != nil && row.children != nil) else { return nil }
+        return state.canChange(row) ? row : nil
     }
 
     /// Redraws the rows' text: faded while a drag can't drop on them.
@@ -968,6 +1053,22 @@ public final class ArchiveOutlineView: NSOutlineView, NSMenuItemValidation {
         return operation
     }
 
+    /// Sent all the while a drag is over the list, at rest too.
+    public override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        let operation = super.draggingUpdated(sender)
+        controller?.dragUpdated(sender)
+        if operation.isEmpty, let afterSpring = controller?.operationAfterSpring { return afterSpring }
+        return operation
+    }
+
+    public override func prepareForDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        super.prepareForDragOperation(sender) || controller?.dropsInShownFolder == true
+    }
+
+    public override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        super.performDragOperation(sender) || controller?.dropAfterSpring(sender) == true
+    }
+
     public override func draggingExited(_ sender: NSDraggingInfo?) {
         super.draggingExited(sender)
         controller?.dragLeft(ended: false)
@@ -1088,4 +1189,47 @@ final class ArchiveDragOut: NSObject, NSFilePromiseProviderDelegate, @unchecked 
 /// every column.
 final class DetailCellView: NSTableCellView {
     override var draggingImageComponents: [NSDraggingImageComponent] { [] }
+}
+
+/// A drag resting on one target for the system's spring-loading delay
+/// (Accessibility ▸ Pointer Control ▸ Spring-loading), as Finder's folders
+/// spring open. Fed every drag update, it says when to spring.
+public struct SpringWait {
+    private var target: ObjectIdentifier?
+    private var since: TimeInterval = 0
+    private var location: NSPoint?
+    private var armed = true
+
+    public init() {}
+
+    /// True once the drag has rested on `target` for the delay. Then nothing
+    /// springs until the pointer moves: what comes under a resting pointer,
+    /// the folder sprung into or the one gone up to, doesn't spring by itself.
+    public mutating func update(on target: AnyObject?, at location: NSPoint,
+                                now: TimeInterval = ProcessInfo.processInfo.systemUptime) -> Bool {
+        if location != self.location {
+            self.location = location
+            if !armed {
+                armed = true
+                since = now
+            }
+        }
+        let id = target.map(ObjectIdentifier.init)
+        guard id == self.target else {
+            self.target = id
+            since = now
+            return false
+        }
+        guard armed, id != nil, Self.isEnabled, now - since >= Self.delay else { return false }
+        armed = false
+        return true
+    }
+
+    private static var isEnabled: Bool {
+        UserDefaults.standard.object(forKey: "com.apple.springing.enabled") as? Bool ?? true
+    }
+
+    private static var delay: TimeInterval {
+        UserDefaults.standard.object(forKey: "com.apple.springing.delay") as? Double ?? 0.5
+    }
 }
