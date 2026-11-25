@@ -22,20 +22,21 @@ public enum ExtractToFolder {
         catalog: ArchiveTypeCatalog,
         progressCenter: ExtractionProgressCenter = .shared
     ) -> URL? {
-        let name = SmartExtraction.freeName(
-            ArchiveTypeDetector(catalog: catalog).getNameWithoutExtension(for: archive),
-            in: target, isDirectory: true)
-        let folder = target.appending(component: name)
+        let name = ArchiveTypeDetector(catalog: catalog).getNameWithoutExtension(for: archive)
         do {
             // through the target's stored grant, which may be from an earlier
-            // launch
-            try Sandbox.accessSync(url: folder) {
+            // launch; the free name is looked for in there too: outside it,
+            // what is already there may not be seen, and the extraction would
+            // go into the folder of that name
+            return try Sandbox.accessSync(url: target) {
+                let folder = target.appending(component: SmartExtraction.freeName(name, in: target, isDirectory: true))
                 try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                return folder
             }
-            return folder
         } catch {
             let job = progressCenter.begin(
-                archiveName: archive.lastPathComponent, destination: folder, itemCount: 0, totalBytes: nil)
+                archiveName: archive.lastPathComponent, destination: target.appending(component: name),
+                itemCount: 0, totalBytes: nil)
             progressCenter.finish(job, .failed(error.localizedDescription))
             return nil
         }
