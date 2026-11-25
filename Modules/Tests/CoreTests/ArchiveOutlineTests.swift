@@ -88,6 +88,103 @@ extension AllCoreTests {
             #expect(!window.outlineView.isItemExpanded(reread), "a save opened what was left shut")
         }
 
+        /// #251 A2. A second archive opened in the window starts with its
+        /// folders shut, though one of the first, of the same name, was open.
+        @Test func aSecondArchiveForgetsTheFoldersOpenInTheFirst() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            list.outlineView.expandItem(docs)
+            let second = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: second) }
+            let other = try await openArchive(in: second)
+            let url = try #require(other.url)
+
+            state.open(url: url)
+            try await state.openTask?.value
+
+            #expect(try await eventually { (state.childItems ?? []).contains { $0.name == "docs" } && list.outlineView.numberOfRows > 0 })
+            let docsAgain = try #require(state.childItems?.first { $0.name == "docs" })
+            #expect(docsAgain !== docs)
+            #expect(!list.outlineView.isItemExpanded(docsAgain), "a folder of the first archive opened in the second")
+        }
+
+        /// #251 B16. Shown, hidden files are listed greyed, in opened folders
+        /// too; and folders open stay open when the setting changes.
+        @Test func hiddenFilesAreGreyedAndOpenFoldersStayOpen() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            for path in ["docs/readme.txt", "docs/.secret", ".config", "top.txt"] {
+                let url = source.appendingPathComponent(path)
+                try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try Data(path.utf8).write(to: url)
+            }
+            let archive = dir.appendingPathComponent("hidden.zip")
+            try run("/usr/bin/zip", ["-r", archive.path, "."], cwd: source)
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let defaults = UserDefaults(suiteName: "ArchiveOutlineTests-\(UUID().uuidString)")!
+            state.defaults = defaults
+            state.listDefaults = defaults
+            state.showsHiddenFiles = false
+            state.open(url: archive)
+            try await state.openTask?.value
+            let list = makeList(.window, .tree, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            list.outlineView.expandItem(docs)
+            #expect(!names(list).contains(".secret"))
+
+            state.showsHiddenFiles = true
+            #expect(try await eventually { names(list).contains(".secret") && names(list).contains(".config") }, "\(names(list))")
+
+            #expect(list.outlineView.isItemExpanded(docs), "the folder closed when the setting changed")
+            let column = try #require(list.outlineView.tableColumn(withIdentifier: ArchiveViewerColumn.name.identifier))
+            let secret = try #require(state.displayedChildren(of: docs).first { $0.name == ".secret" })
+            let readme = try #require(state.displayedChildren(of: docs).first { $0.name == "readme.txt" })
+            #expect(list.outlineView(list.outlineView, viewFor: column, item: secret)?.alphaValue == 0.5, "not greyed")
+            #expect(list.outlineView(list.outlineView, viewFor: column, item: readme)?.alphaValue == 1)
+        }
+
+        /// #251 D1. Search results are a flat list: no row of it has a
+        /// triangle, in the tree or in the table.
+        @Test func searchResultsHaveNoTriangles() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            for layout in [ArchiveOutlineLayout.tree, .table] {
+                let list = makeList(.window, layout, for: state)
+                state.search("s")
+                #expect(try await eventually { names(list).contains("docs") && names(list).contains("sub") }, "\(names(list))")
+                let docs = try #require(state.entries.values.first { $0.name == "docs" })
+                let sub = try #require(state.entries.values.first { $0.name == "sub" })
+                #expect(!list.outlineView(list.outlineView, isItemExpandable: docs), "\(layout): docs has a triangle")
+                #expect(!list.outlineView(list.outlineView, isItemExpandable: sub), "\(layout): sub has a triangle")
+                state.search("")
+            }
+        }
+
+        /// #251 B9. A click on a header sorts every level by that column and
+        /// is kept where the window and Quick Look read it.
+        @Test func aHeaderClickSortsAndIsKept() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            #expect(names(list) == ["docs", "top.txt", "zeta.txt"])
+
+            list.outlineView.sortDescriptors = [NSSortDescriptor(key: ArchiveSortOrder.name.rawValue, ascending: false)]
+
+            #expect(Keys.sortOrder(in: state.listDefaults).column == .name)
+            #expect(Keys.sortOrder(in: state.listDefaults).ascending == false, "the choice was not kept")
+            // folders first, as before; then the files by name, backwards
+            #expect(try await eventually { names(list) == ["docs", "zeta.txt", "top.txt"] }, "not sorted: \(names(list))")
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            list.outlineView.expandItem(docs)
+            #expect(state.displayedChildren(of: docs).map(\.name) == ["sub", "b.txt", "a.txt"], "the level below kept another order")
+        }
+
         /// #251 A1. With more than one row at the top, nothing opens by itself.
         @Test func severalRowsAtTheTopStayShut() async throws {
             let dir = try makeTempDir()

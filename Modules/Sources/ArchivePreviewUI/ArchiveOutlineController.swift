@@ -81,6 +81,7 @@ public final class ArchiveOutlineController: NSViewController {
         didSet {
             guard state !== oldValue else { return }
             observeState()
+            showSortOrder()
             reload()
         }
     }
@@ -238,8 +239,16 @@ public final class ArchiveOutlineController: NSViewController {
         outlineView.outlineTableColumn = outlineView.tableColumn(withIdentifier: ArchiveViewerColumn.name.identifier)
         applyTitles()
         applyColumnVisibility()
-        let sortOrder = Keys.sortOrder()
-        outlineView.sortDescriptors = [NSSortDescriptor(key: sortOrder.column.rawValue, ascending: sortOrder.ascending)]
+        showSortOrder()
+    }
+
+    /// The header shows the order the rows are sorted by: the one in the
+    /// settings the state sorts by, the app group's, or a test's own.
+    private func showSortOrder() {
+        let order = Keys.sortOrder(in: state?.listDefaults ?? .macPackerShared)
+        let shown = outlineView.sortDescriptors.first
+        guard shown?.key != order.column.rawValue || shown?.ascending != order.ascending else { return }
+        outlineView.sortDescriptors = [NSSortDescriptor(key: order.column.rawValue, ascending: order.ascending)]
     }
 
     private func applyTitles() {
@@ -763,10 +772,12 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
     public func outlineView(_ outlineView: NSOutlineView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
         guard let descriptor = outlineView.sortDescriptors.first,
               let key = descriptor.key, let column = ArchiveSortOrder(rawValue: key) else { return }
-        let current = Keys.sortOrder()
+        // where the list reads its order: the app group's, or a test's own
+        let defaults = state?.listDefaults ?? .macPackerShared
+        let current = Keys.sortOrder(in: defaults)
         if current.column != column || current.ascending != descriptor.ascending {
-            UserDefaults.macPackerShared.set(key, forKey: Keys.defaultOrderColumn)
-            UserDefaults.macPackerShared.set(descriptor.ascending, forKey: Keys.defaultOrderColumnAscending)
+            defaults.set(key, forKey: Keys.defaultOrderColumn)
+            defaults.set(descriptor.ascending, forKey: Keys.defaultOrderColumnAscending)
         }
         if features.contains(.navigation) { state?.loadChildren() }
         reload()

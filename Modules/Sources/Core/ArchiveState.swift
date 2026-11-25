@@ -208,7 +208,7 @@ public class ArchiveState: ObservableObject {
     var defaults: UserDefaults = .standard
     /// Where the sort order is read: the app group, so the window and Quick
     /// Look list in the same order (#251 B9, H6). Tests inject their own.
-    var listDefaults: UserDefaults = .macPackerShared
+    public var listDefaults: UserDefaults = .macPackerShared
     /// Passwords the user gave, by the file they were given for. One window can
     /// hold more than one archive: an archive inside the archive opens in the
     /// same tree, extracted to a temp file, and each can have its own password.
