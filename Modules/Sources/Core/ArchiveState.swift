@@ -426,6 +426,11 @@ extension ArchiveState {
         return defaults.bool(forKey: Keys.showParentRow)
     }
 
+    /// The list's rows as they stand: what a table loads when it reloads.
+    public var listRows: ArchiveListRows {
+        ArchiveListRows(items: selectedItem == nil ? [] : childItems ?? [], hasParentRow: showsParentRow)
+    }
+
     /// Updates the live search. Every change re-filters the entries; clearing
     /// the text returns the table to the folder that was being browsed.
     public func search(_ text: String) {
@@ -2030,34 +2035,15 @@ extension ArchiveState {
     public func changeSelection(selection: IndexSet) {
         log.debug("Selection changed: tableViewSelectionDidChange(_:)")
         
-        guard selectedItem != nil else { return }
-        let hasParent = showsParentRow
+        guard selectedItem != nil, childItems != nil else { return }
 
-        // Adjust selection to account for parent row when present
-        var adjustedSelection: IndexSet? = selection
-        if hasParent {
-            // Shift each selected index down by 1 to skip the parent row (at index 0)
-            let shifted = selection.compactMap { idx -> Int? in
-                let v = idx - 1
-                return v >= 0 ? v : nil
-            }
-            adjustedSelection = IndexSet(shifted)
-        }
-        
-        if let indexes = adjustedSelection,
-           let children = childItems {
-            
-            selectedItems.removeAll()
-            for index in indexes {
-                let archiveItem = children[index]
-                selectedItems.append(archiveItem)
-            }
-            
-            // in case quick look is open right now, then change the
-            // previewed item
-            if previewItemUrl != nil {
-                updateSelectedItemForQuickLook()
-            }
+        // the ".." row selects nothing, nor does a row the list no longer has
+        selectedItems = selection.compactMap(listRows.item(at:))
+
+        // in case quick look is open right now, then change the
+        // previewed item
+        if previewItemUrl != nil {
+            updateSelectedItemForQuickLook()
         }
     }
     
@@ -2077,6 +2063,30 @@ extension ArchiveState {
         }
         
         return adjustedSelection
+    }
+}
+
+/// The rows of the archive list: the ".." row when it shows one, then the
+/// entries. A table answers from the rows it loaded until it loads new ones:
+/// the state's list changes at once, at every keystroke of a search, and a
+/// layout before the table's reload still asks for every row it had (#427).
+public struct ArchiveListRows {
+    public let items: [ArchiveItem]
+    public let hasParentRow: Bool
+
+    public init(items: [ArchiveItem], hasParentRow: Bool) {
+        self.items = items
+        self.hasParentRow = hasParentRow
+    }
+
+    public var count: Int { items.count + (hasParentRow ? 1 : 0) }
+
+    public func isParentRow(_ row: Int) -> Bool { hasParentRow && row == 0 }
+
+    /// The entry in `row`; nil for the ".." row and for a row past the end.
+    public func item(at row: Int) -> ArchiveItem? {
+        let index = hasParentRow ? row - 1 : row
+        return items.indices.contains(index) ? items[index] : nil
     }
 }
 

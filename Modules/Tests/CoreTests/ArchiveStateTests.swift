@@ -1173,4 +1173,47 @@ extension AllCoreTests {
             #expect(state.childItems!.map { $0.virtualPath ?? $0.name } == paths)
         }
     }
+
+    // MARK: - Rows a table loaded (#427)
+
+    /// A table learns of a new list only at its reload after the change. Each
+    /// keystroke of a search changes the list at once, and a layout in between
+    /// still asks for every row the table had. In `defaultArchive.zip`, "e"
+    /// finds four entries and "hello" one.
+    @MainActor struct ArchiveStateLoadedRowsTests {
+
+        private func archiveSearchedForE() async throws -> ArchiveState {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            state.open(url: folderURL.appendingPathComponent("defaultArchive.zip"))
+            try await state.openTask?.value
+            state.search("e")
+            #expect(state.childItems?.count == 4)
+            return state
+        }
+
+        /// The table can report a selection before that reload, on a row the
+        /// narrowed list no longer has: it selects nothing.
+        @Test func aSelectionPastTheEndOfANarrowedSearchSelectsNothing() async throws {
+            let state = try await archiveSearchedForE()
+            state.search("hello")
+
+            state.changeSelection(selection: IndexSet(integer: 3))
+
+            #expect(state.selectedItems.isEmpty)
+        }
+
+        /// The rows a table loaded still have an entry for each of their rows
+        /// once the search narrows; the state's own rows end where its list does.
+        @Test func loadedRowsOutlastANarrowedSearch() async throws {
+            let state = try await archiveSearchedForE()
+            let loaded = state.listRows
+            state.search("hello")
+
+            #expect(loaded.count == 4)
+            #expect((0..<loaded.count).allSatisfy { loaded.item(at: $0) != nil })
+            #expect(state.listRows.count == 1)
+            #expect(state.listRows.item(at: 3) == nil)
+        }
+    }
 }

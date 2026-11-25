@@ -73,6 +73,36 @@
                 "cs": "Po ⌘↑ není nic vybráno"
             },
             "issues": ["426"]
+          },
+          {
+            "type": "fix",
+            "highlight": true,
+            "title": {
+                "en": "Typing a search might crash the app on macOS 15",
+                "zh-Hans": "在 macOS 15 上输入搜索内容时应用程序可能崩溃",
+                "fr": "Saisir une recherche peut faire planter l’application sous macOS 15",
+                "de": "Tippen in der Suche kann die App unter macOS 15 abstürzen lassen",
+                "it": "Digitare una ricerca può mandare in crash l’applicazione su macOS 15",
+                "ja": "macOS 15 で検索語を入力するとアプリがクラッシュすることがある",
+                "fa": "تایپ در جستجو ممکن است در macOS 15 باعث از کار افتادن برنامه شود",
+                "pl": "Wpisywanie wyszukiwania może spowodować awarię aplikacji w macOS 15",
+                "pt-BR": "Digitar uma busca pode fazer o aplicativo falhar no macOS 15",
+                "ru": "Ввод поискового запроса может вызвать сбой приложения в macOS 15",
+                "uk": "Введення пошукового запиту може спричинити збій застосунку в macOS 15",
+                "es-MX": "Escribir una búsqueda puede hacer que la aplicación falle en macOS 15",
+                "ko": "macOS 15에서 검색어를 입력하면 앱이 충돌할 수 있음",
+                "nl": "Een zoekopdracht typen kan de app op macOS 15 laten crashen",
+                "tr": "macOS 15’te arama yazmak uygulamayı çökertebilir",
+                "vi": "Nhập từ khóa tìm kiếm có thể làm ứng dụng gặp sự cố trên macOS 15",
+                "ar": "كتابة نص البحث قد تؤدي إلى تعطّل التطبيق على macOS 15",
+                "ca": "Escriure una cerca pot fer fallar l’app al macOS 15",
+                "el": "Η πληκτρολόγηση αναζήτησης μπορεί να ρίξει την εφαρμογή στο macOS 15",
+                "nb": "Skriving i søket kan krasje appen på macOS 15",
+                "zh-TW": "在 macOS 15 上輸入搜尋內容時 App 可能當機",
+                "hi": "macOS 15 पर खोज टाइप करते समय ऐप क्रैश हो सकता है",
+                "cs": "Při psaní hledaného výrazu může aplikace na macOS 15 spadnout"
+            },
+            "issues": ["427"]
           }
         ]
       },
