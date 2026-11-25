@@ -61,19 +61,20 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         init(_ parent: ArchiveTableViewRepresentable) {
             self.parent = parent
         }
-        
-        func numberOfRows(in tableView: NSTableView) -> Int {
-            guard let selectedItem = parent.archiveState.selectedItem else { return 0 }
-            guard let children = parent.archiveState.childItems else { return 0 }
 
-            var childrenCount = children.count
-            if selectedItem.parent != nil && parent.archiveState.showsParentRow {
-                // we're adding +1 in order to show ".." at the top,
-                // but only if there is a parent to go to
-                childrenCount += 1
-            }
-            
-            return childrenCount
+        /// The rows the table was loaded with, and all it is answered from: the
+        /// state's list changes at once, the table learns of it only at the
+        /// reload after (#427).
+        private var rows = ArchiveListRows(items: [], hasParentRow: false)
+
+        /// Loads the state's rows into the table, both in one step.
+        func reload(_ tableView: NSTableView) {
+            rows = parent.archiveState.listRows
+            tableView.reloadData()
+        }
+
+        func numberOfRows(in tableView: NSTableView) -> Int {
+            rows.count
         }
         
         /// As soon as any of the columns returns true in this func, then a right click
@@ -126,18 +127,12 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             row: Int
         ) -> NSView? {
             guard let columnIdentifier = tableColumn?.identifier else { return nil }
-            guard parent.archiveState.selectedItem != nil else { return nil }
-            guard let childItems = parent.archiveState.childItems else { return nil }
+            let isParent = rows.isParentRow(row)
+            guard let item = isParent
+                ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root)
+                : rows.item(at: row)
+            else { return nil }
 
-            // The root of an archive does not allow to go up.
-            // All other levels allow to go up with the first item
-            // in the list which is "..". Search results never show it.
-            let hasParent = parent.archiveState.showsParentRow
-            let isParent = hasParent && row == 0
-            let item = hasParent
-            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
-            : childItems[row]
-            
             let cellView = NSTableCellView()
             cellView.identifier = columnIdentifier
             cellView.backgroundStyle = .raised
@@ -289,19 +284,10 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             pasteboardWriterForRow row: Int
         ) -> NSPasteboardWriting? {
             log.debug("Starting to drag item in row \(row)")
-            
-            guard parent.archiveState.selectedItem != nil else { return nil }
-            guard let childItems = parent.archiveState.childItems else { return nil }
 
-            let hasParent = parent.archiveState.showsParentRow
-            let isParent = hasParent && row == 0
-            let item = hasParent
-            ? (isParent ? ArchiveItem(name: "<root>", virtualPath: "/", type: .root) : childItems[row - 1])
-            : childItems[row]
-            
-            // ignore the parent item
-            if item.type == .unknown { return nil }
-            
+            // the ".." row is not dragged, nor is an entry of unknown type
+            guard let item = rows.item(at: row), item.type != .unknown else { return nil }
+
             // use that item to define the uttype and create the promise provider
             let typeId = (item.ext.isEmpty
                  ? UTType.data                  // or UTType.item
@@ -323,27 +309,12 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         /// - Parameter sender: <#sender description#>
         @objc func doubleClicked(_ sender: AnyObject) {
             guard let tableView = sender as? NSTableView else { return }
-            
+
             let clickedRow = tableView.clickedRow
-            if clickedRow >= 0 {
-                // The root of an archive does not allow to go up.
-                // All other levels allow to go up with the first item
-                // in the list which is "..". Search results never show it.
-                guard parent.archiveState.selectedItem != nil else { return }
-                let hasParent = parent.archiveState.showsParentRow
-                let isParent = hasParent && clickedRow == 0
-                
-                if hasParent {
-                    if isParent {
-                        parent.archiveState.openParent()
-                    } else {
-                        let item = parent.archiveState.childItems![clickedRow - 1]
-                        parent.archiveState.open(item: item)
-                    }
-                } else {
-                    let item = parent.archiveState.childItems![clickedRow]
-                    parent.archiveState.open(item: item)
-                }
+            if rows.isParentRow(clickedRow) {
+                parent.archiveState.openParent()
+            } else if let item = rows.item(at: clickedRow) {
+                parent.archiveState.open(item: item)
             }
         }
         
@@ -566,6 +537,9 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
             coordinator.contextDelete(nil)
         }
 
+        // what the state lists already; what changes later comes with isReloadNeeded
+        context.coordinator.reload(tableView)
+
         return scrollView
     }
     
@@ -598,9 +572,10 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         
         if isReloadNeeded {
             let tableView = (nsView.documentView as! NSTableView)
+            let coordinator = context.coordinator
             DispatchQueue.main.async {
-                tableView.reloadData()
-                
+                coordinator.reload(tableView)
+
                 if let children = archiveState.childItems {
                     let indexes = children.enumerated()
                         .filter { filterItem in archiveState.selectedItems.contains(where: { item in filterItem.element.id == item.id })}
