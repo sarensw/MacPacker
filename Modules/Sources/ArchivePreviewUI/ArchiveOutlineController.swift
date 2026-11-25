@@ -135,6 +135,8 @@ public final class ArchiveOutlineController: NSViewController {
     private(set) var quietLoads: Set<UUID> = []
     /// A reload was asked for while a file was over the list.
     private var reloadsWhenTheDragEnds = false
+    /// The archive whose top level was looked at for a single folder to open.
+    private var openedSingleFolderOf: ObjectIdentifier?
     /// An archive inside being unpacked for the drag hovering over it, which
     /// stops once the drag moves on.
     private var hoverLoad: (item: ArchiveItem, cancel: ExtractionCancelFlag)?
@@ -278,6 +280,7 @@ public final class ArchiveOutlineController: NSViewController {
         // A save reads the archive anew: every entry is a new object, and the
         // folders open when the save began are found again by name (#251 G7).
         var openBeforeReread: [[String]] = []
+        let reread = state.map { $0.rereadsAfterSave != seenRereads } ?? false
         if let state, state.rereadsAfterSave != seenRereads {
             seenRereads = state.rereadsAfterSave
             openBeforeReread = openAtSave
@@ -291,6 +294,16 @@ public final class ArchiveOutlineController: NSViewController {
             for item in open { outlineView.expandItem(item) }
         }
         for names in openBeforeReread { expandRow(at: names) }
+        // An archive holding a single folder at its top opens it in the tree,
+        // one click less to what it holds (#251 A1). Once per archive opened:
+        // not on a save's rereading, which keeps what was left open or shut.
+        if let state, let root = state.root, !topRows.isEmpty, openedSingleFolderOf != ObjectIdentifier(root) {
+            openedSingleFolderOf = ObjectIdentifier(root)
+            if !reread, layout == .tree, !searching, state.selectedItem == nil || state.selectedItem === root,
+               topRows.count == 1, let only = topRows.first, only.isFolder {
+                outlineView.expandItem(only)
+            }
+        }
         applySelection()
     }
 

@@ -54,6 +54,51 @@ extension AllCoreTests {
             try await state.openAsync(item: folder)
         }
 
+        /// #251 A1. An archive holding a single folder at its top opens it in
+        /// the tree, in the window and in Quick Look; not in the table, and not
+        /// again after a save, which keeps it as it was left.
+        @Test func aSingleFolderAtTheTopOpensByItself() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            for path in ["project/readme.txt", "project/src/main.c"] {
+                let url = source.appendingPathComponent(path)
+                try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try Data(path.utf8).write(to: url)
+            }
+            let archive = dir.appendingPathComponent("project.zip")
+            try run("/usr/bin/zip", ["-r", archive.path, "project"], cwd: source)
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let defaults = UserDefaults(suiteName: "ArchiveOutlineTests-\(UUID().uuidString)")!
+            state.defaults = defaults
+            state.listDefaults = defaults
+            state.open(url: archive)
+            try await state.openTask?.value
+            let project = try #require(state.childItems?.first { $0.name == "project" })
+
+            let window = makeList(.window, .tree, for: state)
+            #expect(window.outlineView.isItemExpanded(project), "the single folder stayed shut")
+            #expect(makeList(.preview, .tree, for: state).outlineView.isItemExpanded(project), "not in Quick Look")
+            #expect(!makeList(.window, .table, for: state).outlineView.isItemExpanded(project))
+
+            window.outlineView.collapseItem(project)
+            try await addAndSave(state, in: dir)
+            #expect(try await eventually { window.outlineView.numberOfRows == 2 }, "rows: \(names(window))")
+            let reread = try #require(state.childItems?.first { $0.name == "project" })
+            #expect(!window.outlineView.isItemExpanded(reread), "a save opened what was left shut")
+        }
+
+        /// #251 A1. With more than one row at the top, nothing opens by itself.
+        @Test func severalRowsAtTheTopStayShut() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .tree, for: state)
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+
+            #expect(!list.outlineView.isItemExpanded(docs))
+        }
+
         /// #251 B18, B4. The window's Table layout lists one folder, without
         /// triangles or indent, and the `..` row heads it when it is switched
         /// on and there is a folder above.
