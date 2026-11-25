@@ -902,6 +902,37 @@ extension AllCoreTests {
             #expect(try String(contentsOf: out.appendingPathComponent("folder/two.txt"), encoding: .utf8) == "two")
         }
 
+        /// #251 G8. A zip written without folder entries (`zip -D`, as several
+        /// download sites serve them) still lists its folders. A file added
+        /// inside one is saved in that folder, not at the top level.
+        @Test func addingInsideAFolderWithoutAnEntrySavesItThere() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            try FileManager.default.createDirectory(
+                at: source.appendingPathComponent("folder"), withIntermediateDirectories: true)
+            try "one".write(to: source.appendingPathComponent("folder/one.txt"), atomically: true, encoding: .utf8)
+            let archive = dir.appendingPathComponent("noFolderEntries.zip")
+            try run("/usr/bin/zip", ["-D", "-r", archive.path, "folder"], cwd: source)
+            #expect(try systemEntries(archive) == ["folder/one.txt"])
+            let added = dir.appendingPathComponent("added.txt")
+            try "added".write(to: added, atomically: true, encoding: .utf8)
+
+            let state = makeState()
+            state.open(url: archive)
+            try await state.openTask?.value
+            let folder = try #require(state.childItems?.first { $0.name == "folder" })
+            try await state.openAsync(item: folder)
+
+            #expect(await state.add(url: added).value)
+            let saveTask = try #require(state.save())
+            await saveTask.value
+            #expect(state.error == nil)
+
+            #expect(try systemEntries(archive).sorted() == ["folder/added.txt", "folder/one.txt"])
+            try systemTest(archive)
+        }
+
         // MARK: - 7z archives made elsewhere
 
         /// `appbundle.7z` packs an executable and a symbolic link into one solid
