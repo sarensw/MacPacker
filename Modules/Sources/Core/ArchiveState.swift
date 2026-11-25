@@ -82,6 +82,8 @@ public class ArchiveState: ObservableObject {
     private var passwordWasWanted = false
     /// The last open in place, which the next one waits for.
     private var openingInPlace: Task<Void, Never>?
+    /// What stops the open in place under way, from the status bar's Cancel.
+    private var inPlaceCancel: ExtractionCancelFlag?
 
     /// Number of real items in the archive (files + directories across all
     /// levels), excluding the synthetic `<root>` node that `entries` also holds.
@@ -418,6 +420,15 @@ extension ArchiveState {
             addCancel.cancel()
             return
         }
+        // An archive inside being unpacked in place: stop that, and nothing
+        // more. The reset below emptied the whole window (#251 G6).
+        if let inPlaceCancel {
+            inPlaceCancel.cancel()
+            return
+        }
+        // A save can't be stopped halfway, and the archive is open: the reset
+        // below emptied the window while the save went on (#251 G6).
+        if isSaving { return }
 
         openTask?.cancel()
 
@@ -1648,6 +1659,9 @@ extension ArchiveState {
 
     private func openInPlaceNow(item: ArchiveItem, askingForPassword: Bool, cancel: ExtractionCancelFlag?) async throws {
         guard item.type == .file, item.children == nil else { return }
+        // what the status bar's Cancel stops, there before its button shows
+        let stop = cancel ?? ExtractionCancelFlag()
+        inPlaceCancel = stop
         updateStatus(.processing)
         isBusy = true
         error = nil
@@ -1656,12 +1670,13 @@ extension ArchiveState {
         asksForPasswords = askingForPassword
         passwordWasWanted = false
         defer {
+            inPlaceCancel = nil
             asksForPasswords = asking
             isBusy = false
             updateStatusText(nil)
             updateStatus(.done)
         }
-        try await openFile(item, navigating: false, cancel: cancel)
+        try await openFile(item, navigating: false, cancel: stop)
         if item.children == nil, passwordWasWanted {
             lockedNested.insert(item.id)
         } else {

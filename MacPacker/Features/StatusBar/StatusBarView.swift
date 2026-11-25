@@ -91,8 +91,11 @@ struct StatusBarView: View {
                         Text(verbatim: dropHint)
                         Spacer()
                     } else if archiveState.isBusy {
-                        CancelEngineActionButtonView() {
-                            archiveState.cancelCurrentOperation()
+                        // a save can't be stopped halfway (#251 G6)
+                        if !archiveState.isSaving {
+                            CancelEngineActionButtonView() {
+                                archiveState.cancelCurrentOperation()
+                            }
                         }
                         
                         ProgressView()
