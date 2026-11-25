@@ -15,8 +15,9 @@ private let log = tb.Logger(subsystem: "app.MacPacker", category: "extraction")
 
 /// Owns the progress window. It observes the shared
 /// `ExtractionProgressCenter` and
-/// - shows itself as soon as a job is running (also for window-less flows
-///   like the Finder extension's "Extract here" and "Compress to …"),
+/// - shows itself as soon as a job is running that no open archive window
+///   shows itself — the Finder extension's "Extract here" and "Compress to …",
+///   or a window's extraction once that window has closed,
 /// - closes itself shortly after all jobs finished successfully,
 /// - stays open when a job failed so the error remains visible, and after a
 ///   test, whose verdict is what it was run for.
@@ -71,10 +72,13 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
                 self?.applyContentSize(size)
             }
 
-        jobsSubscription = center.$jobs
+        // What it shows changes as jobs come and go, and as the archive
+        // windows that show their own open and close.
+        jobsSubscription = center.$jobs.combineLatest(center.$openWindows)
             .receive(on: RunLoop.main)
-            .sink { [weak self] jobs in
-                self?.jobsChanged(jobs)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.jobsChanged(self.center.windowlessJobs)
             }
     }
 
@@ -105,9 +109,9 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
 
 
         if hasActive {
-            // Named after what is running. The title bar shows no text; VoiceOver
-            // and Mission Control read it.
-            let title = switch center.runningKind {
+            // Named after what is running, of what it shows. The title bar shows
+            // no text; VoiceOver and Mission Control read it.
+            let title = switch ExtractionProgressCenter.runningKind(of: jobs) {
             case .compression: String(localized: .commonCompressing)
             case .test: String(localized: .commonTesting)
             case .extraction, nil: String(localized: .commonExtracting)
@@ -162,7 +166,7 @@ final class ExtractionProgressWindowController: NSWindowController, NSWindowDele
         let work = DispatchWorkItem { [weak self] in
             guard let self else { return }
             self.scheduledShow = nil
-            guard self.center.hasActiveJobs else { return }
+            guard self.center.windowlessJobs.contains(where: { !$0.isFinished }) else { return }
             self.presentWindow(reason: "active jobs")
         }
         scheduledShow = work
