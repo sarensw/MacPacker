@@ -36,8 +36,14 @@ class ArchiveWindowController: NSWindowController, NSWindowDelegate {
                 self.openArchiveInNewWindow(url)
             }
         }
-        card.onLeave = { [weak self] phase in self?.fileDrag(phase) }
-        card.goUp = { [weak self] in self?.archiveState.openParent() }
+        card.onLeave = { [weak self] phase in
+            // No drop into this archive: the window goes back where the drag
+            // found it, from where Back took it, whether the drag crossed the
+            // list or not. One dropped into the list stays (#251 G2).
+            if phase == .ended { self?.archiveState.endDrag(dropped: false) }
+            self?.fileDrag(phase)
+        }
+        card.goUp = { [weak self] in self?.archiveState.spring(into: nil) }
         return card
     }()
     

@@ -30,31 +30,65 @@ extension AllCoreTests {
         }
 
         /// #251 G6. Cancel while a save runs leaves the window as it is, and
-        /// the save goes through: there is nothing to cancel in it.
+        /// the save goes through: there is nothing to cancel in it. It emptied
+        /// the window until the save, still writing, read the archive anew.
         @Test func cancelDuringASaveLeavesTheWindowAlone() async throws {
             let dir = try makeTempDir()
             defer { try? FileManager.default.removeItem(at: dir) }
             let (state, outer) = try await openZip(in: dir)
-            // big and random enough that the save is still writing when the
-            // cancel has done its work
-            let added = dir.appendingPathComponent("added.bin")
-            var bytes = [UInt8](repeating: 0, count: 20_000_000)
-            for i in stride(from: 0, to: bytes.count, by: 8) { bytes[i] = UInt8.random(in: 0...255) }
-            try Data(bytes).write(to: added)
+            let added = dir.appendingPathComponent("added.txt")
+            try Data("added".utf8).write(to: added)
             #expect(await state.add(url: added).value)
+            // each time the window is emptied: once is the save's own reading anew
+            var emptied = 0
+            let watch = state.$root.map { $0 == nil }.sink { empty in
+                MainActor.assumeIsolated { if empty { emptied += 1 } }
+            }
 
             let saving = try #require(state.save())
-            try await Task.sleep(for: .milliseconds(50))
+            // under way from the moment save() returns, however fast it writes
+            #expect(state.isSaving)
             state.cancelCurrentOperation()
-            try await Task.sleep(for: .milliseconds(500))
-            #expect(state.isSaving, "the save was over too soon to tell")
-            #expect(state.root != nil, "the window was emptied while the save went on")
             await saving.value
-            try await Task.sleep(for: .milliseconds(200))
+            // what the cancel left for later
+            for _ in 0..<20 { await Task.yield() }
+            watch.cancel()
 
+            #expect(emptied <= 1, "the window was emptied while the save went on")
             #expect(state.root != nil, "the window was emptied")
             #expect(state.url == outer)
-            #expect(try systemEntries(outer).contains("added.bin"), "the save did not go through")
+            #expect(try systemEntries(outer).contains("added.txt"), "the save did not go through")
+        }
+
+        /// #251 G6. Cancel while an archive inside is listed, past its
+        /// unpacking, leaves it closed, and it opens again later. The listing
+        /// went on, and it opened all the same.
+        @Test func cancelWhileAnArchiveInsideIsListedLeavesItClosed() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            try FileManager.default.createDirectory(at: source, withIntermediateDirectories: true)
+            _ = try copyOfFixture("password", "7z_encrypted_header.7z", in: source)
+            let outer = dir.appendingPathComponent("outer.zip")
+            try run("/usr/bin/zip", [outer.path, "7z_encrypted_header.7z"], cwd: source)
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.open(url: outer)
+            try await state.openTask?.value
+            let inner = try #require(state.childItems?.first { $0.name == "7z_encrypted_header.7z" })
+            // its listing asks for its password: Cancel is clicked meanwhile
+            state.passwordProvider = { _ in
+                await MainActor.run { state.cancelCurrentOperation() }
+                return "password"
+            }
+
+            _ = try? await state.openInPlace(item: inner)
+
+            #expect(inner.children == nil, "opened though it was cancelled")
+            #expect(state.error == nil, "an alert for a cancel")
+            #expect(state.url == outer)
+            state.passwordProvider = { _ in "password" }
+            try await state.openInPlace(item: inner)
+            #expect(inner.children != nil, "it doesn't open again")
         }
 
         /// #251 G6. Cancel while an archive inside is being unpacked in place

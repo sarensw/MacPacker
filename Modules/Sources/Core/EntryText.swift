@@ -42,19 +42,13 @@ public enum EntryText {
     }
 
     /// Today and yesterday by name with the time, as Finder writes them; any
-    /// other day as a medium date with a short time.
+    /// other day as a medium date with a short time. By the calendar day: an
+    /// entry from shortly before midnight is yesterday's, not "10 minutes ago".
     public static func date(_ date: Date) -> String {
-        let calendar = Calendar.current
-        if calendar.isDateInToday(date) || calendar.isDateInYesterday(date) {
-            let relative = RelativeDateTimeFormatter()
-            relative.unitsStyle = .full
-            let time = DateFormatter()
-            time.timeStyle = .short
-            return "\(relative.localizedString(for: date, relativeTo: Date())), \(time.string(from: date))"
-        }
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
+        formatter.doesRelativeDateFormatting = true
         return formatter.string(from: date)
     }
 

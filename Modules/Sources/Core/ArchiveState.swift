@@ -29,6 +29,17 @@ public enum ArchiveSortOrder: String {
     case posixPermissions
 }
 
+/// Where a file dropped on the window outside its list's rows goes: on the
+/// header or on the scroller, which the list leaves to the window (#251 G2).
+public enum ArchiveDropZone: Equatable, Sendable {
+    /// Into the folder shown, as on the list's empty space.
+    case add
+    /// Nowhere: the folder shown can't change, and its rows refuse it too.
+    case refused
+    /// Opened: the window is empty, or its archive read-only.
+    case open
+}
+
 private extension ArchiveUpdateItem {
     /// Where an addition goes in the archive; `nil` for a removal or a move.
     var addedPath: String? {
@@ -75,11 +86,12 @@ public class ArchiveState: ObservableObject {
     /// opening them on hover could not ask. Their row shows a lock, and a drop
     /// on one asks after the drop (#251 G2).
     @Published public private(set) var lockedNested: Set<UUID> = []
-    /// Off while a drag opens an archive inside on hover: a prompt would end
-    /// the drag. A password given earlier in the window is used all the same.
-    private var asksForPasswords = true
-    /// Set when a password was wanted while none could be asked for.
+    /// Set when a password was wanted while none could be asked for: by the
+    /// open on hover running, the only one that asks for none.
     private var passwordWasWanted = false
+    /// Where the window was when a file dragged over it sprang it elsewhere:
+    /// a drag that ends without a drop goes back there (#251 G2).
+    private var folderBeforeSpring: ArchiveItem?
     /// The last open in place, which the next one waits for.
     private var openingInPlace: Task<Void, Never>?
     /// What stops the open in place under way, from the status bar's Cancel.
@@ -209,6 +221,9 @@ public class ArchiveState: ObservableObject {
     /// Where the sort order is read: the app group, so the window and Quick
     /// Look list in the same order (#251 B9, H6). Tests inject their own.
     public var listDefaults: UserDefaults = .macPackerShared
+    /// Where a save writes the archives inside, before they go into the
+    /// archive around them. Tests inject their own.
+    var scratchDirectory = FileManager.default.temporaryDirectory
     /// Passwords the user gave, by the file they were given for. One window can
     /// hold more than one archive: an archive inside the archive opens in the
     /// same tree, extracted to a temp file, and each can have its own password.
@@ -254,7 +269,11 @@ public class ArchiveState: ObservableObject {
 
 extension ArchiveState {
     
-    private func makePasswordResolver() -> ArchivePasswordResolver {
+    /// - Parameter asking: off for the open on hover, where a prompt would end
+    ///   the drag: a password given earlier in the window is used all the
+    ///   same. Its own, so that it asks for none in its place: a preview's
+    ///   extraction running at the same time still asks.
+    func makePasswordResolver(asking: Bool = true) -> ArchivePasswordResolver {
         return { @MainActor [weak self] request in
             guard let self else { return nil }
 
@@ -270,7 +289,7 @@ extension ArchiveState {
             }
 
             // a drag opening an archive inside on hover can't be asked
-            guard self.asksForPasswords else {
+            guard asking else {
                 self.passwordWasWanted = true
                 return nil
             }
@@ -339,6 +358,7 @@ extension ArchiveState {
         self.nestedDiffs = [:]
         self.editableNested = []
         self.lockedNested = []
+        self.folderBeforeSpring = nil
         // A failed open sets its reason after this, so its alert still shows.
         self.openError = nil
         self.saveError = nil
@@ -876,6 +896,8 @@ extension ArchiveState {
         diff.append(contentsOf: additions)
         self.entries = entries
         setPendingChanges(diff, of: owner)
+        // an archive inside that was replaced takes its changes with it
+        forgetChangesOfArchivesGone()
         if !replaced.isEmpty {
             // a replaced item must not stay selected — it is gone from `entries`
             selectedItems = selectedItems.filter { entries[$0.id] != nil }
@@ -974,11 +996,8 @@ extension ArchiveState {
             drop(removal, from: &diff)
             setPendingChanges(diff, of: archive)
         }
-        // what was pending inside an archive that is gone, goes with it
-        for id in nestedDiffs.keys where entries[id] == nil {
-            nestedDiffs[id] = nil
-        }
         self.entries = entries
+        forgetChangesOfArchivesGone()
         let removal = removals.values.reduce(into: Removal()) { $0.formUnion($1.removal) }
 
         log.notice("Marked items for removal", context: [
@@ -990,6 +1009,14 @@ extension ArchiveState {
         selectedItems = []
         isReloadNeeded = true
         loadChildren()
+    }
+
+    /// What was pending inside an archive that is gone, removed or replaced,
+    /// goes with it: a save would look for it in vain, and refuse.
+    private func forgetChangesOfArchivesGone() {
+        for id in nestedDiffs.keys where entries[id] == nil {
+            nestedDiffs[id] = nil
+        }
     }
 
     /// What taking items out of the tree comes to in the diff.
@@ -1083,6 +1110,14 @@ extension ArchiveState {
     /// opened within this one (#251 G5).
     public var canAddHere: Bool {
         selectedItem.map(canChange) ?? false
+    }
+
+    /// What a file dropped outside the list's rows does. Inside an archive
+    /// that can't be written it is refused, as the rows refuse it: added
+    /// there, it went nowhere without a word.
+    public var dropZoneOutsideTheRows: ArchiveDropZone {
+        guard hasArchive, canBeEdited else { return .open }
+        return canAddHere ? .add : .refused
     }
 
     /// Whether what `folder` holds can change: this archive can be written, no
@@ -1239,9 +1274,13 @@ extension ArchiveState {
             "new": "\(url == nil)"
         ])
 
+        // Where the archives inside are written, gone once the save is over,
+        // gone through or not: the next try writes them anew.
+        let scratch = scratchDirectory.appendingPathComponent("written-\(UUID().uuidString)")
         return Task {
+            defer { try? FileManager.default.removeItem(at: scratch) }
             do {
-                let items = try await writeBackNestedArchives(cancel: cancel)
+                let items = try await writeBackNestedArchives(into: scratch, cancel: cancel)
                 let saved = try await makeSaver(items).save()
                 diff.removeAll()
                 nestedDiffs.removeAll()
@@ -1252,6 +1291,15 @@ extension ArchiveState {
                 // every entry anew (#251 G7, C2).
                 let shown = selectedItem.flatMap(namesFromTop(of:))
                 let selected = selectedItems.compactMap(namesFromTop(of:))
+                // And the archives inside that were open, outer ones first,
+                // with their passwords: the folder shown, the selection and
+                // the rows open may lie in them.
+                let openInside = entries.values
+                    .filter { $0.type != .root && $0.archiveTypeId != nil && $0.children != nil }
+                    .compactMap { inner in
+                        namesFromTop(of: inner).map { (names: $0, password: inner.url.flatMap { passwords[$0] }) }
+                    }
+                    .sorted { $0.names.count < $1.names.count }
 
                 // reload from disk so entries and indices reflect the file
                 let engines = pinnedEngines
@@ -1276,7 +1324,13 @@ extension ArchiveState {
                     readNames(as: readEncoding)
                     _ = try? await openTask?.value
                 }
-                if let shown, !shown.isEmpty, let folder = entry(atNamesFromTop: shown), folder.isFolder {
+                // Opened again without a prompt: one whose password isn't
+                // known stays closed, and the window stays above it.
+                for inner in openInside {
+                    guard let item = entry(atNamesFromTop: inner.names), item.children == nil else { continue }
+                    try? await openInPlace(item: item, askingForPassword: false, cancel: nil, password: inner.password)
+                }
+                if let shown, !shown.isEmpty, let folder = entry(atNamesFromTop: shown), folder.isFolder || folder.children != nil {
                     selectedItem = folder
                     loadChildren()
                 }
@@ -1620,6 +1674,40 @@ extension ArchiveState {
         updateStatus(.done)
     }
     
+    /// A file dragged over the window rests on a folder, or on an archive
+    /// inside that is open already: the window goes into it. Nil for Back
+    /// or the `..` row: it goes up (#251 G2). At once, while the drag is
+    /// still there: a step left for later could come after its end.
+    public func spring(into folder: ArchiveItem?) {
+        let shown = selectedItem ?? root
+        if let folder {
+            guard folder.isFolder || folder.children != nil else { return }
+            clearSearch()
+            selectedItem = folder
+            loadChildren()
+            selectedItems = []
+            isReloadNeeded = true
+        } else {
+            guard canGoUp else { return }
+            openParent()
+        }
+        if folderBeforeSpring == nil { folderBeforeSpring = shown }
+    }
+
+    /// The drag over the window is over, wherever it went. Dropped into
+    /// this archive, the window stays where the file went; else it goes back
+    /// where the drag found it, from wherever the drag sprang it.
+    public func endDrag(dropped: Bool) {
+        guard let start = folderBeforeSpring else { return }
+        folderBeforeSpring = nil
+        guard !dropped, start !== (selectedItem ?? root), start === root || entries[start.id] != nil else { return }
+        clearSearch()
+        selectedItem = start
+        loadChildren()
+        selectedItems = []
+        isReloadNeeded = true
+    }
+
     /// Opens an item upon double click (typical use case). When the double clicked item is
     /// an archive that we know, we're extracting it into a temp folder and extending our current tree
     /// and show the content seamlessly in the archive window. If this is a regular file, we're extracting
@@ -1645,19 +1733,24 @@ extension ArchiveState {
     ///   - cancel: set when the drag has moved on before it was unpacked: the
     ///     extraction stops, and so does the rest.
     public func openInPlace(item: ArchiveItem, askingForPassword: Bool = true, cancel: ExtractionCancelFlag? = nil) async throws {
-        // One after the other: each decides alone, while it runs, whether a
-        // password may be asked for. A drop on an archive a hover is still
-        // opening waits for that open, and finds it open, or locked.
+        try await openInPlace(item: item, askingForPassword: askingForPassword, cancel: cancel, password: nil)
+    }
+
+    /// - Parameter password: the one it was opened with before a save read
+    ///   the archive anew: its file is new, and `passwords` has it no more.
+    private func openInPlace(item: ArchiveItem, askingForPassword: Bool, cancel: ExtractionCancelFlag?, password: String?) async throws {
+        // One after the other: a drop on an archive a hover is still opening
+        // waits for that open, and finds it open, or locked.
         let previous = openingInPlace
         let opening = Task { @MainActor [weak self] () throws -> Void in
             await previous?.value
-            try await self?.openInPlaceNow(item: item, askingForPassword: askingForPassword, cancel: cancel)
+            try await self?.openInPlaceNow(item: item, askingForPassword: askingForPassword, cancel: cancel, password: password)
         }
         openingInPlace = Task { _ = await opening.result }
         try await opening.value
     }
 
-    private func openInPlaceNow(item: ArchiveItem, askingForPassword: Bool, cancel: ExtractionCancelFlag?) async throws {
+    private func openInPlaceNow(item: ArchiveItem, askingForPassword: Bool, cancel: ExtractionCancelFlag?, password: String?) async throws {
         guard item.type == .file, item.children == nil else { return }
         // what the status bar's Cancel stops, there before its button shows
         let stop = cancel ?? ExtractionCancelFlag()
@@ -1666,17 +1759,14 @@ extension ArchiveState {
         isBusy = true
         error = nil
         updateStatusText(String(localized: "extracting...", bundle: .module, comment: "Archive operation status"))
-        let asking = asksForPasswords
-        asksForPasswords = askingForPassword
         passwordWasWanted = false
         defer {
             inPlaceCancel = nil
-            asksForPasswords = asking
             isBusy = false
             updateStatusText(nil)
             updateStatus(.done)
         }
-        try await openFile(item, navigating: false, cancel: stop)
+        try await openFile(item, navigating: false, asking: askingForPassword, cancel: stop, password: password)
         if item.children == nil, passwordWasWanted {
             lockedNested.insert(item.id)
         } else {
@@ -1685,12 +1775,21 @@ extension ArchiveState {
     }
 
 
-    /// - Parameter navigating: whether the window goes into an archive it
-    ///   finds, or opens it in place below its row.
-    private func openFile(_ item: ArchiveItem, navigating: Bool, cancel: ExtractionCancelFlag? = nil) async throws {
+    /// - Parameters:
+    ///   - navigating: whether the window goes into an archive it finds, or
+    ///     opens it in place below its row.
+    ///   - asking: off for the open on hover, which asks for no password
+    ///   - password: the archive's own, known already
+    private func openFile(
+        _ item: ArchiveItem,
+        navigating: Bool,
+        asking: Bool = true,
+        cancel: ExtractionCancelFlag? = nil,
+        password: String? = nil
+    ) async throws {
         // Extract the item first as we have to either open it in the system
         // default preview or treat it as an archive
-        let passwordResolver = makePasswordResolver()
+        let passwordResolver = makePasswordResolver(asking: asking)
         let archiveExtractor = ArchiveExtractor(
             archiveEngineSelector: self.effectiveEngineSelector,
             passwordResolver: passwordResolver
@@ -1713,6 +1812,7 @@ extension ArchiveState {
             
         tempDirectories.append(tempDir)
         if cancel?.isCancelled == true { throw CancellationError() }
+        if let password { passwords[tempUrl] = password }
         // We check by extension here because we don't want to end up
         // opening files like .xlsx as an archive. An Excel file (or any
         // other archived file that is basically a .zip file) should be
@@ -1738,7 +1838,7 @@ extension ArchiveState {
             )
 
             // nested archive is extracted > time to parse its hierarchy
-            try await unfold(item, using: engine, navigating: navigating)
+            try await unfold(item, using: engine, navigating: navigating, asking: asking, cancel: cancel)
 
             // set the nested archive as item
             if navigating {
@@ -1761,7 +1861,15 @@ extension ArchiveState {
     ///   - engine: engine to use
     ///   - navigating: whether the window goes into it, taking its name as the
     ///     title, or keeps its place while the archive opens below its row
-    private func unfold(_ archiveItem: ArchiveItem, using engine: ArchiveEngine, navigating: Bool) async throws {
+    ///   - asking: off for the open on hover, which asks for no password
+    ///   - cancel: set while it is listed: it stays closed
+    private func unfold(
+        _ archiveItem: ArchiveItem,
+        using engine: ArchiveEngine,
+        navigating: Bool,
+        asking: Bool,
+        cancel: ExtractionCancelFlag?
+    ) async throws {
         if let url = archiveItem.url {
             self.isBusy = true
             self.error = nil
@@ -1771,7 +1879,7 @@ extension ArchiveState {
             }
             
             do {
-                let passwordResolver = makePasswordResolver()
+                let passwordResolver = makePasswordResolver(asking: asking)
                 let archiveLoader = ArchiveLoader(
                     archiveTypeDetector: self.archiveTypeDetector,
                     archiveEngineSelector: self.effectiveEngineSelector,
@@ -1806,7 +1914,7 @@ extension ArchiveState {
                 if loaderResult.error != nil {
                     updateStatusText(String(localized: "failed to load", bundle: .module, comment: "Archive operation status"))
                     // no alert for the password a drag could not ask for: the row says it
-                    if asksForPasswords || !passwordWasWanted { self.error = loaderResult.error }
+                    if asking || !passwordWasWanted { self.error = loaderResult.error }
                 }
                 if navigating { self.selectedItem = archiveItem }
                 
@@ -1819,6 +1927,13 @@ extension ArchiveState {
                     self.error = builderResult.error ?? self.error
                     loadedEntries = builderResult.entries
                 }
+                // Cancelled while it was listed: it stays closed, as it was,
+                // and what the listing found stays out (#251 G6).
+                if cancel?.isCancelled == true {
+                    archiveItem.close()
+                    editableNested.remove(archiveItem.id)
+                    throw CancellationError()
+                }
                 self.entries.merge(loadedEntries) { (current, _) in current }
                 
                 loadChildren()
@@ -1828,8 +1943,11 @@ extension ArchiveState {
                 self.isBusy = false
                 self.isReloadNeeded = true
                 if navigating { self.selectedItems = [] }
+            } catch let stopped as CancellationError where cancel?.isCancelled == true {
+                self.isBusy = false
+                throw stopped
             } catch {
-                if asksForPasswords || !passwordWasWanted { self.error = error.localizedDescription }
+                if asking || !passwordWasWanted { self.error = error.localizedDescription }
                 self.isBusy = false
             }
         }
@@ -2246,7 +2364,7 @@ extension ArchiveState {
     /// entry in the archive around it (#251 G5). Returns this archive's changes
     /// with those replacements. What is pending stays as it is until the whole
     /// save has gone through: a failure anywhere leaves it to be saved again.
-    private func writeBackNestedArchives(cancel: ExtractionCancelFlag?) async throws -> [ArchiveUpdateItem] {
+    private func writeBackNestedArchives(into scratch: URL, cancel: ExtractionCancelFlag?) async throws -> [ArchiveUpdateItem] {
         var nested = nestedDiffs.filter { !$0.value.isEmpty }
         var own = diff
         let depth = { [self] (id: UUID) -> Int in
@@ -2262,9 +2380,9 @@ extension ArchiveState {
             guard let inner = entries[id], let source = inner.url, let index = inner.index, let path = inner.virtualPath else {
                 throw ArchiveError.saveRefused("An archive inside this one could not be written back.")
             }
-            let folder = FileManager.default.temporaryDirectory.appendingPathComponent("written-\(UUID().uuidString)")
+            // a folder each: two archives inside can share a name
+            let folder = scratch.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            tempDirectories.append(folder)
             let written = folder.appendingPathComponent(source.lastPathComponent)
             let saver = ArchiveSaver(
                 source: source,

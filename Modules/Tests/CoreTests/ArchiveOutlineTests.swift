@@ -8,6 +8,7 @@
 //
 
 import AppKit
+import Quartz
 import Testing
 import Foundation
 @testable import ArchivePreviewUI
@@ -41,7 +42,17 @@ extension AllCoreTests {
             let controller = ArchiveOutlineController(features: features, layout: layout)
             _ = controller.view
             controller.state = state
+            controller.springSettings = springing()
             return controller
+        }
+
+        /// Spring-loading as macOS ships it, whatever this Mac says: on, after
+        /// half a second.
+        private func springing() -> UserDefaults {
+            let settings = UserDefaults(suiteName: "ArchiveOutlineTests-springing")!
+            settings.set(true, forKey: "com.apple.springing.enabled")
+            settings.set(0.5, forKey: "com.apple.springing.delay")
+            return settings
         }
 
         private func names(_ controller: ArchiveOutlineController) -> [String] {
@@ -183,6 +194,42 @@ extension AllCoreTests {
             let docs = try #require(state.childItems?.first { $0.name == "docs" })
             list.outlineView.expandItem(docs)
             #expect(state.displayedChildren(of: docs).map(\.name) == ["sub", "b.txt", "a.txt"], "the level below kept another order")
+        }
+
+        /// #251 B9. An order chosen in another window is followed at once: the
+        /// header shows it, and the rows are sorted by it. Both kept the old
+        /// order, while the rows opened later sorted by the new one.
+        @Test func anOrderChosenInAnotherWindowIsFollowed() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let other = try await openArchive(in: dir.appendingPathComponent("other"))
+            other.listDefaults = state.listDefaults
+            let list = makeList(.window, .tree, for: state)
+            let otherList = makeList(.window, .tree, for: other)
+            #expect(names(list) == ["docs", "top.txt", "zeta.txt"])
+
+            otherList.outlineView.sortDescriptors = [NSSortDescriptor(key: ArchiveSortOrder.name.rawValue, ascending: false)]
+
+            #expect(try await eventually { names(list) == ["docs", "zeta.txt", "top.txt"] }, "not sorted: \(names(list))")
+            #expect(list.outlineView.sortDescriptors.first?.ascending == false, "the header shows the order of before")
+        }
+
+        /// #251 H. With the Quick Look panel open, ↑ and ↓ typed in it move the
+        /// list's selection, and nothing else does. The list took ↑ typed in
+        /// another window's search field too, and ⌘↑, and they went no further.
+        @Test func onlyArrowsTypedInTheQuickLookPanelMoveTheSelection() throws {
+            let panel = try #require(QLPreviewPanel.shared())
+            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 200, height: 100), styleMask: [.titled], backing: .buffered, defer: true)
+            // an arrow key comes with these two
+            let arrow: NSEvent.ModifierFlags = [.numericPad, .function]
+
+            #expect(ArchiveOutlineView.movesQuickLookSelection(126, arrow, in: panel))
+            #expect(ArchiveOutlineView.movesQuickLookSelection(125, arrow, in: panel))
+            #expect(!ArchiveOutlineView.movesQuickLookSelection(126, arrow, in: window), "↑ in another window")
+            #expect(!ArchiveOutlineView.movesQuickLookSelection(126, arrow.union(.command), in: panel), "⌘↑")
+            #expect(!ArchiveOutlineView.movesQuickLookSelection(126, arrow, in: nil))
+            #expect(!ArchiveOutlineView.movesQuickLookSelection(0, [], in: panel), "another key")
         }
 
         /// #251 A1. With more than one row at the top, nothing opens by itself.
@@ -413,8 +460,10 @@ extension AllCoreTests {
             let top = try #require(state.childItems?.first { $0.name == "top.txt" })
 
             for column in list.outlineView.tableColumns {
-                let cell = list.outlineView(list.outlineView, viewFor: column, item: top) as? NSTableCellView
-                let parts = cell?.draggingImageComponents.count ?? 0
+                // no cell would add nothing either, and pass for one that adds nothing
+                let cell = try #require(list.outlineView(list.outlineView, viewFor: column, item: top) as? NSTableCellView,
+                                        "no cell in \(column.identifier.rawValue)")
+                let parts = cell.draggingImageComponents.count
                 if column.identifier == ArchiveViewerColumn.name.identifier {
                     #expect(parts > 0, "the name adds nothing to the drag image")
                 } else {
@@ -433,9 +482,13 @@ extension AllCoreTests {
             let state = try await openArchive(in: dir)
             let list = makeList(.window, .tree, for: state)
 
-            for item in state.childItems ?? [] {
+            // no row, or no cell, would take no drag either
+            let rows = try #require(state.childItems.flatMap { $0.isEmpty ? nil : $0 }, "no rows to look at")
+            for item in rows {
                 for column in list.outlineView.tableColumns {
-                    var views: [NSView] = (list.outlineView(list.outlineView, viewFor: column, item: item)).map { [$0] } ?? []
+                    let cell = try #require(list.outlineView(list.outlineView, viewFor: column, item: item),
+                                            "no cell in \(item.name)'s \(column.identifier.rawValue)")
+                    var views: [NSView] = [cell]
                     while let view = views.popLast() {
                         #expect(view.registeredDraggedTypes.isEmpty,
                                 "\(type(of: view)) in \(item.name)'s \(column.identifier.rawValue) takes drags of its own")
@@ -505,6 +558,35 @@ extension AllCoreTests {
 
             let names = names(list)
             #expect(names.prefix(5) == ["docs", "sub", "c.txt", "a.txt", "b.txt"], "\(names)")
+        }
+
+        /// #251 G7. Rows open inside an archive inside are open again after a
+        /// save: the archive inside opens again first. The save's reading anew
+        /// left it closed, and the list found nothing below it to open.
+        @Test func aSaveKeepsTheRowsOpenInsideAnArchiveInside() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let source = dir.appendingPathComponent("source")
+            try FileManager.default.createDirectory(at: source.appendingPathComponent("docs"), withIntermediateDirectories: true)
+            try Data("a".utf8).write(to: source.appendingPathComponent("docs/a.txt"))
+            try Data("top".utf8).write(to: source.appendingPathComponent("top.txt"))
+            try run("/usr/bin/zip", ["-r", "inner.zip", "docs"], cwd: source)
+            let outer = dir.appendingPathComponent("outer.zip")
+            try run("/usr/bin/zip", [outer.path, "inner.zip", "top.txt"], cwd: source)
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            state.listDefaults = UserDefaults(suiteName: "ArchiveOutlineTests-\(UUID().uuidString)")!
+            state.open(url: outer)
+            try await state.openTask?.value
+            let list = makeList(.window, .tree, for: state)
+            let inner = try #require(state.childItems?.first { $0.name == "inner.zip" })
+            list.outlineView.expandItem(inner)
+            #expect(try await eventually { list.outlineView.isItemExpanded(inner) }, "the archive inside didn't open")
+            list.outlineView.expandItem(try #require(state.displayedChildren(of: inner).first { $0.name == "docs" }))
+
+            try await addAndSave(state, in: dir)
+            list.reload()
+
+            #expect(names(list) == ["added.txt", "inner.zip", "docs", "a.txt", "top.txt"], "\(names(list))")
         }
 
         /// #251 H1. The preview lists the whole archive as a tree from its top,
@@ -734,6 +816,35 @@ extension AllCoreTests {
             #expect(asked == 1, "asked \(asked) times")
         }
 
+        /// #251 G2. A password asked for elsewhere while a drag's silent open
+        /// of an archive inside runs, as the preview's, is asked for all the
+        /// same. The silence was the whole window's: the preview got neither a
+        /// prompt nor a password.
+        @Test func aPasswordAskedForWhileAHoverOpensIsAsked() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let (state, locked) = try await openLockedInside(in: dir)
+            let answers = Answers(["secret"])
+            state.passwordProvider = { _ in await answers.next() }
+            // the preview's, once the hover's open is under way
+            var preview: Task<String?, Never>?
+            let busy = state.$isBusy.dropFirst().filter { $0 }.first().sink { _ in
+                MainActor.assumeIsolated {
+                    let resolver = state.makePasswordResolver()
+                    let request = ArchivePasswordRequest(url: dir.appendingPathComponent("previewed.zip"))
+                    preview = Task { await resolver(request) }
+                }
+            }
+
+            try await state.openInPlace(item: locked, askingForPassword: false)
+            busy.cancel()
+
+            let password = await preview?.value
+            #expect(password == "secret", "the preview got no password")
+            #expect(await answers.asked == 1)
+            #expect(locked.children == nil && state.lockedNested.contains(locked.id), "the hover asked for its own")
+        }
+
         /// #251 G2. The list is not read anew while a file is dragged over it:
         /// AppKit's drop target goes with a reload, and the drop with it. An
         /// archive inside opened by hovering asked for one, and the app tests'
@@ -814,7 +925,8 @@ extension AllCoreTests {
             #expect(list.operationAfterSpring == .copy, "the drop right after the spring is refused")
 
             list.outlineView.draggingEnded(file)
-            #expect(try await eventually { state.selectedItem === state.root }, "the table stayed where the drag went")
+            #expect(try await eventually { state.selectedItem === state.root && names(list).contains("docs") },
+                    "the table stayed where the drag went: \(names(list))")
 
             let (_, kept) = try drag("kept.txt", in: dir)
             hover(list, kept, over: nil)
@@ -885,6 +997,80 @@ extension AllCoreTests {
             table.dragUpdated(other, now: 100)
             try await Task.sleep(for: .milliseconds(100))
             #expect(rarState.selectedItem !== rar, "a rar sprang open")
+        }
+
+        /// #251 G2. A drag that ends right after a spring takes the window back
+        /// where it found it, and the status bar says nothing of a drop. The
+        /// spring was left for later and came after the end: the window stayed
+        /// where it had sprung, with a hint for a drag long gone.
+        @Test func aDragThatEndsRightAfterASpringGoesBack() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            let list = makeList(.window, .table, for: state)
+            var hints: [ArchiveDropHint?] = []
+            list.onDropHint = { hints.append($0) }
+            let docs = try #require(state.childItems?.first { $0.name == "docs" })
+            let (_, file) = try drag("dropped.txt", in: dir)
+
+            hover(list, file, over: nil)
+            point(file, at: docs, in: list)
+            list.dragUpdated(file, now: 0)
+            list.dragUpdated(file, now: 100)
+            list.outlineView.draggingEnded(file)
+            // whatever was left for later
+            for _ in 0..<20 { await Task.yield() }
+
+            #expect(state.selectedItem === state.root, "the window stayed where the drag had sprung it")
+            #expect(hints.last == .some(nil), "a hint after the drag: \(hints)")
+            #expect(!list.dropsInShownFolder)
+        }
+
+        /// #251 G2. A row springs open as the system's spring-loading settings
+        /// say: after their delay, and not at all when it is off. A test could
+        /// not say: the settings were always this Mac's.
+        @Test func theSpringWaitsAsTheSettingsSay() {
+            let row = NSObject()
+            let settings = UserDefaults(suiteName: "ArchiveOutlineTests-\(UUID().uuidString)")!
+            settings.set(false, forKey: "com.apple.springing.enabled")
+            var off = SpringWait()
+            _ = off.update(on: row, at: .zero, now: 0, settings: settings)
+            let sprangOff = off.update(on: row, at: .zero, now: 100, settings: settings)
+            #expect(!sprangOff, "sprang with spring-loading off")
+
+            settings.set(true, forKey: "com.apple.springing.enabled")
+            settings.set(2.0, forKey: "com.apple.springing.delay")
+            var slow = SpringWait()
+            _ = slow.update(on: row, at: .zero, now: 0, settings: settings)
+            let early = slow.update(on: row, at: .zero, now: 1, settings: settings)
+            #expect(!early, "sprang before the delay")
+            let late = slow.update(on: row, at: .zero, now: 2, settings: settings)
+            #expect(late, "didn't spring after the delay")
+        }
+
+        /// #251 G2. A drag that rested on Back went up. Ended without a drop,
+        /// the window goes back to the folder it showed, though the drag never
+        /// crossed the list, which alone took it back. Dropped into the
+        /// archive, it stays where the file went.
+        @Test func aDragThatWentUpByBackGoesBackWithoutADrop() async throws {
+            let dir = try makeTempDir()
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let state = try await openArchive(in: dir)
+            try await enter("docs", in: state)
+            let docs = state.selectedItem
+
+            // over the card above the list, cancelled there
+            state.spring(into: nil)
+            #expect(state.selectedItem === state.root, "Back didn't go up")
+            state.endDrag(dropped: false)
+            #expect(state.selectedItem === docs, "the window stayed above the folder")
+
+            state.spring(into: nil)
+            state.endDrag(dropped: true)
+            #expect(state.selectedItem === state.root, "a drop went back where the drag came")
+            // the end the card or the list tells after the drop
+            state.endDrag(dropped: false)
+            #expect(state.selectedItem === state.root, "the end after the drop went back")
         }
 
         /// #251 G2. A drag that moves on before an archive inside is unpacked

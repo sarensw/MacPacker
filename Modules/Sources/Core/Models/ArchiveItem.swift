@@ -109,6 +109,13 @@ public class ArchiveItem: Identifiable, Hashable, @unchecked Sendable {
     func removeChild(_ id: UUID) {
         children?.removeAll { $0 == id }
     }
+
+    /// An archive inside, back to not opened: what it holds is unknown again.
+    func close() {
+        children = nil
+        url = nil
+        archiveTypeId = nil
+    }
     
     public static func == (lhs: ArchiveItem, rhs: ArchiveItem) -> Bool {
         return lhs.id == rhs.id

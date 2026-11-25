@@ -9,6 +9,7 @@
 import AppKit
 import Combine
 import Core
+import Quartz
 import UniformTypeIdentifiers
 
 /// What a host lets the list do. The archive window allows all of it. The
@@ -140,12 +141,12 @@ public final class ArchiveOutlineController: NSViewController {
     private var openedSingleFolderOf: ObjectIdentifier?
     /// The row a drag rests on, which springs open (table only).
     private var springWait = SpringWait()
+    /// Where the spring-loading settings are read: the system's. Tests
+    /// inject their own.
+    var springSettings: UserDefaults = .standard
     /// The table sprang into a folder under the drag, and NSOutlineView hasn't
     /// asked where the drop goes since: the drop goes to the folder shown.
     private(set) var dropsInShownFolder = false
-    /// The folder the window showed when the drag came, gone back to when it
-    /// ends over the window without a drop.
-    private(set) var folderWhenTheDragCame: ArchiveItem?
     /// An archive inside being unpacked for the drag hovering over it, which
     /// stops once the drag moves on.
     private var hoverLoad: (item: ArchiveItem, cancel: ExtractionCancelFlag)?
@@ -403,6 +404,14 @@ public final class ArchiveOutlineController: NSViewController {
                 }
                 .store(in: &subscriptions)
         }
+        // An order chosen in another window (#251 B9): the header shows it,
+        // and the rows follow by the header's own sorting.
+        NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.showSortOrder() }
+            }
+            .store(in: &subscriptions)
         // Before the save reads the archive anew, while the rows still hold the
         // entries of before.
         seenRereads = state.rereadsAfterSave
@@ -721,7 +730,6 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
             // another drag: what an earlier one opened and left open stays open
             dragSequence = info.draggingSequenceNumber
             openedByDrag = []
-            folderWhenTheDragCame = state?.selectedItem ?? state?.root
         }
         onFileDrag?(.entered)
         restyleRows()
@@ -769,11 +777,7 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
         // Without a drop, the window goes back to the folder it showed when the
         // drag came: the drag sprang it elsewhere, by a row or by Back. A drop
         // stays where the file went.
-        if target == nil, features.contains(.navigation), let state, let start = folderWhenTheDragCame,
-           start !== (state.selectedItem ?? state.root) {
-            Task { try? await state.openAsync(item: start) }
-        }
-        folderWhenTheDragCame = nil
+        state?.endDrag(dropped: target != nil)
     }
 
     // MARK: - Spring-loading in the table
@@ -790,12 +794,13 @@ extension ArchiveOutlineController: NSOutlineViewDataSource, NSOutlineViewDelega
     /// drag updates all the while the pointer rests; the wait runs on them.
     func dragUpdated(_ info: NSDraggingInfo, now: TimeInterval = ProcessInfo.processInfo.systemUptime) {
         let row = springTarget(info)
-        guard springWait.update(on: row, at: info.draggingLocation, now: now), let row, let state else { return }
+        guard springWait.update(on: row, at: info.draggingLocation, now: now, settings: springSettings),
+              let row, let state else { return }
         PreviewLog.general.debug("Sprang open", context: ["up": row === parentRow ? "yes" : "no"])
-        Task {
-            if row === parentRow { state.openParent() } else { try? await state.openAsync(item: row) }
-            showFolderUnderDrag()
-        }
+        // at once, under the drag: a step left for later came after the
+        // drag's end, and the window stayed where it had sprung
+        state.spring(into: row === parentRow ? nil : row)
+        showFolderUnderDrag()
     }
 
     /// The table shows the folder the drag went into, at once. Its rows are
@@ -1107,15 +1112,26 @@ public final class ArchiveOutlineView: NSOutlineView, NSMenuItemValidation {
         }
         guard window != nil, controller?.features.contains(.quickLookPanel) == true else { return }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
-            guard event.keyCode == 125 || event.keyCode == 126 else { return event }
             // a local monitor runs on the main thread
             let handled = MainActor.assumeIsolated { () -> Bool in
-                guard let self, self.controller?.state?.previewItemUrl != nil else { return false }
+                guard let self, self.controller?.state?.previewItemUrl != nil,
+                      ArchiveOutlineView.movesQuickLookSelection(event.keyCode, event.modifierFlags, in: event.window)
+                else { return false }
                 self.moveSelection(with: event)
                 return true
             }
             return handled ? nil : event
         }
+    }
+
+    /// ↑ or ↓ typed in the Quick Look panel: the list moves the selection the
+    /// panel shows. The monitor sees every key the app gets: another window's,
+    /// such as ↑ in a search field, and shortcuts such as ⌘↑ go where they
+    /// were going.
+    static func movesQuickLookSelection(_ keyCode: UInt16, _ modifiers: NSEvent.ModifierFlags, in window: NSWindow?) -> Bool {
+        (keyCode == 125 || keyCode == 126)
+            && modifiers.isDisjoint(with: [.command, .option, .control])
+            && window is QLPreviewPanel
     }
 
     private func moveSelection(with event: NSEvent) {
@@ -1205,8 +1221,12 @@ public struct SpringWait {
     /// True once the drag has rested on `target` for the delay. Then nothing
     /// springs until the pointer moves: what comes under a resting pointer,
     /// the folder sprung into or the one gone up to, doesn't spring by itself.
+    ///
+    /// - Parameter settings: where the system's spring-loading settings are
+    ///   read; tests pass their own
     public mutating func update(on target: AnyObject?, at location: NSPoint,
-                                now: TimeInterval = ProcessInfo.processInfo.systemUptime) -> Bool {
+                                now: TimeInterval = ProcessInfo.processInfo.systemUptime,
+                                settings: UserDefaults = .standard) -> Bool {
         if location != self.location {
             self.location = location
             if !armed {
@@ -1220,16 +1240,10 @@ public struct SpringWait {
             since = now
             return false
         }
-        guard armed, id != nil, Self.isEnabled, now - since >= Self.delay else { return false }
+        let enabled = settings.object(forKey: "com.apple.springing.enabled") as? Bool ?? true
+        let delay = settings.object(forKey: "com.apple.springing.delay") as? Double ?? 0.5
+        guard armed, id != nil, enabled, now - since >= delay else { return false }
         armed = false
         return true
-    }
-
-    private static var isEnabled: Bool {
-        UserDefaults.standard.object(forKey: "com.apple.springing.enabled") as? Bool ?? true
-    }
-
-    private static var delay: TimeInterval {
-        UserDefaults.standard.object(forKey: "com.apple.springing.delay") as? Double ?? 0.5
     }
 }

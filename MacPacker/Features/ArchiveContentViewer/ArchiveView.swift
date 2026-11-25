@@ -15,16 +15,6 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
-/// Where a dragged file lands. An editable archive adds it, in its list or here
-/// (the header, the scroller), while the card over the toolbar opens it. An
-/// empty window, or a read-only archive, opens it wherever it lands.
-enum ArchiveDropZone: Equatable {
-    case add
-    case open
-
-    var name: String { self == .add ? "add" : "open" }
-}
-
 struct ArchiveView: View {
     @Environment(\.openArchiveInNewWindow) private var openArchiveInNewWindow
     @Environment(\.fileDragOverWindow) private var fileDragOverWindow
@@ -45,6 +35,14 @@ struct ArchiveView: View {
     /// rows deciding where (#251 G2).
     private var listTakesDrops: Bool {
         state.hasArchive && state.canBeEdited
+    }
+
+    /// Why a file can't go in where the window is, for the status bar: the
+    /// archive inside that can't be changed, named as the list names it.
+    private var cantAddHereHint: String {
+        let shown = state.selectedItem ?? state.root
+        let name = shown.flatMap(state.archiveThatCantBeChanged(down:))?.name ?? state.name ?? ""
+        return String(localized: .archiveDropCantChange(name))
     }
 
     /// Dropping a non-archive doesn't open anything — it starts a new archive with
@@ -72,6 +70,7 @@ struct ArchiveView: View {
             zone: zone(at:),
             perform: handleDrop,
             fileDrag: fileDragOverWindow,
+            sayRefused: { refused in state.dropHint = refused ? cantAddHereHint : nil },
             window: state.name ?? "(empty)"
         ))
         .overlay {
@@ -107,7 +106,7 @@ struct ArchiveView: View {
     // MARK: - Drop
 
     private func zone(at location: CGPoint) -> ArchiveDropZone {
-        listTakesDrops ? .add : .open
+        state.dropZoneOutsideTheRows
     }
 
     private func handleDrop(_ zone: ArchiveDropZone, _ providers: [NSItemProvider]) {
@@ -117,13 +116,16 @@ struct ArchiveView: View {
         let state = self.state
         log.notice("File drop performed", context: [
             "providers": "\(providers.count)",
-            "zone": zone.name
+            "zone": "\(zone)"
         ])
 
         // One drop is one add, however many files it holds. Added file by file,
         // each was read, put into the archive and shown on its own: a thousand
         // files, a thousand times over.
         if zone == .add {
+            // where the drag sprang the window is where it goes: the drag's end
+            // must not take the window back before the files are read
+            state.endDrag(dropped: true)
             loadDroppedFileURLs(from: providers) { urls in
                 log.notice("Drop → add to current archive", context: ["files": "\(urls.count)"])
                 state.add(urls: urls)
@@ -217,6 +219,8 @@ private struct ArchiveDropDelegate: DropDelegate {
     let perform: (ArchiveDropZone, [NSItemProvider]) -> Void
     /// Tells the window, whose card over the toolbar shows for an editable archive.
     let fileDrag: @MainActor (ArchiveFileDrag) -> Void
+    /// Says in the status bar why the file can't go in, or stops saying it.
+    let sayRefused: @MainActor (Bool) -> Void
     /// only for the log — which window's delegate is talking
     let window: String
 
@@ -232,10 +236,11 @@ private struct ArchiveDropDelegate: DropDelegate {
         draggedURL = (NSPasteboard(name: .drag).readObjects(forClasses: [NSURL.self]) as? [URL])?.first
         log.info("drop: entered", context: [
             "window": window,
-            "zone": entered.name,
+            "zone": "\(entered)",
             "file": draggedURL?.lastPathComponent ?? "(unknown)"
         ])
         activeZone = entered
+        if entered == .refused { sayRefused(true) }
         fileDrag(.entered)
     }
 
@@ -244,14 +249,14 @@ private struct ArchiveDropDelegate: DropDelegate {
     /// pointer doesn't leave the window), which would put the zones back on screen
     /// and leave them there. Arming is `dropEntered`'s job alone.
     func dropUpdated(info: DropInfo) -> DropProposal? {
-        guard activeZone != nil else { return DropProposal(operation: .copy) }
         let current = zone(info.location)
-        if activeZone != current { activeZone = current }
-        return DropProposal(operation: .copy)
+        if activeZone != nil, activeZone != current { activeZone = current }
+        return DropProposal(operation: current == .refused ? .forbidden : .copy)
     }
 
     func dropExited(info: DropInfo) {
         log.info("drop: exited", context: ["window": window])
+        if activeZone == .refused { sayRefused(false) }
         activeZone = nil
         draggedURL = nil
         fileDrag(.exited)
@@ -259,10 +264,12 @@ private struct ArchiveDropDelegate: DropDelegate {
 
     func performDrop(info: DropInfo) -> Bool {
         let target = zone(info.location)
-        log.info("drop: performed", context: ["window": window, "zone": target.name])
+        log.info("drop: performed", context: ["window": window, "zone": "\(target)"])
+        if activeZone == .refused { sayRefused(false) }
         activeZone = nil
         draggedURL = nil
         fileDrag(.ended)
+        guard target != .refused else { return false }
         perform(target, info.itemProviders(for: [.fileURL]))
         return true
     }

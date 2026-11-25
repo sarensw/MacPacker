@@ -100,6 +100,25 @@ extension AllCoreTests {
             #expect(EntryText.permissions(0o040755) == "drwxr-xr-x")
         }
 
+        /// #251 B11. Today and yesterday by name, by the calendar day, as Finder
+        /// writes them. An entry from earlier today read "3 hours ago", one from
+        /// yesterday "1 day ago", and one from just before midnight "10 minutes
+        /// ago".
+        @Test func todayAndYesterdayGoByName() throws {
+            let calendar = Calendar.current
+            let now = Date()
+            let earlierToday = calendar.startOfDay(for: now)
+            let yesterday = try #require(calendar.date(byAdding: .day, value: -1, to: now))
+            // the names in this Mac's language
+            let named = RelativeDateTimeFormatter()
+            named.dateTimeStyle = .named
+            let today = named.localizedString(from: DateComponents(day: 0))
+            let yesterdayName = named.localizedString(from: DateComponents(day: -1))
+
+            #expect(EntryText.date(earlierToday).localizedCaseInsensitiveContains(today), "\(EntryText.date(earlierToday))")
+            #expect(EntryText.date(yesterday).localizedCaseInsensitiveContains(yesterdayName), "\(EntryText.date(yesterday))")
+        }
+
         /// #251 B9, B10. The sort order and the columns move from the app's own
         /// settings into the app group once, so Quick Look reads what the window
         /// shows. A choice the app group holds already stays; nothing else moves.
