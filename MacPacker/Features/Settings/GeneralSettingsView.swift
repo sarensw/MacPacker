@@ -11,10 +11,11 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
     @AppStorage(Keys.settingBreadcrumbPosition) var breadcrumbPosition: BreadcrumbPosition = .bottom
-    @AppStorage(Keys.showColumnCompressedSize) var showCompressedSize: Bool = true
-    @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
-    @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
-    @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
+    @AppStorage(Keys.showColumnCompressedSize, store: .macPackerShared) var showCompressedSize: Bool = true
+    @AppStorage(Keys.showColumnUncompressedSize, store: .macPackerShared) var showUncompressedSize: Bool = true
+    @AppStorage(Keys.showColumnModificationDate, store: .macPackerShared) var showModificationDate: Bool = true
+    @AppStorage(Keys.showColumnPosixPermissions, store: .macPackerShared) var showPermissions: Bool = false
+    @AppStorage(Keys.archiveListStyle) var archiveListStyle: String = "tree"
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
     @AppStorage(Keys.showHiddenFiles, store: .macPackerShared) var showHiddenFiles: Bool = false
     @AppStorage(Keys.quitOnLastWindowClosed) var quitOnLastWindowClosed: Bool = false
@@ -26,6 +27,18 @@ struct GeneralSettingsView: View {
 
     var body: some View {
         VStack(spacing: 8) {
+            HStack(alignment: .top) {
+                Text(.settingsArchiveView)
+                    .frame(width: 200, alignment: .trailing)
+                HStack {
+                    Picker(String(""), selection: $archiveListStyle) {
+                        Text(.settingsArchiveViewTree).tag("tree")
+                        Text(.settingsArchiveViewTable).tag("table")
+                    }
+                    .accessibilityIdentifier(AccessibilityIdentifier.archiveListStyleSetting)
+                }
+                .frame(width: 240, alignment: .leading)
+            }
             HStack(alignment: .top) {
                 Text(.settingsColumns)
                     .frame(width: 200, alignment: .trailing)
@@ -54,7 +67,9 @@ struct GeneralSettingsView: View {
                     .frame(width: 200, alignment: .trailing)
 
                 HStack {
+                    // the `..` row is the table's: a tree goes up with Back and ⌘↑
                     Toggle(isOn: $showParentRow) {}
+                        .disabled(archiveListStyle != "table")
                 }
                 .padding(.leading, 8)
                 .frame(width: 240, alignment: .leading)

@@ -122,7 +122,7 @@ extension AllCoreTests {
 
         // MARK: - Quick Look
 
-        private func outline(of controller: ArchiveViewController) throws -> NSOutlineView {
+        private func outline(of controller: ArchiveOutlineController) throws -> NSOutlineView {
             let scrollView = try #require(controller.view.subviews.first as? NSScrollView)
             return try #require(scrollView.documentView as? NSOutlineView)
         }
@@ -133,7 +133,7 @@ extension AllCoreTests {
 
         @Test func quickLookLeavesHiddenFilesOut() async throws {
             let state = try await open("hiddenFiles.zip")
-            let controller = ArchiveViewController()
+            let controller = ArchiveOutlineController(features: .preview, layout: .tree)
             let outline = try outline(of: controller)
             controller.state = state
 
@@ -145,7 +145,7 @@ extension AllCoreTests {
 
         @Test func quickLookGreysOutHiddenFilesWhenShown() async throws {
             let state = try await open("hiddenFiles.zip", showsHiddenFiles: true)
-            let controller = ArchiveViewController()
+            let controller = ArchiveOutlineController(features: .preview, layout: .tree)
             let outline = try outline(of: controller)
             controller.state = state
             #expect(rows(outline) == [".DS_Store", ".git", "folder", "readme.txt"])

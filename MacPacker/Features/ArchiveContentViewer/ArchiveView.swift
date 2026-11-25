@@ -5,6 +5,7 @@
 //  Created by Stephan Arenswald on 31.08.23.
 //
 
+import ArchivePreviewUI
 import Foundation
 import QuickLook
 import Core
@@ -14,8 +15,9 @@ import tb
 
 private let log = tb.Logger(subsystem: "app.MacPacker", category: "archive")
 
-/// Where a dragged file lands. Which zones exist depends on the window: an empty
-/// one only opens, a read-only archive only opens, an editable archive offers both.
+/// Where a dragged file lands. An editable archive adds it, in its list or here
+/// (the header, the scroller), while the card over the toolbar opens it. An
+/// empty window, or a read-only archive, opens it wherever it lands.
 enum ArchiveDropZone: Equatable {
     case add
     case open
@@ -25,29 +27,24 @@ enum ArchiveDropZone: Equatable {
 
 struct ArchiveView: View {
     @Environment(\.openArchiveInNewWindow) private var openArchiveInNewWindow
+    @Environment(\.fileDragOverWindow) private var fileDragOverWindow
     @EnvironmentObject private var state: ArchiveState
 
-    @AppStorage(Keys.showColumnCompressedSize) var showCompressedSize: Bool = true
-    @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
-    @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
-    @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
     @AppStorage(Keys.showHiddenFiles, store: .macPackerShared) var showHiddenFiles: Bool = false
 
-    @State private var selection: IndexSet?
     /// nil while no file is over the window; otherwise the zone the pointer is in.
     @State private var activeZone: ArchiveDropZone?
     /// The file being dragged, while it is over the window. nil when it couldn't be
     /// read off the drag pasteboard (a promised file, say).
     @State private var draggedURL: URL?
-    @State private var contentSize: CGSize = .zero
-    /// How far the archive window's drop cards sit inside the window.
+    /// How far the read-only archive's drop card sits inside the window.
     private static let dropInset: CGFloat = 12
 
-    /// Adding needs an archive that the format can write, no in-flight save, and
-    /// the window in that archive, not in one opened within it.
-    private var canAdd: Bool {
-        state.hasArchive && state.canAddHere
+    /// An archive that can be written takes a dropped file in its list, its
+    /// rows deciding where (#251 G2).
+    private var listTakesDrops: Bool {
+        state.hasArchive && state.canBeEdited
     }
 
     /// Dropping a non-archive doesn't open anything — it starts a new archive with
@@ -62,33 +59,19 @@ struct ArchiveView: View {
     var body: some View {
         Group {
             if state.hasArchive {
-                ArchiveTableViewRepresentable(
-                    selection: $selection,
-                    isReloadNeeded: $state.isReloadNeeded,
-                    showCompressedSizeColumn: $showCompressedSize,
-                    showUncompressedSizeColumn: $showUncompressedSize,
-                    showModificationDateColumn: $showModificationDate,
-                    showPosixPermissionsColumn: $showPermissions
-                )
+                ArchiveListView()
             } else {
                 HomeView()
             }
         }
-        .background(
-            GeometryReader { proxy in
-                Color.clear
-                    .onAppear { contentSize = proxy.size }
-                    .onChange(of: proxy.size) { _, size in contentSize = size }
-            }
-        )
-        // Two visible targets beat a hidden modifier: the drag itself says what
-        // will happen. One drop target decides by pointer position rather than
-        // nested `onDrop`s, which a drag already in flight would never register.
+        // The rows take a file themselves; this is the rest of the list (its
+        // header, its scroller), the start page, and a read-only archive.
         .onDrop(of: [.fileURL], delegate: ArchiveDropDelegate(
             activeZone: $activeZone,
             draggedURL: $draggedURL,
             zone: zone(at:),
             perform: handleDrop,
+            fileDrag: fileDragOverWindow,
             window: state.name ?? "(empty)"
         ))
         .overlay {
@@ -96,8 +79,8 @@ struct ArchiveView: View {
                 dropZones(active: activeZone)
             }
         }
-        // The row count changes with the setting, and the table only reloads on
-        // this flag — the toggle is in another window, so nothing else nudges it.
+        // The `..` row comes and goes with the setting, and the list only reloads
+        // on this flag — the toggle is in another window, so nothing else nudges it.
         .onChange(of: showParentRow) { _, _ in state.isReloadNeeded = true }
         .onChange(of: showHiddenFiles) { _, show in state.showsHiddenFiles = show }
         .onAppear {
@@ -107,19 +90,24 @@ struct ArchiveView: View {
             #if DEBUG
             // -DropZone add|open pins the overlay for a screenshot: no drag is
             // in flight, so nothing would arm it.
-            activeZone = LaunchParameters.dropZone
+            if !listTakesDrops { activeZone = LaunchParameters.dropZone }
             #endif
         }
+        #if DEBUG
+        // An editable archive's: the card over the toolbar, and where the file goes.
+        .onReceive(state.$canBeEdited.filter { $0 }.first()) { _ in
+            guard LaunchParameters.dropZone != nil else { return }
+            fileDragOverWindow(.entered)
+            state.dropHint = String(localized: .commonAddToNamed(state.name ?? ""))
+        }
+        #endif
         .quickLookPreview($state.previewItemUrl)
     }
 
     // MARK: - Drop
 
-    /// Top half adds, bottom half opens — matching the cards drawn below. With
-    /// nothing to add to, the whole window opens.
     private func zone(at location: CGPoint) -> ArchiveDropZone {
-        guard canAdd, contentSize.height > 0 else { return .open }
-        return location.y < contentSize.height / 2 ? .add : .open
+        listTakesDrops ? .add : .open
     }
 
     private func handleDrop(_ zone: ArchiveDropZone, _ providers: [NSItemProvider]) {
@@ -182,30 +170,16 @@ struct ArchiveView: View {
             : String(localized: .commonOpen)
     }
 
-    /// The two cards an archive window offers. The start page shows nothing — its
+    /// The one card of a read-only archive, over the whole window. An editable
+    /// one shows none here: its rows mark where the file goes, and its card that
+    /// opens is over the toolbar. The start page shows nothing either: its
     /// compress area is its own drop target and marks itself.
     @ViewBuilder
     private func dropZones(active: ArchiveDropZone) -> some View {
-        if state.hasArchive {
-            mainZones(active: active)
+        if state.hasArchive, active == .open {
+            zoneShape(zone: .open, active: active, icon: openZoneIcon, title: openZoneTitle)
                 .padding(Self.dropInset)
                 .background(.regularMaterial)
-        }
-    }
-
-    @ViewBuilder
-    private func mainZones(active: ArchiveDropZone) -> some View {
-        VStack(spacing: 10) {
-            if canAdd {
-                zoneShape(
-                    zone: .add, active: active,
-                    icon: "plus.rectangle.on.folder",
-                    title: String(
-                        localized: .commonAddToNamed(state.name ?? "")
-                    )
-                )
-            }
-            zoneShape(zone: .open, active: active, icon: openZoneIcon, title: openZoneTitle)
         }
     }
 
@@ -241,6 +215,8 @@ private struct ArchiveDropDelegate: DropDelegate {
     @Binding var draggedURL: URL?
     let zone: (CGPoint) -> ArchiveDropZone
     let perform: (ArchiveDropZone, [NSItemProvider]) -> Void
+    /// Tells the window, whose card over the toolbar shows for an editable archive.
+    let fileDrag: @MainActor (ArchiveFileDrag) -> Void
     /// only for the log — which window's delegate is talking
     let window: String
 
@@ -260,6 +236,7 @@ private struct ArchiveDropDelegate: DropDelegate {
             "file": draggedURL?.lastPathComponent ?? "(unknown)"
         ])
         activeZone = entered
+        fileDrag(.entered)
     }
 
     /// Only *moves* the highlight, never arms it: `dropUpdated` keeps arriving for
@@ -277,6 +254,7 @@ private struct ArchiveDropDelegate: DropDelegate {
         log.info("drop: exited", context: ["window": window])
         activeZone = nil
         draggedURL = nil
+        fileDrag(.exited)
     }
 
     func performDrop(info: DropInfo) -> Bool {
@@ -284,6 +262,7 @@ private struct ArchiveDropDelegate: DropDelegate {
         log.info("drop: performed", context: ["window": window, "zone": target.name])
         activeZone = nil
         draggedURL = nil
+        fileDrag(.ended)
         perform(target, info.itemProviders(for: [.fileURL]))
         return true
     }

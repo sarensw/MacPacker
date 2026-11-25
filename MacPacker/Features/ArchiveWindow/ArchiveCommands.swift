@@ -60,7 +60,7 @@ struct ArchiveCommands: Commands {
             .keyboardShortcut("s", modifiers: [.command, .shift])
 
             // Deletion is the standard Edit ▸ Delete menu item, handled by the
-            // archive table (ArchiveTableView.delete(_:)) — not a File command.
+            // archive list (ArchiveOutlineView.delete(_:)) — not a File command.
         }
 
         // Edit ▸ Find, right after Select All, as in Finder and Mail.
@@ -153,10 +153,10 @@ private final class FrontArchiveNames: ObservableObject {
         canChoose = false
         names = state.map { state in
             state.$nameEncoding
-                .combineLatest(state.$chosenNameEncoding, state.$diff, state.$isBusy)
-                .sink { [weak self] encoding, chosen, diff, isBusy in
+                .combineLatest(state.$chosenNameEncoding, state.pendingChangesPublisher, state.$isBusy)
+                .sink { [weak self] encoding, chosen, pending, isBusy in
                     self?.chosen = chosen
-                    self?.canChoose = encoding != nil && diff.isEmpty && !isBusy
+                    self?.canChoose = encoding != nil && !pending && !isBusy
                 }
         }
     }

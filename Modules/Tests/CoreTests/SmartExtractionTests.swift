@@ -387,6 +387,36 @@ extension AllCoreTests {
             #expect(read(dest.appending(path: "a.txt")) == "mine", "the file that was there changed")
         }
 
+        /// #251 F6. Two files of the same name, from two folders, selected
+        /// together, as an opened tree makes easy: both arrive, the second
+        /// under the next free name, and neither replaces the other.
+        @Test func twoFilesOfTheSameNameFromTwoFoldersBothArrive() async throws {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: dir) }
+            let zip = try makeZip(in: dir, name: "twins", entries: ["one/a.txt", "two/a.txt", "top.txt"])
+            let dest = dir.appendingPathComponent("out")
+            try FileManager.default.createDirectory(at: dest, withIntermediateDirectories: true)
+
+            let state = newState()
+            state.open(url: zip)
+            try await state.openTask?.value
+            let both = state.entries.values.filter { $0.name == "a.txt" }
+            #expect(both.count == 2)
+
+            await withCheckedContinuation { continuation in
+                state.onStatusChange = { status in
+                    if status == .done { continuation.resume() }
+                }
+                state.extract(items: Array(both), to: dest, smart: false)
+            }
+
+            let contents = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
+            #expect(contents == ["a 2.txt", "a.txt"], "got \(contents)")
+            let texts = Set(["a.txt", "a 2.txt"].map { read(dest.appending(path: $0)) })
+            #expect(texts == ["one/a.txt", "two/a.txt"], "one replaced the other: \(texts)")
+        }
+
         /// The data loss: an entry that did not decode had what was written for
         /// it deleted, and with the password wrong that was the user's own file
         /// whenever the entry had its name. Cancelling the second prompt left

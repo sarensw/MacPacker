@@ -237,7 +237,7 @@ extension AllCoreTests {
             state.previewItemUrl = URL(fileURLWithPath: "/tmp/fake")
 
             // Change selection - should trigger quicklook update
-            state.changeSelection(selection: IndexSet(integer: 0))
+            state.select([state.childItems![0]])
             try await Task.sleep(for: .milliseconds(500))
             // The quicklook update should have been triggered
         }

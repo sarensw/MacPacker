@@ -86,9 +86,16 @@ struct StatusBarView: View {
                 }
             } else {
                 HStack(alignment: .firstTextBaseline, spacing: 0) {
-                    if archiveState.isBusy {
-                        CancelEngineActionButtonView() {
-                            archiveState.cancelCurrentOperation()
+                    if let dropHint = archiveState.dropHint {
+                        // where a file dragged over the list goes, or why it can't (#251 G2)
+                        Text(verbatim: dropHint)
+                        Spacer()
+                    } else if archiveState.isBusy {
+                        // a save can't be stopped halfway (#251 G6)
+                        if !archiveState.isSaving {
+                            CancelEngineActionButtonView() {
+                                archiveState.cancelCurrentOperation()
+                            }
                         }
                         
                         ProgressView()

@@ -149,6 +149,35 @@
         }
       }
     },
+    "Permissions" : {
+      "comment" : "Column that shows the Unix permissions of the archive files, such as -rw-r--r--",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zugriffsrechte"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisations"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permessi"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "权限"
+          }
+        }
+      }
+    },
     "Size" : {
       "comment" : "Column that shows the unpacked size of the archive files",
       "localizations" : {

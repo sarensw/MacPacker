@@ -2879,6 +2879,42 @@
         }
       }
     },
+    "archiveDropCantChange": {
+      "comment": "Status bar, while a file is dragged over rows of an archive window that can't take it. The placeholder is the name of the archive that can't be written (a RAR, say, or an archive inside the archive), so nothing can be added there.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ can’t be changed"
+          }
+        }
+      }
+    },
+    "archiveDropNeedsPassword": {
+      "comment": "Status bar, while a file is dragged over a locked archive inside the archive. The placeholder is that archive's file name. Dropping the file asks for the password, then adds the file to it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ needs its password. Drop to enter it."
+          }
+        }
+      }
+    },
+    "archiveDropOpening": {
+      "comment": "Status bar, while a file dragged over an archive inside the archive waits for that archive to be unpacked, so that it can open and take the file. The placeholder is its file name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening %@…"
+          }
+        }
+      }
+    },
     "archiveExtractChooseDestination": {
       "comment": "Message of the panel that picks where to extract the archives selected in Finder",
       "extractionState": "manual",
@@ -11484,7 +11520,7 @@
       }
     },
     "commonAddToNamed": {
-      "comment": "Drop zone shown while dragging a file over an editable archive: releasing here adds the file to that archive. The placeholder is the archive's file name.",
+      "comment": "Status bar, while a file is dragged over an editable archive's list: dropping it adds the file there. The placeholder is the archive's file name, or the folder's path inside it (docs › images).",
       "extractionState": "manual",
       "localizations": {
         "ar": {
@@ -24686,6 +24722,42 @@
           "stringUnit": {
             "state": "translated",
             "value": "壓縮格式"
+          }
+        }
+      }
+    },
+    "settingsArchiveView": {
+      "comment": "Settings ▸ General: label of the choice how the archive window lists an archive's contents, as a tree (folders open in place) or as a table (one folder at a time).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show contents as"
+          }
+        }
+      }
+    },
+    "settingsArchiveViewTable": {
+      "comment": "Settings ▸ General ▸ Show contents as: a table that lists one folder at a time, as 7-Zip does; a double click goes into a folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Table"
+          }
+        }
+      }
+    },
+    "settingsArchiveViewTree": {
+      "comment": "Settings ▸ General ▸ Show contents as: a tree, where a folder or an archive inside opens in place on its triangle, as in Finder's list view. The default.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tree"
           }
         }
       }

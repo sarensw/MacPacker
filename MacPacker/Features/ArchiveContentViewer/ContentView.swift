@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import ArchivePreviewUI
 import Core
 import SwiftUI
 
@@ -15,6 +16,7 @@ struct ContentView: View {
     
     // environment
     @Environment(\.openWindow) var openWindow
+    @Environment(\.fileDragOverWindow) private var fileDragOverWindow
     @EnvironmentObject var archiveState: ArchiveState
     
     @State private var showPasswordSheet: Bool = false
@@ -53,6 +55,10 @@ struct ContentView: View {
             
             StatusBarView()
         }
+        // The breadcrumb and the status bar take no file, but a drag over them
+        // is still over the window: told when it leaves, the window takes its
+        // card over the toolbar down (#251 G2).
+        .onDrop(of: [.fileURL], delegate: WindowDragTracker(fileDrag: fileDragOverWindow))
         .toolbar {
             ArchiveContentToolbarView(
                 archiveState: archiveState
@@ -129,8 +135,18 @@ struct ContentView: View {
             .frame(width: 366)
         }
         .navigationTitle(archiveState.hasArchive == false ? Constants.appName : archiveState.name!)
-        .navigationSubtitle(Text(verbatim: "\(archiveState.diff.count > 0 ? String(localized: .archiveBrowseEdited) + " • " : "")\(archiveState.url == nil ? "" : archiveState.url!.deletingLastPathComponent().path + "/")"))
+        .navigationSubtitle(Text(verbatim: "\(archiveState.hasPendingChanges ? String(localized: .archiveBrowseEdited) + " • " : "")\(archiveState.url == nil ? "" : archiveState.url!.deletingLastPathComponent().path + "/")"))
         .environmentObject(archiveState)
     }
 }
 
+/// Follows a file dragged over the parts of the window that take none.
+private struct WindowDragTracker: DropDelegate {
+    let fileDrag: @MainActor (ArchiveFileDrag) -> Void
+
+    func validateDrop(info: DropInfo) -> Bool { info.hasItemsConforming(to: [.fileURL]) }
+    func dropEntered(info: DropInfo) { fileDrag(.entered) }
+    func dropUpdated(info: DropInfo) -> DropProposal? { DropProposal(operation: .forbidden) }
+    func dropExited(info: DropInfo) { fileDrag(.exited) }
+    func performDrop(info: DropInfo) -> Bool { false }
+}
