@@ -271,6 +271,31 @@ extension AllCoreTests {
             #expect(state.selectedItem === state.root)
         }
 
+        /// At the top level there is nothing to go up to, but ⌘↑ still ends a
+        /// search there: the list shows the top level again, not the results
+        /// of a search whose text is gone.
+        @Test func openParentOnRootEndsTheSearch() async throws {
+            let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
+            let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!
+            let url = folderURL.appendingPathComponent("defaultArchive.zip")
+
+            state.open(url: url)
+            try await state.openTask?.value
+            let topLevel = state.childItems?.map(\.name)
+
+            state.search("README")
+            #expect(state.childItems?.map(\.name) == ["README.md"])
+            state.selectedItems = state.childItems ?? []
+            state.isReloadNeeded = false
+
+            state.openParent()
+
+            #expect(state.searchText == "")
+            #expect(state.childItems?.map(\.name) == topLevel)
+            #expect(state.isReloadNeeded, "the list is not asked to show the top level")
+            #expect(state.selectedItems.isEmpty, "a result the top level does not list is still selected")
+        }
+
         @Test func parentRowFollowsTheSetting() async throws {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             let folderURL = Bundle.module.url(forResource: "defaultArchives", withExtension: nil)!

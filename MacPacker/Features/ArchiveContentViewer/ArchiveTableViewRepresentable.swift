@@ -500,11 +500,10 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
         tableView.deselectAll(nil)
     }
     
+    /// ⌘↑ goes up the way Back does: `openParent()` selects the folder left
+    /// and asks for the reload that shows it.
     func openParent(_ tableView: NSTableView) {
         archiveState.openParent()
-        isReloadNeeded = true
-        archiveState.selectedItems = []
-        tableView.deselectAll(nil)
     }
     
     /// Called when the user hits `Space`. If quick look is open already, close it. Otherwise,

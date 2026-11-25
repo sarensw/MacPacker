@@ -42,6 +42,41 @@
     },
     "versions": [
       {
+        "version": "1.3.1",
+        "items": [
+          {
+            "type": "fix",
+            "highlight": true,
+            "title": {
+                "en": "⌘↑ leaves nothing selected",
+                "zh-Hans": "⌘↑ 后未选中任何项目",
+                "fr": "Rien n’est sélectionné après ⌘↑",
+                "de": "Nach ⌘↑ ist nichts ausgewählt",
+                "it": "Dopo ⌘↑ non è selezionato nulla",
+                "ja": "⌘↑ のあと何も選択されない",
+                "fa": "پس از ⌘↑ چیزی انتخاب نمی‌شود",
+                "pl": "Po ⌘↑ nic nie jest zaznaczone",
+                "pt-BR": "⌘↑ não deixa nada selecionado",
+                "ru": "После ⌘↑ ничего не выбрано",
+                "uk": "Після ⌘↑ нічого не вибрано",
+                "es-MX": "⌘↑ no deja nada seleccionado",
+                "ko": "⌘↑ 후 아무것도 선택되지 않음",
+                "nl": "Na ⌘↑ is niets geselecteerd",
+                "tr": "⌘↑ sonrası hiçbir şey seçili değil",
+                "vi": "Sau ⌘↑ không có mục nào được chọn",
+                "ar": "لا شيء محدد بعد ⌘↑",
+                "ca": "⌘↑ no deixa res seleccionat",
+                "el": "Μετά το ⌘↑ δεν είναι τίποτα επιλεγμένο",
+                "nb": "Ingenting er markert etter ⌘↑",
+                "zh-TW": "⌘↑ 後未選取任何項目",
+                "hi": "⌘↑ के बाद कुछ भी चुना नहीं रहता",
+                "cs": "Po ⌘↑ není nic vybráno"
+            },
+            "issues": ["426"]
+          }
+        ]
+      },
+      {
         "version": "1.3.0",
         "items": [
           {
