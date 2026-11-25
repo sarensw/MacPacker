@@ -1457,9 +1457,16 @@ extension ArchiveState {
     public func openParent() {
         updateStatus(.processing)
 
+        let endsSearch = isSearching
         clearSearch()
 
         if selectedItem?.type == .root {
+            // Nothing above. A search ends anyway: show the top level again.
+            if endsSearch {
+                selectedItems = []
+                loadChildren()
+                isReloadNeeded = true
+            }
             updateStatus(.done)
             return
         }
