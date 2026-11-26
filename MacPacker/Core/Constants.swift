@@ -39,6 +39,13 @@ class Constants {
     /// The utm query has to sit before the fragment, otherwise it becomes part
     /// of the anchor and the section is not scrolled to.
     public static let otherAppFrameBeastURL: URL = URL(string: "https://leanbytes.io/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui#framebeast")!
+    /// The app; tailbeat.dev is the command-line tool (LeanBytes/tailbeat#113).
+    public static let otherAppTailBeat: String = "TailBeat UI"
+    public static let otherAppTailBeatURL: URL = URL(string: "https://ui.tailbeat.dev/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui")!
     /// Every app, including the ones MacPacker itself does not name.
     public static let otherAppsURL: URL = URL(string: "https://leanbytes.io/?utm_source=macpacker&utm_content=welcome&utm_medium=ui#products")!
+    /// The Black Friday deal (`BlackFridayDeal`), from the welcome window's
+    /// banner and from the More Apps menu.
+    public static let blackFridayWelcomeURL: URL = URL(string: "https://leanbytes.io/?utm_source=macpacker&utm_content=welcome&utm_medium=ui&utm_campaign=blackfriday")!
+    public static let blackFridayMenuURL: URL = URL(string: "https://leanbytes.io/?utm_source=macpacker&utm_content=moremenu&utm_medium=ui&utm_campaign=blackfriday")!
 }
