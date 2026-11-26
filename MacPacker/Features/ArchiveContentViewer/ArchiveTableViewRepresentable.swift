@@ -32,8 +32,8 @@ enum ArchiveViewerColumn: String, CaseIterable {
 }
 
 struct ArchiveTableViewRepresentable: NSViewRepresentable {
-    @AppStorage(Keys.defaultOrderColumn) private var defaultOrderColumn: ArchiveSortOrder = ArchiveSortOrder.name
-    @AppStorage(Keys.defaultOrderColumnAscending) private var defaultOrderColumnAscending: Bool = true
+    @AppStorage(Keys.defaultOrderColumn, store: .macPackerShared) private var defaultOrderColumn: ArchiveSortOrder = ArchiveSortOrder.name
+    @AppStorage(Keys.defaultOrderColumnAscending, store: .macPackerShared) private var defaultOrderColumnAscending: Bool = true
     
     @Binding var selection: IndexSet?
     @Binding var isReloadNeeded: Bool
@@ -196,11 +196,10 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                     ])
                 }
             } else if columnIdentifier == ArchiveViewerColumn.compressedSize.identifier || columnIdentifier == ArchiveViewerColumn.uncompressedSize.identifier {
-                let sizeAsString = (columnIdentifier == ArchiveViewerColumn.compressedSize.identifier)
-                    ? SystemHelper.shared.format(bytes: item.compressedSize)
-                    : SystemHelper.shared.format(bytes: item.uncompressedSize)
-                
-                let textField = NSTextField(labelWithString: item.type == .directory ? "" : sizeAsString)
+                let sizeAsString = EntryText.size(
+                    of: item, packed: columnIdentifier == ArchiveViewerColumn.compressedSize.identifier)
+
+                let textField = NSTextField(labelWithString: sizeAsString)
                 cellView.addSubview(textField)
                 textField.alignment = .right
                 textField.translatesAutoresizingMaskIntoConstraints = false
@@ -213,9 +212,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 ])
             } else if columnIdentifier == ArchiveViewerColumn.modificationDate.identifier {
                 if let date = item.modificationDate {
-                    let dateAsString = SystemHelper.shared.formatDate(date)
-                    
-                    let textField = NSTextField(labelWithString: item.type == .directory ? "" : dateAsString)
+                    let textField = NSTextField(labelWithString: EntryText.date(date))
                     cellView.addSubview(textField)
                     textField.translatesAutoresizingMaskIntoConstraints = false
                     textField.textColor = .secondaryLabelColor
@@ -228,9 +225,7 @@ struct ArchiveTableViewRepresentable: NSViewRepresentable {
                 }
             } else if columnIdentifier == ArchiveViewerColumn.posixPermissions.identifier {
                 if let permissions = item.posixPermissions {
-                    let permissionsAsString = SystemHelper.shared.formatPosixPermissions(permissions)
-                    
-                    let textField = NSTextField(labelWithString: permissionsAsString)
+                    let textField = NSTextField(labelWithString: EntryText.permissions(permissions))
                     cellView.addSubview(textField)
                     textField.translatesAutoresizingMaskIntoConstraints = false
                     textField.textColor = .secondaryLabelColor

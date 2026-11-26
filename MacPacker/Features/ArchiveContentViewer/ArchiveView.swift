@@ -27,10 +27,10 @@ struct ArchiveView: View {
     @Environment(\.openArchiveInNewWindow) private var openArchiveInNewWindow
     @EnvironmentObject private var state: ArchiveState
 
-    @AppStorage(Keys.showColumnCompressedSize) var showCompressedSize: Bool = true
-    @AppStorage(Keys.showColumnUncompressedSize) var showUncompressedSize: Bool = true
-    @AppStorage(Keys.showColumnModificationDate) var showModificationDate: Bool = true
-    @AppStorage(Keys.showColumnPosixPermissions) var showPermissions: Bool = false
+    @AppStorage(Keys.showColumnCompressedSize, store: .macPackerShared) var showCompressedSize: Bool = true
+    @AppStorage(Keys.showColumnUncompressedSize, store: .macPackerShared) var showUncompressedSize: Bool = true
+    @AppStorage(Keys.showColumnModificationDate, store: .macPackerShared) var showModificationDate: Bool = true
+    @AppStorage(Keys.showColumnPosixPermissions, store: .macPackerShared) var showPermissions: Bool = false
     @AppStorage(Keys.showParentRow) var showParentRow: Bool = false
     @AppStorage(Keys.showHiddenFiles, store: .macPackerShared) var showHiddenFiles: Bool = false
 

@@ -75,27 +75,34 @@ class ArchiveViewController: NSViewController {
     }
     
     
+    /// The window's columns, in the window's order, shown or hidden as the
+    /// window shows them and sorted by the window's choice: the settings live
+    /// in the app group the preview reads (#251 B9, B10, H6).
     func createColumns(_ outlineView: NSOutlineView) {
-        let colName = NSTableColumn(identifier: ArchiveViewerColumn.name.identifier)
-        colName.title = String(localized: "Name", bundle: .module, comment: "Column that shows the name of the archive files")
-        colName.width = 300
-        colName.resizingMask = .userResizingMask
-        outlineView.addTableColumn(colName)
-        
-        let colSizeCompressed = NSTableColumn(identifier: ArchiveViewerColumn.compressedSize.identifier)
-        colSizeCompressed.title = String(localized: "Packed Size", bundle: .module, comment: "Column that shows the packed size of the archive files")
-        colSizeCompressed.width = 100
-        outlineView.addTableColumn(colSizeCompressed)
-        
-        let colSizeUncompressed = NSTableColumn(identifier: ArchiveViewerColumn.uncompressedSize.identifier)
-        colSizeUncompressed.title = String(localized: "Size", bundle: .module, comment: "Column that shows the unpacked size of the archive files")
-        colSizeUncompressed.width = 100
-        outlineView.addTableColumn(colSizeUncompressed)
-        
-        let colModDate = NSTableColumn(identifier: ArchiveViewerColumn.modificationDate.identifier)
-        colModDate.title = String(localized: "Date Modified", bundle: .module, comment: "Column that shows the date the file was modified")
-        colModDate.width = 150
-        outlineView.addTableColumn(colModDate)
+        let columns: [(ArchiveViewerColumn, String, CGFloat, ArchiveSortOrder, String?)] = [
+            (.name, String(localized: "Name", bundle: .module, comment: "Column that shows the name of the archive files"),
+             300, .name, nil),
+            (.compressedSize, String(localized: "Packed Size", bundle: .module, comment: "Column that shows the packed size of the archive files"),
+             100, .compressedSize, Keys.showColumnCompressedSize),
+            (.uncompressedSize, String(localized: "Size", bundle: .module, comment: "Column that shows the unpacked size of the archive files"),
+             100, .uncompressedSize, Keys.showColumnUncompressedSize),
+            (.modificationDate, String(localized: "Date Modified", bundle: .module, comment: "Column that shows the date the file was modified"),
+             150, .modificationDate, Keys.showColumnModificationDate),
+            (.posixPermissions, String(localized: "Permissions", bundle: .module, comment: "Column that shows the Unix permissions of the archive files, such as -rw-r--r--"),
+             80, .posixPermissions, Keys.showColumnPosixPermissions),
+        ]
+        for (column, title, width, order, setting) in columns {
+            let tableColumn = NSTableColumn(identifier: column.identifier)
+            tableColumn.title = title
+            tableColumn.width = width
+            tableColumn.sortDescriptorPrototype = NSSortDescriptor(key: order.rawValue, ascending: true)
+            if column == .name { tableColumn.resizingMask = .userResizingMask }
+            if let setting { tableColumn.isHidden = !Keys.showsColumn(setting) }
+            outlineView.addTableColumn(tableColumn)
+        }
+
+        let sortOrder = Keys.sortOrder()
+        outlineView.sortDescriptors = [NSSortDescriptor(key: sortOrder.column.rawValue, ascending: sortOrder.ascending)]
     }
 }
 
@@ -113,7 +120,23 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
     /// is why the preview showed empty, non-expandable rows.
     private func resolvedChildren(of item: Any?) -> [ArchiveItem] {
         guard let state, let node = (item as? ArchiveItem) ?? state.root else { return [] }
-        return state.listedChildren(of: node)
+        return state.displayedChildren(of: node)
+    }
+
+    /// A click on a header sorts by that column, here and in the window: the
+    /// choice goes to the app group both read.
+    func outlineView(_ outlineView: NSOutlineView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
+        guard let descriptor = outlineView.sortDescriptors.first,
+              let key = descriptor.key, let column = ArchiveSortOrder(rawValue: key) else { return }
+        // Setting up the header lands here too: only a change is saved, or a
+        // preview shown before the app's first launch would store the default
+        // over the order the app carries over.
+        let current = Keys.sortOrder()
+        if current.column != column || current.ascending != descriptor.ascending {
+            UserDefaults.macPackerShared.set(key, forKey: Keys.defaultOrderColumn)
+            UserDefaults.macPackerShared.set(descriptor.ascending, forKey: Keys.defaultOrderColumnAscending)
+        }
+        outlineView.reloadData()
     }
 
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
@@ -246,42 +269,42 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
                 label.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
             ])
         case ArchiveViewerColumn.compressedSize.identifier, ArchiveViewerColumn.uncompressedSize.identifier:
-            if archiveItem.type != .directory {
-                let sizeAsString = (columnIdentifier == ArchiveViewerColumn.compressedSize.identifier)
-                ? SystemHelper.shared.format(bytes: archiveItem.compressedSize)
-                : SystemHelper.shared.format(bytes: archiveItem.uncompressedSize)
-                
-                let textField = NSTextField(labelWithString: sizeAsString)
-                cellView.addSubview(textField)
-                textField.alignment = .right
-                textField.translatesAutoresizingMaskIntoConstraints = false
-                textField.textColor = .secondaryLabelColor
-                
-                NSLayoutConstraint.activate([
-                    textField.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -8),
-                    textField.leadingAnchor.constraint(greaterThanOrEqualTo: cellView.leadingAnchor, constant: 8),
-                    textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
-                ])
-            }
+            let packed = columnIdentifier == ArchiveViewerColumn.compressedSize.identifier
+            addSecondaryText(EntryText.size(of: archiveItem, packed: packed), to: cellView, alignedRight: true)
         case ArchiveViewerColumn.modificationDate.identifier:
             if let date = archiveItem.modificationDate {
-                let dateAsString = SystemHelper.shared.formatDate(date)
-                
-                let textField = NSTextField(labelWithString: dateAsString)
-                cellView.addSubview(textField)
-                textField.translatesAutoresizingMaskIntoConstraints = false
-                textField.textColor = .secondaryLabelColor
-                
-                NSLayoutConstraint.activate([
-                    textField.trailingAnchor.constraint(lessThanOrEqualTo: cellView.trailingAnchor, constant: -8),
-                    textField.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: 4),
-                    textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor)
-                ])
+                addSecondaryText(EntryText.date(date), to: cellView, alignedRight: false)
+            }
+        case ArchiveViewerColumn.posixPermissions.identifier:
+            if let permissions = archiveItem.posixPermissions {
+                addSecondaryText(EntryText.permissions(permissions), to: cellView, alignedRight: false)
             }
         default:
             return cellView
         }
-        
+
         return cellView
+    }
+
+    /// A size, a date or permissions: grey, as the window shows them.
+    private func addSecondaryText(_ text: String, to cellView: NSTableCellView, alignedRight: Bool) {
+        let textField = NSTextField(labelWithString: text)
+        cellView.addSubview(textField)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.textColor = .secondaryLabelColor
+        if alignedRight {
+            textField.alignment = .right
+            NSLayoutConstraint.activate([
+                textField.trailingAnchor.constraint(equalTo: cellView.trailingAnchor, constant: -8),
+                textField.leadingAnchor.constraint(greaterThanOrEqualTo: cellView.leadingAnchor, constant: 8),
+                textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor),
+            ])
+        } else {
+            NSLayoutConstraint.activate([
+                textField.trailingAnchor.constraint(lessThanOrEqualTo: cellView.trailingAnchor, constant: -8),
+                textField.leadingAnchor.constraint(equalTo: cellView.leadingAnchor, constant: 4),
+                textField.centerYAnchor.constraint(equalTo: cellView.centerYAnchor),
+            ])
+        }
     }
 }

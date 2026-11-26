@@ -27,6 +27,8 @@ struct MacPackerApp: App {
         tb.start()
         Keys.registerDefaults()
         Keys.carryOverExcludeDSStore()
+        // the sort order and the columns, which Quick Look now reads too (#251)
+        Keys.moveListSettingsToSharedDefaults()
         log.notice("MacPackerApp.init — app process starting")
         
         #if DEBUG

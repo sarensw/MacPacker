@@ -46,13 +46,52 @@ public enum Keys {
         defaults.bool(forKey: showHiddenFiles)
     }
 
+    // list settings: the archive window and Quick Look read the same ones, from
+    // the app group (#251). The app's own defaults held them before 1.4.
     public static let showColumnCompressedSize = "showColumnCompressedSize"
     public static let showColumnUncompressedSize = "showColumnUncompressedSize"
     public static let showColumnModificationDate = "showColumnModificationDate"
     public static let showColumnPosixPermissions = "showColumnPosixPermissions"
-    
+
     public static let defaultOrderColumn = "defaultOrderColum"
     public static let defaultOrderColumnAscending = "defaultOrderColumnAscending"
+
+    /// Whether a column shows, read from the app group so Quick Look shows the
+    /// columns the window does. The sizes and the date show until hidden, the
+    /// permissions only when asked for.
+    public static func showsColumn(_ key: String, in defaults: UserDefaults = .macPackerShared) -> Bool {
+        defaults.object(forKey: key) as? Bool ?? (key != showColumnPosixPermissions)
+    }
+
+    /// The column the window and Quick Look sort by, read from the app group:
+    /// the one clicked last, in either. Until then by name, ascending — the
+    /// order the header shows.
+    public static func sortOrder(in defaults: UserDefaults = .macPackerShared) -> (column: ArchiveSortOrder, ascending: Bool) {
+        let column = defaults.string(forKey: defaultOrderColumn).flatMap(ArchiveSortOrder.init(rawValue:)) ?? .name
+        return (column, defaults.object(forKey: defaultOrderColumnAscending) as? Bool ?? true)
+    }
+
+    /// The list settings the window and Quick Look share.
+    static let listSettings = [
+        showColumnCompressedSize, showColumnUncompressedSize, showColumnModificationDate,
+        showColumnPosixPermissions, defaultOrderColumn, defaultOrderColumnAscending,
+    ]
+
+    /// Carries the list settings over from the app's own defaults, where they
+    /// were kept before 1.4, into the app group. Only the app calls this, and
+    /// only a setting the app group has no value for is carried over.
+    ///
+    /// - Parameter legacy: what the app stored, without the values a launch
+    ///   argument pins for one launch, which must not be saved.
+    public static func moveListSettingsToSharedDefaults(
+        from legacy: [String: Any]? = Bundle.main.bundleIdentifier.flatMap(UserDefaults.standard.persistentDomain(forName:)),
+        to shared: UserDefaults = .macPackerShared
+    ) {
+        guard let legacy, shared !== UserDefaults.standard else { return }
+        for key in listSettings where shared.object(forKey: key) == nil {
+            if let value = legacy[key] { shared.set(value, forKey: key) }
+        }
+    }
 
     // window settings
     public static let toolbarDisplayMode = "toolbarDisplayMode"
@@ -103,12 +142,12 @@ public enum Keys {
         defaults.set(true, forKey: excludeMacData)
     }
 
-    // register defaults upon app start so that the archive table has a default it
-    // can use when showing the table for the first time
+    // Registered upon app start. Not the sort order: the window and Quick Look
+    // read it from the app group with the default in the code (by name,
+    // ascending), and a registered value would read as one the app group
+    // already holds when the list settings are carried over.
     public static func registerDefaults() {
         UserDefaults.standard.register(defaults: [
-            defaultOrderColumn: ArchiveSortOrder.name.rawValue,
-            defaultOrderColumnAscending: true,
             dropWindowFloats: true,
             rememberRecentArchives: true,
         ])
