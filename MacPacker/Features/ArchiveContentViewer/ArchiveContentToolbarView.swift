@@ -276,6 +276,22 @@ struct ArchiveContentToolbarView: ToolbarContent {
                 Divider()
                 
                 Menu {
+                    if BlackFridayDeal.isShown {
+                        Button {
+                            openURL(Constants.blackFridayMenuURL)
+                        } label: {
+                            Label {
+                                Text(.LeanBytes.blackFridayDeal)
+                            } icon: {
+                                Image(systemName: "tag")
+                            }
+                            .labelStyle(.titleAndIcon)
+                            Text(.LeanBytes.moreAppsBlackFridayUntil(BlackFridayDeal.lastDayText()))
+                        }
+
+                        Divider()
+                    }
+
                     Button {
                         openURL(Constants.otherAppFlowMooseURL)
                     } label: {
@@ -310,6 +326,18 @@ struct ArchiveContentToolbarView: ToolbarContent {
                         }
                         .labelStyle(.titleAndIcon)
                         Text(.LeanBytes.frameBeast)
+                    }
+
+                    Button {
+                        openURL(Constants.otherAppTailBeatURL)
+                    } label: {
+                        Label {
+                            Text(verbatim: "\(Constants.otherAppTailBeat)")
+                        } icon: {
+                            Image(nsImage: .menuIcon(named: "AppIcon_TailBeat"))
+                        }
+                        .labelStyle(.titleAndIcon)
+                        Text(.LeanBytes.tailBeatShort)
                     }
                 } label: {
                     Label {

@@ -19,12 +19,14 @@ public struct PillView: View {
     private let label: String
     private let background: Color
     private let foreground: Color
+    private let minWidth: CGFloat?
 
     /// Use a predefined style. Falls back to the style's default label.
     public init(_ style: PillStyle, label: String? = nil) {
         self.label = label ?? style.defaultLabel
         self.background = style.background
         self.foreground = style.foreground
+        self.minWidth = style.minWidth
     }
 
     /// Custom pill — bring your own label and colors.
@@ -32,6 +34,7 @@ public struct PillView: View {
         self.label = label
         self.background = background
         self.foreground = foreground
+        self.minWidth = 74
     }
 
     public var body: some View {
@@ -41,9 +44,7 @@ public struct PillView: View {
             .foregroundStyle(foreground)
             .padding(.horizontal, 9)
             .padding(.vertical, 3)
-            // ponytail: wide enough for "Language", the longest changelog label,
-            // so a list of pills lines up; measure the widest if labels grow
-            .frame(minWidth: 74)
+            .frame(minWidth: minWidth)
             .background(background, in: Capsule())
     }
 }
@@ -55,6 +56,8 @@ public enum PillStyle {
     case feature, fix, core, release, lang
     // Product status
     case earlyAccess
+    // Offer: the Black Friday price cut next to an app's name
+    case deal
 
     public var background: Color {
         switch self {
@@ -64,6 +67,7 @@ public enum PillStyle {
         case .release:     .pillReleaseBackground
         case .lang:        .pillLanguageBackground
         case .earlyAccess: .pillEarlyAccessBackground
+        case .deal:        .pillDealBackground
         }
     }
 
@@ -75,6 +79,7 @@ public enum PillStyle {
         case .release:     .pillReleaseForeground
         case .lang:        .pillLanguageForeground
         case .earlyAccess: .pillEarlyAccessForeground
+        case .deal:        .pillDealForeground
         }
     }
 
@@ -86,7 +91,15 @@ public enum PillStyle {
         case .release:     "Release"
         case .lang:        "Language"
         case .earlyAccess: "Early Access"
+        case .deal:        String(localized: .LeanBytes.welcomeDealPill)
         }
+    }
+
+    /// A deal pill fits its label, next to an app's name.
+    // ponytail: the rest are wide enough for "Language", the longest changelog
+    // label, so a list of pills lines up; measure the widest if labels grow
+    public var minWidth: CGFloat? {
+        self == .deal ? nil : 74
     }
 }
 
@@ -112,6 +125,10 @@ public extension Color {
     // Product status
     static let pillEarlyAccessBackground = Color.adaptive(light: 0xB3E3E0, dark: 0x0F5F5A)
     static let pillEarlyAccessForeground = Color.adaptive(light: 0x0A3D3A, dark: 0xC2ECE9)
+
+    // Offer
+    static let pillDealBackground = Color.adaptive(light: 0xFFD9BF, dark: 0x7A3300)
+    static let pillDealForeground = Color.adaptive(light: 0x5C2600, dark: 0xFFE1CC)
 }
 
 // MARK: - Adaptive Helper
