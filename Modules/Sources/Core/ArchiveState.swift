@@ -514,6 +514,7 @@ extension ArchiveState {
         childItems = sortedForDisplay(children)
     }
 
+    /// Applies the app's saved sort column and direction.
     private func sortedForDisplay(_ items: [ArchiveItem]) -> [ArchiveItem] {
         let defaultOrderColumn = defaults.string(forKey: Keys.defaultOrderColumn)
             .flatMap(ArchiveSortOrder.init(rawValue:))
@@ -522,8 +523,10 @@ extension ArchiveState {
         return sortedForDisplay(items, order: defaultOrderColumn, ascending: defaultOrderColumnAscending)
     }
 
-    /// Shared ordering for the app's table and the Quick Look outline.  An
-    /// explicit order lets the preview sort without changing app preferences.
+    /// Sorts entries for the app's table and the Quick Look outline.
+    ///
+    /// Name sorting puts folders first in either direction. The archive path
+    /// breaks ties and determines the order when no column is specified.
     public func sortedForDisplay(
         _ items: [ArchiveItem],
         order: ArchiveSortOrder?,

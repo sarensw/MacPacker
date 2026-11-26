@@ -10,6 +10,7 @@ import Core
 import UniformTypeIdentifiers
 
 class ArchiveViewController: NSViewController {
+    /// The archive shown in the outline. Replacing it invalidates the cached sort order.
     var state: ArchiveState? {
         didSet {
             sortedChildren.removeAll()
@@ -41,6 +42,7 @@ class ArchiveViewController: NSViewController {
         return queue
     }()
     
+    /// Builds the preview outline with ascending name order as the initial sort.
     override func loadView() {
         let clipView = NSClipView()
         clipView.documentView = outlineView
@@ -79,6 +81,7 @@ class ArchiveViewController: NSViewController {
     }
     
     
+    /// Adds the preview columns and uses their identifiers as sort keys.
     func createColumns(_ outlineView: NSOutlineView) {
         let colName = NSTableColumn(identifier: ArchiveViewerColumn.name.identifier)
         colName.title = String(localized: "Name", bundle: .module, comment: "Column that shows the name of the archive files")
@@ -109,21 +112,17 @@ class ArchiveViewController: NSViewController {
 
 /// Finder keeps key focus while its Quick Look panel hosts the preview.
 private final class PreviewTableHeaderView: NSTableHeaderView {
+    /// Lets a header click change the sort order while Finder has key focus.
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }
 
 extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate {
 //    private var rootNode: ArchiveItem { hierarchy?.root ?? .root }
     
-    /// Resolves the child UUIDs stored on an `ArchiveItem` (or on the root, when
-    /// `item` is `nil`) into the actual `ArchiveItem`s the list shows, via
-    /// `state.listedChildren(of:)` — the same as the archive window, hidden
-    /// files included only when they are shown.
+    /// Returns the visible children of `item`, or of the root when `item` is `nil`.
     ///
-    /// `ArchiveItem.children` holds `[UUID]` (changed in `4659e4a`), so the
-    /// outline view has to look the items up here. Returning the raw UUIDs makes
-    /// every `as? ArchiveItem` cast in `viewFor` / `isItemExpandable` fail, which
-    /// is why the preview showed empty, non-expandable rows.
+    /// Uses the same hidden-file setting as the archive window. Caches the
+    /// sorted items per parent so row lookups reuse the same order.
     private func resolvedChildren(of item: Any?) -> [ArchiveItem] {
         guard let state, let node = (item as? ArchiveItem) ?? state.root else { return [] }
         if let children = sortedChildren[node.id] { return children }
@@ -138,6 +137,7 @@ extension ArchiveViewController: NSOutlineViewDataSource, NSOutlineViewDelegate 
         return children
     }
 
+    /// Reloads the sorted rows and restores selection by item identity.
     func outlineView(_ outlineView: NSOutlineView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
         let selection = selectedItems ?? []
         sortedChildren.removeAll()

@@ -5,6 +5,7 @@ import Testing
 
 extension AllCoreTests {
     @MainActor struct ArchivePreviewSortingTests {
+        /// Loads the fixture with files before folders to expose archive-order display.
         private func makePreview() async throws -> (ArchiveViewController, NSOutlineView, ArchiveState) {
             let state = ArchiveState(catalog: ArchiveTypeCatalog(), engineSelector: ArchiveEngineSelector7zip())
             let folder = try #require(Bundle.module.url(forResource: "defaultArchives", withExtension: nil))
@@ -12,7 +13,6 @@ extension AllCoreTests {
             try await state.openTask?.value
             let root = try #require(state.root)
             let children = try #require(root.children).compactMap { state.entries[$0] }
-            // Deliberately put files before folders to expose archive-order display.
             for child in children { root.removeChild(child.id) }
             for child in children.sorted(by: { $0.name > $1.name }) { root.addChild(child.id) }
 
@@ -23,6 +23,7 @@ extension AllCoreTests {
             return (controller, outline, state)
         }
 
+        /// Checks the default sort descriptor and the first visible row.
         @Test func initiallySortsByNameWithFoldersFirst() async throws {
             let (controller, outline, _) = try await makePreview()
             #expect(outline.sortDescriptors.first?.key == ArchiveSortOrder.name.rawValue)
@@ -31,6 +32,7 @@ extension AllCoreTests {
             withExtendedLifetime(controller) {}
         }
 
+        /// Checks the header's first-mouse policy for Finder's non-key panel.
         @Test func headerAcceptsClicksInNonKeyQuickLookPanel() async throws {
             let (controller, outline, _) = try await makePreview()
             let header = try #require(outline.headerView)
@@ -38,6 +40,7 @@ extension AllCoreTests {
             withExtendedLifetime(controller) {}
         }
 
+        /// Checks both directions of every column while a child is selected in an expanded folder.
         @Test func columnSortingPreservesExpansionAndSelection() async throws {
             let (controller, outline, state) = try await makePreview()
             let folder = try #require(state.entries.values.first { $0.name == "folder" })
@@ -76,6 +79,7 @@ extension AllCoreTests {
             withExtendedLifetime(controller) {}
         }
 
+        /// Checks that children loaded asynchronously use the active sort on first expansion.
         @Test func nestedArchiveUsesCurrentSortWhenFirstExpanded() async throws {
             let (controller, outline, state) = try await makePreview()
             let folder = try #require(state.entries.values.first { $0.name == "folder" })
